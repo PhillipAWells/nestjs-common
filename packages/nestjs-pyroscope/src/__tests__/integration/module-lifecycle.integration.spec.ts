@@ -1,4 +1,3 @@
-import { describe, it, expect, afterEach } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PyroscopeModule } from '../../module.js';
 import { PyroscopeService } from '../../service.js';
@@ -17,7 +16,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		enabled: true,
 		serverAddress: 'http://localhost:4040',
 		applicationName: 'integration-test-app',
-		tags: { env: 'test', version: '1.0.0' }
+		tags: { env: 'test', version: '1.0.0' },
 	};
 
 	describe('Module.forRoot() - Synchronous Configuration', () => {
@@ -34,7 +33,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 		it('should initialize all providers with sync config object', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -51,7 +50,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 		it('should inject config token correctly', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			const injectedConfig = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
@@ -66,7 +65,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configFactory })]
+				imports: [PyroscopeModule.forRoot({ config: configFactory })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -76,7 +75,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 		it('should register HealthController by default', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			const healthController = module.get<HealthController>(HealthController);
@@ -87,11 +86,11 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should skip HealthController when enableHealthChecks is false', async () => {
 			const configNoHealth: IPyroscopeConfig = {
 				...mockConfig,
-				enableHealthChecks: false
+				enableHealthChecks: false,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configNoHealth })]
+				imports: [PyroscopeModule.forRoot({ config: configNoHealth })],
 			}).compile();
 
 			expect(() => module.get<HealthController>(HealthController)).toThrow();
@@ -105,7 +104,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should respect isGlobal = false option', () => {
 			const dynamicModule = PyroscopeModule.forRoot({
 				config: mockConfig,
-				isGlobal: false
+				isGlobal: false,
 			});
 			expect(dynamicModule.global).toBe(false);
 		});
@@ -119,11 +118,11 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should handle disabled profiling', async () => {
 			const disabledConfig: IPyroscopeConfig = {
 				...mockConfig,
-				enabled: false
+				enabled: false,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -146,11 +145,11 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 				retryMaxDelayMs: 30000,
 				retryJitterMs: 100,
 				tagMaxLength: 256,
-				enableHealthChecks: true
+				enableHealthChecks: true,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: fullConfig })]
+				imports: [PyroscopeModule.forRoot({ config: fullConfig })],
 			}).compile();
 
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
@@ -173,9 +172,9 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			module = await Test.createTestingModule({
 				imports: [
 					PyroscopeModule.forRootAsync({
-						useFactory: () => mockConfig
-					})
-				]
+						useFactory: () => mockConfig,
+					}),
+				],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -199,11 +198,11 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			// The injected provider must be available in the PyroscopeModule's imports
 			const dynamicModule = PyroscopeModule.forRootAsync({
 				useFactory: () => mockConfig,
-				inject: []
+				inject: [],
 			});
 
 			module = await Test.createTestingModule({
-				imports: [dynamicModule]
+				imports: [dynamicModule],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -217,9 +216,9 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			module = await Test.createTestingModule({
 				imports: [
 					PyroscopeModule.forRootAsync({
-						useFactory: () => mockConfig
-					})
-				]
+						useFactory: () => mockConfig,
+					}),
+				],
 			}).compile();
 
 			const healthController = module.get<HealthController>(HealthController);
@@ -229,16 +228,16 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should support imports option', async () => {
 			const _ExternalModule = {
 				provide: 'EXTERNAL_VALUE',
-				useValue: 'external'
+				useValue: 'external',
 			};
 
 			module = await Test.createTestingModule({
 				imports: [
 					PyroscopeModule.forRootAsync({
 						imports: [],
-						useFactory: () => mockConfig
-					})
-				]
+						useFactory: () => mockConfig,
+					}),
+				],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -247,7 +246,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 		it('should be global by default', () => {
 			const dynamicModule = PyroscopeModule.forRootAsync({
-				useFactory: () => mockConfig
+				useFactory: () => mockConfig,
 			});
 			expect(dynamicModule.global).toBe(true);
 		});
@@ -255,7 +254,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should respect isGlobal = false option', () => {
 			const dynamicModule = PyroscopeModule.forRootAsync({
 				useFactory: () => mockConfig,
-				isGlobal: false
+				isGlobal: false,
 			});
 			expect(dynamicModule.global).toBe(false);
 		});
@@ -267,9 +266,9 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 				imports: [
 					PyroscopeModule.forRootAsync({
 						useFactory: () => mockConfig,
-						inject: []
-					})
-				]
+						inject: [],
+					}),
+				],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -291,7 +290,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -307,7 +306,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -322,7 +321,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -349,7 +348,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [AppModule]
+				providers: [AppModule],
 			}).compile();
 
 			const appModule = module.get<any>(AppModule);
@@ -362,20 +361,20 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 		it('should maintain separate config scopes per test module', async () => {
 			const config1: IPyroscopeConfig = {
 				...mockConfig,
-				applicationName: 'app-1'
+				applicationName: 'app-1',
 			};
 
 			const config2: IPyroscopeConfig = {
 				...mockConfig,
-				applicationName: 'app-2'
+				applicationName: 'app-2',
 			};
 
 			const module1 = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: config1 })]
+				imports: [PyroscopeModule.forRoot({ config: config1 })],
 			}).compile();
 
 			const module2 = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: config2 })]
+				imports: [PyroscopeModule.forRoot({ config: config2 })],
 			}).compile();
 
 			const config1Injected = module1.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);

@@ -25,8 +25,8 @@ export class ProfilingInterceptor implements NestInterceptor {
 			tags: {
 				method: request.method,
 				path: request.route?.path ?? request.url,
-				userAgent: request.get('User-Agent') ?? 'unknown'
-			}
+				userAgent: request.get('User-Agent') ?? 'unknown',
+			},
 		};
 
 		this.pyroscopeService.startProfiling(profileContext);
@@ -37,22 +37,22 @@ export class ProfilingInterceptor implements NestInterceptor {
 				profileContext.tags = {
 					...profileContext.tags,
 					statusCode: response.statusCode?.toString() ?? 'unknown',
-					success: 'true'
+					success: 'true',
 				};
 				this.pyroscopeService.stopProfiling(profileContext);
 			}),
 			catchError((error) => {
-				// Error case
+				// Error case - do not expose error message in tags
 				profileContext.tags = {
 					...profileContext.tags,
 					statusCode: error.status?.toString() ?? '500',
 					success: 'false',
-					error: error.message || 'unknown'
+					error: 'unknown',
 				};
 				profileContext.error = error;
 				this.pyroscopeService.stopProfiling(profileContext);
 				throw error;
-			})
+			}),
 		);
 	}
 }

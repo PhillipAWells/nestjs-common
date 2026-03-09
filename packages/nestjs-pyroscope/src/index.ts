@@ -4,7 +4,7 @@
 export {
 	Profile,
 	ProfileMethod,
-	ProfileAsync
+	ProfileAsync,
 } from './decorators/profile.decorator.js';
 
 // Profiling service
@@ -30,13 +30,13 @@ export type {
 	IPyroscopeConfig,
 	TProfileType,
 	IProfileMetrics,
-	IProfileContext
+	IProfileContext,
 } from './interfaces/profiling.interface.js';
 
 // Module configuration interfaces
 export type {
 	IPyroscopeModuleOptions,
-	IPyroscopeModuleAsyncOptions
+	IPyroscopeModuleAsyncOptions,
 } from './interfaces/module.interface.js';
 
 // Profiling utilities and helpers
@@ -47,5 +47,5 @@ export {
 	ProfilingErrorHandler,
 	generateProfileId,
 	formatDuration,
-	isProfilingEnabled
+	isProfilingEnabled,
 } from './utils/profiling.utils.js';

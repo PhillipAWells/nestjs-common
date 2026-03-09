@@ -21,12 +21,12 @@ export class PyroscopeModule {
 
 		const configProvider: Provider = {
 			provide: PYROSCOPE_CONFIG_TOKEN,
-			useValue: config
+			useValue: config,
 		};
 
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
-			useClass: MetricsService
+			useClass: MetricsService,
 		};
 
 		const serviceProvider: Provider = {
@@ -35,19 +35,19 @@ export class PyroscopeModule {
 				const logger = new Logger(PyroscopeService.name);
 				return new PyroscopeService(config, logger, metricsService);
 			},
-			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService]
+			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService],
 		};
 
 		const healthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
-			useClass: ProfilingHealthIndicator
+			useClass: ProfilingHealthIndicator,
 		};
 
 		const providers: Provider[] = [
 			configProvider,
 			metricsServiceProvider,
 			serviceProvider,
-			healthIndicatorProvider
+			healthIndicatorProvider,
 		];
 
 		const controllers = config.enableHealthChecks !== false ? [HealthController] : [];
@@ -58,7 +58,7 @@ export class PyroscopeModule {
 			global: options.isGlobal ?? true,
 			controllers,
 			providers,
-			exports
+			exports,
 		};
 	}
 
@@ -69,12 +69,12 @@ export class PyroscopeModule {
 		const configProvider: Provider = {
 			provide: PYROSCOPE_CONFIG_TOKEN,
 			useFactory: options.useFactory,
-			inject: options.inject ?? []
+			inject: options.inject ?? [],
 		};
 
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
-			useClass: MetricsService
+			useClass: MetricsService,
 		};
 
 		const serviceProvider: Provider = {
@@ -83,19 +83,19 @@ export class PyroscopeModule {
 				const logger = new Logger(PyroscopeService.name);
 				return new PyroscopeService(config, logger, metricsService);
 			},
-			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService]
+			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService],
 		};
 
 		const healthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
-			useClass: ProfilingHealthIndicator
+			useClass: ProfilingHealthIndicator,
 		};
 
 		const providers: Provider[] = [
 			configProvider,
 			metricsServiceProvider,
 			serviceProvider,
-			healthIndicatorProvider
+			healthIndicatorProvider,
 		];
 
 		// Note: For async config, we can't conditionally enable controllers
@@ -109,7 +109,7 @@ export class PyroscopeModule {
 			imports: options.imports ?? [],
 			controllers,
 			providers,
-			exports
+			exports,
 		};
 	}
 }

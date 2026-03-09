@@ -1,4 +1,3 @@
-import { describe, it, expect, afterEach } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Injectable, Controller, Get } from '@nestjs/common';
 import { PyroscopeModule } from '../../module.js';
@@ -15,7 +14,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		enabled: true,
 		serverAddress: 'http://localhost:4040',
 		applicationName: 'decorator-integration-test',
-		tags: { env: 'test' }
+		tags: { env: 'test' },
 	};
 
 	describe('@Profile class decorator', () => {
@@ -45,7 +44,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [ProfiledService]
+				providers: [ProfiledService],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -75,7 +74,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [TaggedService]
+				providers: [TaggedService],
 			}).compile();
 
 			const service = module.get<TaggedService>(TaggedService);
@@ -98,7 +97,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [ErrorService]
+				providers: [ErrorService],
 			}).compile();
 
 			const service = module.get<ErrorService>(ErrorService);
@@ -120,7 +119,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				controllers: [ProfiledController]
+				controllers: [ProfiledController],
 			}).compile();
 
 			const controller = module.get<ProfiledController>(ProfiledController);
@@ -156,7 +155,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [SelectiveService]
+				providers: [SelectiveService],
 			}).compile();
 
 			const service = module.get<SelectiveService>(SelectiveService);
@@ -178,7 +177,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [CustomNameService]
+				providers: [CustomNameService],
 			}).compile();
 
 			const service = module.get<CustomNameService>(CustomNameService);
@@ -200,7 +199,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [TaggedMethodService]
+				providers: [TaggedMethodService],
 			}).compile();
 
 			const service = module.get<TaggedMethodService>(TaggedMethodService);
@@ -222,7 +221,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [ArgsService]
+				providers: [ArgsService],
 			}).compile();
 
 			const service = module.get<ArgsService>(ArgsService);
@@ -245,7 +244,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				controllers: [ItemController]
+				controllers: [ItemController],
 			}).compile();
 
 			const controller = module.get<ItemController>(ItemController);
@@ -278,7 +277,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [AsyncService]
+				providers: [AsyncService],
 			}).compile();
 
 			const service = module.get<AsyncService>(AsyncService);
@@ -300,7 +299,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [CustomAsyncService]
+				providers: [CustomAsyncService],
 			}).compile();
 
 			const service = module.get<CustomAsyncService>(CustomAsyncService);
@@ -325,7 +324,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [AsyncTagService]
+				providers: [AsyncTagService],
 			}).compile();
 
 			const service = module.get<AsyncTagService>(AsyncTagService);
@@ -348,7 +347,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [AsyncErrorService]
+				providers: [AsyncErrorService],
 			}).compile();
 
 			const service = module.get<AsyncErrorService>(AsyncErrorService);
@@ -371,7 +370,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				controllers: [AsyncItemController]
+				controllers: [AsyncItemController],
 			}).compile();
 
 			const controller = module.get<AsyncItemController>(AsyncItemController);
@@ -400,14 +399,14 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [ConcurrentService]
+				providers: [ConcurrentService],
 			}).compile();
 
 			const service = module.get<ConcurrentService>(ConcurrentService);
 
 			const [result1, result2] = await Promise.all([
 				service.operation1(),
-				service.operation2()
+				service.operation2(),
 			]);
 
 			expect(result1).toBe('result1');
@@ -442,7 +441,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
-				providers: [MixedService]
+				providers: [MixedService],
 			}).compile();
 
 			const service = module.get<MixedService>(MixedService);
@@ -472,7 +471,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			module = await Test.createTestingModule({
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
-				providers: [DisabledService]
+				providers: [DisabledService],
 			}).compile();
 
 			const service = module.get<DisabledService>(DisabledService);

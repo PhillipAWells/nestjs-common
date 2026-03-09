@@ -2,7 +2,7 @@ import { IPyroscopeConfig, TProfileType } from '../interfaces/profiling.interfac
 import {
 	PROFILING_UTILS_TIMEOUT,
 	PROFILING_UTILS_MEMORY_THRESHOLD,
-	PROFILING_TAG_MAX_LENGTH
+	PROFILING_TAG_MAX_LENGTH,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -17,8 +17,7 @@ export class ProfilingConfigValidator {
 
 		if (!config.serverAddress) {
 			errors.push('serverAddress is required');
-		}
-		else if (!config.serverAddress.startsWith('http')) {
+		} else if (!config.serverAddress.startsWith('http')) {
 			errors.push('serverAddress must start with http:// or https://');
 		}
 
@@ -48,7 +47,7 @@ export class ProfilingConfigValidator {
 
 		return {
 			isValid: errors.length === 0,
-			errors
+			errors,
 		};
 	}
 }
@@ -127,7 +126,7 @@ export class MetricAggregator {
 	 */
 	public static groupByTags<T extends { tags?: Record<string, string> }>(
 		metrics: T[],
-		tagKeys: string[]
+		tagKeys: string[],
 	): Record<string, T[]> {
 		const groups: Record<string, T[]> = {};
 
@@ -171,6 +170,9 @@ export class ProfilingErrorHandler {
 	 * Create user-friendly error message
 	 */
 	public static formatError(error: Error): string {
+		// Log the real error internally for debugging
+		console.error('Profiling error details:', error.message, error.stack);
+
 		if (error.message.includes('ECONNREFUSED')) {
 			return 'Unable to connect to Pyroscope server. Please check server address and network connectivity.';
 		}
@@ -183,7 +185,8 @@ export class ProfilingErrorHandler {
 			return 'Access forbidden. Please check your permissions.';
 		}
 
-		return `Profiling error: ${error.message}`;
+		// Return generic message instead of exposing error details
+		return 'Profiling operation failed';
 	}
 
 	/**

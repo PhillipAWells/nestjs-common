@@ -13,7 +13,7 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 export class ProfilingHealthIndicator extends HealthIndicator {
 	constructor(
 		@Inject(PyroscopeService) private readonly pyroscopeService: PyroscopeService,
-		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig
+		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
 	) {
 		super();
 	}
@@ -30,7 +30,7 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 			return this.getStatus(key, false, {
 				message: 'Pyroscope profiling is enabled but not initialized',
 				enabled: health.details.enabled,
-				initialized: health.details.initialized
+				initialized: health.details.initialized,
 			});
 		}
 
@@ -38,14 +38,14 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 			return this.getStatus(key, false, {
 				message: 'Too many active profiles, service may be degraded',
 				activeProfiles: health.details.activeProfiles,
-				totalMetrics: health.details.totalMetrics
+				totalMetrics: health.details.totalMetrics,
 			});
 		}
 
 		return this.getStatus(key, true, {
 			initialized: health.details.initialized,
 			activeProfiles: health.details.activeProfiles,
-			totalMetrics: health.details.totalMetrics
+			totalMetrics: health.details.totalMetrics,
 		});
 	}
 }

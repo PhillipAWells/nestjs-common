@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
 import { MetricsService  } from './metrics.service.js';
 
 describe('MetricsService', () => {
@@ -10,14 +9,14 @@ describe('MetricsService', () => {
 
 	describe('recordRequest', () => {
 		it('should record requests with status code 200', () => {
-			service.recordRequest(200);
+			service.recordRequest(200, 0);
 			const metrics = service.getMetrics();
 			expect(metrics.requests.successful).toBe(1);
 			expect(metrics.requests.total).toBe(1);
 		});
 
 		it('should record failed requests', () => {
-			service.recordRequest(500);
+			service.recordRequest(500, 0);
 			const metrics = service.getMetrics();
 			expect(metrics.requests.failed).toBe(1);
 			expect(metrics.requests.total).toBe(1);
@@ -31,7 +30,7 @@ describe('MetricsService', () => {
 
 		it('should handle concurrent updates', () => {
 			for (let i = 0; i < 100; i++) {
-				service.recordRequest(200);
+				service.recordRequest(200, 0);
 			}
 			const metrics = service.getMetrics();
 			expect(metrics.requests.total).toBe(100);
@@ -147,10 +146,10 @@ describe('MetricsService', () => {
 		});
 
 		it('should differentiate successful and failed requests', () => {
-			service.recordRequest(200);
-			service.recordRequest(200);
-			service.recordRequest(404);
-			service.recordRequest(500);
+			service.recordRequest(200, 0);
+			service.recordRequest(200, 0);
+			service.recordRequest(404, 0);
+			service.recordRequest(500, 0);
 
 			const metrics = service.getMetrics();
 			expect(metrics.requests.successful).toBe(2);
@@ -176,7 +175,7 @@ describe('MetricsService', () => {
 
 		it('should track metrics with large numbers', () => {
 			for (let i = 0; i < 1000; i++) {
-				service.recordRequest(200);
+				service.recordRequest(200, 0);
 			}
 
 			const metrics = service.getMetrics();

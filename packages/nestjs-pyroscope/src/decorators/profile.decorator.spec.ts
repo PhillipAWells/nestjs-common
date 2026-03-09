@@ -1,25 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Profile, ProfileMethod, ProfileAsync } from './profile.decorator.js';
-import { PyroscopeService } from '../service.js';
 
 describe('Profile Decorators', () => {
-	let mockPyroscopeService: jest.Mocked<PyroscopeService>;
+	let mockPyroscopeService: { isEnabled: ReturnType<typeof vi.fn>; startProfiling: ReturnType<typeof vi.fn>; stopProfiling: ReturnType<typeof vi.fn> };
 
 	beforeEach(() => {
 		mockPyroscopeService = {
-			isEnabled: jest.fn().mockReturnValue(true),
-			startProfiling: jest.fn(),
-			stopProfiling: jest.fn().mockReturnValue({
+			isEnabled: vi.fn().mockReturnValue(true),
+			startProfiling: vi.fn(),
+			stopProfiling: vi.fn().mockReturnValue({
 				cpuTime: 0,
 				memoryUsage: 0,
 				duration: 10,
-				timestamp: Date.now()
-			})
+				timestamp: Date.now(),
+			}),
 		} as any;
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('@Profile (class decorator)', () => {
@@ -44,20 +43,20 @@ describe('Profile Decorators', () => {
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
-					methodName: 'testMethod'
-				})
+					methodName: 'testMethod',
+				}),
 			);
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
 
-			jest.clearAllMocks();
+			vi.clearAllMocks();
 
 			instance.anotherMethod();
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'TestClass.anotherMethod',
 					className: 'TestClass',
-					methodName: 'anotherMethod'
-				})
+					methodName: 'anotherMethod',
+				}),
 			);
 		});
 
@@ -94,8 +93,8 @@ describe('Profile Decorators', () => {
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tags: customTags
-				})
+					tags: customTags,
+				}),
 			);
 		});
 
@@ -153,8 +152,8 @@ describe('Profile Decorators', () => {
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					error
-				})
+					error,
+				}),
 			);
 		});
 
@@ -209,8 +208,8 @@ describe('Profile Decorators', () => {
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
-					methodName: 'testMethod'
-				})
+					methodName: 'testMethod',
+				}),
 			);
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
 		});
@@ -230,8 +229,8 @@ describe('Profile Decorators', () => {
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					functionName: 'CustomProfileName'
-				})
+					functionName: 'CustomProfileName',
+				}),
 			);
 		});
 
@@ -252,8 +251,8 @@ describe('Profile Decorators', () => {
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tags: customTags
-				})
+					tags: customTags,
+				}),
 			);
 		});
 
@@ -294,8 +293,8 @@ describe('Profile Decorators', () => {
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					error
-				})
+					error,
+				}),
 			);
 		});
 
@@ -352,8 +351,8 @@ describe('Profile Decorators', () => {
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
-					methodName: 'testMethod'
-				})
+					methodName: 'testMethod',
+				}),
 			);
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
 		});
@@ -373,8 +372,8 @@ describe('Profile Decorators', () => {
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					functionName: 'CustomAsyncProfile'
-				})
+					functionName: 'CustomAsyncProfile',
+				}),
 			);
 		});
 
@@ -395,8 +394,8 @@ describe('Profile Decorators', () => {
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tags: customTags
-				})
+					tags: customTags,
+				}),
 			);
 		});
 
@@ -437,8 +436,8 @@ describe('Profile Decorators', () => {
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					error
-				})
+					error,
+				}),
 			);
 		});
 
@@ -514,8 +513,8 @@ describe('Profile Decorators', () => {
 			instance.baseMethod();
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					functionName: 'BaseClass.baseMethod'
-				})
+					functionName: 'BaseClass.baseMethod',
+				}),
 			);
 		});
 
@@ -536,13 +535,13 @@ describe('Profile Decorators', () => {
 
 			const instance = new TestClass();
 
-			jest.clearAllMocks();
+			vi.clearAllMocks();
 			instance.method1();
 
 			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					functionName: 'CustomName'
-				})
+					functionName: 'CustomName',
+				}),
 			);
 		});
 
@@ -588,8 +587,7 @@ describe('Profile Decorators', () => {
 				public method(): never {
 					try {
 						throw error;
-					}
-					catch {
+					} catch {
 						throw new Error('Wrapped error');
 					}
 				}
@@ -600,8 +598,8 @@ describe('Profile Decorators', () => {
 			expect(() => instance.method()).toThrow('Wrapped error');
 			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
-					error: expect.any(Error)
-				})
+					error: expect.any(Error),
+				}),
 			);
 		});
 

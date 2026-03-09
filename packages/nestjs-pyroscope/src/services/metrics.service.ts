@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
-	METRICS_STATUS_WARNING
+	METRICS_STATUS_WARNING,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -96,8 +96,7 @@ export class MetricsService {
 
 		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_WARNING) {
 			this.successfulRequests++;
-		}
-		else {
+		} else {
 			this.failedRequests++;
 		}
 	}
@@ -115,19 +114,19 @@ export class MetricsService {
 			timestamp: Date.now(),
 			cpu: {
 				samples: this.cpuSamples,
-				duration: this.totalCpuDuration
+				duration: this.totalCpuDuration,
 			},
 			memory: {
 				samples: this.memorySamples,
-				allocations: this.totalMemoryAllocations
+				allocations: this.totalMemoryAllocations,
 			},
 			requests: {
 				total: this.totalRequests,
 				successful: this.successfulRequests,
 				failed: this.failedRequests,
 
-				averageResponseTime: Math.round(averageResponseTime * 100) / 100 // Round to 2 decimal places
-			}
+				averageResponseTime: Math.round(averageResponseTime * 100) / 100, // Round to 2 decimal places
+			},
 		};
 	}
 

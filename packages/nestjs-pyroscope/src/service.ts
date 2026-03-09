@@ -7,7 +7,7 @@ import {
 	PROFILING_RETRY_BASE_DELAY_MS,
 	PROFILING_RETRY_MAX_DELAY_MS,
 	PROFILING_RETRY_JITTER_MS,
-	PROFILING_TAG_MAX_LENGTH
+	PROFILING_TAG_MAX_LENGTH,
 } from './constants/profiling.constants.js';
 
 /**
@@ -24,10 +24,15 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly metrics: IProfileMetrics[] = [];
 
+	/**
+	 * Maximum number of metrics to keep in memory to prevent unbounded growth
+	 */
+	private readonly MAX_METRICS_HISTORY = 1000;
+
 	constructor(
 		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
 		private readonly logger: Logger,
-		private readonly metricsService?: MetricsService
+		private readonly metricsService?: MetricsService,
 	) {}
 
 	/**
@@ -47,7 +52,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			const pyroscopeConfig: any = {
 				serverAddress: this.config.serverAddress,
 				appName: this.config.applicationName,
-				tags: this.config.tags ?? {}
+				tags: this.config.tags ?? {},
 			};
 
 			// Add optional configuration
@@ -77,10 +82,9 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 				retryBaseDelayMs: this.config.retryBaseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS,
 				retryMaxDelayMs: this.config.retryMaxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS,
 				retryJitterMs: this.config.retryJitterMs ?? PROFILING_RETRY_JITTER_MS,
-				tagMaxLength: this.config.tagMaxLength ?? PROFILING_TAG_MAX_LENGTH
+				tagMaxLength: this.config.tagMaxLength ?? PROFILING_TAG_MAX_LENGTH,
 			});
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error('Failed to initialize Pyroscope profiling', error);
 			// Graceful degradation - continue without profiling
 		}
@@ -94,8 +98,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			try {
 				this.pyroscopeClient.stop();
 				this.logger.log('Pyroscope profiling stopped');
-			}
-			catch (error) {
+			} catch (error) {
 				this.logger.error('Error stopping Pyroscope profiling', error);
 			}
 		}
@@ -132,8 +135,13 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			return this.createEmptyMetrics(context);
 		}
 
-		// Use stored profile ID from context, or generate if not available
-		const profileId = context.profileId ?? this.generateProfileId(context);
+		// Use stored profile ID from context
+		if (!context.profileId) {
+			this.logger.warn(`No profile ID found in context for: ${context.functionName} - profiling session was not started properly`);
+			return this.createEmptyMetrics(context);
+		}
+
+		const { profileId } = context;
 		const startContext = this.activeProfiles.get(profileId);
 
 		if (!startContext) {
@@ -153,10 +161,15 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			memoryUsage: 0, // Would need to integrate with actual profiling data
 			duration: context.duration,
 			timestamp: context.endTime,
-			tags: { ...startContext.tags, ...context.tags }
+			tags: { ...startContext.tags, ...context.tags },
 		};
 
 		this.metrics.push(metrics);
+
+		// Keep metrics array bounded to prevent memory leak
+		if (this.metrics.length > this.MAX_METRICS_HISTORY) {
+			this.metrics.shift();
+		}
 
 		this.logger.debug(`Stopped profiling: ${context.functionName} (${context.duration}ms)`, context.tags);
 
@@ -190,12 +203,12 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	public async trackFunction<T>(
 		name: string,
 		fn: () => T | Promise<T>,
-		tags?: Record<string, string>
+		tags?: Record<string, string>,
 	): Promise<T> {
 		const context: IProfileContext = {
 			functionName: name,
 			startTime: Date.now(),
-			...(tags && { tags })
+			...(tags && { tags }),
 		};
 
 		this.startProfiling(context);
@@ -204,8 +217,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			const result = await fn();
 			this.stopProfiling(context);
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			context.error = error as Error;
 			this.stopProfiling(context);
 			throw error;
@@ -243,18 +255,18 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			timestamp: Date.now(),
 			cpu: {
 				samples: totalMetrics,
-				duration: totalCpuTime
+				duration: totalCpuTime,
 			},
 			memory: {
 				samples: totalMetrics,
-				allocations: totalMemory
+				allocations: totalMemory,
 			},
 			requests: {
 				total: totalMetrics,
 				successful: totalMetrics, // Assume all are successful for now
 				failed: 0,
-				averageResponseTime: Math.round(averageDuration * 100) / 100
-			}
+				averageResponseTime: Math.round(averageDuration * 100) / 100,
+			},
 		};
 	}
 
@@ -277,8 +289,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 				activeProfiles: this.activeProfiles.size,
 				totalMetrics: this.metrics.length,
 				serverAddress: this.config.serverAddress,
-				applicationName: this.config.applicationName
-			}
+				applicationName: this.config.applicationName,
+			},
 		};
 	}
 
@@ -305,7 +317,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			memoryUsage: 0,
 			duration: 0,
 			timestamp: Date.now(),
-			...(context.tags && { tags: context.tags })
+			...(context.tags && { tags: context.tags }),
 		};
 	}
 }

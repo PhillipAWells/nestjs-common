@@ -1,4 +1,4 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Header } from '@nestjs/common';
 import { HealthCheck } from '@nestjs/terminus';
 import { PyroscopeService } from '../service.js';
 import { MetricsService } from '../services/metrics.service.js';
@@ -36,15 +36,18 @@ export class HealthController {
 	constructor(
 		private readonly pyroscopeService: PyroscopeService,
 		@Inject(MetricsService) private readonly metricsService: MetricsService,
-		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig
+		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
 	) {}
 
 	/**
 	 * Get profiling service health status
+	 * WARNING: This endpoint exposes infrastructure information (server address, application name, active profiles).
+	 * It should be protected at the network level (firewall, VPN, internal network only).
 	 * @returns HealthResponse with comprehensive health information
 	 */
 	@Get('health')
 	@HealthCheck()
+	@Header('Cache-Control', 'no-store')
 	public getHealth(): HealthResponse {
 		const pyroscopeHealth = this.pyroscopeService.getHealth();
 		const metrics = this.metricsService.getMetrics();
@@ -54,8 +57,7 @@ export class HealthController {
 
 		if (!pyroscopeHealth.details.initialized && this.pyroscopeService.isEnabled()) {
 			status = 'unhealthy';
-		}
-		else if (pyroscopeHealth.details.activeProfiles > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
+		} else if (pyroscopeHealth.details.activeProfiles > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
 			// Consider degraded if too many active profiles
 			status = 'degraded';
 		}
@@ -68,42 +70,51 @@ export class HealthController {
 				connected: pyroscopeHealth.details.initialized,
 				serverAddress: pyroscopeHealth.details.serverAddress ?? '',
 				applicationName: pyroscopeHealth.details.applicationName ?? '',
-				lastUpdate: metrics.timestamp
+				lastUpdate: metrics.timestamp,
 			},
 			profiling: {
 				enabled: this.pyroscopeService.isEnabled(),
 				activeProfiles: pyroscopeHealth.details.activeProfiles,
-				totalProfiles: pyroscopeHealth.details.totalMetrics
-			}
+				totalProfiles: pyroscopeHealth.details.totalMetrics,
+			},
 		};
 	}
 
 	/**
 	 * Get current profiling metrics
+	 * WARNING: This endpoint exposes profiling metrics which reveal performance characteristics.
+	 * It should be protected at the network level (firewall, VPN, internal network only).
 	 * @returns MetricsResponse with aggregated profiling data
 	 */
 	@Get('metrics')
+	@Header('Cache-Control', 'no-store')
 	public getMetrics(): MetricsResponse {
 		return this.metricsService.getMetrics();
 	}
 
 	/**
 	 * Get detailed status information
+	 * WARNING: This endpoint exposes comprehensive infrastructure and profiling data.
+	 * It should be protected at the network level (firewall, VPN, internal network only).
 	 * @returns Comprehensive status including health and metrics
 	 */
 	@Get('status')
+	@Header('Cache-Control', 'no-store')
 	public getStatus(): { health: HealthResponse; metrics: MetricsResponse } {
 		return {
 			health: this.getHealth(),
-			metrics: this.getMetrics()
+			metrics: this.getMetrics(),
 		};
 	}
 
 	/**
 	 * Get metrics in Prometheus format
+	 * WARNING: This endpoint exposes profiling metrics in Prometheus format, revealing performance characteristics.
+	 * It should be protected at the network level (firewall, VPN, internal network only).
 	 * @returns String containing metrics in Prometheus exposition format
 	 */
 	@Get('metrics/prometheus')
+	@Header('Cache-Control', 'no-store')
 	public getPrometheusMetrics(): string {
 		return this.metricsService.getPrometheusMetrics();
 	}

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { ProfilingHealthIndicator } from './profiling.health.js';
 import { PyroscopeService } from '../service.js';
 import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
@@ -7,7 +7,7 @@ import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 
 describe('ProfilingHealthIndicator', () => {
 	let indicator: ProfilingHealthIndicator;
-	let mockPyroscopeService: jest.Mocked<PyroscopeService>;
+	let mockPyroscopeService: { getHealth: ReturnType<typeof vi.fn>; isEnabled: ReturnType<typeof vi.fn> };
 	let mockConfig: IPyroscopeConfig;
 
 	beforeEach(async () => {
@@ -15,12 +15,12 @@ describe('ProfilingHealthIndicator', () => {
 			enabled: true,
 			serverAddress: 'http://localhost:4040',
 			applicationName: 'test-app',
-			degradedActiveProfilesThreshold: 100
+			degradedActiveProfilesThreshold: 100,
 		};
 
 		mockPyroscopeService = {
-			getHealth: jest.fn(),
-			isEnabled: jest.fn().mockReturnValue(true)
+			getHealth: vi.fn(),
+			isEnabled: vi.fn().mockReturnValue(true),
 		} as any;
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -28,20 +28,20 @@ describe('ProfilingHealthIndicator', () => {
 				ProfilingHealthIndicator,
 				{
 					provide: PyroscopeService,
-					useValue: mockPyroscopeService
+					useValue: mockPyroscopeService,
 				},
 				{
 					provide: PYROSCOPE_CONFIG_TOKEN,
-					useValue: mockConfig
-				}
-			]
+					useValue: mockConfig,
+				},
+			],
 		}).compile();
 
 		indicator = module.get<ProfilingHealthIndicator>(ProfilingHealthIndicator);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('check', () => {
@@ -54,8 +54,8 @@ describe('ProfilingHealthIndicator', () => {
 					activeProfiles: 10,
 					totalMetrics: 100,
 					serverAddress: 'http://localhost:4040',
-					applicationName: 'test-app'
-				}
+					applicationName: 'test-app',
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -65,8 +65,8 @@ describe('ProfilingHealthIndicator', () => {
 					status: 'up',
 					initialized: true,
 					activeProfiles: 10,
-					totalMetrics: 100
-				}
+					totalMetrics: 100,
+				},
 			});
 		});
 
@@ -75,8 +75,8 @@ describe('ProfilingHealthIndicator', () => {
 				status: 'unhealthy',
 				details: {
 					enabled: true,
-					initialized: false
-				}
+					initialized: false,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -93,8 +93,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 150, // Over threshold of 100
-					totalMetrics: 1000
-				}
+					totalMetrics: 1000,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -114,8 +114,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 50,
-					totalMetrics: 100
-				}
+					totalMetrics: 100,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -130,8 +130,8 @@ describe('ProfilingHealthIndicator', () => {
 				status: 'healthy',
 				details: {
 					enabled: false,
-					initialized: false
-				}
+					initialized: false,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -149,8 +149,8 @@ describe('ProfilingHealthIndicator', () => {
 					activeProfiles: 25,
 					totalMetrics: 500,
 					serverAddress: 'http://pyroscope.example.com',
-					applicationName: 'production-app'
-				}
+					applicationName: 'production-app',
+				},
 			});
 
 			const result = indicator.check('profiling-status');
@@ -168,8 +168,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 5,
-					totalMetrics: 50
-				}
+					totalMetrics: 50,
+				},
 			});
 
 			const result = indicator.check('custom_key');
@@ -185,8 +185,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 100, // Exactly at threshold
-					totalMetrics: 1000
-				}
+					totalMetrics: 1000,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -201,8 +201,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 101, // Just over threshold
-					totalMetrics: 1000
-				}
+					totalMetrics: 1000,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -217,8 +217,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 0,
-					totalMetrics: 0
-				}
+					totalMetrics: 0,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -235,8 +235,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: false,
 					initialized: true,
 					activeProfiles: 5,
-					totalMetrics: 50
-				}
+					totalMetrics: 50,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -255,8 +255,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 80, // Exceeds threshold of 75
-					totalMetrics: 1000
-				}
+					totalMetrics: 1000,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -283,8 +283,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: undefined as any,
-					totalMetrics: 0
-				}
+					totalMetrics: 0,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -302,8 +302,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 51, // Exceeds custom threshold
-					totalMetrics: 100
-				}
+					totalMetrics: 100,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -319,8 +319,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: true,
 					activeProfiles: 42,
-					totalMetrics: 420
-				}
+					totalMetrics: 420,
+				},
 			});
 
 			const result = indicator.check('health');
@@ -329,7 +329,7 @@ describe('ProfilingHealthIndicator', () => {
 				status: 'up',
 				initialized: true,
 				activeProfiles: 42,
-				totalMetrics: 420
+				totalMetrics: 420,
 			});
 		});
 
@@ -340,8 +340,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: true,
 					initialized: false,
 					activeProfiles: 10,
-					totalMetrics: 100
-				}
+					totalMetrics: 100,
+				},
 			});
 
 			const result = indicator.check('pyroscope');
@@ -360,8 +360,8 @@ describe('ProfilingHealthIndicator', () => {
 					enabled: false,
 					initialized: true,
 					activeProfiles: 200, // Over threshold, but disabled
-					totalMetrics: 2000
-				}
+					totalMetrics: 2000,
+				},
 			});
 
 			const result = indicator.check('pyroscope');

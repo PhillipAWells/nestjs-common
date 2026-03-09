@@ -1,4 +1,3 @@
-import { describe, it, expect, afterEach } from '@jest/globals';
 import {
 	ProfilingConfigValidator,
 	TagFormatter,
@@ -6,7 +5,7 @@ import {
 	ProfilingErrorHandler,
 	generateProfileId,
 	formatDuration,
-	isProfilingEnabled
+	isProfilingEnabled,
 } from './profiling.utils.js';
 import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 
@@ -17,7 +16,7 @@ describe('Profiling Utils', () => {
 				const config: IPyroscopeConfig = {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
-					applicationName: 'test-app'
+					applicationName: 'test-app',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -29,7 +28,7 @@ describe('Profiling Utils', () => {
 			it('should require serverAddress', () => {
 				const config: any = {
 					enabled: true,
-					applicationName: 'test-app'
+					applicationName: 'test-app',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -42,7 +41,7 @@ describe('Profiling Utils', () => {
 				const config: IPyroscopeConfig = {
 					enabled: true,
 					serverAddress: 'localhost:4040',
-					applicationName: 'test-app'
+					applicationName: 'test-app',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -55,7 +54,7 @@ describe('Profiling Utils', () => {
 				const config: IPyroscopeConfig = {
 					enabled: true,
 					serverAddress: 'https://pyroscope.example.com',
-					applicationName: 'test-app'
+					applicationName: 'test-app',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -66,7 +65,7 @@ describe('Profiling Utils', () => {
 			it('should require applicationName', () => {
 				const config: any = {
 					enabled: true,
-					serverAddress: 'http://localhost:4040'
+					serverAddress: 'http://localhost:4040',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -80,7 +79,7 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					sampleRate: 1.5
+					sampleRate: 1.5,
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -94,7 +93,7 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					sampleRate: 0.5
+					sampleRate: 0.5,
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -107,7 +106,7 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					profileTypes: ['cpu', 'invalid' as any]
+					profileTypes: ['cpu', 'invalid' as any],
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -121,7 +120,7 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					profileTypes: ['cpu', 'memory', 'goroutine']
+					profileTypes: ['cpu', 'memory', 'goroutine'],
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -134,14 +133,14 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					basicAuthUser: 'user'
+					basicAuthUser: 'user',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain(
-					'basicAuthPassword is required when basicAuthUser is provided'
+					'basicAuthPassword is required when basicAuthUser is provided',
 				);
 			});
 
@@ -150,14 +149,14 @@ describe('Profiling Utils', () => {
 					enabled: true,
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
-					basicAuthPassword: 'password'
+					basicAuthPassword: 'password',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain(
-					'basicAuthUser is required when basicAuthPassword is provided'
+					'basicAuthUser is required when basicAuthPassword is provided',
 				);
 			});
 
@@ -167,7 +166,7 @@ describe('Profiling Utils', () => {
 					serverAddress: 'http://localhost:4040',
 					applicationName: 'test-app',
 					basicAuthUser: 'user',
-					basicAuthPassword: 'password'
+					basicAuthPassword: 'password',
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -178,7 +177,7 @@ describe('Profiling Utils', () => {
 			it('should return multiple errors', () => {
 				const config: any = {
 					enabled: true,
-					sampleRate: 2
+					sampleRate: 2,
 				};
 
 				const result = ProfilingConfigValidator.validate(config);
@@ -195,7 +194,7 @@ describe('Profiling Utils', () => {
 				const tags = {
 					userName: 'john',
 					userId: '123',
-					requestType: 'GET'
+					requestType: 'GET',
 				};
 
 				const formatted = TagFormatter.format(tags);
@@ -203,35 +202,35 @@ describe('Profiling Utils', () => {
 				expect(formatted).toEqual({
 					user_name: 'john',
 					user_id: '123',
-					request_type: 'GET'
+					request_type: 'GET',
 				});
 			});
 
 			it('should handle tags without capital letters', () => {
 				const tags = {
 					service: 'api',
-					version: '1.0'
+					version: '1.0',
 				};
 
 				const formatted = TagFormatter.format(tags);
 
 				expect(formatted).toEqual({
 					service: 'api',
-					version: '1.0'
+					version: '1.0',
 				});
 			});
 
 			it('should convert values to strings', () => {
 				const tags = {
 					count: 123 as any,
-					active: true as any
+					active: true as any,
 				};
 
 				const formatted = TagFormatter.format(tags);
 
 				expect(formatted).toEqual({
 					count: '123',
-					active: 'true'
+					active: 'true',
 				});
 			});
 
@@ -253,7 +252,7 @@ describe('Profiling Utils', () => {
 					env: 'prod',
 					service: 'api',
 					version: '1.0',
-					region: 'us-east-1'
+					region: 'us-east-1',
 				});
 			});
 
@@ -278,7 +277,7 @@ describe('Profiling Utils', () => {
 			it('should filter out null values', () => {
 				const tags = {
 					valid: 'value',
-					nullValue: null as any
+					nullValue: null as any,
 				};
 
 				const sanitized = TagFormatter.sanitize(tags);
@@ -289,7 +288,7 @@ describe('Profiling Utils', () => {
 			it('should filter out undefined values', () => {
 				const tags = {
 					valid: 'value',
-					undefinedValue: undefined as any
+					undefinedValue: undefined as any,
 				};
 
 				const sanitized = TagFormatter.sanitize(tags);
@@ -300,7 +299,7 @@ describe('Profiling Utils', () => {
 			it('should filter out empty strings', () => {
 				const tags = {
 					valid: 'value',
-					empty: ''
+					empty: '',
 				};
 
 				const sanitized = TagFormatter.sanitize(tags);
@@ -311,7 +310,7 @@ describe('Profiling Utils', () => {
 			it('should truncate long values to max length', () => {
 				const longValue = 'a'.repeat(300);
 				const tags = {
-					long: longValue
+					long: longValue,
 				};
 
 				const sanitized = TagFormatter.sanitize(tags, 100);
@@ -322,7 +321,7 @@ describe('Profiling Utils', () => {
 			it('should use default max length', () => {
 				const longValue = 'a'.repeat(500);
 				const tags = {
-					long: longValue
+					long: longValue,
 				};
 
 				const sanitized = TagFormatter.sanitize(tags);
@@ -334,14 +333,14 @@ describe('Profiling Utils', () => {
 			it('should convert non-string values to strings', () => {
 				const tags = {
 					number: 123 as any,
-					boolean: true as any
+					boolean: true as any,
 				};
 
 				const sanitized = TagFormatter.sanitize(tags);
 
 				expect(sanitized).toEqual({
 					number: '123',
-					boolean: 'true'
+					boolean: 'true',
 				});
 			});
 		});
@@ -353,7 +352,7 @@ describe('Profiling Utils', () => {
 				const metrics = [
 					{ duration: 100 },
 					{ duration: 200 },
-					{ duration: 300 }
+					{ duration: 300 },
 				];
 
 				const average = MetricAggregator.averageDuration(metrics);
@@ -383,7 +382,7 @@ describe('Profiling Utils', () => {
 					{ duration: 200 },
 					{ duration: 300 },
 					{ duration: 400 },
-					{ duration: 500 }
+					{ duration: 500 },
 				];
 
 				const p50 = MetricAggregator.percentile(metrics, 50);
@@ -427,7 +426,7 @@ describe('Profiling Utils', () => {
 				const metrics = [
 					{ duration: 100, tags: { env: 'dev' } },
 					{ duration: 200, tags: { env: 'prod' } },
-					{ duration: 300, tags: { env: 'dev' } }
+					{ duration: 300, tags: { env: 'dev' } },
 				];
 
 				const grouped = MetricAggregator.groupByTags(metrics, ['env']);
@@ -440,7 +439,7 @@ describe('Profiling Utils', () => {
 				const metrics = [
 					{ duration: 100, tags: { env: 'dev', region: 'us' } },
 					{ duration: 200, tags: { env: 'prod', region: 'us' } },
-					{ duration: 300, tags: { env: 'dev', region: 'eu' } }
+					{ duration: 300, tags: { env: 'dev', region: 'eu' } },
 				];
 
 				const grouped = MetricAggregator.groupByTags(metrics, ['env', 'region']);
@@ -453,7 +452,7 @@ describe('Profiling Utils', () => {
 			it('should handle missing tags with "unknown" value', () => {
 				const metrics = [
 					{ duration: 100, tags: { env: 'dev' } },
-					{ duration: 200 }
+					{ duration: 200 },
 				];
 
 				const grouped = MetricAggregator.groupByTags(metrics, ['env']);
@@ -642,8 +641,7 @@ describe('Profiling Utils', () => {
 		afterEach(() => {
 			if (originalEnv !== undefined) {
 				process.env['PYROSCOPE_ENABLED'] = originalEnv;
-			}
-			else {
+			} else {
 				delete process.env['PYROSCOPE_ENABLED'];
 			}
 		});

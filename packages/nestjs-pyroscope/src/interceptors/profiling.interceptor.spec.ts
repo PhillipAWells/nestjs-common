@@ -1,26 +1,25 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, CallHandler } from '@nestjs/common';
+import { vi } from 'vitest';
 import { of, throwError, from } from 'rxjs';
 import { ProfilingInterceptor } from './profiling.interceptor.js';
 import { PyroscopeService } from '../service.js';
 
 describe('ProfilingInterceptor', () => {
 	let interceptor: ProfilingInterceptor;
-	let mockPyroscopeService: jest.Mocked<PyroscopeService>;
-	let mockExecutionContext: jest.Mocked<ExecutionContext>;
-	let mockCallHandler: jest.Mocked<CallHandler>;
+	let mockPyroscopeService: any;
+	let mockExecutionContext: any;
+	let mockCallHandler: any;
 
 	beforeEach(async () => {
 		mockPyroscopeService = {
-			isEnabled: jest.fn().mockReturnValue(true),
-			startProfiling: jest.fn(),
-			stopProfiling: jest.fn().mockReturnValue({
+			isEnabled: vi.fn().mockReturnValue(true),
+			startProfiling: vi.fn(),
+			stopProfiling: vi.fn().mockReturnValue({
 				cpuTime: 0,
 				memoryUsage: 0,
 				duration: 10,
-				timestamp: Date.now()
-			})
+				timestamp: Date.now(),
+			}),
 		} as any;
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -28,331 +27,353 @@ describe('ProfilingInterceptor', () => {
 				ProfilingInterceptor,
 				{
 					provide: PyroscopeService,
-					useValue: mockPyroscopeService
-				}
-			]
+					useValue: mockPyroscopeService,
+				},
+			],
 		}).compile();
 
 		interceptor = module.get<ProfilingInterceptor>(ProfilingInterceptor);
-	});
 
-	beforeEach(() => {
 		// Set up mock execution context
 		const mockRequest = {
 			method: 'GET',
 			url: '/api/users',
 			route: { path: '/api/users' },
-			get: jest.fn((header: string) => {
+			get: vi.fn((header: string) => {
 				if (header === 'User-Agent') return 'Mozilla/5.0';
 				return undefined;
-			})
+			}),
 		};
 
 		const mockResponse = {
-			statusCode: 200
+			statusCode: 200,
 		};
 
 		mockExecutionContext = {
-			switchToHttp: jest.fn().mockReturnValue({
+			switchToHttp: vi.fn().mockReturnValue({
 				getRequest: () => mockRequest,
-				getResponse: () => mockResponse
-			})
+				getResponse: () => mockResponse,
+			}),
 		} as any;
 
 		mockCallHandler = {
-			handle: jest.fn()
+			handle: vi.fn(),
 		} as any;
 	});
 
 	describe('intercept', () => {
-		it('should profile HTTP requests', (done) => {
+		it('should profile HTTP requests', () => {
 			mockCallHandler.handle.mockReturnValue(of('response data'));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: (data) => {
-					expect(data).toBe('response data');
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							functionName: 'HTTP GET /api/users',
-							tags: expect.objectContaining({
-								method: 'GET',
-								path: '/api/users',
-								userAgent: 'Mozilla/5.0'
-							})
-						})
-					);
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								method: 'GET',
-								path: '/api/users',
-								statusCode: '200',
-								success: 'true'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: (data) => {
+						expect(data).toBe('response data');
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								functionName: 'HTTP GET /api/users',
+								tags: expect.objectContaining({
+									method: 'GET',
+									path: '/api/users',
+									userAgent: 'Mozilla/5.0',
+								}),
+							}),
+						);
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									method: 'GET',
+									path: '/api/users',
+									statusCode: '200',
+									success: 'true',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should not profile when disabled', (done) => {
+		it('should not profile when disabled', () => {
 			mockPyroscopeService.isEnabled.mockReturnValue(false);
 			mockCallHandler.handle.mockReturnValue(of('response data'));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: (data) => {
-					expect(data).toBe('response data');
-					expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
-					expect(mockPyroscopeService.stopProfiling).not.toHaveBeenCalled();
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: (data) => {
+						expect(data).toBe('response data');
+						expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+						expect(mockPyroscopeService.stopProfiling).not.toHaveBeenCalled();
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should use request URL when route path is not available', (done) => {
+		it('should use request URL when route path is not available', () => {
 			const mockRequest = {
 				method: 'POST',
 				url: '/dynamic/path',
 				route: undefined,
-				get: jest.fn().mockReturnValue('test-agent')
+				get: vi.fn().mockReturnValue('test-agent'),
 			};
 
-			mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+			mockExecutionContext.switchToHttp = vi.fn().mockReturnValue({
 				getRequest: () => mockRequest,
-				getResponse: () => ({ statusCode: 201 })
+				getResponse: () => ({ statusCode: 201 }),
 			});
 
 			mockCallHandler.handle.mockReturnValue(of('created'));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: () => {
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							functionName: 'HTTP POST /dynamic/path',
-							tags: expect.objectContaining({
-								path: '/dynamic/path'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: () => {
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								functionName: 'HTTP POST /dynamic/path',
+								tags: expect.objectContaining({
+									path: '/dynamic/path',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle unknown User-Agent', (done) => {
+		it('should handle unknown User-Agent', () => {
 			const mockRequest = {
 				method: 'GET',
 				url: '/api/test',
 				route: { path: '/api/test' },
-				get: jest.fn().mockReturnValue(undefined)
+				get: vi.fn().mockReturnValue(undefined),
 			};
 
-			mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+			mockExecutionContext.switchToHttp = vi.fn().mockReturnValue({
 				getRequest: () => mockRequest,
-				getResponse: () => ({ statusCode: 200 })
+				getResponse: () => ({ statusCode: 200 }),
 			});
 
 			mockCallHandler.handle.mockReturnValue(of('data'));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: () => {
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								userAgent: 'unknown'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: () => {
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									userAgent: 'unknown',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should profile different HTTP methods', (done) => {
+		it('should profile different HTTP methods', () => {
 			const mockRequest = {
 				method: 'POST',
 				url: '/api/users',
 				route: { path: '/api/users' },
-				get: jest.fn().mockReturnValue('test')
+				get: vi.fn().mockReturnValue('test'),
 			};
 
-			mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+			mockExecutionContext.switchToHttp = vi.fn().mockReturnValue({
 				getRequest: () => mockRequest,
-				getResponse: () => ({ statusCode: 201 })
+				getResponse: () => ({ statusCode: 201 }),
 			});
 
 			mockCallHandler.handle.mockReturnValue(of({ id: 1, name: 'Test User' }));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: () => {
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							functionName: 'HTTP POST /api/users',
-							tags: expect.objectContaining({
-								method: 'POST'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: () => {
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								functionName: 'HTTP POST /api/users',
+								tags: expect.objectContaining({
+									method: 'POST',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle errors and profile them', (done) => {
+		it('should handle errors and profile them', () => {
 			const error = new Error('Request failed');
 			(error as any).status = 500;
 
 			mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				error: (err) => {
-					expect(err).toBe(error);
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							error,
-							tags: expect.objectContaining({
-								statusCode: '500',
-								success: 'false',
-								error: 'Request failed'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					error: (err) => {
+						expect(err).toBe(error);
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								error,
+								tags: expect.objectContaining({
+									statusCode: '500',
+									success: 'false',
+									error: 'Request failed',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle errors without status code', (done) => {
+		it('should handle errors without status code', () => {
 			const error = new Error('Unknown error');
 
 			mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				error: (err) => {
-					expect(err).toBe(error);
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								statusCode: '500'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					error: (err) => {
+						expect(err).toBe(error);
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									statusCode: '500',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle errors without message', (done) => {
+		it('should handle errors without message', () => {
 			const error = new Error();
 			(error as any).status = 400;
 
 			mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				error: () => {
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								error: 'unknown',
-								statusCode: '400'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					error: () => {
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									error: 'unknown',
+									statusCode: '400',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle different response status codes', (done) => {
+		it('should handle different response status codes', () => {
 			const mockResponse = {
-				statusCode: 404
+				statusCode: 404,
 			};
 
-			mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+			mockExecutionContext.switchToHttp = vi.fn().mockReturnValue({
 				getRequest: () => ({
 					method: 'GET',
 					url: '/api/not-found',
 					route: { path: '/api/not-found' },
-					get: jest.fn().mockReturnValue('test')
+					get: vi.fn().mockReturnValue('test'),
 				}),
-				getResponse: () => mockResponse
+				getResponse: () => mockResponse,
 			});
 
 			mockCallHandler.handle.mockReturnValue(of(null));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: () => {
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								statusCode: '404'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: () => {
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									statusCode: '404',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should handle missing status code in response', (done) => {
+		it('should handle missing status code in response', () => {
 			const mockResponse = {
-				statusCode: undefined
+				statusCode: undefined,
 			};
 
-			mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+			mockExecutionContext.switchToHttp = vi.fn().mockReturnValue({
 				getRequest: () => ({
 					method: 'GET',
 					url: '/api/test',
 					route: { path: '/api/test' },
-					get: jest.fn().mockReturnValue('test')
+					get: vi.fn().mockReturnValue('test'),
 				}),
-				getResponse: () => mockResponse
+				getResponse: () => mockResponse,
 			});
 
 			mockCallHandler.handle.mockReturnValue(of('data'));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: () => {
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
-						expect.objectContaining({
-							tags: expect.objectContaining({
-								statusCode: 'unknown'
-							})
-						})
-					);
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: () => {
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+							expect.objectContaining({
+								tags: expect.objectContaining({
+									statusCode: 'unknown',
+								}),
+							}),
+						);
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should preserve original response data', (done) => {
+		it('should preserve original response data', () => {
 			const responseData = { id: 123, data: 'test data', nested: { value: 'nested' } };
 			mockCallHandler.handle.mockReturnValue(of(responseData));
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				next: (data) => {
-					expect(data).toEqual(responseData);
-					expect(data).toBe(responseData); // Same reference
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: (data) => {
+						expect(data).toEqual(responseData);
+						expect(data).toBe(responseData); // Same reference
+						resolve();
+					},
+				});
 			});
 		});
 
-		it('should work with async handlers', (done) => {
+		it('should work with async handlers', () => {
 			mockCallHandler.handle.mockReturnValue(
 				from(new Promise((resolve) => {
 					setTimeout(() => resolve('async response'), 10);
-				}))
+				})),
 			);
 
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-				complete: () => {
-					expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-					expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
-					done();
-				}
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					complete: () => {
+						expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
+						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+						resolve();
+					},
+				});
 			});
 		});
 	});

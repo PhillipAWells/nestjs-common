@@ -1,4 +1,3 @@
-import { describe, it, expect, afterEach } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PyroscopeModule } from '../../module.js';
 import { PyroscopeService } from '../../service.js';
@@ -15,7 +14,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		enabled: true,
 		serverAddress: 'http://localhost:4040',
 		applicationName: 'pyroscope-connectivity-test',
-		tags: { env: 'test', service: 'test-app' }
+		tags: { env: 'test', service: 'test-app' },
 	};
 
 	describe('Service Initialization', () => {
@@ -29,7 +28,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should initialize PyroscopeService successfully', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -40,7 +39,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should inject config correctly', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
@@ -52,7 +51,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should inject MetricsService', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			const metricsService = module.get<MetricsService>(MetricsService);
@@ -64,11 +63,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		it('should mark service as disabled when config.enabled is false', async () => {
 			const disabledConfig: IPyroscopeConfig = {
 				...mockConfig,
-				enabled: false
+				enabled: false,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -79,11 +78,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		it('should mark service as enabled when config.enabled is true', async () => {
 			const enabledConfig: IPyroscopeConfig = {
 				...mockConfig,
-				enabled: true
+				enabled: true,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: enabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: enabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -110,7 +109,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -122,7 +121,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -136,7 +135,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -160,11 +159,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				retryMaxDelayMs: 30000,
 				retryJitterMs: 100,
 				tagMaxLength: 256,
-				enableHealthChecks: true
+				enableHealthChecks: true,
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: fullConfig })]
+				imports: [PyroscopeModule.forRoot({ config: fullConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -189,7 +188,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -201,7 +200,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -213,7 +212,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -235,7 +234,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should start profiling when enabled', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -244,7 +243,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'testFunction',
 				className: 'TestClass',
 				methodName: 'testMethod',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			// Should not throw when starting profile
@@ -253,7 +252,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should stop profiling and return metrics', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -262,7 +261,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'testFunction',
 				className: 'TestClass',
 				methodName: 'testMethod',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			pyroscopeService.startProfiling(context);
@@ -277,7 +276,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -286,7 +285,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'testFunction',
 				className: 'TestClass',
 				methodName: 'testMethod',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			// Should not throw
@@ -296,7 +295,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 		it('should track multiple concurrent profiles', async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -305,14 +304,14 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'func1',
 				className: 'Class1',
 				methodName: 'method1',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			const context2 = {
 				functionName: 'func2',
 				className: 'Class2',
 				methodName: 'method2',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			// Start both profiles
@@ -342,7 +341,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -356,7 +355,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const metricsService = module.get<MetricsService>(MetricsService);
@@ -373,7 +372,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -383,7 +382,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				className: 'ErrorClass',
 				methodName: 'errorMethod',
 				startTime: Date.now(),
-				error: new Error('Test error')
+				error: new Error('Test error'),
 			};
 
 			// Should not throw even with error context
@@ -394,7 +393,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -403,14 +402,14 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'func1',
 				className: 'Class1',
 				methodName: 'method1',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			const context2 = {
 				functionName: 'func2',
 				className: 'Class2',
 				methodName: 'method2',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			// Start and stop profiling multiple times
@@ -438,11 +437,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		it('should handle empty tags', async () => {
 			const configNoTags: IPyroscopeConfig = {
 				...mockConfig,
-				tags: {}
+				tags: {},
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configNoTags })]
+				imports: [PyroscopeModule.forRoot({ config: configNoTags })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -454,11 +453,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const configNoTags: IPyroscopeConfig = {
 				enabled: true,
 				serverAddress: 'http://localhost:4040',
-				applicationName: 'test'
+				applicationName: 'test',
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configNoTags })]
+				imports: [PyroscopeModule.forRoot({ config: configNoTags })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -470,11 +469,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const minimalConfig: IPyroscopeConfig = {
 				enabled: true,
 				serverAddress: 'http://localhost:4040',
-				applicationName: 'minimal-app'
+				applicationName: 'minimal-app',
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: minimalConfig })]
+				imports: [PyroscopeModule.forRoot({ config: minimalConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -489,11 +488,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		it('should handle different server addresses', async () => {
 			const remoteConfig: IPyroscopeConfig = {
 				...mockConfig,
-				serverAddress: 'http://pyroscope.production.example.com:4040'
+				serverAddress: 'http://pyroscope.production.example.com:4040',
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: remoteConfig })]
+				imports: [PyroscopeModule.forRoot({ config: remoteConfig })],
 			}).compile();
 
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
@@ -504,11 +503,11 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 		it('should handle sample rate configurations', async () => {
 			const lowSampleRateConfig: IPyroscopeConfig = {
 				...mockConfig,
-				sampleRate: 0.01 // 1% sample rate
+				sampleRate: 0.01, // 1% sample rate
 			};
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: lowSampleRateConfig })]
+				imports: [PyroscopeModule.forRoot({ config: lowSampleRateConfig })],
 			}).compile();
 
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
@@ -530,7 +529,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -544,7 +543,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -562,7 +561,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -571,7 +570,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				functionName: 'testFunc',
 				className: 'TestClass',
 				methodName: 'testMethod',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			pyroscopeService.startProfiling(context);

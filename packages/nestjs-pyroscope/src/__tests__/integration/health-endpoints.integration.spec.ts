@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -23,7 +22,7 @@ describe('Health Endpoints (Integration)', () => {
 		enabled: true,
 		serverAddress: 'http://localhost:4040',
 		applicationName: 'health-endpoint-test',
-		tags: { env: 'test' }
+		tags: { env: 'test' },
 	};
 
 	afterEach(async () => {
@@ -38,7 +37,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/health', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -112,7 +111,7 @@ describe('Health Endpoints (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			const disabledModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })]
+				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
 			const disabledApp = disabledModule.createNestApplication();
@@ -149,7 +148,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/metrics', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -235,7 +234,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/status', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -287,7 +286,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/metrics/prometheus', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -321,7 +320,7 @@ describe('Health Endpoints (Integration)', () => {
 
 			// Should contain Prometheus-style comments or metrics
 			const hasCommentOrMetric = lines.some(
-				line => line.startsWith('#') || line.match(/^\w+{?.*}?\s+\d+/)
+				line => line.startsWith('#') || line.match(/^\w+{?.*}?\s+\d+/),
 			);
 			expect(hasCommentOrMetric).toBe(true);
 		});
@@ -353,7 +352,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('Endpoint consistency and timing', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -365,7 +364,7 @@ describe('Health Endpoints (Integration)', () => {
 
 		it('should handle rapid successive requests', async () => {
 			const requests = Array.from({ length: 3 }, () =>
-				request(app.getHttpServer()).get('/profiling/health')
+				request(app.getHttpServer()).get('/profiling/health'),
 			);
 
 			const responses = await Promise.all(requests);
@@ -388,10 +387,10 @@ describe('Health Endpoints (Integration)', () => {
 				.expect(200);
 
 			expect(healthRes.body.pyroscope.applicationName).toBe(
-				mockConfig.applicationName
+				mockConfig.applicationName,
 			);
 			expect(statusRes.body.health.pyroscope.applicationName).toBe(
-				mockConfig.applicationName
+				mockConfig.applicationName,
 			);
 		});
 
@@ -415,7 +414,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('Endpoint error handling and edge cases', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })]
+				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -456,7 +455,7 @@ describe('Health Endpoints (Integration)', () => {
 			const configNoHealth = { ...mockConfig, enableHealthChecks: false };
 
 			const noHealthModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configNoHealth })]
+				imports: [PyroscopeModule.forRoot({ config: configNoHealth })],
 			}).compile();
 
 			const noHealthApp = noHealthModule.createNestApplication();

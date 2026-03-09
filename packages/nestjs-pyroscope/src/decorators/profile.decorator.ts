@@ -18,7 +18,12 @@ export function Profile(options?: { tags?: Record<string, string> }): ClassDecor
 			target.prototype[methodName] = function(...args: any[]) {
 				const pyroscopeService = (this as any).pyroscopeService as PyroscopeService;
 
-				if (!pyroscopeService?.isEnabled()) {
+				// PyroscopeService not injected — skip profiling silently
+				if (!pyroscopeService) {
+					return originalMethod.apply(this, args);
+				}
+
+				if (!pyroscopeService.isEnabled()) {
 					return originalMethod.apply(this, args);
 				}
 
@@ -27,17 +32,32 @@ export function Profile(options?: { tags?: Record<string, string> }): ClassDecor
 					className: target.name,
 					methodName,
 					startTime: Date.now(),
-					...(options?.tags && { tags: options.tags })
+					...(options?.tags && { tags: options.tags }),
 				};
 
 				pyroscopeService.startProfiling(context);
 
 				try {
 					const result = originalMethod.apply(this, args);
+
+					// Handle async methods (Promises)
+					if (result instanceof Promise) {
+						return result
+							.then((value) => {
+								pyroscopeService.stopProfiling(context);
+								return value;
+							})
+							.catch((error) => {
+								context.error = error as Error;
+								pyroscopeService.stopProfiling(context);
+								throw error;
+							});
+					}
+
+					// Handle synchronous methods
 					pyroscopeService.stopProfiling(context);
 					return result;
-				}
-				catch (error) {
+				} catch (error) {
 					context.error = error as Error;
 					pyroscopeService.stopProfiling(context);
 					throw error;
@@ -63,7 +83,12 @@ export function ProfileMethod(options?: {
 		descriptor.value = function(...args: any[]) {
 			const pyroscopeService = (this as any).pyroscopeService as PyroscopeService;
 
-			if (!pyroscopeService?.isEnabled()) {
+			// PyroscopeService not injected — skip profiling silently
+			if (!pyroscopeService) {
+				return originalMethod.apply(this, args);
+			}
+
+			if (!pyroscopeService.isEnabled()) {
 				return originalMethod.apply(this, args);
 			}
 
@@ -73,17 +98,32 @@ export function ProfileMethod(options?: {
 				className: target.constructor.name,
 				methodName,
 				startTime: Date.now(),
-				...(options?.tags && { tags: options.tags })
+				...(options?.tags && { tags: options.tags }),
 			};
 
 			pyroscopeService.startProfiling(context);
 
 			try {
 				const result = originalMethod.apply(this, args);
+
+				// Handle async methods (Promises)
+				if (result instanceof Promise) {
+					return result
+						.then((value) => {
+							pyroscopeService.stopProfiling(context);
+							return value;
+						})
+						.catch((error) => {
+							context.error = error as Error;
+							pyroscopeService.stopProfiling(context);
+							throw error;
+						});
+				}
+
+				// Handle synchronous methods
 				pyroscopeService.stopProfiling(context);
 				return result;
-			}
-			catch (error) {
+			} catch (error) {
 				context.error = error as Error;
 				pyroscopeService.stopProfiling(context);
 				throw error;
@@ -108,7 +148,12 @@ export function ProfileAsync(options?: {
 		descriptor.value = async function(...args: any[]) {
 			const pyroscopeService = (this as any).pyroscopeService as PyroscopeService;
 
-			if (!pyroscopeService?.isEnabled()) {
+			// PyroscopeService not injected — skip profiling silently
+			if (!pyroscopeService) {
+				return await originalMethod.apply(this, args);
+			}
+
+			if (!pyroscopeService.isEnabled()) {
 				return await originalMethod.apply(this, args);
 			}
 
@@ -118,17 +163,18 @@ export function ProfileAsync(options?: {
 				className: target.constructor.name,
 				methodName,
 				startTime: Date.now(),
-				...(options?.tags && { tags: options.tags })
+				...(options?.tags && { tags: options.tags }),
 			};
 
 			pyroscopeService.startProfiling(context);
 
 			try {
 				const result = await originalMethod.apply(this, args);
+
+				// Stop profiling on successful async completion
 				pyroscopeService.stopProfiling(context);
 				return result;
-			}
-			catch (error) {
+			} catch (error) {
 				context.error = error as Error;
 				pyroscopeService.stopProfiling(context);
 				throw error;

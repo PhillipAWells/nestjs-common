@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { Logger } from '@nestjs/common';
 import { PyroscopeService } from './service.js';
 import { IPyroscopeConfig, IProfileContext } from './interfaces/profiling.interface.js';
@@ -17,71 +17,71 @@ describe('PyroscopeService', () => {
 			enabled: false, // Disabled by default to avoid actual Pyroscope initialization
 			serverAddress: 'http://localhost:4040',
 			applicationName: 'test-app',
-			tags: { env: 'test' }
+			tags: { env: 'test' },
 		};
 
 		mockLogger = {
-			log: jest.fn(),
-			error: jest.fn(),
-			warn: jest.fn(),
-			debug: jest.fn()
-		};
+			log: vi.fn(),
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+		} as unknown as Logger;
 
 		mockMetricsService = {
-			getMetrics: jest.fn().mockReturnValue({
+			getMetrics: vi.fn().mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
-				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 }
+				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			}),
-			recordCPUSample: jest.fn(),
-			recordMemorySample: jest.fn(),
-			recordRequest: jest.fn(),
-			getPrometheusMetrics: jest.fn(),
-			reset: jest.fn()
+			recordCPUSample: vi.fn(),
+			recordMemorySample: vi.fn(),
+			recordRequest: vi.fn(),
+			getPrometheusMetrics: vi.fn(),
+			reset: vi.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				{
 					provide: PYROSCOPE_CONFIG_TOKEN,
-					useValue: mockConfig
+					useValue: mockConfig,
 				},
 				{
 					provide: Logger,
-					useValue: mockLogger
+					useValue: mockLogger,
 				},
 				{
 					provide: MetricsService,
-					useValue: mockMetricsService
+					useValue: mockMetricsService,
 				},
 				{
 					provide: PyroscopeService,
 					useFactory: (config: IPyroscopeConfig, logger: Logger, metricsService: MetricsService) => {
 						return new PyroscopeService(config, logger, metricsService);
 					},
-					inject: [PYROSCOPE_CONFIG_TOKEN, Logger, MetricsService]
-				}
-			]
+					inject: [PYROSCOPE_CONFIG_TOKEN, Logger, MetricsService],
+				},
+			],
 		}).compile();
 
 		service = module.get<PyroscopeService>(PyroscopeService);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	// Helper to create a mock Pyroscope client
-	// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+	 
 	const createMockPyroscopeClient = () => ({
-		init: jest.fn(),
-		start: jest.fn(),
-		stop: jest.fn(),
-		addTag: jest.fn(),
-		removeTag: jest.fn(),
-		addTagList: jest.fn(),
-		removeTagList: jest.fn()
+		init: vi.fn(),
+		start: vi.fn(),
+		stop: vi.fn(),
+		addTag: vi.fn(),
+		removeTag: vi.fn(),
+		addTagList: vi.fn(),
+		removeTagList: vi.fn(),
 	});
 
 	describe('onModuleInit', () => {
@@ -104,7 +104,7 @@ describe('PyroscopeService', () => {
 			mockConfig.enabled = true;
 
 			// Mock import to throw error
-			jest.spyOn(global, 'eval').mockImplementationOnce(() => {
+			vi.spyOn(global, 'eval').mockImplementationOnce(() => {
 				throw new Error('Failed to import');
 			});
 
@@ -113,7 +113,7 @@ describe('PyroscopeService', () => {
 			// Should log error and continue
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Failed to initialize Pyroscope profiling',
-				expect.any(Error)
+				expect.any(Error),
 			);
 			expect(service.isEnabled()).toBe(false);
 		});
@@ -128,7 +128,7 @@ describe('PyroscopeService', () => {
 
 			// Mock dynamic import
 			const mockPyroscope = createMockPyroscopeClient();
-			jest.spyOn(globalThis, 'eval').mockImplementationOnce(() => ({ default: mockPyroscope }));
+			vi.spyOn(globalThis, 'eval').mockImplementationOnce(() => ({ default: mockPyroscope }));
 
 			// Since dynamic import fails in tests, we know it will catch and log error
 			await service.onModuleInit();
@@ -177,7 +177,7 @@ describe('PyroscopeService', () => {
 			const serviceWithInit = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			// Manually set initialized state and mock client
@@ -195,7 +195,7 @@ describe('PyroscopeService', () => {
 			const serviceWithInit = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			const mockClient = createMockPyroscopeClient();
@@ -211,22 +211,22 @@ describe('PyroscopeService', () => {
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Error stopping Pyroscope profiling',
-				stopError
+				stopError,
 			);
 		});
 
 		it('should not call stop when pyroscope client is null', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceWithoutClient = new PyroscopeService(
 				mockConfig,
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceWithoutClient as any).pyroscopeClient = null;
@@ -242,7 +242,7 @@ describe('PyroscopeService', () => {
 		it('should not profile when disabled', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			service.startProfiling(context);
@@ -252,16 +252,16 @@ describe('PyroscopeService', () => {
 
 		it('should generate profile ID and store context when enabled (lines 111-125)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			// Set initialized flag manually
@@ -270,7 +270,7 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
-				tags: { route: '/test' }
+				tags: { route: '/test' },
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -283,23 +283,23 @@ describe('PyroscopeService', () => {
 
 		it('should set start time if not already set (line 116)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
-				functionName: 'testFunc'
-				// No startTime - should be set by the service
+				functionName: 'testFunc',
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -311,16 +311,16 @@ describe('PyroscopeService', () => {
 
 		it('should preserve existing start time', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -328,7 +328,7 @@ describe('PyroscopeService', () => {
 			const customStartTime = 1234567890;
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: customStartTime
+				startTime: customStartTime,
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -338,16 +338,16 @@ describe('PyroscopeService', () => {
 
 		it('should log debug message when profiling starts', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -355,14 +355,14 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
-				tags: { env: 'test' }
+				tags: { env: 'test' },
 			};
 
 			serviceEnabled.startProfiling(context);
 
 			expect(mockLogger2.debug).toHaveBeenCalledWith(
 				`Started profiling: ${context.functionName}`,
-				context.tags
+				context.tags,
 			);
 		});
 	});
@@ -371,7 +371,7 @@ describe('PyroscopeService', () => {
 		it('should return empty metrics when disabled', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			const metrics = service.stopProfiling(context);
@@ -383,16 +383,16 @@ describe('PyroscopeService', () => {
 
 		it('should return metrics for active profiling session (lines 136-165)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -401,7 +401,7 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime,
-				tags: { route: '/test' }
+				tags: { route: '/test' },
 			};
 
 			// Start profiling first
@@ -421,16 +421,16 @@ describe('PyroscopeService', () => {
 
 		it('should merge tags from start and stop contexts', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -438,7 +438,7 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
-				tags: { route: '/test' }
+				tags: { route: '/test' },
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -450,22 +450,22 @@ describe('PyroscopeService', () => {
 
 			expect(metrics.tags).toEqual({
 				route: '/test',
-				status: 'success'
+				status: 'success',
 			});
 		});
 
 		it('should warn when no active profiling session found', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -473,29 +473,29 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
-				profileId: 'nonexistent_id'
+				profileId: 'nonexistent_id',
 			};
 
 			const metrics = serviceEnabled.stopProfiling(context);
 
 			expect(mockLogger2.warn).toHaveBeenCalledWith(
-				`No active profiling session found for: ${context.functionName}`
+				`No active profiling session found for: ${context.functionName}`,
 			);
 			expect(metrics.duration).toBe(0);
 		});
 
 		it('should log debug message when profiling stops', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -503,7 +503,7 @@ describe('PyroscopeService', () => {
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
-				tags: { env: 'test' }
+				tags: { env: 'test' },
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -511,29 +511,29 @@ describe('PyroscopeService', () => {
 
 			expect(mockLogger2.debug).toHaveBeenCalledWith(
 				expect.stringContaining('Stopped profiling:'),
-				expect.any(Object)
+				expect.any(Object),
 			);
 		});
 
 		it('should remove profile from active profiles after stop', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -552,23 +552,23 @@ describe('PyroscopeService', () => {
 
 		it('should add metrics to internal metrics array', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc1',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -581,7 +581,7 @@ describe('PyroscopeService', () => {
 
 	describe('trackFunction', () => {
 		it('should track synchronous function execution', async () => {
-			const fn = jest.fn(() => 'result');
+			const fn = vi.fn(() => 'result');
 
 			const result = await service.trackFunction('testFunc', fn);
 
@@ -590,7 +590,7 @@ describe('PyroscopeService', () => {
 		});
 
 		it('should track asynchronous function execution', async () => {
-			const fn = jest.fn(async () => {
+			const fn = vi.fn(async () => {
 				await new Promise(resolve => setTimeout(resolve, 10));
 				return 'async result';
 			});
@@ -603,7 +603,7 @@ describe('PyroscopeService', () => {
 
 		it('should handle errors correctly', async () => {
 			const error = new Error('Test error');
-			const fn = jest.fn(() => {
+			const fn = vi.fn(() => {
 				throw error;
 			});
 
@@ -612,7 +612,7 @@ describe('PyroscopeService', () => {
 		});
 
 		it('should track with custom tags', async () => {
-			const fn = jest.fn(() => 'result');
+			const fn = vi.fn(() => 'result');
 
 			const result = await service.trackFunction('testFunc', fn, { env: 'test' });
 
@@ -643,16 +643,16 @@ describe('PyroscopeService', () => {
 
 		it('should not crash when adding tags on enabled service (lines 136-150)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -664,16 +664,16 @@ describe('PyroscopeService', () => {
 
 		it('should not crash when removing tags on enabled service (lines 151-165)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -685,16 +685,16 @@ describe('PyroscopeService', () => {
 
 		it('should not crash when adding tags with no client', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -713,23 +713,23 @@ describe('PyroscopeService', () => {
 
 		it('should return copy of metrics array', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -749,7 +749,7 @@ describe('PyroscopeService', () => {
 				timestamp: Date.now(),
 				cpu: { samples: 10, duration: 100 },
 				memory: { samples: 5, allocations: 1000 },
-				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50 }
+				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50 },
 			};
 			mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
 
@@ -764,7 +764,7 @@ describe('PyroscopeService', () => {
 			const serviceWithoutMetrics = new PyroscopeService(
 				mockConfig,
 				mockLogger,
-				undefined
+				undefined,
 			);
 
 			const metrics = serviceWithoutMetrics.getMetrics();
@@ -777,16 +777,16 @@ describe('PyroscopeService', () => {
 
 		it('should calculate correct aggregations in fallback mode', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				undefined // No MetricsService
+				undefined, // No MetricsService
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -794,7 +794,7 @@ describe('PyroscopeService', () => {
 			// Add some profiles
 			const context1: IProfileContext = {
 				functionName: 'func1',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context1);
@@ -812,7 +812,7 @@ describe('PyroscopeService', () => {
 			const serviceWithoutMetrics = new PyroscopeService(
 				mockConfig,
 				mockLogger,
-				undefined
+				undefined,
 			);
 
 			const metrics = serviceWithoutMetrics.getMetrics();
@@ -843,16 +843,16 @@ describe('PyroscopeService', () => {
 
 		it('should return unhealthy when not initialized (lines 269-271)', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = false;
@@ -865,16 +865,16 @@ describe('PyroscopeService', () => {
 
 		it('should return healthy with details when initialized', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -891,23 +891,23 @@ describe('PyroscopeService', () => {
 
 		it('should track active profiles in health response', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -919,23 +919,23 @@ describe('PyroscopeService', () => {
 
 		it('should track total metrics in health response', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -958,16 +958,16 @@ describe('PyroscopeService', () => {
 
 		it('should return true when both config enabled and initialized', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -979,28 +979,28 @@ describe('PyroscopeService', () => {
 	describe('generateProfileId', () => {
 		it('should generate unique profile IDs', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context1: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			const context2: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context1);
@@ -1011,23 +1011,23 @@ describe('PyroscopeService', () => {
 
 		it('should include function name in profile ID', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'myTestFunction',
-				startTime: Date.now()
+				startTime: Date.now(),
 			};
 
 			serviceEnabled.startProfiling(context);
@@ -1039,16 +1039,16 @@ describe('PyroscopeService', () => {
 	describe('Health status transitions', () => {
 		it('should transition from healthy to unhealthy when uninitialized', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			// Initially unhealthy
@@ -1068,16 +1068,16 @@ describe('PyroscopeService', () => {
 
 		it('should maintain healthy status when config disabled', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceDisabled = new PyroscopeService(
 				mockConfig, // enabled: false
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			const health = serviceDisabled.getHealth();
@@ -1089,23 +1089,23 @@ describe('PyroscopeService', () => {
 	describe('Edge cases and error scenarios', () => {
 		it('should handle undefined tags gracefully', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
-				startTime: Date.now()
+				startTime: Date.now(),
 				// No tags
 			};
 
@@ -1115,16 +1115,16 @@ describe('PyroscopeService', () => {
 
 		it('should handle rapid profile start/stop cycles', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -1132,7 +1132,7 @@ describe('PyroscopeService', () => {
 			for (let i = 0; i < 5; i++) {
 				const context: IProfileContext = {
 					functionName: `func${i}`,
-					startTime: Date.now()
+					startTime: Date.now(),
 				};
 
 				serviceEnabled.startProfiling(context);
@@ -1145,16 +1145,16 @@ describe('PyroscopeService', () => {
 
 		it('should handle multiple concurrent profiles', () => {
 			const mockLogger2 = {
-				log: jest.fn(),
-				error: jest.fn(),
-				warn: jest.fn(),
-				debug: jest.fn()
-			};
+				log: vi.fn(),
+				error: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+			} as unknown as Logger;
 
 			const serviceEnabled = new PyroscopeService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
-				mockMetricsService
+				mockMetricsService,
 			);
 
 			(serviceEnabled as any).isInitialized = true;
@@ -1162,7 +1162,7 @@ describe('PyroscopeService', () => {
 			const contexts: IProfileContext[] = [
 				{ functionName: 'func1', startTime: Date.now() },
 				{ functionName: 'func2', startTime: Date.now() },
-				{ functionName: 'func3', startTime: Date.now() }
+				{ functionName: 'func3', startTime: Date.now() },
 			];
 
 			contexts.forEach(ctx => serviceEnabled.startProfiling(ctx));
