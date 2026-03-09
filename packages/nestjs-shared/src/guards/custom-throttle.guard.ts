@@ -26,6 +26,7 @@ export class CustomThrottleGuard extends ThrottlerGuard {
 	 * @param req Request object
 	 * @returns Tracker string (IP address)
 	 */
+	// eslint-disable-next-line require-await
 	protected override async getTracker(req: Record<string, unknown>): Promise<string> {
 		// Prefer the direct TCP connection address (not spoofable via headers)
 		// req.socket.remoteAddress is the actual connecting IP regardless of proxies

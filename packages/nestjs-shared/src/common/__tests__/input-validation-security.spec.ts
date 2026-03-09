@@ -381,7 +381,7 @@ describe('Input Validation Security Tests', () => {
 					type: 'body',
 					metatype: TestUserDto,
 				});
-				fail('Should have thrown BadRequestException');
+				expect.fail('Should have thrown BadRequestException');
 			} catch (error: any) {
 				expect(error).toBeInstanceOf(BadRequestException);
 				const errorMessage = error.message;
@@ -402,7 +402,7 @@ describe('Input Validation Security Tests', () => {
 					type: 'body',
 					metatype: TestUserDto,
 				});
-				fail('Should have thrown BadRequestException');
+				expect.fail('Should have thrown BadRequestException');
 			} catch (error: any) {
 				expect(error).toBeInstanceOf(BadRequestException);
 				// Should have validation errors for the email field

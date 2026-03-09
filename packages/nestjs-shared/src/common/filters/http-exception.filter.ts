@@ -28,7 +28,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 		const status = exception.getStatus();
 
-		const isDevelopment = process.env['NODE_ENV'] !== 'production';
+		const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
+		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
+		const isDevelopment = !isProduction;
 
 		// Sanitize error response
 		const sanitizedError = this.errorSanitizer.sanitizeErrorResponse(

@@ -1,5 +1,5 @@
 
-/// <reference types="jest" />
+/// <reference types="vitest" />
 import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

@@ -150,42 +150,6 @@ describe('MetricsGuard', () => {
 		});
 	});
 
-	describe('API key validation - query parameter', () => {
-		beforeEach(() => {
-			const mockConfigService = {
-				get: () => 'secret-api-key',
-			};
-
-			guard = new MetricsGuard(mockConfigService as any);
-		});
-
-		it('should allow requests with correct key query parameter', () => {
-			mockRequest.query = { key: 'secret-api-key' };
-
-			const result = guard.canActivate(mockContext);
-
-			expect(result).toBe(true);
-		});
-
-		it('should reject requests with incorrect key query parameter', () => {
-			mockRequest.query = { key: 'wrong-key' };
-
-			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
-		});
-
-		it('should reject requests with missing key query parameter', () => {
-			mockRequest.query = {};
-
-			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
-		});
-
-		it('should ignore other query parameters', () => {
-			mockRequest.query = { other: 'secret-api-key', format: 'json' };
-
-			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
-		});
-	});
-
 	describe('API key validation - X-API-Key header', () => {
 		beforeEach(() => {
 			const mockConfigService = {
@@ -234,36 +198,31 @@ describe('MetricsGuard', () => {
 			guard = new MetricsGuard(mockConfigService as any);
 		});
 
-		it('should accept Authorization header when multiple methods are provided', () => {
+		it('should accept Authorization header when X-API-Key is also present', () => {
 			mockRequest.headers = {
 				authorization: 'Bearer secret-api-key',
 				'x-api-key': 'wrong-key',
 			};
-			mockRequest.query = { key: 'wrong-key' };
 
 			const result = guard.canActivate(mockContext);
 
 			expect(result).toBe(true);
 		});
 
-		it('should accept X-API-Key header if Authorization is missing', () => {
+		it('should accept X-API-Key header when Authorization is missing', () => {
 			mockRequest.headers = {
 				'x-api-key': 'secret-api-key',
 			};
-			mockRequest.query = { key: 'wrong-key' };
 
 			const result = guard.canActivate(mockContext);
 
 			expect(result).toBe(true);
 		});
 
-		it('should accept query parameter if headers are missing', () => {
+		it('should reject requests with neither Authorization nor X-API-Key headers', () => {
 			mockRequest.headers = {};
-			mockRequest.query = { key: 'secret-api-key' };
 
-			const result = guard.canActivate(mockContext);
-
-			expect(result).toBe(true);
+			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
 		});
 	});
 

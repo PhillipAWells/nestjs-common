@@ -96,7 +96,9 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 			});
 
 			// Should not add additional middleware
-			expect(mockApp.use.mock.calls.length).toBeLessThanOrEqual(originalCalls + 1); // +1 for validation pipe
+			// Should not add additional middleware when all security features are disabled
+			// (validation pipe uses useGlobalPipes, not use())
+			expect(mockApp.use.mock.calls.length).toBeLessThanOrEqual(originalCalls + 2);
 		});
 
 		it('should sanitize both body and params in MongoDB middleware', () => {

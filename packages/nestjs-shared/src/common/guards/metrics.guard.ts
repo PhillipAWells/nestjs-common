@@ -1,6 +1,7 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Optional } from '@nestjs/common';
 import type { Request } from 'express';
 import { ConfigService } from '../../config/config.service.js';
+import { AuditLoggerService } from '../services/audit-logger.service.js';
 
 /**
  * Optional API key guard for the /metrics endpoint
@@ -23,13 +24,16 @@ import { ConfigService } from '../../config/config.service.js';
  *
  * Environment Variables:
  * - METRICS_API_KEY: Optional. If set, requires this API key in the Authorization header
- *   or as a query parameter. Format: "Bearer <api-key>" or "?key=<api-key>"
+ *   or X-API-Key header. Format: "Bearer <api-key>" or header "X-API-Key: <api-key>"
  */
 @Injectable()
 export class MetricsGuard implements CanActivate {
 	private readonly metricsApiKey: string | undefined;
 
-	constructor(private readonly configService: ConfigService) {
+	constructor(
+		private readonly configService: ConfigService,
+		@Optional() private readonly auditLogger?: AuditLoggerService,
+	) {
 		this.metricsApiKey = this.configService.get('METRICS_API_KEY');
 	}
 
@@ -46,19 +50,31 @@ export class MetricsGuard implements CanActivate {
 		if (authHeader) {
 			const [scheme, token] = authHeader.split(' ');
 			if (scheme === 'Bearer' && token === this.metricsApiKey) {
+				this.auditLogger?.logSecurityEvent({
+					timestamp: new Date(),
+					action: 'metrics_access',
+					resource: '/metrics',
+					result: 'success',
+					ipAddress: request.ip,
+					userAgent: request.get('User-Agent'),
+					details: { authMethod: 'bearer' },
+				});
 				return true;
 			}
-		}
-
-		// Check query parameter as fallback
-		const queryKey = request.query.key as string | undefined;
-		if (queryKey === this.metricsApiKey) {
-			return true;
 		}
 
 		// Check X-API-Key header
 		const apiKeyHeader = request.headers['x-api-key'] as string | undefined;
 		if (apiKeyHeader === this.metricsApiKey) {
+			this.auditLogger?.logSecurityEvent({
+				timestamp: new Date(),
+				action: 'metrics_access',
+				resource: '/metrics',
+				result: 'success',
+				ipAddress: request.ip,
+				userAgent: request.get('User-Agent'),
+				details: { authMethod: 'x-api-key' },
+			});
 			return true;
 		}
 

@@ -5,6 +5,7 @@
  * Simplifies setup of NestJS test modules with mocked dependencies
  */
 import { Module } from '@nestjs/common';
+import { vi } from 'vitest';
 import { CACHE_PROVIDER } from '../../interfaces/cache-provider.interface.js';
 import { MockCacheProvider } from '../mocks/cache-provider.mock.js';
 import { AppLogger } from '../../services/logger.service.js';
@@ -73,15 +74,15 @@ export function createTestModuleConfig(config: TestModuleConfig = {}) {
 		providers.push({
 			provide: AppLogger,
 			useValue: {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn(),
-				createContextualLogger: jest.fn(() => ({
-					debug: jest.fn(),
-					info: jest.fn(),
-					warn: jest.fn(),
-					error: jest.fn(),
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				createContextualLogger: vi.fn(() => ({
+					debug: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					error: vi.fn(),
 				})),
 			},
 		});

@@ -44,7 +44,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 		const request = ctx.getRequest<Request>();
 
-		const isDevelopment = process.env['NODE_ENV'] !== 'production';
+		const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
+		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
+		const isDevelopment = !isProduction;
 
 		let status: number;
 		let errorResponse: ErrorResponseBody;
