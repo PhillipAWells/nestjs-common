@@ -1,0 +1,56 @@
+/**
+ * Histogram Bucket Constants for Prometheus Metrics
+ *
+ * Prometheus-compliant bucket definitions for timing and size metrics.
+ * Note: Bucket values follow standard Prometheus patterns for observability.
+ */
+
+// Duration bucket values in seconds
+const MILLISECONDS_TO_SECONDS_DUR = 0.001;
+const MILLISECONDS_TO_SECONDS_DUR_2 = 0.005;
+const MILLISECONDS_TO_SECONDS_DUR_3 = 0.01;
+const MILLISECONDS_TO_SECONDS_DUR_4 = 0.05;
+const MILLISECONDS_TO_SECONDS_DUR_5 = 0.1;
+const MILLISECONDS_TO_SECONDS_DUR_6 = 0.5;
+const MILLISECONDS_TO_SECONDS_DUR_7 = 1;
+const MILLISECONDS_TO_SECONDS_DUR_8 = 2.5;
+const MILLISECONDS_TO_SECONDS_DUR_9 = 5;
+const MILLISECONDS_TO_SECONDS_DUR_10 = 10;
+
+// HTTP request duration histogram buckets (seconds)
+export const HTTP_DURATION_BUCKETS = [
+	MILLISECONDS_TO_SECONDS_DUR,
+	MILLISECONDS_TO_SECONDS_DUR_2,
+	MILLISECONDS_TO_SECONDS_DUR_3,
+	MILLISECONDS_TO_SECONDS_DUR_4,
+	MILLISECONDS_TO_SECONDS_DUR_5,
+	MILLISECONDS_TO_SECONDS_DUR_6,
+	MILLISECONDS_TO_SECONDS_DUR_7,
+	MILLISECONDS_TO_SECONDS_DUR_8,
+	MILLISECONDS_TO_SECONDS_DUR_9,
+	MILLISECONDS_TO_SECONDS_DUR_10,
+];
+
+// Request size bucket values in bytes
+const HTTP_REQUEST_SIZE_100 = 100;
+const HTTP_REQUEST_SIZE_1000 = 1_000;
+const HTTP_REQUEST_SIZE_10000 = 10_000;
+const HTTP_REQUEST_SIZE_100000 = 100_000;
+const HTTP_REQUEST_SIZE_1000000 = 1_000_000;
+
+// HTTP request size histogram buckets (bytes)
+export const HTTP_REQUEST_SIZE_BUCKETS = [
+	HTTP_REQUEST_SIZE_100,
+	HTTP_REQUEST_SIZE_1000,
+	HTTP_REQUEST_SIZE_10000,
+	HTTP_REQUEST_SIZE_100000,
+	HTTP_REQUEST_SIZE_1000000,
+];
+
+// Time conversion constant
+export const MILLISECONDS_TO_SECONDS = 1_000;
+
+// Memory conversion constants
+const KILOBYTE_BYTES = 1_024;
+export const BYTES_PER_KILOBYTE = KILOBYTE_BYTES;
+export const BYTES_PER_MEGABYTE = KILOBYTE_BYTES * KILOBYTE_BYTES;

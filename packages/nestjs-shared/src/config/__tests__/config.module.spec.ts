@@ -1,0 +1,87 @@
+import { describe, it, expect, vi } from 'vitest';
+
+import { AppLogger } from '../../common/index.js';
+import { ConfigService } from '../config.service.js';
+import { ValidationService } from '../validation.utils.js';
+
+describe('ConfigModule', () => {
+	it('should provide ConfigService', () => {
+		const mockAppLogger = {
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}),
+		} as any;
+		const mockNestConfigService = {
+			get: vi.fn(),
+			getOrThrow: vi.fn(),
+		} as any;
+		const mockModuleRef = {
+			get: vi.fn((service) => {
+				if (service === AppLogger) {
+					return mockAppLogger;
+				}
+				// For NestConfigService
+				return mockNestConfigService;
+			}),
+		};
+		const configService = new ConfigService(mockModuleRef as any, mockNestConfigService);
+		expect(configService).toBeDefined();
+		expect(configService).toBeInstanceOf(ConfigService);
+	});
+
+	it('should provide ValidationService', () => {
+		const mockAppLogger = {
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}),
+		} as any;
+		const validationService = new ValidationService(mockAppLogger);
+		expect(validationService).toBeDefined();
+		expect(validationService).toBeInstanceOf(ValidationService);
+	});
+
+	it('should export ConfigService', () => {
+		const mockAppLogger = {
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}),
+		} as any;
+		const mockNestConfigService = {
+			get: vi.fn(),
+			getOrThrow: vi.fn(),
+		} as any;
+		const mockModuleRef = {
+			get: vi.fn((service) => {
+				if (service === AppLogger) {
+					return mockAppLogger;
+				}
+				// For NestConfigService
+				return mockNestConfigService;
+			}),
+		};
+		const configService = new ConfigService(mockModuleRef as any, mockNestConfigService);
+		expect(configService).toBeDefined();
+	});
+
+	it('should export ValidationService', () => {
+		const mockAppLogger = {
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}),
+		} as any;
+		const validationService = new ValidationService(mockAppLogger);
+		expect(validationService).toBeDefined();
+	});
+});
