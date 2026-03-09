@@ -1,0 +1,56 @@
+{
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"defaultBase": "main",
+	"workspaceLayout": {
+		"appsDir": "packages",
+		"libsDir": "packages"
+	},
+	"plugins": [
+		{
+			"plugin": "@nx/eslint/plugin",
+			"options": {
+				"targetName": "lint"
+			}
+		},
+		{
+			"plugin": "@nx/vite/plugin",
+			"options": {
+				"buildTargetName": "build",
+				"testTargetName": "test",
+				"previewTargetName": "preview"
+			}
+		}
+	],
+	"targetDefaults": {
+		"version-sync": {
+			"cache": false,
+			"command": "node {workspaceRoot}/scripts/sync-version.mjs"
+		},
+		"build": {
+			"cache": true,
+			"dependsOn": ["version-sync", "^build"]
+		},
+		"test": {
+			"cache": true
+		},
+		"lint": {
+			"cache": true
+		},
+		"typecheck": {
+			"cache": true
+		}
+	},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"production": [
+			"default",
+			"!{projectRoot}/**/*.spec.ts",
+			"!{projectRoot}/**/*.test.ts",
+			"!{projectRoot}/coverage/**/*"
+		],
+		"sharedGlobals": [
+			"{workspaceRoot}/tsconfig.base.json",
+			"{workspaceRoot}/eslint.config.mjs"
+		]
+	}
+}

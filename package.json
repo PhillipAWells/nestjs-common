@@ -1,0 +1,50 @@
+{
+	"name": "@pawells/nestjs-common-workspace",
+	"version": "0.0.1",
+	"private": true,
+	"author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/PhillipAWells/nestjs-common.git"
+	},
+	"packageManager": "yarn@4.12.0",
+	"engines": {
+		"node": ">= 24.0.0"
+	},
+	"scripts": {
+		"typecheck": "nx run-many --target=typecheck",
+		"lint": "nx run-many --target=lint",
+		"lint:fix": "nx run-many --target=lint --fix",
+		"test": "nx run-many --target=test",
+		"build": "nx run-many --target=build",
+		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build",
+		"version:sync": "node -e \"const v=require('./package.json').version;const fs=require('fs');for(const d of fs.readdirSync('packages')){const p='packages/'+d+'/package.json';if(fs.existsSync(p)){const pkg=JSON.parse(fs.readFileSync(p));pkg.version=v;fs.writeFileSync(p,JSON.stringify(pkg,null,2)+'\\n');}}\"",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.0",
+		"@nx/eslint": "~21.0.0",
+		"@nx/js": "~21.0.0",
+		"@nx/nest": "~21.0.0",
+		"@nx/node": "~21.0.0",
+		"@nx/react": "~21.0.0",
+		"@nx/vite": "~21.0.0",
+		"@nx/web": "~21.0.0",
+		"@stylistic/eslint-plugin": "^5.0.0",
+		"@types/node": "^25.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.0.0",
+		"@typescript-eslint/parser": "^8.0.0",
+		"@vitest/coverage-v8": "^4.0.0",
+		"@vitest/ui": "^4.0.0",
+		"eslint": "^10.0.0",
+		"eslint-import-resolver-typescript": "^4.0.0",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-unused-imports": "^4.0.0",
+		"globals": "^17.0.0",
+		"husky": "^9.1.7",
+		"nx": "~21.0.0",
+		"typescript": "^5.3.3",
+		"vitest": "^4.0.0"
+	}
+}
