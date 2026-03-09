@@ -1,0 +1,407 @@
+import { trace, SpanStatusCode, context, SpanKind } from '@opentelemetry/api';
+import { OTEL_NAMESPACE } from '@pawells/open-telemetry-client';
+
+/**
+ * Options for @Traced decorator.
+ */
+export interface TracedOptions {
+	/**
+   * Custom span name (defaults to ClassName.methodName)
+   */
+	name?: string;
+
+	/**
+   * Span kind (defaults to INTERNAL)
+   */
+	kind?: SpanKind;
+
+	/**
+   * Additional span attributes
+   */
+	attributes?: Record<string, string | number | boolean>;
+
+	/**
+   * Whether to capture method arguments as attributes (default: true)
+   * Arguments longer than 100 chars or complex objects are omitted for security/size
+   */
+	captureArgs?: boolean;
+
+	/**
+   * Whether to capture method return value as attribute (default: false)
+   * Return values longer than 100 chars or complex objects are omitted for security/size
+   */
+	captureReturn?: boolean;
+}
+
+/**
+ * NestJS method decorator for automatic span creation.
+ *
+ * Automatically wraps method execution in a distributed tracing span.
+ * Captures method parameters, return values, exceptions, and sets appropriate span status.
+ *
+ * @param options - Optional tracing configuration
+ * @returns Method decorator
+ *
+ * @example
+ * Basic usage:
+ * ```typescript
+ * import { Injectable } from '@nestjs/common';
+ * import { Traced } from '@pawells/nestjs-open-telemetry';
+ *
+ * @Injectable()
+ * export class UserService {
+ *   @Traced()
+ *   async getUserById(userId: string) {
+ *     return await this.db.findUser(userId);
+ *   }
+ * }
+ * ```
+ *
+ * @example
+ * With custom name and attributes:
+ * ```typescript
+ * @Traced({
+ *   name: 'UserService.fetchUser',
+ *   attributes: { 'service.layer': 'business-logic' },
+ *   captureReturn: true
+ * })
+ * async getUserById(userId: string) {
+ *   return await this.db.findUser(userId);
+ * }
+ * ```
+ *
+ * @example
+ * For external HTTP calls:
+ * ```typescript
+ * import { SpanKind } from '@pawells/nestjs-open-telemetry';
+ *
+ * @Traced({
+ *   name: 'HTTP GET /api/users',
+ *   kind: SpanKind.CLIENT,
+ *   attributes: { 'http.method': 'GET' }
+ * })
+ * async fetchUserFromAPI(userId: string) {
+ *   return await this.httpClient.get(`/api/users/${userId}`);
+ * }
+ * ```
+ */
+export function Traced(options: TracedOptions = {}): MethodDecorator {
+	return function(
+		target: any,
+		propertyKey: string | symbol,
+		descriptor: PropertyDescriptor,
+	) {
+		// Guard against being used as a class decorator (descriptor will be undefined)
+		if (!descriptor) {
+			return;
+		}
+		const originalMethod = descriptor.value;
+		const className = target.constructor.name;
+		const methodName = String(propertyKey);
+
+		// Determine span name
+		const spanName = options.name ?? `${className}.${methodName}`;
+
+		// Determine tracer name (use class name)
+		const tracerName = `${OTEL_NAMESPACE}.${className}`;
+
+		// Replace method with traced version that preserves sync/async signatures
+		descriptor.value = function(...args: any[]) {
+			const tracer = trace.getTracer(tracerName, '1.0.0');
+			const span = tracer.startSpan(spanName, {
+				kind: options.kind ?? SpanKind.INTERNAL,
+			});
+
+			// Set base attributes
+			const spanAttributes: Record<string, any> = {
+				'code.function': methodName,
+				'code.namespace': className,
+				'method.args_count': args.length,
+				...options.attributes,
+			};
+
+			// Capture method arguments if enabled (default: true)
+			if (options.captureArgs !== false) {
+				args.forEach((arg, index) => {
+					const attrValue = sanitizeArgument(arg);
+					if (attrValue !== null) {
+						spanAttributes[`method.arg.${index}`] = attrValue;
+					}
+				});
+			}
+
+			// Set all attributes
+			Object.entries(spanAttributes).forEach(([key, value]) => {
+				span.setAttribute(key, value);
+			});
+
+			// Execute method within span context
+			const ctx = trace.setSpan(context.active(), span);
+
+			try {
+				const result = context.with(ctx, () => originalMethod.apply(this, args));
+
+				// Check if result is a Promise (async method)
+				if (result instanceof Promise) {
+					// Async path: Chain promise handlers
+					return result.then(
+						(value) => {
+							// Capture return value if enabled (default: false)
+							if (options.captureReturn === true) {
+								const returnValue = sanitizeArgument(value);
+								if (returnValue !== null) {
+									span.setAttribute('method.return', returnValue);
+								} else {
+									span.setAttribute('method.return_type', typeof value);
+								}
+							}
+
+							// Set success status
+							span.setStatus({ code: SpanStatusCode.OK });
+							span.end();
+
+							return value;
+						},
+						(error) => {
+							// Record exception and set error status
+							span.recordException(error as Error);
+							const message = error instanceof Error ? error.message : String(error);
+							span.setStatus({ code: SpanStatusCode.ERROR, message });
+
+							// Add error attributes
+							if (error instanceof Error) {
+								span.setAttribute('error.type', error.name);
+								span.setAttribute('error.message', error.message);
+								if (error.stack) {
+									span.setAttribute('error.stack', truncateString(error.stack, 500));
+								}
+							}
+
+							span.end();
+							throw error;
+						},
+					);
+				} else {
+					// Sync path: Handle span immediately
+					// Capture return value if enabled (default: false)
+					if (options.captureReturn === true) {
+						const returnValue = sanitizeArgument(result);
+						if (returnValue !== null) {
+							span.setAttribute('method.return', returnValue);
+						} else {
+							span.setAttribute('method.return_type', typeof result);
+						}
+					}
+
+					// Set success status
+					span.setStatus({ code: SpanStatusCode.OK });
+					span.end();
+
+					return result;
+				}
+			} catch (error) {
+				// Record exception and set error status (for sync errors only)
+				span.recordException(error as Error);
+				const message = error instanceof Error ? error.message : String(error);
+				span.setStatus({ code: SpanStatusCode.ERROR, message });
+
+				// Add error attributes
+				if (error instanceof Error) {
+					span.setAttribute('error.type', error.name);
+					span.setAttribute('error.message', error.message);
+					if (error.stack) {
+						span.setAttribute('error.stack', truncateString(error.stack, 500));
+					}
+				}
+
+				span.end();
+				throw error;
+			}
+		};
+
+		return descriptor;
+	};
+}
+
+/**
+ * Detect and redact Personally Identifiable Information (PII) from a string value.
+ *
+ * Detects and replaces the following patterns:
+ * - Email addresses: [REDACTED_EMAIL]
+ * - Phone numbers: [REDACTED_PHONE]
+ * - Social Security Numbers (SSN): [REDACTED_SSN]
+ * - Credit Card numbers (with Luhn validation): [REDACTED_CREDIT_CARD]
+ *
+ * Credit card numbers are validated using the Luhn algorithm to reduce false positives.
+ *
+ * @param value - String value to check for PII
+ * @returns String with PII redacted
+ */
+function detectAndRedactPII(value: string): string {
+	// PII detection patterns with labels
+	const patterns = [
+		{
+			type: 'email',
+			regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gu,
+			label: 'EMAIL',
+		},
+		{
+			type: 'phone',
+			regex: /(\+\d{1,2}\s?)?1?[-.|\s]?\(?\d{3}\)?[\s.-]?\d{3}[\s-]?\d{4}/gu,
+			label: 'PHONE',
+		},
+		{
+			type: 'ssn',
+			regex: /\b\d{3}[-]?\d{2}[-]?\d{4}\b/gu,
+			label: 'SSN',
+		},
+		{
+			type: 'creditCard',
+			regex: /\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/gu,
+			label: 'CREDIT_CARD',
+		},
+	];
+
+	let sanitized = value;
+
+	for (const pattern of patterns) {
+		if (pattern.type === 'creditCard') {
+			// For credit cards, validate with Luhn algorithm before redacting
+			sanitized = sanitized.replace(pattern.regex, (match) => {
+				return isValidCreditCard(match) ? `[REDACTED_${pattern.label}]` : match;
+			});
+		} else {
+			// For other PII types, redact directly
+			sanitized = sanitized.replace(pattern.regex, `[REDACTED_${pattern.label}]`);
+		}
+	}
+
+	return sanitized;
+}
+
+/**
+ * Validate a credit card number using the Luhn algorithm.
+ *
+ * The Luhn algorithm checks the mathematical validity of credit card numbers
+ * to reduce false positives from random digit sequences.
+ *
+ * @param num - Credit card number string (may contain spaces or hyphens)
+ * @returns True if the number passes Luhn validation, false otherwise
+ */
+function isValidCreditCard(num: string): boolean {
+	// Extract digits only
+	const digits = num.replace(/\D/g, '');
+
+	// Credit card numbers are typically 13-19 digits
+	if (digits.length < 13 || digits.length > 19) {
+		return false;
+	}
+
+	// Luhn algorithm implementation
+	let sum = 0;
+	let isEven = false;
+
+	// Process digits from right to left
+	for (let i = digits.length - 1; i >= 0; i--) {
+		const digitChar = digits[i];
+		if (!digitChar) {
+			return false;
+		}
+		let digit = parseInt(digitChar, 10);
+
+		if (isEven) {
+			digit *= 2;
+			// If result is > 9, subtract 9 (equivalent to adding digits)
+			if (digit > 9) {
+				digit -= 9;
+			}
+		}
+
+		sum += digit;
+		isEven = !isEven;
+	}
+
+	// Valid if sum is divisible by 10
+	return sum % 10 === 0;
+}
+
+/**
+ * Sanitize argument for span attribute.
+ *
+ * Converts argument to a safe string/number/boolean for span attributes.
+ * Detects and redacts PII patterns (email, phone, SSN, credit card).
+ * Returns null if argument is too complex or sensitive.
+ *
+ * @param arg - Argument to sanitize
+ * @returns Sanitized value or null
+ */
+function sanitizeArgument(arg: any): string | number | boolean | null {
+	// Handle primitives
+	if (typeof arg === 'string') {
+		// Detect and redact PII, then truncate
+		const redacted = detectAndRedactPII(arg);
+		return truncateString(redacted, 100);
+	}
+
+	if (typeof arg === 'number') {
+		return arg;
+	}
+
+	if (typeof arg === 'boolean') {
+		return arg;
+	}
+
+	// Handle null/undefined
+	if (arg === null) {
+		return 'null';
+	}
+
+	if (arg === undefined) {
+		return 'undefined';
+	}
+
+	// Handle arrays (only if small and simple)
+	if (Array.isArray(arg)) {
+		if (arg.length === 0) {
+			return '[]';
+		}
+		if (arg.length <= 5 && arg.every(item => typeof item === 'string' || typeof item === 'number')) {
+			// Sanitize array items for PII before serializing
+			const sanitizedArray = arg.map(item => {
+				if (typeof item === 'string') {
+					return detectAndRedactPII(item);
+				}
+				return item;
+			});
+			return JSON.stringify(sanitizedArray);
+		}
+		return `Array(${arg.length})`;
+	}
+
+	// Handle objects (omit for security)
+	if (typeof arg === 'object') {
+		return `Object(${Object.keys(arg).length} keys)`;
+	}
+
+	// Skip functions, symbols, etc.
+	return null;
+}
+
+/**
+ * Truncate string to maximum length.
+ *
+ * @param str - String to truncate
+ * @param maxLength - Maximum length
+ * @returns Truncated string
+ */
+function truncateString(str: string, maxLength: number): string {
+	if (str.length <= maxLength) {
+		return str;
+	}
+	return str.substring(0, maxLength) + '...';
+}
+
+/**
+ * Export SpanKind for convenience when using @Traced decorator
+ */
+export { SpanKind } from '@opentelemetry/api';
