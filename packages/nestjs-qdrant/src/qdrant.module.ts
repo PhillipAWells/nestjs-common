@@ -45,19 +45,22 @@ export class QdrantModule {
 		const clientToken = getQdrantClientToken(name);
 		const optionsToken = getQdrantModuleOptionsToken(name);
 
+		// Sanitize options by removing apiKey before storing
+		const { apiKey: _apiKey, ...sanitizedOptions } = clientOptions;
+
 		return {
 			module: QdrantModule,
 			global: isGlobal,
 			providers: [
-				{ provide: optionsToken, useValue: clientOptions },
+				{ provide: optionsToken, useValue: sanitizedOptions },
 				{ provide: clientToken, useValue: new QdrantClient(clientOptions) },
 				{
 					provide: QdrantService,
 					useFactory: (client: QdrantClient) => new QdrantService(client),
-					inject: [clientToken]
-				}
+					inject: [clientToken],
+				},
 			],
-			exports: [QdrantService, clientToken]
+			exports: [QdrantService, clientToken],
 		};
 	}
 
@@ -84,15 +87,15 @@ export class QdrantModule {
 						const { name: _name, ...clientOptions } = opts;
 						return new QdrantClient(clientOptions);
 					},
-					inject: [optionsToken]
+					inject: [optionsToken],
 				},
 				{
 					provide: QdrantService,
 					useFactory: (client: QdrantClient) => new QdrantService(client),
-					inject: [clientToken]
-				}
+					inject: [clientToken],
+				},
 			],
-			exports: [QdrantService, clientToken]
+			exports: [QdrantService, clientToken],
 		};
 	}
 
@@ -109,7 +112,7 @@ export class QdrantModule {
 		if (options.useClass) {
 			return [
 				QdrantModule.createAsyncOptionsProvider(options),
-				{ provide: options.useClass, useClass: options.useClass }
+				{ provide: options.useClass, useClass: options.useClass },
 			];
 		}
 		throw new Error('Invalid QdrantModuleAsyncOptions: must provide useFactory, useClass, or useExisting');
@@ -127,20 +130,28 @@ export class QdrantModule {
 		if (options.useFactory) {
 			return {
 				provide: optionsToken,
-				// eslint-disable-next-line require-await
 				useFactory: async (...args: unknown[]) => {
-					const result = options.useFactory!(...args);
-					// Handle both sync and async results
-					if (result instanceof Promise) {
-						return result.then((opts: QdrantModuleOptions) => {
-							const { name: _name, ...cleanOptions } = opts;
-							return cleanOptions;
-						});
+					try {
+						const result = options.useFactory?.(...args);
+						// Handle both sync and async results
+						if (result instanceof Promise) {
+							return await result.then((opts: QdrantModuleOptions) => {
+								const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
+								return cleanOptions;
+							}).catch((err: unknown) => {
+								throw new Error(`QdrantModule async factory failed: ${(err as Error).message}`);
+							});
+						}
+						const { name: _name, apiKey: _apiKey, ...cleanOptions } = result as QdrantModuleOptions;
+						return cleanOptions;
+					} catch (error) {
+						if (error instanceof Error && error.message.includes('QdrantModule async factory failed')) {
+							throw error;
+						}
+						throw new Error(`QdrantModule async factory failed: ${(error as Error).message}`);
 					}
-					const { name: _name, ...cleanOptions } = result as QdrantModuleOptions;
-					return cleanOptions;
 				},
-				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>
+				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
 			};
 		}
 		return {
@@ -148,11 +159,16 @@ export class QdrantModule {
 			// The factory receives a QdrantOptionsFactory instance which may be async
 
 			useFactory: async (factory: QdrantOptionsFactory) => {
-				const opts = await factory.createQdrantOptions();
-				const { name: _name, ...cleanOptions } = opts;
-				return cleanOptions;
+				try {
+					const opts = await factory.createQdrantOptions();
+					const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
+					return cleanOptions;
+				} catch (error) {
+					throw new Error(`QdrantModule async factory failed: ${(error as Error).message}`);
+				}
 			},
-			inject: [options.useExisting ?? options.useClass!]
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			inject: [options.useExisting ?? options.useClass!],
 		};
 	}
 }

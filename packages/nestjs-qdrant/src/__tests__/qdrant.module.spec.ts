@@ -12,7 +12,7 @@ import type { QdrantModuleOptions } from '../qdrant.interfaces.js';
 describe('QdrantModule', () => {
 	const mockQdrantOptions: QdrantModuleOptions = {
 		url: 'http://localhost:6333',
-		apiKey: 'test-api-key'
+		apiKey: 'test-api-key',
 	};
 
 	describe('forRoot', () => {
@@ -20,7 +20,7 @@ describe('QdrantModule', () => {
 
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [QdrantModule.forRoot(mockQdrantOptions)]
+				imports: [QdrantModule.forRoot(mockQdrantOptions)],
 			}).compile();
 		});
 
@@ -68,9 +68,9 @@ describe('QdrantModule', () => {
 			module = await Test.createTestingModule({
 				imports: [
 					QdrantModule.forRootAsync({
-						useFactory: () => mockQdrantOptions
-					})
-				]
+						useFactory: () => mockQdrantOptions,
+					}),
+				],
 			}).compile();
 		});
 
@@ -113,9 +113,9 @@ describe('QdrantModule', () => {
 			module = await Test.createTestingModule({
 				imports: [
 					QdrantModule.forRootAsync({
-						useClass: TestOptionsFactory
-					})
-				]
+						useClass: TestOptionsFactory,
+					}),
+				],
 			}).compile();
 		});
 
@@ -160,12 +160,12 @@ describe('QdrantModule', () => {
 				url: 'http://qdrant-archive:6333',
 				apiKey: 'archive-api-key',
 				name: 'archive',
-				checkCompatibility: false
+				checkCompatibility: false,
 			};
 
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
-					imports: [QdrantModule.forRoot(namedOptions)]
+					imports: [QdrantModule.forRoot(namedOptions)],
 				}).compile();
 			});
 
@@ -208,7 +208,7 @@ describe('QdrantModule', () => {
 
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
-					imports: [QdrantModule.forRoot(mockQdrantOptions)]
+					imports: [QdrantModule.forRoot(mockQdrantOptions)],
 				}).compile();
 			});
 
@@ -235,7 +235,7 @@ describe('QdrantModule', () => {
 				url: 'http://qdrant-archive:6333',
 				apiKey: 'archive-api-key',
 				name: 'archive',
-				checkCompatibility: false
+				checkCompatibility: false,
 			};
 
 			beforeEach(async () => {
@@ -243,9 +243,9 @@ describe('QdrantModule', () => {
 					imports: [
 						QdrantModule.forRootAsync({
 							useFactory: () => namedOptions,
-							name: 'archive'
-						})
-					]
+							name: 'archive',
+						}),
+					],
 				}).compile();
 			});
 
@@ -276,8 +276,8 @@ describe('QdrantModule', () => {
 				module = await Test.createTestingModule({
 					imports: [
 						QdrantModule.forRoot({ url: 'http://qdrant-main:6333', name: 'main', checkCompatibility: false }),
-						QdrantModule.forRoot({ url: 'http://qdrant-archive:6333', name: 'archive', checkCompatibility: false }, false)
-					]
+						QdrantModule.forRoot({ url: 'http://qdrant-archive:6333', name: 'archive', checkCompatibility: false }, false),
+					],
 				}).compile();
 			});
 

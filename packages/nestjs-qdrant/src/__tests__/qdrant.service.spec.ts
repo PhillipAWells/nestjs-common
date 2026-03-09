@@ -16,7 +16,7 @@ describe('QdrantService', () => {
 			getCollections: jest.fn(),
 			recreateCollection: jest.fn(),
 			upsertPointsBatch: jest.fn(),
-			search: jest.fn()
+			search: jest.fn(),
 		} as unknown as QdrantClient;
 
 		service = new QdrantService(mockClient);

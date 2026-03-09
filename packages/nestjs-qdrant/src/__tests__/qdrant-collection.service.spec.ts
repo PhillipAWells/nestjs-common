@@ -16,7 +16,7 @@ describe('QdrantCollectionService', () => {
 			search: jest.fn(),
 			upsert: jest.fn(),
 			delete: jest.fn(),
-			getCollection: jest.fn()
+			getCollection: jest.fn(),
 		} as unknown as QdrantClient;
 
 		service = new QdrantCollectionService(mockClient, collectionName);
@@ -34,9 +34,9 @@ describe('QdrantCollectionService', () => {
 			const params = { query: [0.1, 0.2, 0.3], limit: 10 };
 			const expectedResult = { results: [] };
 
-			(mockClient.search as jest.Mock).mockResolvedValue(expectedResult);
+			(mockClient.search as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.search(params);
+			const result = await service.search(params as any);
 
 			expect(mockClient.search).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -46,9 +46,9 @@ describe('QdrantCollectionService', () => {
 			const params = { query: [0.1, 0.2, 0.3], limit: 10 };
 			const error = new Error('Search failed');
 
-			(mockClient.search as jest.Mock).mockRejectedValue(error);
+			(mockClient.search as any).mockRejectedValue(error);
 
-			await expect(service.search(params)).rejects.toThrow('Search failed');
+			await expect(service.search(params as any)).rejects.toThrow('Search failed');
 		});
 	});
 
@@ -57,9 +57,9 @@ describe('QdrantCollectionService', () => {
 			const params = { points: [{ id: 1, vector: [0.1, 0.2], payload: {} }] };
 			const expectedResult = { status: 'ok' };
 
-			(mockClient.upsert as jest.Mock).mockResolvedValue(expectedResult);
+			(mockClient.upsert as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.upsert(params);
+			const result = await service.upsert(params as any);
 
 			expect(mockClient.upsert).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -69,9 +69,9 @@ describe('QdrantCollectionService', () => {
 			const params = { points: [] };
 			const error = new Error('Upsert failed');
 
-			(mockClient.upsert as jest.Mock).mockRejectedValue(error);
+			(mockClient.upsert as any).mockRejectedValue(error);
 
-			await expect(service.upsert(params)).rejects.toThrow('Upsert failed');
+			await expect(service.upsert(params as any)).rejects.toThrow('Upsert failed');
 		});
 	});
 
@@ -80,9 +80,9 @@ describe('QdrantCollectionService', () => {
 			const params = { points_selector: { points: [1, 2, 3] } };
 			const expectedResult = { status: 'ok' };
 
-			(mockClient.delete as jest.Mock).mockResolvedValue(expectedResult);
+			(mockClient.delete as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.delete(params);
+			const result = await service.delete(params as any);
 
 			expect(mockClient.delete).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -92,9 +92,9 @@ describe('QdrantCollectionService', () => {
 			const params = { points_selector: { points: [] } };
 			const error = new Error('Delete failed');
 
-			(mockClient.delete as jest.Mock).mockRejectedValue(error);
+			(mockClient.delete as any).mockRejectedValue(error);
 
-			await expect(service.delete(params)).rejects.toThrow('Delete failed');
+			await expect(service.delete(params as any)).rejects.toThrow('Delete failed');
 		});
 	});
 
@@ -103,10 +103,10 @@ describe('QdrantCollectionService', () => {
 			const expectedInfo = {
 				name: collectionName,
 				vectors_count: 100,
-				points_count: 50
+				points_count: 50,
 			};
 
-			(mockClient.getCollection as jest.Mock).mockResolvedValue(expectedInfo);
+			(mockClient.getCollection as any).mockResolvedValue(expectedInfo as any);
 
 			const result = await service.getInfo();
 
@@ -117,7 +117,7 @@ describe('QdrantCollectionService', () => {
 		it('should pass through client errors', async () => {
 			const error = new Error('Collection not found');
 
-			(mockClient.getCollection as jest.Mock).mockRejectedValue(error);
+			(mockClient.getCollection as any).mockRejectedValue(error);
 
 			await expect(service.getInfo()).rejects.toThrow('Collection not found');
 		});
@@ -139,12 +139,12 @@ describe('QdrantCollectionService', () => {
 
 			const searchParams = { query: [0.1], limit: 10 };
 
-			(mockClient.search as jest.Mock).mockResolvedValue({ results: [] });
+			(mockClient.search as any).mockResolvedValue({ results: [] } as any);
 
-			await productsService.search(searchParams);
+			await productsService.search(searchParams as any);
 			expect(mockClient.search).toHaveBeenCalledWith('products', searchParams);
 
-			await usersService.search(searchParams);
+			await usersService.search(searchParams as any);
 			expect(mockClient.search).toHaveBeenCalledWith('users', searchParams);
 		});
 	});
