@@ -81,42 +81,48 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 			return;
 		}
 
-		const meter = metrics.getMeterProvider().getMeter('nestjs-open-telemetry');
+		try {
+			const meter = metrics.getMeterProvider().getMeter('nestjs-open-telemetry');
 
-		const options = {
-			description: descriptor.help,
-			...(descriptor.unit !== undefined && { unit: descriptor.unit }),
-		};
+			const options = {
+				description: descriptor.help,
+				...(descriptor.unit !== undefined && { unit: descriptor.unit }),
+			};
 
-		let instrument: Counter | Histogram | ObservableGauge | UpDownCounter;
+			let instrument: Counter | Histogram | ObservableGauge | UpDownCounter;
 
-		switch (descriptor.type) {
-			case 'counter': {
-				instrument = meter.createCounter(descriptor.name, options);
-				break;
+			switch (descriptor.type) {
+				case 'counter': {
+					instrument = meter.createCounter(descriptor.name, options);
+					break;
+				}
+				case 'histogram': {
+					instrument = meter.createHistogram(descriptor.name, options);
+					break;
+				}
+				case 'gauge': {
+					// NOTE: Push-based gauges are implemented as UpDownCounters because the OTel SDK's
+					// ObservableGauge requires a pull-based callback pattern incompatible with our push model.
+					// Consumers should use 'updown_counter' type for absolute set operations if needed.
+					instrument = meter.createUpDownCounter(descriptor.name, options);
+					break;
+				}
+				case 'updown_counter': {
+					instrument = meter.createUpDownCounter(descriptor.name, options);
+					break;
+				}
+				default: {
+					// Exhaustiveness check — this block is unreachable if all types are handled
+					const _exhaustive: never = descriptor.type;
+					throw new Error(`Unhandled metric type: ${_exhaustive}`);
+				}
 			}
-			case 'histogram': {
-				instrument = meter.createHistogram(descriptor.name, options);
-				break;
-			}
-			case 'gauge': {
-				// Use UpDownCounter as a workaround for gauges
-				// ObservableGauge is callback-based, not suitable for push-based updates
-				instrument = meter.createUpDownCounter(descriptor.name, options);
-				break;
-			}
-			case 'updown_counter': {
-				instrument = meter.createUpDownCounter(descriptor.name, options);
-				break;
-			}
-			default: {
-				// Exhaustiveness check — this block is unreachable if all types are handled
-				const _exhaustive: never = descriptor.type;
-				throw new Error(`Unhandled metric type: ${_exhaustive}`);
-			}
+
+			this.instruments.set(descriptor.name, instrument);
+		} catch (error) {
+			console.warn(`[OpenTelemetryExporter] Failed to register descriptor "${descriptor.name}":`, (error as Error).message);
+			return;
 		}
-
-		this.instruments.set(descriptor.name, instrument);
 	}
 
 	/**

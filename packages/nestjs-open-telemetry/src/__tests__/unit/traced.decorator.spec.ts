@@ -5,8 +5,8 @@
  */
 
 /* eslint-disable require-await */
-// @ts-nocheck
 
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { Injectable } from '@nestjs/common';
 import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized, SpanKind } from '@pawells/open-telemetry-client';
 import type { OpenTelemetryConfig } from '@pawells/open-telemetry-client';
@@ -83,7 +83,6 @@ describe('@Traced Decorator', () => {
 			otlpProtocol: 'http',
 			enableTracing: true,
 			enableMetrics: false,
-			enableLogging: false,
 			traceSampleRatio: 1.0,
 		};
 

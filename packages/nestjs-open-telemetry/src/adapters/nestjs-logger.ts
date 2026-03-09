@@ -44,10 +44,10 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
    * Log an error message
    */
-	public error(message: any, trace?: string, context?: string): void {
+	public error(message: any, stackTrace?: string, context?: string): void {
 		const metadata = this.buildMetadata(context);
-		if (trace) {
-			metadata['stackTrace'] = trace;
+		if (stackTrace) {
+			metadata['stackTrace'] = stackTrace;
 		}
 		this.logger.error(this.formatMessage(message), metadata);
 	}

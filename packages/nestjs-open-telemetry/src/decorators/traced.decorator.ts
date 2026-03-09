@@ -4,6 +4,16 @@ import { OTEL_NAMESPACE } from '@pawells/open-telemetry-client';
 /**
  * Options for @Traced decorator.
  */
+// Magic number constants
+const TRUNCATE_ARGS_LENGTH = 100;
+const TRUNCATE_STACK_LENGTH = 500;
+const MIN_CREDIT_CARD_DIGITS = 13;
+const MAX_CREDIT_CARD_DIGITS = 19;
+const CREDIT_CARD_DOUBLE_DIGIT_LIMIT = 9;
+const CREDIT_CARD_ADJUSTMENT = 9;
+const LUHN_MODULO = 10;
+const MAX_ARRAY_LENGTH_FOR_LOGGING = 5;
+
 export interface TracedOptions {
 	/**
    * Custom span name (defaults to ClassName.methodName)
@@ -93,7 +103,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 	) {
 		// Guard against being used as a class decorator (descriptor will be undefined)
 		if (!descriptor) {
-			return;
+			return descriptor;
 		}
 		const originalMethod = descriptor.value;
 		const className = target.constructor.name;
@@ -113,11 +123,11 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 			});
 
 			// Set base attributes
-			const spanAttributes: Record<string, any> = {
+			const spanAttributes: Record<string, string | number | boolean> = {
 				'code.function': methodName,
 				'code.namespace': className,
 				'method.args_count': args.length,
-				...options.attributes,
+				...(options.attributes ? castAttributesToValidTypes(options.attributes) : {}),
 			};
 
 			// Capture method arguments if enabled (default: true)
@@ -173,7 +183,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 								span.setAttribute('error.type', error.name);
 								span.setAttribute('error.message', error.message);
 								if (error.stack) {
-									span.setAttribute('error.stack', truncateString(error.stack, 500));
+									span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
 								}
 							}
 
@@ -210,7 +220,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 					span.setAttribute('error.type', error.name);
 					span.setAttribute('error.message', error.message);
 					if (error.stack) {
-						span.setAttribute('error.stack', truncateString(error.stack, 500));
+						span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
 					}
 				}
 
@@ -221,6 +231,36 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 
 		return descriptor;
 	};
+}
+
+/**
+ * Cast span attributes to valid OpenTelemetry types.
+ *
+ * Converts any attribute values to string, number, or boolean for compatibility with OTel API.
+ * Objects are serialized with JSON.stringify; functions and symbols are converted to strings.
+ *
+ * @param attributes - Original attributes (may contain any types)
+ * @returns Attributes cast to valid OTel types
+ */
+function castAttributesToValidTypes(
+	attributes: Record<string, string | number | boolean>,
+): Record<string, string | number | boolean> {
+	const result: Record<string, string | number | boolean> = {};
+
+	for (const [key, value] of Object.entries(attributes)) {
+		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			result[key] = value;
+		} else if (value === null || value === undefined) {
+			result[key] = String(value);
+		} else if (typeof value === 'object') {
+			result[key] = JSON.stringify(value);
+		} else {
+			// Functions, symbols, etc.
+			result[key] = String(value);
+		}
+	}
+
+	return result;
 }
 
 /**
@@ -293,7 +333,7 @@ function isValidCreditCard(num: string): boolean {
 	const digits = num.replace(/\D/g, '');
 
 	// Credit card numbers are typically 13-19 digits
-	if (digits.length < 13 || digits.length > 19) {
+	if (digits.length < MIN_CREDIT_CARD_DIGITS || digits.length > MAX_CREDIT_CARD_DIGITS) {
 		return false;
 	}
 
@@ -312,8 +352,8 @@ function isValidCreditCard(num: string): boolean {
 		if (isEven) {
 			digit *= 2;
 			// If result is > 9, subtract 9 (equivalent to adding digits)
-			if (digit > 9) {
-				digit -= 9;
+			if (digit > CREDIT_CARD_DOUBLE_DIGIT_LIMIT) {
+				digit -= CREDIT_CARD_ADJUSTMENT;
 			}
 		}
 
@@ -322,7 +362,7 @@ function isValidCreditCard(num: string): boolean {
 	}
 
 	// Valid if sum is divisible by 10
-	return sum % 10 === 0;
+	return sum % LUHN_MODULO === 0;
 }
 
 /**
@@ -340,7 +380,7 @@ function sanitizeArgument(arg: any): string | number | boolean | null {
 	if (typeof arg === 'string') {
 		// Detect and redact PII, then truncate
 		const redacted = detectAndRedactPII(arg);
-		return truncateString(redacted, 100);
+		return truncateString(redacted, TRUNCATE_ARGS_LENGTH);
 	}
 
 	if (typeof arg === 'number') {
@@ -365,7 +405,7 @@ function sanitizeArgument(arg: any): string | number | boolean | null {
 		if (arg.length === 0) {
 			return '[]';
 		}
-		if (arg.length <= 5 && arg.every(item => typeof item === 'string' || typeof item === 'number')) {
+		if (arg.length <= MAX_ARRAY_LENGTH_FOR_LOGGING && arg.every(item => typeof item === 'string' || typeof item === 'number')) {
 			// Sanitize array items for PII before serializing
 			const sanitizedArray = arg.map(item => {
 				if (typeof item === 'string') {
