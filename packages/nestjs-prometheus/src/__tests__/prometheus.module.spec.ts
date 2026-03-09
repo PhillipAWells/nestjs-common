@@ -27,6 +27,9 @@ vi.mock('@pawells/nestjs-shared', () => ({
 	InstrumentationRegistry: class {
 		registerExporter = vi.fn();
 	},
+	MetricsGuard: class {
+		canActivate = vi.fn().mockReturnValue(true);
+	},
 }));
 
 import { PrometheusModule } from '../prometheus.module.js';

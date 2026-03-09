@@ -51,6 +51,14 @@ export class PrometheusExporter implements IMetricsExporter {
 	 */
 	private readonly pending: Map<string, MetricValue[]>;
 
+	/**
+	 * Maximum number of pending metric values per metric before culling oldest entries
+	 * Prevents unbounded memory growth if metrics are recorded much faster than pulled
+	 * @private
+	 */
+	// eslint-disable-next-line no-magic-numbers
+	private readonly MAX_PENDING_PER_METRIC = 1000;
+
 	constructor() {
 		this.registry = new Registry();
 		this.instruments = new Map();
@@ -116,7 +124,7 @@ export class PrometheusExporter implements IMetricsExporter {
 				break;
 
 			default:
-				throw new Error(`Unsupported metric type: ${type}`);
+				throw new Error(`Unsupported metric type "${type}" for descriptor "${name}"`);
 		}
 
 		this.instruments.set(name, instrument);
@@ -148,6 +156,14 @@ export class PrometheusExporter implements IMetricsExporter {
 
 		if (pendingArray) {
 			pendingArray.push(value);
+
+			// Cap pending array to prevent unbounded memory growth
+			if (pendingArray.length > this.MAX_PENDING_PER_METRIC) {
+				pendingArray.shift();
+			}
+		} else {
+			// Warn if metric recorded before descriptor registration (data will be lost)
+			console.warn(`Metric recorded before descriptor registration: ${metricName}`);
 		}
 	}
 

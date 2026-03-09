@@ -51,6 +51,7 @@ describe('PrometheusExporter', () => {
 
 			// The instrument should be created and stored
 			expect(exporter).toBeDefined();
+			expect(exporter['instruments'].has('test_counter')).toBe(true);
 		});
 
 		it('should create Histogram for histogram type descriptor', () => {
@@ -63,6 +64,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
+			expect(exporter['instruments'].has('test_histogram')).toBe(true);
 		});
 
 		it('should create Gauge for gauge type descriptor', () => {
@@ -74,6 +76,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
+			expect(exporter['instruments'].has('test_gauge')).toBe(true);
 		});
 
 		it('should create Gauge for updown_counter type descriptor', () => {
@@ -85,6 +88,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
+			expect(exporter['instruments'].has('test_updown')).toBe(true);
 		});
 	});
 
@@ -105,11 +109,12 @@ describe('PrometheusExporter', () => {
 				labels: {},
 				timestamp: Date.now(),
 			};
-
 			exporter.onMetricRecorded(metricValue);
 
-			// Verify that the metric was buffered by checking getMetrics flushes it
+			// Verify that the metric was buffered in the pending map
 			expect(exporter).toBeDefined();
+			expect(exporter['pending'].has('test_metric')).toBe(true);
+			expect(exporter['pending'].get('test_metric')).toHaveLength(1);
 		});
 	});
 

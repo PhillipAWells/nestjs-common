@@ -1,5 +1,6 @@
-import { Controller, Get, Header, Res } from '@nestjs/common';
+import { Controller, Get, Header, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
+import { MetricsGuard } from '@pawells/nestjs-shared';
 import { PrometheusExporter } from '../prometheus.exporter.js';
 
 /**
@@ -34,11 +35,16 @@ export class MetricsController {
 	 * Metrics include Node.js default metrics (event loop, GC, memory) plus any
 	 * application-specific metrics registered with the InstrumentationRegistry.
 	 *
+	 * Protected by MetricsGuard: checks METRICS_API_KEY env var if configured.
+	 * If METRICS_API_KEY is set, requires Bearer token, X-API-Key header, or ?key= query param.
+	 * If not set, all requests are allowed.
+	 *
 	 * @param response - Express response object
 	 *
 	 * @example
 	 * ```
 	 * GET /metrics HTTP/1.1
+	 * Authorization: Bearer <METRICS_API_KEY>
 	 *
 	 * HTTP/1.1 200 OK
 	 * Content-Type: text/plain; version=0.0.4; charset=utf-8
@@ -51,6 +57,7 @@ export class MetricsController {
 	 * ```
 	 */
 	@Get('metrics')
+	@UseGuards(MetricsGuard)
 	@Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
 	@Header('X-Robots-Tag', 'noindex, nofollow')
 	public async getMetrics(@Res() response: Response): Promise<void> {
