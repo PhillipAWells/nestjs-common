@@ -1,0 +1,241 @@
+import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { Logger } from '@nestjs/common';
+
+/**
+ * GraphQL Error Codes
+ *
+ * Standardized error codes for GraphQL operations
+ */
+export enum GraphQLErrorCode {
+	// Authentication & Authorization
+	UNAUTHENTICATED = 'UNAUTHENTICATED',
+	FORBIDDEN = 'FORBIDDEN',
+
+	// Validation
+	BAD_USER_INPUT = 'BAD_USER_INPUT',
+	VALIDATION_ERROR = 'VALIDATION_ERROR',
+
+	// Business Logic
+	CONFLICT = 'CONFLICT',
+	NOT_FOUND = 'NOT_FOUND',
+
+	// Rate Limiting
+	RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+
+	// Internal Errors
+	INTERNAL_ERROR = 'INTERNAL_ERROR',
+	SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE'
+}
+
+/**
+ * GraphQL Error Formatter
+ *
+ * Formats GraphQL errors for consistent client responses.
+ * Removes sensitive internal information and provides user-friendly messages.
+ */
+export class GraphQLErrorFormatter {
+	private static readonly logger = new Logger(GraphQLErrorFormatter.name);
+
+	/**
+	 * Formats a GraphQL error for client response
+	 *
+	 * @param error - The original GraphQL error
+	 * @param context - Optional request context with user and operation information
+	 * @returns Formatted error object
+	 */
+	public static formatError(error: GraphQLError, context?: any): GraphQLFormattedError {
+		const { originalError } = error;
+
+		// Handle custom application errors
+		if (originalError && this.isApplicationError(originalError)) {
+			return this.formatApplicationError(error, originalError, context);
+		}
+
+		// Handle validation errors
+		if (originalError && this.isValidationError(originalError)) {
+			return this.formatValidationError(error, originalError, context);
+		}
+
+		// Handle authentication errors
+		if (originalError && this.isAuthenticationError(originalError)) {
+			return this.formatAuthenticationError(error, context);
+		}
+
+		// Handle authorization errors
+		if (originalError && this.isAuthorizationError(originalError)) {
+			return this.formatAuthorizationError(error, context);
+		}
+
+		// Handle rate limiting errors
+		if (originalError && this.isRateLimitError(originalError)) {
+			return this.formatRateLimitError(error, context);
+		}
+
+		// Default error formatting
+		return this.formatGenericError(error, context);
+	}
+
+	/**
+	 * Checks if error is an application-specific error
+	 */
+	private static isApplicationError(error: any): boolean {
+		return error.code && Object.values(GraphQLErrorCode).includes(error.code);
+	}
+
+	/**
+	 * Checks if error is a validation error
+	 */
+	private static isValidationError(error: any): boolean {
+		return error.name === 'ValidationError' ||
+			   error.message?.includes('validation') ||
+			   error.errors;
+	}
+
+	/**
+	 * Checks if error is an authentication error
+	 */
+	private static isAuthenticationError(error: any): boolean {
+		return error.name === 'UnauthorizedException' ||
+			   error.message?.includes('authentication') ||
+			   error.message?.includes('token');
+	}
+
+	/**
+	 * Checks if error is an authorization error
+	 */
+	private static isAuthorizationError(error: any): boolean {
+		return error.name === 'ForbiddenException' ||
+			   error.message?.includes('permission') ||
+			   error.message?.includes('forbidden');
+	}
+
+	/**
+	 * Checks if error is a rate limit error
+	 */
+	private static isRateLimitError(error: any): boolean {
+		return error.name === 'RateLimitException' ||
+			   error.message?.includes('rate limit') ||
+			   error.message?.includes('too many requests');
+	}
+
+	/**
+	 * Formats application-specific errors
+	 */
+	private static formatApplicationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
+		this.logger.warn(`Application error: ${originalError.message}`, originalError.stack);
+
+		return {
+			message: originalError.message ?? 'An error occurred',
+			extensions: {
+				code: originalError.code ?? GraphQLErrorCode.INTERNAL_ERROR,
+				timestamp: new Date().toISOString(),
+				...(originalError.details && { details: originalError.details }),
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Formats validation errors
+	 */
+	private static formatValidationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
+		const validationErrors = this.extractValidationErrors(originalError);
+
+		return {
+			message: 'Validation failed',
+			extensions: {
+				code: GraphQLErrorCode.BAD_USER_INPUT,
+				timestamp: new Date().toISOString(),
+				validationErrors,
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Formats authentication errors
+	 */
+	private static formatAuthenticationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+		return {
+			message: 'Authentication required',
+			extensions: {
+				code: GraphQLErrorCode.UNAUTHENTICATED,
+				timestamp: new Date().toISOString(),
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Formats authorization errors
+	 */
+	private static formatAuthorizationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+		return {
+			message: 'Access denied',
+			extensions: {
+				code: GraphQLErrorCode.FORBIDDEN,
+				timestamp: new Date().toISOString(),
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Formats rate limit errors
+	 */
+	private static formatRateLimitError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+		return {
+			message: 'Rate limit exceeded',
+			extensions: {
+				code: GraphQLErrorCode.RATE_LIMIT_EXCEEDED,
+				timestamp: new Date().toISOString(),
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Formats generic/unexpected errors
+	 */
+	private static formatGenericError(error: GraphQLError, context?: any): GraphQLFormattedError {
+		// Log internal errors for debugging
+		this.logger.error(`GraphQL Error: ${error.message}`, error.stack);
+
+		// Don't expose internal error details to client
+		return {
+			message: 'An unexpected error occurred',
+			extensions: {
+				code: GraphQLErrorCode.INTERNAL_ERROR,
+				timestamp: new Date().toISOString(),
+				...(context?.user?.id && { userId: context.user.id }),
+				...(context?.operationName && { operationName: context.operationName })
+			}
+		};
+	}
+
+	/**
+	 * Extracts validation errors from various formats
+	 */
+	private static extractValidationErrors(error: any): any[] {
+		if (error.errors) {
+			// Class-validator errors
+			return Object.values(error.errors).map((fieldErrors: any) => ({
+				field: fieldErrors.property,
+				constraints: fieldErrors.constraints
+			}));
+		}
+
+		if (Array.isArray(error)) {
+			return error;
+		}
+
+		return [{
+			message: error.message ?? 'Validation failed'
+		}];
+	}
+}
