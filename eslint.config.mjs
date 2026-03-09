@@ -185,11 +185,13 @@ export default [
 				it: 'readonly',
 				test: 'readonly',
 				expect: 'readonly',
+				fail: 'readonly',
 				beforeEach: 'readonly',
 				afterEach: 'readonly',
 				beforeAll: 'readonly',
 				afterAll: 'readonly',
 				vi: 'readonly',
+				jest: 'readonly',
 			},
 		},
 		rules: {
