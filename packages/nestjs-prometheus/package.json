@@ -1,0 +1,45 @@
+{
+	"name": "@pawells/nestjs-prometheus",
+	"displayName": "@pawells/nestjs-prometheus",
+	"version": "1.0.0",
+	"description": "NestJS Prometheus metrics module with endpoint controller",
+	"type": "module",
+	"main": "./build/index.js",
+	"types": "./build/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./build/index.d.ts",
+			"import": "./build/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint src/",
+		"lint:fix": "eslint src/ --fix",
+		"test": "vitest run",
+		"test:coverage": "vitest --coverage",
+		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
+	},
+	"peerDependencies": {
+		"@nestjs/common": ">=10.0.0",
+		"prom-client": ">=15.0.0"
+	},
+	"dependencies": {
+		"@pawells/nestjs-shared": "workspace:*"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	},
+	"packageManager": "yarn@4.12.0",
+	"author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
+	"license": "MIT",
+	"files": [
+		"build/",
+		"README.md",
+		"LICENSE"
+	],
+	"publishConfig": {
+		"access": "public"
+	}
+}

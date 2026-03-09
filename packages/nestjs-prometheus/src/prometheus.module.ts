@@ -1,0 +1,88 @@
+import { Global, Module, OnModuleInit, type DynamicModule } from '@nestjs/common';
+import { InstrumentationRegistry } from '@pawells/nestjs-shared';
+import { PrometheusExporter } from './prometheus.exporter.js';
+import { MetricsController } from './controllers/metrics.controller.js';
+
+/**
+ * Prometheus metrics module for NestJS
+ *
+ * Provides integration with @pawells/nestjs-shared InstrumentationRegistry
+ * to export metrics in Prometheus format via a `/metrics` HTTP endpoint.
+ *
+ * Registers PrometheusExporter globally and automatically connects it to the
+ * InstrumentationRegistry so that metric descriptors and values are forwarded
+ * to the Prometheus exporter.
+ *
+ * @example
+ * ```typescript
+ * import { PrometheusModule } from '@pawells/nestjs-prometheus';
+ *
+ * @Module({
+ *   imports: [
+ *     ConfigModule,
+ *     CommonModule,
+ *     PrometheusModule.forRoot(),  // Register module globally
+ *   ],
+ * })
+ * export class AppModule {}
+ *
+ * // Metrics are now available at: GET /metrics
+ * ```
+ */
+@Global()
+@Module({
+	providers: [PrometheusExporter],
+	exports: [PrometheusExporter],
+	controllers: [MetricsController],
+})
+export class PrometheusModule implements OnModuleInit {
+	/**
+	 * Create a global PrometheusModule with automatic registration
+	 *
+	 * Returns a DynamicModule that marks this module as global, enabling
+	 * it to be imported once at the top level and used throughout the application.
+	 *
+	 * @returns DynamicModule configured as global
+	 *
+	 * @example
+	 * ```typescript
+	 * @Module({
+	 *   imports: [PrometheusModule.forRoot()],
+	 * })
+	 * export class AppModule {}
+	 * ```
+	 */
+	public static forRoot(): DynamicModule {
+		return {
+			module: PrometheusModule,
+			global: true,
+		};
+	}
+
+	/**
+	 * Initialize the module and register the Prometheus exporter
+	 *
+	 * Called by NestJS during module initialization. Registers the PrometheusExporter
+	 * with the InstrumentationRegistry so that it receives descriptor registration
+	 * events and metric values.
+	 *
+	 * @param exporter - The PrometheusExporter instance
+	 * @param registry - The InstrumentationRegistry instance
+	 *
+	 * @example
+	 * ```typescript
+	 * // During application startup:
+	 * // 1. PrometheusModule is initialized
+	 * // 2. onModuleInit() registers PrometheusExporter with InstrumentationRegistry
+	 * // 3. All metrics registered with registry are now tracked by Prometheus exporter
+	 * ```
+	 */
+	public onModuleInit(): void {
+		this.registry.registerExporter(this.exporter);
+	}
+
+	constructor(
+		private readonly exporter: PrometheusExporter,
+		private readonly registry: InstrumentationRegistry,
+	) {}
+}
