@@ -82,8 +82,7 @@ export class CursorUtils {
 		try {
 			const data = Buffer.from(cursor, 'base64').toString('utf-8');
 			return JSON.parse(data);
-		}
-		catch {
+		} catch {
 			throw new Error('Invalid cursor format');
 		}
 	}

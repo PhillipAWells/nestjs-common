@@ -34,7 +34,7 @@ export class GraphQLRolesGuard implements CanActivate {
 		// Get required roles from metadata
 		const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
 			context.getHandler(),
-			context.getClass()
+			context.getClass(),
 		]);
 
 		// If no roles are required, allow access
@@ -57,13 +57,13 @@ export class GraphQLRolesGuard implements CanActivate {
 
 		if (!hasRequiredRole) {
 			this.logger.warn(
-				`User ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${requiredRoles.join(', ')}], User has: [${userRoles.join(', ')}]`
+				`User ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${requiredRoles.join(', ')}], User has: [${userRoles.join(', ')}]`,
 			);
 			throw new ForbiddenException('Insufficient permissions');
 		}
 
 		this.logger.debug(
-			`User ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${userRoles.join(', ')}]`
+			`User ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${userRoles.join(', ')}]`,
 		);
 
 		return true;

@@ -1,30 +1,30 @@
 
 import { Cache } from 'cache-manager';
 import { AppLogger } from '@pawells/nestjs-shared/common';
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { of } from 'rxjs';
 import {
 	BaseCacheInterceptor,
 	CacheKeyGenerator,
 	CacheMetadataExtractor,
-	CacheContextHandler
+	CacheContextHandler,
 } from '../interceptors/base-cache.interceptor.js';
 
 // Mock implementations for testing
 class MockCacheKeyGenerator implements CacheKeyGenerator {
-	public generate = jest.fn<(context: any, options?: any) => string>().mockReturnValue('test-key');
+	public generate = vi.fn<(context: any, options?: any) => string>().mockReturnValue('test-key');
 }
 
 class MockCacheMetadataExtractor implements CacheMetadataExtractor {
-	public getCacheDisabled = jest.fn<(context: any) => boolean>().mockReturnValue(false);
+	public getCacheDisabled = vi.fn<(context: any) => boolean>().mockReturnValue(false);
 
-	public getCacheTtl = jest.fn<(context: any) => number | undefined>().mockReturnValue(300);
+	public getCacheTtl = vi.fn<(context: any) => number | undefined>().mockReturnValue(300);
 }
 
 class MockCacheContextHandler implements CacheContextHandler {
-	public setCacheHeaders = jest.fn<(context: any, hit: boolean, ttl?: number) => void>();
+	public setCacheHeaders = vi.fn<(context: any, hit: boolean, ttl?: number) => void>();
 
-	public shouldCacheRequest = jest.fn<(context: any) => boolean>().mockReturnValue(true);
+	public shouldCacheRequest = vi.fn<(context: any) => boolean>().mockReturnValue(true);
 }
 
 class TestBaseCacheInterceptor extends BaseCacheInterceptor {
@@ -45,7 +45,7 @@ class TestBaseCacheInterceptor extends BaseCacheInterceptor {
 		appLogger: AppLogger,
 		private readonly keyGenerator: CacheKeyGenerator,
 		private readonly metadataExtractor: CacheMetadataExtractor,
-		private readonly contextHandler: CacheContextHandler
+		private readonly contextHandler: CacheContextHandler,
 	) {
 		super(cacheManager, appLogger);
 	}
@@ -53,7 +53,7 @@ class TestBaseCacheInterceptor extends BaseCacheInterceptor {
 
 describe('BaseCacheInterceptor', () => {
 	let interceptor: TestBaseCacheInterceptor;
-	let mockCacheManager: jest.Mocked<Cache>;
+	let mockCacheManager: any;
 	let mockKeyGenerator: MockCacheKeyGenerator;
 	let mockMetadataExtractor: MockCacheMetadataExtractor;
 	let mockContextHandler: MockCacheContextHandler;
@@ -62,19 +62,19 @@ describe('BaseCacheInterceptor', () => {
 
 	beforeEach(async () => {
 		mockCacheManager = {
-			get: jest.fn(),
-			set: jest.fn(),
-			del: jest.fn(),
-			clear: jest.fn()
+			get: vi.fn(),
+			set: vi.fn(),
+			del: vi.fn(),
+			clear: vi.fn(),
 		} as any;
 
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		};
 
 		mockKeyGenerator = new MockCacheKeyGenerator();
@@ -86,12 +86,12 @@ describe('BaseCacheInterceptor', () => {
 			mockAppLogger as any,
 			mockKeyGenerator,
 			mockMetadataExtractor,
-			mockContextHandler
+			mockContextHandler,
 		);
 
 		mockExecutionContext = {};
 		mockCallHandler = {
-			handle: jest.fn().mockReturnValue(of('test-data'))
+			handle: vi.fn().mockReturnValue(of('test-data')),
 		};
 	});
 
@@ -100,16 +100,18 @@ describe('BaseCacheInterceptor', () => {
 			mockCacheManager.get.mockResolvedValue('cached-data');
 		});
 
-		it('should return cached data and set hit headers', (done) => {
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
-				expect(result).toBe('cached-data');
-				expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
-					mockExecutionContext,
-					true,
-					300
-				);
-				expect(mockCallHandler.handle).not.toHaveBeenCalled();
-				done();
+		it('should return cached data and set hit headers', () => {
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
+					expect(result).toBe('cached-data');
+					expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
+						mockExecutionContext,
+						true,
+						300,
+					);
+					expect(mockCallHandler.handle).not.toHaveBeenCalled();
+					resolve();
+				});
 			});
 		});
 	});
@@ -120,16 +122,18 @@ describe('BaseCacheInterceptor', () => {
 			mockCacheManager.set.mockResolvedValue(undefined);
 		});
 
-		it('should execute handler, cache result, and set miss headers', (done) => {
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
-				expect(result).toBe('test-data');
-				expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
-					mockExecutionContext,
-					false
-				);
-				expect(mockCallHandler.handle).toHaveBeenCalled();
-				expect(mockCacheManager.set).toHaveBeenCalledWith('test-key', 'test-data', 300);
-				done();
+		it('should execute handler, cache result, and set miss headers', () => {
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
+					expect(result).toBe('test-data');
+					expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
+						mockExecutionContext,
+						false,
+					);
+					expect(mockCallHandler.handle).toHaveBeenCalled();
+					expect(mockCacheManager.set).toHaveBeenCalledWith('test-key', 'test-data', 300);
+					resolve();
+				});
 			});
 		});
 	});
@@ -139,12 +143,14 @@ describe('BaseCacheInterceptor', () => {
 			mockMetadataExtractor.getCacheDisabled.mockReturnValue(true);
 		});
 
-		it('should skip caching and execute handler directly', (done) => {
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
-				expect(result).toBe('test-data');
-				expect(mockCacheManager.get).not.toHaveBeenCalled();
-				expect(mockCallHandler.handle).toHaveBeenCalled();
-				done();
+		it('should skip caching and execute handler directly', () => {
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
+					expect(result).toBe('test-data');
+					expect(mockCacheManager.get).not.toHaveBeenCalled();
+					expect(mockCallHandler.handle).toHaveBeenCalled();
+					resolve();
+				});
 			});
 		});
 	});
@@ -154,12 +160,14 @@ describe('BaseCacheInterceptor', () => {
 			mockContextHandler.shouldCacheRequest.mockReturnValue(false);
 		});
 
-		it('should skip caching and execute handler directly', (done) => {
-			interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
-				expect(result).toBe('test-data');
-				expect(mockCacheManager.get).not.toHaveBeenCalled();
-				expect(mockCallHandler.handle).toHaveBeenCalled();
-				done();
+		it('should skip caching and execute handler directly', () => {
+			return new Promise<void>((resolve) => {
+				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
+					expect(result).toBe('test-data');
+					expect(mockCacheManager.get).not.toHaveBeenCalled();
+					expect(mockCallHandler.handle).toHaveBeenCalled();
+					resolve();
+				});
 			});
 		});
 	});

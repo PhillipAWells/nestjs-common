@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GraphQLWebSocketServer } from '../../subscriptions/websocket.server.js';
 import { SubscriptionService } from '../../subscriptions/subscription.service.js';
@@ -20,35 +20,35 @@ describe('GraphQLWebSocketServer', () => {
 	beforeEach(async () => {
 		mockSubscriptionService = {};
 		mockAuthService = {
-			authenticate: jest.fn()
+			authenticate: vi.fn(),
 		};
 		mockConnectionManager = {
-			canAcceptConnection: jest.fn(),
-			addConnection: jest.fn(),
-			removeConnection: jest.fn(),
-			removeSubscription: jest.fn(),
-			getConnectionCount: jest.fn().mockReturnValue(5),
-			getSubscriptionCount: jest.fn().mockReturnValue(10)
+			canAcceptConnection: vi.fn(),
+			addConnection: vi.fn(),
+			removeConnection: vi.fn(),
+			removeSubscription: vi.fn(),
+			getConnectionCount: vi.fn().mockReturnValue(5),
+			getSubscriptionCount: vi.fn().mockReturnValue(10),
 		};
 		mockHttpServer = {};
 		mockWebSocketServer = {
-			close: jest.fn()
+			close: vi.fn(),
 		};
-		mockDisposeServer = jest.fn();
+		mockDisposeServer = vi.fn();
 
 		// Mock WebSocketServer constructor
-		const mockWebSocketServerConstructor = jest.fn().mockReturnValue(mockWebSocketServer);
+		const mockWebSocketServerConstructor = vi.fn().mockReturnValue(mockWebSocketServer);
 		(global as any).WebSocketServer = mockWebSocketServerConstructor;
 
 		// Mock useServer
-		const mockUseServer = jest.fn().mockReturnValue(mockDisposeServer);
+		const mockUseServer = vi.fn().mockReturnValue(mockDisposeServer);
 		(global as any).useServer = mockUseServer;
 
 		config = {
 			path: '/subscriptions',
 			maxPayloadSize: 100 * 1024,
 			keepalive: 30000,
-			connectionTimeout: 60000
+			connectionTimeout: 60000,
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -56,28 +56,28 @@ describe('GraphQLWebSocketServer', () => {
 				GraphQLWebSocketServer,
 				{
 					provide: SubscriptionService,
-					useValue: mockSubscriptionService
+					useValue: mockSubscriptionService,
 				},
 				{
 					provide: WebSocketAuthService,
-					useValue: mockAuthService
+					useValue: mockAuthService,
 				},
 				{
 					provide: ConnectionManagerService,
-					useValue: mockConnectionManager
+					useValue: mockConnectionManager,
 				},
 				{
 					provide: 'WEBSOCKET_SERVER_CONFIG',
-					useValue: config
-				}
-			]
+					useValue: config,
+				},
+			],
 		}).compile();
 
 		server = module.get<GraphQLWebSocketServer>(GraphQLWebSocketServer);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('initialize', () => {
@@ -86,13 +86,13 @@ describe('GraphQLWebSocketServer', () => {
 
 			expect((global as any).WebSocketServer).toHaveBeenCalledWith({
 				server: mockHttpServer,
-				path: '/subscriptions'
+				path: '/subscriptions',
 			});
 			expect((global as any).useServer).toHaveBeenCalled();
 		});
 
 		it('should handle initialization errors', async () => {
-			const mockWebSocketServerConstructor = jest.fn().mockImplementation(() => {
+			const mockWebSocketServerConstructor = vi.fn().mockImplementation(() => {
 				throw new Error('WebSocket creation failed');
 			});
 			(global as any).WebSocketServer = mockWebSocketServerConstructor;
@@ -104,12 +104,12 @@ describe('GraphQLWebSocketServer', () => {
 	describe('handleConnect', () => {
 		it('should accept authenticated connections within limits', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'user123'
+				userId: 'user123',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(true);
 
@@ -120,17 +120,17 @@ describe('GraphQLWebSocketServer', () => {
 			expect(mockConnectionManager.addConnection).toHaveBeenCalledWith(ctx, 'user123');
 			expect(result).toEqual({
 				userId: 'user123',
-				token: 'valid-token'
+				token: 'valid-token',
 			});
 		});
 
 		it('should reject unauthenticated connections', async () => {
 			const ctx = {
-				connectionParams: { token: 'invalid-token' }
+				connectionParams: { token: 'invalid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
-				authenticated: false
+				authenticated: false,
 			});
 
 			const result = await (server as any).handleConnect(ctx);
@@ -140,12 +140,12 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should reject connections exceeding limits', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'user123'
+				userId: 'user123',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(false);
 
@@ -156,7 +156,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle authentication errors', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockRejectedValue(new Error('Auth service error'));
@@ -170,7 +170,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('handleSubscribe', () => {
 		it('should allow subscriptions with valid user ID', async () => {
 			const ctx = {
-				connectionParams: { userId: 'user123' }
+				connectionParams: { userId: 'user123' },
 			};
 
 			const result = await (server as any).handleSubscribe(ctx);
@@ -180,13 +180,13 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should reject subscriptions without user ID', async () => {
 			const ctx = {
-				connectionParams: {}
+				connectionParams: {},
 			};
 
 			const result = await (server as any).handleSubscribe(ctx);
 
 			expect(result).toEqual({
-				errors: [{ message: 'No user ID in connection context' }]
+				errors: [{ message: 'No user ID in connection context' }],
 			});
 		});
 	});
@@ -194,7 +194,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('handleComplete', () => {
 		it('should handle subscription completion', async () => {
 			const ctx = {
-				connectionParams: { userId: 'user123' }
+				connectionParams: { userId: 'user123' },
 			};
 
 			await (server as any).handleComplete(ctx);
@@ -204,7 +204,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle completion without user ID', async () => {
 			const ctx = {
-				connectionParams: {}
+				connectionParams: {},
 			};
 
 			await (server as any).handleComplete(ctx);
@@ -224,7 +224,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle disconnections with user ID', async () => {
 			const ctx = {
-				connectionParams: { userId: 'user123' }
+				connectionParams: { userId: 'user123' },
 			};
 
 			await (server as any).handleDisconnect(ctx);
@@ -236,7 +236,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('createContext', () => {
 		it('should create GraphQL context', () => {
 			const ctx = {
-				connectionParams: { userId: 'user123' }
+				connectionParams: { userId: 'user123' },
 			};
 
 			const context = (server as any).createContext(ctx);
@@ -244,7 +244,7 @@ describe('GraphQLWebSocketServer', () => {
 			expect(context).toEqual({
 				userId: 'user123',
 				subscriptionService: mockSubscriptionService,
-				connectionManager: mockConnectionManager
+				connectionManager: mockConnectionManager,
 			});
 		});
 
@@ -256,7 +256,7 @@ describe('GraphQLWebSocketServer', () => {
 			expect(context).toEqual({
 				userId: undefined,
 				subscriptionService: mockSubscriptionService,
-				connectionManager: mockConnectionManager
+				connectionManager: mockConnectionManager,
 			});
 		});
 	});
@@ -289,7 +289,7 @@ describe('GraphQLWebSocketServer', () => {
 				mockSubscriptionService,
 				mockAuthService,
 				mockConnectionManager,
-				config
+				config,
 			);
 
 			await expect(newServer.onModuleDestroy()).resolves.not.toThrow();
@@ -307,7 +307,7 @@ describe('GraphQLWebSocketServer', () => {
 			await server.initialize(mockHttpServer);
 
 			expect((global as any).WebSocketServer).toHaveBeenCalledWith(
-				expect.objectContaining({ path: '/subscriptions' })
+				expect.objectContaining({ path: '/subscriptions' }),
 			);
 		});
 
@@ -328,12 +328,12 @@ describe('GraphQLWebSocketServer', () => {
 	describe('client connection flow', () => {
 		it('should accept client with valid token', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'client-user'
+				userId: 'client-user',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(true);
 
@@ -341,18 +341,18 @@ describe('GraphQLWebSocketServer', () => {
 
 			expect(result).toEqual({
 				userId: 'client-user',
-				token: 'valid-token'
+				token: 'valid-token',
 			});
 		});
 
 		it('should disconnect client with invalid token', async () => {
 			const ctx = {
-				connectionParams: { token: 'invalid-token' }
+				connectionParams: { token: 'invalid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: false,
-				error: 'Invalid token'
+				error: 'Invalid token',
 			});
 
 			const result = await (server as any).handleConnect(ctx);
@@ -381,7 +381,7 @@ describe('GraphQLWebSocketServer', () => {
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'persistent-user'
+				userId: 'persistent-user',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(true);
 
@@ -396,7 +396,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('GraphQL subscription flow', () => {
 		it('should accept subscription message', async () => {
 			const ctx = {
-				connectionParams: { userId: 'subscriber-user' }
+				connectionParams: { userId: 'subscriber-user' },
 			};
 
 			const result = await (server as any).handleSubscribe(ctx);
@@ -406,13 +406,13 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should reject subscription without authentication', async () => {
 			const ctx = {
-				connectionParams: {}
+				connectionParams: {},
 			};
 
 			const result = await (server as any).handleSubscribe(ctx);
 
 			expect(result).toEqual({
-				errors: [{ message: 'No user ID in connection context' }]
+				errors: [{ message: 'No user ID in connection context' }],
 			});
 		});
 
@@ -430,7 +430,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle subscription completion', async () => {
 			const ctx = {
-				connectionParams: { userId: 'completion-user' }
+				connectionParams: { userId: 'completion-user' },
 			};
 
 			await (server as any).handleComplete(ctx);
@@ -442,12 +442,12 @@ describe('GraphQLWebSocketServer', () => {
 	describe('security', () => {
 		it('should reject invalid tokens before connection', async () => {
 			const ctx = {
-				connectionParams: { token: 'tampered-token' }
+				connectionParams: { token: 'tampered-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: false,
-				error: 'Token signature verification failed'
+				error: 'Token signature verification failed',
 			});
 
 			const result = await (server as any).handleConnect(ctx);
@@ -457,12 +457,12 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should reject expired tokens', async () => {
 			const ctx = {
-				connectionParams: { token: 'expired-token' }
+				connectionParams: { token: 'expired-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: false,
-				error: 'Token expired'
+				error: 'Token expired',
 			});
 
 			const result = await (server as any).handleConnect(ctx);
@@ -472,12 +472,12 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should check connection limits to prevent DOS', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'dos-attacker'
+				userId: 'dos-attacker',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(false);
 
@@ -488,11 +488,11 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should reject connections exceeding subscription limits', async () => {
 			const ctx = {
-				connectionParams: { userId: 'limit-user' }
+				connectionParams: { userId: 'limit-user' },
 			};
 
 			// Simulate subscription limit reached
-			mockConnectionManager.canAcceptSubscription = jest.fn().mockReturnValue(false);
+			mockConnectionManager.canAcceptSubscription = vi.fn().mockReturnValue(false);
 
 			const result = await (server as any).handleSubscribe(ctx);
 
@@ -505,8 +505,8 @@ describe('GraphQLWebSocketServer', () => {
 				...config,
 				cors: {
 					origin: 'https://trusted-domain.com',
-					credentials: true
-				}
+					credentials: true,
+				},
 			};
 
 			// Server should respect CORS config
@@ -517,7 +517,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('error scenarios', () => {
 		it('should handle authentication service errors', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockRejectedValue(new Error('Auth service down'));
@@ -529,12 +529,12 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle connection manager errors gracefully', async () => {
 			const ctx = {
-				connectionParams: { token: 'valid-token' }
+				connectionParams: { token: 'valid-token' },
 			};
 
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'user123'
+				userId: 'user123',
 			});
 			mockConnectionManager.canAcceptConnection.mockImplementation(() => {
 				throw new Error('Connection check failed');
@@ -547,7 +547,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle subscription errors without crashing', async () => {
 			const ctx = {
-				connectionParams: { userId: 'error-user' }
+				connectionParams: { userId: 'error-user' },
 			};
 
 			mockConnectionManager.removeSubscription.mockImplementation(() => {
@@ -559,7 +559,7 @@ describe('GraphQLWebSocketServer', () => {
 
 		it('should handle disconnection errors gracefully', async () => {
 			const ctx = {
-				connectionParams: { userId: 'disconnect-user' }
+				connectionParams: { userId: 'disconnect-user' },
 			};
 
 			mockConnectionManager.removeConnection.mockImplementation(() => {
@@ -607,7 +607,7 @@ describe('GraphQLWebSocketServer', () => {
 		it('should handle full connection lifecycle', async () => {
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'lifecycle-user'
+				userId: 'lifecycle-user',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(true);
 
@@ -629,16 +629,16 @@ describe('GraphQLWebSocketServer', () => {
 		it('should handle concurrent client connections', async () => {
 			mockAuthService.authenticate.mockResolvedValue({
 				authenticated: true,
-				userId: 'concurrent-user'
+				userId: 'concurrent-user',
 			});
 			mockConnectionManager.canAcceptConnection.mockReturnValue(true);
 
 			const contexts = Array.from({ length: 3 }).map((_, i) => ({
-				connectionParams: { token: `token-${i}` }
+				connectionParams: { token: `token-${i}` },
 			}));
 
 			const results = await Promise.all(
-				contexts.map(ctx => (server as any).handleConnect(ctx))
+				contexts.map(ctx => (server as any).handleConnect(ctx)),
 			);
 
 			expect(results).toHaveLength(3);

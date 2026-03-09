@@ -26,7 +26,7 @@ export class GraphQLPublicGuard implements CanActivate {
 
 	constructor(
 		private readonly reflector: Reflector,
-		@Inject(AppLogger) private readonly appLogger: AppLogger
+		@Inject(AppLogger) private readonly appLogger: AppLogger,
 	) {
 		this.logger = this.appLogger.createContextualLogger(GraphQLPublicGuard.name);
 	}
@@ -41,7 +41,7 @@ export class GraphQLPublicGuard implements CanActivate {
 		// Check if resolver is marked as public
 		const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
 			context.getHandler(),
-			context.getClass()
+			context.getClass(),
 		]);
 
 		if (isPublic) {

@@ -30,8 +30,7 @@ export class ResilienceService implements OnModuleDestroy {
 		const timer = setInterval(() => {
 			try {
 				callback();
-			}
-			catch (error: any) {
+			} catch (error: any) {
 				this.logger.error(`Keepalive error for connection ${connectionId}: ${error.message}`);
 			}
 		}, this.config.resilience.keepalive.interval);
@@ -62,7 +61,7 @@ export class ResilienceService implements OnModuleDestroy {
 	public scheduleReconnection(
 		connectionId: string,
 		callback: () => Promise<void>,
-		attempt: number = 1
+		attempt: number = 1,
 	): void {
 		if (!this.config.resilience.reconnection.enabled) {
 			return;
@@ -79,8 +78,7 @@ export class ResilienceService implements OnModuleDestroy {
 			try {
 				await callback();
 				this.logger.log(`Reconnection successful for connection: ${connectionId}`);
-			}
-			catch (error: any) {
+			} catch (error: any) {
 				this.logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${error.message}`);
 				// Schedule next attempt
 				this.scheduleReconnection(connectionId, callback, attempt + 1);
@@ -113,7 +111,7 @@ export class ResilienceService implements OnModuleDestroy {
 	public async handleConnectionError(
 		connectionId: string,
 		error: Error,
-		recoveryCallback: () => Promise<void>
+		recoveryCallback: () => Promise<void>,
 	): Promise<void> {
 		this.logger.error(`Connection error for ${connectionId}: ${error.message}`, error.stack);
 
@@ -134,8 +132,7 @@ export class ResilienceService implements OnModuleDestroy {
 				await recoveryCallback();
 				this.logger.log(`Error recovery successful for connection: ${connectionId}`);
 				return;
-			}
-			catch (recoveryError: any) {
+			} catch (recoveryError: any) {
 				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${recoveryError.message}`);
 				attempt++;
 			}
@@ -160,11 +157,9 @@ export class ResilienceService implements OnModuleDestroy {
 		try {
 			await shutdownCallback();
 			this.logger.log('Graceful shutdown completed');
-		}
-		catch (error: any) {
+		} catch (error: any) {
 			this.logger.error(`Shutdown error: ${error.message}`, error.stack);
-		}
-		finally {
+		} finally {
 			if (this.shutdownTimeout) {
 				clearTimeout(this.shutdownTimeout);
 			}
@@ -181,8 +176,7 @@ export class ResilienceService implements OnModuleDestroy {
 
 		if (this.config.resilience.reconnection.backoff === 'exponential') {
 			return Math.min(baseDelay * Math.pow(2, attempt - 1), REDIS_PUBSUB_CLEANUP_INTERVAL ?? 30000); // Max 30 seconds
-		}
-		else {
+		} else {
 			return baseDelay;
 		}
 	}
@@ -199,7 +193,7 @@ export class ResilienceService implements OnModuleDestroy {
 		return {
 			activeKeepalives: this.keepaliveTimers.size,
 			pendingReconnections: this.reconnectionTimers.size,
-			shutdownInProgress: this.shutdownTimeout !== undefined
+			shutdownInProgress: this.shutdownTimeout !== undefined,
 		};
 	}
 

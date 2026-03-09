@@ -12,7 +12,7 @@ export enum SortDirection {
 	/**
    * Descending order
    */
-	DESC = 'DESC'
+	DESC = 'DESC',
 }
 
 /**
@@ -20,5 +20,5 @@ export enum SortDirection {
  */
 registerEnumType(SortDirection, {
 	name: 'SortDirection',
-	description: 'Sort direction for ordering queries'
+	description: 'Sort direction for ordering queries',
 });

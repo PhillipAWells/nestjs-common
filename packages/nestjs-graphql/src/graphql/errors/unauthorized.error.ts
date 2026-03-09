@@ -16,7 +16,7 @@ export class UnauthorizedError extends GraphqlError {
 		super(message, {
 			code: 'AUTHENTICATION_REQUIRED',
 			statusCode: 401,
-			context
+			context,
 		});
 	}
 }

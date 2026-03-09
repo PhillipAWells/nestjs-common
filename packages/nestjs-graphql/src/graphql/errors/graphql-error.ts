@@ -31,8 +31,8 @@ export class GraphqlError extends GraphQLError {
 			context: Record<string, any> | undefined;
 			originalError?: Error;
 		} = {
-			context: undefined
-		}
+			context: undefined,
+		},
 	) {
 		const { code = 'INTERNAL_SERVER_ERROR', statusCode = HTTP_STATUS_INTERNAL_SERVER_ERROR, context, originalError } = options;
 
@@ -45,12 +45,12 @@ export class GraphqlError extends GraphQLError {
 			// Include stack trace in development
 			...(process.env['NODE_ENV'] !== 'production' && originalError?.stack
 				? { stacktrace: originalError.stack }
-				: {})
+				: {}),
 		};
 
 		super(message, {
 			extensions,
-			originalError
+			originalError,
 		});
 	}
 

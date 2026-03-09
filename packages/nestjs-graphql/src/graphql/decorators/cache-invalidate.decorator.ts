@@ -7,7 +7,7 @@ import { SetMetadata } from '@nestjs/common';
 const CACHE_METADATA_KEYS = {
 	CACHEABLE: 'cacheable',
 	CACHE_INVALIDATE: 'cache-invalidate',
-	CACHE_EVICT: 'cache-evict'
+	CACHE_EVICT: 'cache-evict',
 } as const;
 
 /**

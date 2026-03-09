@@ -24,7 +24,7 @@ export const COMPLEXITY_WEIGHTS = {
 	UNION_FIELD: 3,
 
 	// Custom scalar operations
-	CUSTOM_SCALAR: QUERY_COMPLEXITY_SCALAR_WEIGHT - 8
+	CUSTOM_SCALAR: QUERY_COMPLEXITY_SCALAR_WEIGHT - 8,
 } as const;
 
 /**
@@ -34,12 +34,12 @@ export const DEFAULT_COMPLEXITY_RULES: ComplexityConfig = {
 	...DEFAULT_COMPLEXITY_CONFIG,
 	multipliers: {
 		depth: QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER,
-		list: COMPLEXITY_WEIGHTS.LIST_ITEM
+		list: COMPLEXITY_WEIGHTS.LIST_ITEM,
 	},
 	limits: {
 		maxComplexity: QUERY_COMPLEXITY_THRESHOLD,
-		maxDepth: QUERY_DEPTH_LIMIT
-	}
+		maxDepth: QUERY_DEPTH_LIMIT,
+	},
 };
 
 /**
@@ -51,35 +51,35 @@ export const FIELD_COMPLEXITY_RULES = {
 		profile: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 		friends: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		posts: COMPLEXITY_WEIGHTS.LIST_ITEM,
-		comments: COMPLEXITY_WEIGHTS.LIST_ITEM
+		comments: COMPLEXITY_WEIGHTS.LIST_ITEM,
 	},
 
 	// Product-related fields
 	product: {
 		details: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 		reviews: COMPLEXITY_WEIGHTS.LIST_ITEM,
-		related: COMPLEXITY_WEIGHTS.LIST_ITEM
+		related: COMPLEXITY_WEIGHTS.LIST_ITEM,
 	},
 
 	// Order-related fields
 	order: {
 		items: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		history: COMPLEXITY_WEIGHTS.LIST_ITEM,
-		customer: COMPLEXITY_WEIGHTS.OBJECT_FIELD
+		customer: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 	},
 
 	// Comment-related fields
 	comment: {
 		replies: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		author: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
-		post: COMPLEXITY_WEIGHTS.OBJECT_FIELD
+		post: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 	},
 
 	// Tag-related fields
 	tag: {
 		posts: COMPLEXITY_WEIGHTS.LIST_ITEM,
-		related: COMPLEXITY_WEIGHTS.LIST_ITEM
-	}
+		related: COMPLEXITY_WEIGHTS.LIST_ITEM,
+	},
 } as const;
 
 /**
@@ -90,7 +90,7 @@ export const FIELD_COMPLEXITY_RULES = {
  */
 export function getFieldComplexityWeight(
 	type: keyof typeof FIELD_COMPLEXITY_RULES,
-	field: string
+	field: string,
 ): number {
 	const typeRules = FIELD_COMPLEXITY_RULES[type];
 	if (!typeRules) return COMPLEXITY_WEIGHTS.SIMPLE_FIELD;
@@ -108,7 +108,7 @@ export function getFieldComplexityWeight(
 export function calculateListComplexity(
 	baseComplexity: number,
 	estimatedItems: number = 10,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	const { list = COMPLEXITY_WEIGHTS.LIST_ITEM } = config.multipliers ?? {};
 	return baseComplexity + (estimatedItems * list);
@@ -124,7 +124,7 @@ export function calculateListComplexity(
 export function calculateNestedComplexity(
 	baseComplexity: number,
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	const { depth: depthMultiplier = 2 } = config.multipliers ?? {};
 	return baseComplexity * Math.pow(depthMultiplier, depth);
@@ -140,7 +140,7 @@ export function calculateNestedComplexity(
 export function calculateConnectionComplexity(
 	baseComplexity: number,
 	first: number = 10,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	return COMPLEXITY_WEIGHTS.CONNECTION + calculateListComplexity(baseComplexity, first, config);
 }
@@ -174,19 +174,19 @@ export function validateComplexityConfig(config: ComplexityConfig): boolean {
  * @returns Merged complexity configuration
  */
 export function createComplexityConfig(
-	overrides: Partial<ComplexityConfig> = {}
+	overrides: Partial<ComplexityConfig> = {},
 ): ComplexityConfig {
 	const config = {
 		...DEFAULT_COMPLEXITY_RULES,
 		...overrides,
 		multipliers: {
 			...DEFAULT_COMPLEXITY_RULES.multipliers,
-			...overrides.multipliers
+			...overrides.multipliers,
 		},
 		limits: {
 			...DEFAULT_COMPLEXITY_RULES.limits,
-			...overrides.limits
-		}
+			...overrides.limits,
+		},
 	};
 
 	if (!validateComplexityConfig(config)) {

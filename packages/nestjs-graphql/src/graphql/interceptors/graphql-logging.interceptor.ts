@@ -52,7 +52,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor {
 
 		// Log operation start
 		this.logger.info(
-			`GraphQL ${operationType} started: ${operationName}.${fieldName} by user ${userId}`
+			`GraphQL ${operationType} started: ${operationName}.${fieldName} by user ${userId}`,
 		);
 
 		// Log variables in debug mode (avoid logging sensitive data in production)
@@ -66,7 +66,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor {
 				next: (result) => {
 					const duration = Date.now() - startTime;
 					this.logger.info(
-						`GraphQL ${operationType} completed: ${operationName}.${fieldName} in ${duration}ms`
+						`GraphQL ${operationType} completed: ${operationName}.${fieldName} in ${duration}ms`,
 					);
 
 					// Log result summary in debug mode
@@ -78,10 +78,10 @@ export class GraphQLLoggingInterceptor implements NestInterceptor {
 				error: (error) => {
 					const duration = Date.now() - startTime;
 					this.logger.error(
-						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${error instanceof Error ? error.message : String(error)}`
+						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
 					);
-				}
-			})
+				},
+			}),
 		);
 	}
 

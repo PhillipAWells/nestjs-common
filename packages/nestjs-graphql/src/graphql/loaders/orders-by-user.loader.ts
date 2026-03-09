@@ -12,7 +12,7 @@ export class OrdersByUserLoader {
 	private readonly logger = new Logger(OrdersByUserLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -21,11 +21,11 @@ export class OrdersByUserLoader {
    * @returns DataLoader for orders by user
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Order[] | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Order[] | Error)[]>,
 	): DataLoader<string, Order[]> {
 		return this.dataLoaderRegistry.createWithCache(
 			'orders-by-user-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -36,17 +36,17 @@ export class OrdersByUserLoader {
    * @returns Promise resolving to arrays of orders or errors
    */
 	private async defaultBatchLoadFn(
-		userIds: readonly string[]
+		userIds: readonly string[],
 	): Promise<(Order[] | Error)[]> {
 		this.logger.warn(
-			'Using default orders by user batch loader. Override with actual implementation.'
+			'Using default orders by user batch loader. Override with actual implementation.',
 		);
 
 		return userIds.map(
 			(userId) =>
 				new Error(
-					`OrdersByUserLoader not implemented. Override batchLoadFn for user ID: ${userId}`
-				)
+					`OrdersByUserLoader not implemented. Override batchLoadFn for user ID: ${userId}`,
+				),
 		);
 	}
 
@@ -59,8 +59,7 @@ export class OrdersByUserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load orders for user ${userId}`, error);
 			return undefined;
 		}
@@ -75,8 +74,7 @@ export class OrdersByUserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load orders for users ${userIds}`, error);
 			return userIds.map(() => error as Error);
 		}

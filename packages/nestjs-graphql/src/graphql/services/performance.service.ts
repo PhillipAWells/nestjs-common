@@ -8,7 +8,7 @@ import {
 	MAX_METRICS_HISTORY,
 	DEFAULT_RECENT_METRICS_LIMIT,
 	DEFAULT_SLOW_OPERATIONS_LIMIT,
-	DEFAULT_ERRORS_LIMIT
+	DEFAULT_ERRORS_LIMIT,
 } from '../constants/performance.constants.js';
 
 /**
@@ -75,7 +75,7 @@ export class GraphQLPerformanceService {
 	public async measure<T>(
 		operation: string,
 		fn: () => Promise<T> | T,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): Promise<T> {
 		const startTime = new Date();
 
@@ -91,7 +91,7 @@ export class GraphQLPerformanceService {
 				endTime,
 				success: true,
 				error: undefined,
-				metadata
+				metadata,
 			});
 
 			// Log slow operations
@@ -100,8 +100,7 @@ export class GraphQLPerformanceService {
 			}
 
 			return result;
-		}
-		catch (error) {
+		} catch (error) {
 			const endTime = new Date();
 			const duration = endTime.getTime() - startTime.getTime();
 
@@ -112,7 +111,7 @@ export class GraphQLPerformanceService {
 				endTime,
 				success: false,
 				error: error instanceof Error ? error.message : String(error),
-				metadata
+				metadata,
 			});
 
 			this.logger.error(`Operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
@@ -145,7 +144,7 @@ export class GraphQLPerformanceService {
 
 		const relevantMetrics = this.metrics.filter(m =>
 			m.startTime.getTime() >= cutoff &&
-			(!operation || m.operation === operation)
+			(!operation || m.operation === operation),
 		);
 
 		if (relevantMetrics.length === 0) {
@@ -155,7 +154,7 @@ export class GraphQLPerformanceService {
 				minDuration: 0,
 				maxDuration: 0,
 				errorRate: 0,
-				operationsPerSecond: 0
+				operationsPerSecond: 0,
 			};
 		}
 
@@ -171,7 +170,7 @@ export class GraphQLPerformanceService {
 			minDuration: Math.min(...durations),
 			maxDuration: Math.max(...durations),
 			errorRate: errors / relevantMetrics.length,
-			operationsPerSecond: relevantMetrics.length / timeSpanSeconds
+			operationsPerSecond: relevantMetrics.length / timeSpanSeconds,
 		};
 	}
 
@@ -249,7 +248,7 @@ export class GraphQLPerformanceService {
 			result[operation] = {
 				count: data.count,
 				avgDuration,
-				errorRate: data.count > 0 ? data.errors / data.count : 0
+				errorRate: data.count > 0 ? data.errors / data.count : 0,
 			};
 		}
 

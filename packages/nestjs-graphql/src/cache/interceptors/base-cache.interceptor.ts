@@ -1,7 +1,7 @@
 import {
 	Inject,
 	Injectable,
-	NestInterceptor
+	NestInterceptor,
 } from '@nestjs/common';
 import type { ExecutionContext, CallHandler } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -47,7 +47,7 @@ export abstract class BaseCacheInterceptor implements NestInterceptor {
 
 	constructor(
 		@Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
-		@Inject(AppLogger) protected readonly appLogger: AppLogger
+		@Inject(AppLogger) protected readonly appLogger: AppLogger,
 	) {
 		this.logger = this.appLogger.createContextualLogger(BaseCacheInterceptor.name);
 	}
@@ -72,7 +72,7 @@ export abstract class BaseCacheInterceptor implements NestInterceptor {
 	 */
 	@ProfileMethod({
 		name: 'BaseCacheInterceptor.intercept',
-		tags: { interceptor: 'cache', operation: 'http_cache' }
+		tags: { interceptor: 'cache', operation: 'http_cache' },
 	})
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		const contextHandler = this.getCacheContextHandler();
@@ -114,13 +114,12 @@ export abstract class BaseCacheInterceptor implements NestInterceptor {
 						try {
 							await this.cacheManager.set(cacheKey, data, ttl);
 							this.logger.debug(`Cached response for ${cacheKey} (TTL: ${ttl}s)`);
-						}
-						catch (error) {
+						} catch (error) {
 							this.logger.error(`Failed to cache response for ${cacheKey}:`, error as string);
 						}
-					})
+					}),
 				);
-			})
+			}),
 		);
 	}
 

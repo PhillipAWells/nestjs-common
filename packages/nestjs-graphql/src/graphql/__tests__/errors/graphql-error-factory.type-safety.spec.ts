@@ -21,7 +21,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 				message: 'User not found',
 				code: GraphQLErrorCode.NOT_FOUND_ERROR,
 				statusCode: 404,
-				details: { userId: '123' }
+				details: { userId: '123' },
 			};
 
 			expect(errorInput).toBeDefined();
@@ -38,8 +38,8 @@ describe('GraphQL Error Factory - Type Safety', () => {
 				statusCode: 400,
 				context: {
 					field: 'email',
-					constraint: 'email_format'
-				}
+					constraint: 'email_format',
+				},
 			};
 
 			expect(errorInput.context?.field).toBe('email');
@@ -48,12 +48,12 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should create validation error with proper types', () => {
 			const ValidationError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR
+				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
 			const error = new ValidationError('Email is invalid', {
 				field: 'email',
-				value: 'not-an-email'
+				value: 'not-an-email',
 			});
 
 			expect(error.message).toBe('Email is invalid');
@@ -64,7 +64,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should create authentication error with proper types', () => {
 			const AuthError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED
+				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED,
 			);
 
 			const error = new AuthError('Token expired');
@@ -76,11 +76,11 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should create forbidden error with proper types', () => {
 			const ForbiddenError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.FORBIDDEN
+				GRAPHQL_ERROR_CONFIGS.FORBIDDEN,
 			);
 
 			const error = new ForbiddenError('Access denied', {
-				requiredRole: 'admin'
+				requiredRole: 'admin',
 			});
 
 			expect(error.message).toBe('Access denied');
@@ -91,11 +91,11 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should create rate limit error with proper types', () => {
 			const RateLimitError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.RATE_LIMIT_EXCEEDED
+				GRAPHQL_ERROR_CONFIGS.RATE_LIMIT_EXCEEDED,
 			);
 
 			const error = new RateLimitError('Rate limit exceeded', {
-				retryAfter: 60
+				retryAfter: 60,
 			});
 
 			expect(error.message).toBe('Rate limit exceeded');
@@ -133,7 +133,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 	describe('Error with method chaining and type safety', () => {
 		it('should create error with context and maintain types', () => {
 			const ValidationError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR
+				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
 			const error = new ValidationError('Invalid input');
@@ -146,7 +146,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should create error with new message and maintain types', () => {
 			const NotFoundError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.NOT_FOUND
+				GRAPHQL_ERROR_CONFIGS.NOT_FOUND,
 			);
 
 			const error = new NotFoundError('User not found', { userId: '123' });
@@ -161,7 +161,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 	describe('Formatted error response typing', () => {
 		it('should produce properly typed formatted error', () => {
 			const UnauthorizedError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED
+				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED,
 			);
 
 			const error = new UnauthorizedError('Invalid credentials');
@@ -179,11 +179,11 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 		it('should properly type error extensions', () => {
 			const ConflictError = createGraphQLError(
-				GRAPHQL_ERROR_CONFIGS.CONFLICT
+				GRAPHQL_ERROR_CONFIGS.CONFLICT,
 			);
 
 			const error = new ConflictError('Resource already exists', {
-				existingId: 'id-456'
+				existingId: 'id-456',
 			});
 
 			const extensions = error.extensions as Record<string, unknown>;
@@ -206,7 +206,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			const createValidationErrorInput = (message: string): IGraphQLErrorInput => ({
 				message,
 				code: GraphQLErrorCode.VALIDATION_ERROR,
-				statusCode: 400
+				statusCode: 400,
 			});
 
 			const errorInput = createValidationErrorInput('Invalid email');

@@ -4,7 +4,7 @@ import {
 	BaseCacheInterceptor,
 	CacheKeyGenerator,
 	CacheMetadataExtractor,
-	CacheContextHandler
+	CacheContextHandler,
 } from './interceptors/base-cache.interceptor.js';
 
 /**
@@ -30,7 +30,7 @@ export class HttpCacheKeyGenerator implements CacheKeyGenerator {
 			url,
 			query: this.sortObject(query),
 			params: this.sortObject(params),
-			userId
+			userId,
 		};
 
 		return `http:${Buffer.from(JSON.stringify(keyData)).toString('base64')}`;
@@ -83,8 +83,7 @@ export class HttpCacheContextHandler implements CacheContextHandler {
 		if (hit) {
 			response.setHeader('X-Cache', 'HIT');
 			response.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
-		}
-		else {
+		} else {
 			response.setHeader('X-Cache', 'MISS');
 			if (ttl) {
 				response.setHeader('Cache-Control', `public, max-age=${ttl}`);

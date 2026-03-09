@@ -9,7 +9,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: './schema.gql',
 				sortSchema: true,
 				playground: true,
-				introspection: true
+				introspection: true,
 			};
 
 			expect(() => GraphQLModule.forRoot(validOptions)).not.toThrow();
@@ -26,7 +26,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: undefined,
 				sortSchema: undefined,
 				playground: undefined,
-				introspection: undefined
+				introspection: undefined,
 			};
 
 			expect(() => GraphQLModule.forRoot(optionsWithUndefined)).not.toThrow();
@@ -37,7 +37,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				'./schema.gql',
 				'./src/schema.graphql',
 				'schema.gql',
-				true // boolean is also valid for autoSchemaFile
+				true, // boolean is also valid for autoSchemaFile
 			];
 
 			validPaths.forEach(path => {
@@ -50,7 +50,7 @@ describe('GraphQL Module Configuration Validation', () => {
 			const booleanOptions: GraphQLConfigOptions = {
 				sortSchema: true,
 				playground: false,
-				introspection: true
+				introspection: true,
 			};
 
 			expect(() => GraphQLModule.forRoot(booleanOptions)).not.toThrow();
@@ -58,7 +58,7 @@ describe('GraphQL Module Configuration Validation', () => {
 
 		it('should reject invalid configuration with non-boolean sortSchema', () => {
 			const invalidOptions: GraphQLConfigOptions = {
-				sortSchema: 'true' as any // Invalid type
+				sortSchema: 'true' as any, // Invalid type
 			};
 
 			expect(() => GraphQLModule.forRoot(invalidOptions)).toThrow('GraphQL configuration validation failed');
@@ -66,7 +66,7 @@ describe('GraphQL Module Configuration Validation', () => {
 
 		it('should reject invalid configuration with non-boolean playground', () => {
 			const invalidOptions: GraphQLConfigOptions = {
-				playground: 1 as any // Invalid type
+				playground: 1 as any, // Invalid type
 			};
 
 			expect(() => GraphQLModule.forRoot(invalidOptions)).toThrow('GraphQL configuration validation failed');
@@ -74,7 +74,7 @@ describe('GraphQL Module Configuration Validation', () => {
 
 		it('should reject invalid configuration with non-boolean introspection', () => {
 			const invalidOptions: GraphQLConfigOptions = {
-				introspection: 'false' as any // Invalid type
+				introspection: 'false' as any, // Invalid type
 			};
 
 			expect(() => GraphQLModule.forRoot(invalidOptions)).toThrow('GraphQL configuration validation failed');
@@ -87,7 +87,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: './test-schema.gql',
 				sortSchema: true,
 				playground: false,
-				introspection: true
+				introspection: true,
 			};
 
 			const module = GraphQLModule.forRoot(options);
@@ -124,7 +124,7 @@ describe('GraphQL Module Configuration Validation', () => {
 		it('should handle context configuration', () => {
 			const contextFn = (context: any) => ({ ...context, customField: 'test' });
 			const options: GraphQLConfigOptions = {
-				context: contextFn
+				context: contextFn,
 			};
 
 			const module = GraphQLModule.forRoot(options);
@@ -136,7 +136,7 @@ describe('GraphQL Module Configuration Validation', () => {
 		it('should handle CORS configuration', () => {
 			const corsOptions = { origin: 'http://localhost:3000', credentials: true };
 			const options: GraphQLConfigOptions = {
-				cors: corsOptions
+				cors: corsOptions,
 			};
 
 			const module = GraphQLModule.forRoot(options);
@@ -150,7 +150,7 @@ describe('GraphQL Module Configuration Validation', () => {
 		it('should create a dynamic module for async configuration', () => {
 			const asyncConfig = {
 				useFactory: () => ({}),
-				inject: []
+				inject: [],
 			};
 
 			const module = GraphQLModule.forRootAsync(asyncConfig);
@@ -164,7 +164,7 @@ describe('GraphQL Module Configuration Validation', () => {
 
 		it('should include GraphQLService in async module', () => {
 			const asyncConfig = {
-				useFactory: () => ({})
+				useFactory: () => ({}),
 			};
 
 			const module = GraphQLModule.forRootAsync(asyncConfig);
@@ -180,7 +180,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: null as any,
 				sortSchema: null as any,
 				playground: null as any,
-				introspection: null as any
+				introspection: null as any,
 			};
 
 			expect(() => GraphQLModule.forRoot(optionsWithNull)).toThrow('GraphQL configuration validation failed');
@@ -208,7 +208,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				introspection: true,
 				context: (ctx: any) => ctx,
 				cors: { origin: '*' },
-				formatError: (error) => error
+				formatError: (error) => error,
 			};
 
 			expect(() => GraphQLModule.forRoot(fullOptions)).not.toThrow();
@@ -219,7 +219,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: './schema.gql',
 				sortSchema: true,
 				playground: false,
-				introspection: false
+				introspection: false,
 			};
 
 			expect(() => GraphQLModule.forRoot(prodOptions)).not.toThrow();
@@ -230,7 +230,7 @@ describe('GraphQL Module Configuration Validation', () => {
 				autoSchemaFile: './schema.gql',
 				sortSchema: true,
 				playground: true,
-				introspection: true
+				introspection: true,
 			};
 
 			expect(() => GraphQLModule.forRoot(devOptions)).not.toThrow();

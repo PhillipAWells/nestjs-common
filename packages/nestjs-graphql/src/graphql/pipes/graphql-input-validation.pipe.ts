@@ -32,7 +32,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 		/xp_\w+/i,        // SQL Server extended procedures
 		/<script/i,       // Script injection
 		/javascript:/i,   // JavaScript protocol
-		/onerror\s*=/i    // Event handler injection
+		/onerror\s*=/i,    // Event handler injection
 	];
 
 	/**
@@ -62,7 +62,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			forbidNonWhitelisted: true,
 			transform: true,
 			skipMissingProperties: false,
-			stopAtFirstError: false
+			stopAtFirstError: false,
 		});
 
 		if (errors.length > 0) {
@@ -72,7 +72,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			throw new BadRequestException({
 				message: 'Input validation failed',
 				code: 'VALIDATION_ERROR',
-				errors: formattedErrors
+				errors: formattedErrors,
 			});
 		}
 
@@ -92,7 +92,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			this.logger.warn(`Input size ${inputSize} exceeds maximum of ${this.MAX_INPUT_SIZE}`);
 			throw new BadRequestException({
 				message: 'Input data exceeds maximum size limit',
-				code: 'INPUT_SIZE_EXCEEDED'
+				code: 'INPUT_SIZE_EXCEEDED',
 			});
 		}
 
@@ -115,7 +115,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 						this.logger.warn(`Potential injection attack detected at ${path}`);
 						throw new BadRequestException({
 							message: 'Invalid characters or patterns detected in input',
-							code: 'INJECTION_DETECTED'
+							code: 'INJECTION_DETECTED',
 						});
 					}
 				}
@@ -134,12 +134,11 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 							this.logger.warn(`Potential injection attack detected at ${currentPath}`);
 							throw new BadRequestException({
 								message: 'Invalid characters or patterns detected in input',
-								code: 'INJECTION_DETECTED'
+								code: 'INJECTION_DETECTED',
 							});
 						}
 					}
-				}
-				else if (typeof value === 'object' && value !== null) {
+				} else if (typeof value === 'object' && value !== null) {
 					this.checkForInjectionPatterns(value, currentPath);
 				}
 			}
@@ -175,7 +174,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 				formattedErrors.push({
 					field: fieldPath,
 					value: error.value,
-					constraints: error.constraints
+					constraints: error.constraints,
 				});
 			}
 

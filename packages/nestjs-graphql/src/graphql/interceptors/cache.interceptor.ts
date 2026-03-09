@@ -25,7 +25,7 @@ export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
 		}
 
 		return this.cacheService.generateKey(info.fieldName, args, {
-			userId: gqlContext.getContext().user?.id ?? gqlContext.getContext().user?.sub
+			userId: gqlContext.getContext().user?.id ?? gqlContext.getContext().user?.sub,
 		});
 	}
 }
@@ -46,7 +46,7 @@ export class GraphQLCacheMetadataExtractor implements CacheMetadataExtractor {
 	public getCacheTtl(_context: ExecutionContext): number | undefined {
 		const cacheableOptions = this.reflector.getAllAndOverride<CacheableOptions>(
 			CACHEABLE_METADATA,
-			[_context.getHandler(), _context.getClass()]
+			[_context.getHandler(), _context.getClass()],
 		);
 		return cacheableOptions?.ttl;
 	}
@@ -78,7 +78,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		private readonly reflector: Reflector,
 		private readonly cacheService: GraphQLCacheService,
 		cacheManager: any,
-		appLogger: any
+		appLogger: any,
 	) {
 		super(cacheManager, appLogger);
 	}
@@ -112,7 +112,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		return result.pipe(
 			tap(async (data) => {
 				await this.handleCacheInvalidation(context, args, gqlContext.getContext(), data, 'after');
-			})
+			}),
 		);
 	}
 
@@ -124,11 +124,11 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		args: Record<string, any>,
 		gqlContext: any,
 		result: any,
-		when: 'before' | 'after'
+		when: 'before' | 'after',
 	): Promise<void> {
 		const invalidateOptions = this.reflector.getAllAndOverride<CacheInvalidateOptions>(
 			CACHE_INVALIDATE_METADATA,
-			[context.getHandler(), context.getClass()]
+			[context.getHandler(), context.getClass()],
 		);
 
 		if (invalidateOptions?.when !== when) {
@@ -151,8 +151,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 			try {
 				await this.cacheService.invalidatePattern(pattern);
 				this.logger.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
-			}
-			catch (error) {
+			} catch (error) {
 				this.logger.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
 			}
 		}

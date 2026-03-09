@@ -19,7 +19,7 @@ export class ProductLoader {
 	private readonly logger = new Logger(ProductLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -28,11 +28,11 @@ export class ProductLoader {
    * @returns DataLoader for products
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Product | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Product | Error)[]>,
 	): DataLoader<string, Product> {
 		return this.dataLoaderRegistry.createWithCache(
 			'product-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -43,18 +43,18 @@ export class ProductLoader {
    * @returns Promise resolving to array of products or errors
    */
 	private async defaultBatchLoadFn(
-		productIds: readonly string[]
+		productIds: readonly string[],
 	): Promise<(Product | Error)[]> {
 		this.logger.warn(
-			'Using default product batch loader. Override with actual implementation.'
+			'Using default product batch loader. Override with actual implementation.',
 		);
 
 		// This is a placeholder - in real implementation, this would query the database
 		return productIds.map(
 			(id) =>
 				new Error(
-					`ProductLoader not implemented. Override batchLoadFn for product ID: ${id}`
-				)
+					`ProductLoader not implemented. Override batchLoadFn for product ID: ${id}`,
+				),
 		);
 	}
 
@@ -67,8 +67,7 @@ export class ProductLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(productId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load product ${productId}`, error);
 			return undefined;
 		}
@@ -83,8 +82,7 @@ export class ProductLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(productIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load products ${productIds}`, error);
 			return productIds.map(() => error as Error);
 		}

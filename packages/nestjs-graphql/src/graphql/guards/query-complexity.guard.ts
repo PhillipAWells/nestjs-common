@@ -6,16 +6,16 @@ import {
 	InternalServerErrorException,
 	Logger,
 	Optional,
-	OnModuleDestroy
+	OnModuleDestroy,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type {
-	ComplexityConfig
+	ComplexityConfig,
 } from '../graphql/query-complexity.js';
 import {
 	calculateQueryComplexity,
 	exceedsComplexityLimit,
-	DEFAULT_COMPLEXITY_CONFIG
+	DEFAULT_COMPLEXITY_CONFIG,
 } from '../graphql/query-complexity.js';
 import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVAL_MS, QUERY_HASH_BASE, QUERY_HASH_CONVERSION_BASE, QUERY_COMPLEXITY_THRESHOLD } from '../constants/complexity.constants.js';
 
@@ -130,15 +130,14 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 			if (cachedComplexity !== undefined) {
 				complexity = cachedComplexity;
 				this.logger.debug(`Query complexity from cache: ${complexity}`);
-			}
-			else {
+			} else {
 				// Calculate query complexity
 				complexity = calculateQueryComplexity(
 					schema,
 					document,
 					variables,
 					operationName,
-					this.config
+					this.config,
 				);
 
 				// Store in cache
@@ -155,7 +154,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 					complexity,
 					maxComplexity,
 					operationName,
-					userId: req?.user?.id
+					userId: req?.user?.id,
 				});
 
 				throw new BadRequestException(message);
@@ -167,8 +166,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 			}
 
 			return true;
-		}
-		catch (error) {
+		} catch (error) {
 			if (error instanceof BadRequestException) {
 				throw error;
 			}

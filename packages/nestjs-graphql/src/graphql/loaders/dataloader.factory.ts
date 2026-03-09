@@ -39,7 +39,7 @@ export class DataLoaderFactory {
 			cache = true,
 			cacheKeyFn,
 			maxBatchSize,
-			batchScheduleFn
+			batchScheduleFn,
 		} = options;
 
 		const dataLoader = new DataLoader<K, V>(
@@ -51,7 +51,7 @@ export class DataLoaderFactory {
 					// Ensure we return exactly the same number of results as keys
 					if (results.length !== keys.length) {
 						this.logger.warn(
-							`Batch load function returned ${results.length} results for ${keys.length} keys`
+							`Batch load function returned ${results.length} results for ${keys.length} keys`,
 						);
 						// Pad with errors if necessary
 						while (results.length < keys.length) {
@@ -60,8 +60,7 @@ export class DataLoaderFactory {
 					}
 
 					return results;
-				}
-				catch (error) {
+				} catch (error) {
 					this.logger.error('Batch loading failed', error);
 					// Return errors for all keys
 					return keys.map(() => error as Error);
@@ -71,8 +70,8 @@ export class DataLoaderFactory {
 				cache,
 				...(cacheKeyFn !== undefined ? { cacheKeyFn } : {}),
 				...(maxBatchSize !== undefined ? { maxBatchSize } : {}),
-				...(batchScheduleFn !== undefined ? { batchScheduleFn } : {})
-			}
+				...(batchScheduleFn !== undefined ? { batchScheduleFn } : {}),
+			},
 		);
 
 		return dataLoader;
@@ -86,12 +85,12 @@ export class DataLoaderFactory {
    */
 	public createWithCache<K, V>(
 		batchLoadFn: BatchLoadFn<K, V>,
-		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {}
+		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
 		return this.create({
 			batchLoadFn,
 			cache: true,
-			...options
+			...options,
 		});
 	}
 
@@ -103,12 +102,12 @@ export class DataLoaderFactory {
    */
 	public createWithoutCache<K, V>(
 		batchLoadFn: BatchLoadFn<K, V>,
-		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {}
+		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
 		return this.create({
 			batchLoadFn,
 			cache: false,
-			...options
+			...options,
 		});
 	}
 }

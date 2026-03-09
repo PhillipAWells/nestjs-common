@@ -18,7 +18,7 @@ import { Comment } from './comment.type.js';
 export const BASE_GRAPHQL_TYPES: Type<unknown>[] = [
 	BaseUser,
 	BasePost,
-	BaseComment
+	BaseComment,
 ];
 
 /**
@@ -28,7 +28,7 @@ export const BASE_GRAPHQL_TYPES: Type<unknown>[] = [
 export const EXTENDED_GRAPHQL_TYPES: Type<unknown>[] = [
 	User,
 	Post,
-	Comment
+	Comment,
 ];
 
 /**
@@ -37,7 +37,7 @@ export const EXTENDED_GRAPHQL_TYPES: Type<unknown>[] = [
  */
 export const ALL_GRAPHQL_TYPES: Type<unknown>[] = [
 	...BASE_GRAPHQL_TYPES,
-	...EXTENDED_GRAPHQL_TYPES
+	...EXTENDED_GRAPHQL_TYPES,
 ];
 
 /**
@@ -95,6 +95,6 @@ export function getTypeNames(): {
 	return {
 		base: BASE_GRAPHQL_TYPES.map(t => t.name),
 		extended: EXTENDED_GRAPHQL_TYPES.map(t => t.name),
-		all: ALL_GRAPHQL_TYPES.map(t => t.name)
+		all: ALL_GRAPHQL_TYPES.map(t => t.name),
 	};
 }

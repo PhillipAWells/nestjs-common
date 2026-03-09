@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConnectionManagerService } from '../../subscriptions/connection-manager.service.js';
 import type { SubscriptionConfig } from '../../subscriptions/subscription-config.interface.js';
@@ -15,30 +15,30 @@ describe('ConnectionManagerService', () => {
 		config = {
 			redis: {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			},
 			websocket: {
 				path: '/subscriptions',
 				maxPayloadSize: 100 * 1024,
 				keepalive: 30000,
 				connectionTimeout: 60000,
-				maxConnections: 5
+				maxConnections: 5,
 			},
 			auth: {
 				jwtSecret: 'test-secret',
-				tokenExpiration: '1h'
+				tokenExpiration: '1h',
 			},
 			connection: {
 				maxSubscriptionsPerUser: 10,
 				cleanupInterval: 60000,
-				timeout: 300000
+				timeout: 300000,
 			},
 			resilience: {
 				keepalive: { enabled: true, interval: 30000, timeout: 5000 },
 				reconnection: { enabled: true, attempts: 3, delay: 1000, backoff: 'exponential' },
 				errorRecovery: { enabled: true, retryDelay: 1000, maxRetries: 3 },
-				shutdown: { timeout: 10000, force: true }
-			}
+				shutdown: { timeout: 10000, force: true },
+			},
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -46,16 +46,16 @@ describe('ConnectionManagerService', () => {
 				ConnectionManagerService,
 				{
 					provide: 'SUBSCRIPTION_CONFIG',
-					useValue: config
-				}
-			]
+					useValue: config,
+				},
+			],
 		}).compile();
 
 		service = module.get<ConnectionManagerService>(ConnectionManagerService);
 	});
 
 	afterEach(() => {
-		jest.clearAllTimers();
+		vi.clearAllTimers();
 	});
 
 	describe('addConnection', () => {
@@ -75,14 +75,14 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should set connection timeout', () => {
-			jest.useFakeTimers();
+			vi.useFakeTimers();
 
 			service.addConnection(mockWs, 'user123');
 
 			expect(service.getConnectionCount()).toBe(1);
 
 			// Fast-forward past timeout
-			jest.advanceTimersByTime(config.connection.timeout + 1000);
+			vi.advanceTimersByTime(config.connection.timeout + 1000);
 
 			expect(service.getConnectionCount()).toBe(0);
 		});
@@ -252,11 +252,11 @@ describe('ConnectionManagerService', () => {
 			expect(stats.totalSubscriptions).toBe(3);
 			expect(stats.connectionsByUser).toEqual({
 				user123: 1,
-				user456: 1
+				user456: 1,
 			});
 			expect(stats.subscriptionsByUser).toEqual({
 				user123: 2,
-				user456: 1
+				user456: 1,
 			});
 		});
 
@@ -288,7 +288,7 @@ describe('ConnectionManagerService', () => {
 			const wsObjects = [
 				{ id: 'ws1' },
 				{ id: 'ws2' },
-				{ id: 'ws3' }
+				{ id: 'ws3' },
 			];
 
 			users.forEach((user, idx) => {
@@ -379,7 +379,7 @@ describe('ConnectionManagerService', () => {
 			const wsWithMetadata = {
 				id: 'ws123',
 				remoteAddress: '127.0.0.1',
-				protocol: 'graphql-ws'
+				protocol: 'graphql-ws',
 			};
 
 			service.addConnection(wsWithMetadata, 'user123');

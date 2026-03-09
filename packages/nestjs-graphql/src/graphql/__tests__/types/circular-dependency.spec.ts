@@ -69,7 +69,7 @@ describe('GraphQL Schema Circular Dependencies', () => {
 
 			const schema = await buildSchema({
 				resolvers: [],
-				types: [BaseUser, BasePost, BaseComment, User, Post, Comment]
+				types: [BaseUser, BasePost, BaseComment, User, Post, Comment],
 			});
 
 			expect(schema).toBeDefined();
@@ -138,7 +138,7 @@ describe('GraphQL Schema Circular Dependencies', () => {
 
 			const schema = await buildSchema({
 				resolvers: [],
-				types: [BaseUser, BasePost, BaseComment, User, Post, Comment]
+				types: [BaseUser, BasePost, BaseComment, User, Post, Comment],
 			});
 
 			const userType = schema.getType('User');
@@ -212,7 +212,7 @@ describe('GraphQL Schema Circular Dependencies', () => {
 
 			const schema = await buildSchema({
 				resolvers: [],
-				types: [BaseUser, BasePost, BaseComment, User, Post, Comment]
+				types: [BaseUser, BasePost, BaseComment, User, Post, Comment],
 			});
 
 			const postType = schema.getType('Post');
@@ -286,7 +286,7 @@ describe('GraphQL Schema Circular Dependencies', () => {
 
 			const schema = await buildSchema({
 				resolvers: [],
-				types: [BaseUser, BasePost, BaseComment, User, Post, Comment]
+				types: [BaseUser, BasePost, BaseComment, User, Post, Comment],
 			});
 
 			const commentType = schema.getType('Comment');
@@ -340,7 +340,7 @@ describe('GraphQL Schema Circular Dependencies', () => {
 
 			const schema = await buildSchema({
 				resolvers: [],
-				types: [BaseUser, BasePost, BaseComment]
+				types: [BaseUser, BasePost, BaseComment],
 			});
 
 			expect(schema).toBeDefined();

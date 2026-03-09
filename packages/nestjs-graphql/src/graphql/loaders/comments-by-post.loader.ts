@@ -12,7 +12,7 @@ export class CommentsByPostLoader {
 	private readonly logger = new Logger(CommentsByPostLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -21,11 +21,11 @@ export class CommentsByPostLoader {
    * @returns DataLoader for comments by post
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>,
 	): DataLoader<string, Comment[]> {
 		return this.dataLoaderRegistry.createWithCache(
 			'comments-by-post-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -36,17 +36,17 @@ export class CommentsByPostLoader {
    * @returns Promise resolving to arrays of comments or errors
    */
 	private async defaultBatchLoadFn(
-		postIds: readonly string[]
+		postIds: readonly string[],
 	): Promise<(Comment[] | Error)[]> {
 		this.logger.warn(
-			'Using default comments by post batch loader. Override with actual implementation.'
+			'Using default comments by post batch loader. Override with actual implementation.',
 		);
 
 		return postIds.map(
 			(postId) =>
 				new Error(
-					`CommentsByPostLoader not implemented. Override batchLoadFn for post ID: ${postId}`
-				)
+					`CommentsByPostLoader not implemented. Override batchLoadFn for post ID: ${postId}`,
+				),
 		);
 	}
 
@@ -59,8 +59,7 @@ export class CommentsByPostLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(postId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comments for post ${postId}`, error);
 			return undefined;
 		}
@@ -75,8 +74,7 @@ export class CommentsByPostLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(postIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comments for posts ${postIds}`, error);
 			return postIds.map(() => error as Error);
 		}

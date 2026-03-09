@@ -11,7 +11,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [GraphQLContextFactory]
+			providers: [GraphQLContextFactory],
 		}).compile();
 
 		factory = module.get<GraphQLContextFactory>(GraphQLContextFactory);
@@ -20,17 +20,17 @@ describe('GraphQLContextFactory - Type Safety', () => {
 			user: {
 				id: 'user-123',
 				email: 'test@example.com',
-				roles: ['admin']
+				roles: ['admin'],
 			} as IGraphQLUser,
 			headers: {},
 			method: 'POST',
-			url: '/graphql'
-		};
+			url: '/graphql',
+		} as any;
 
 		mockRes = {
-			status: jest.fn().mockReturnThis(),
-			send: jest.fn().mockReturnThis(),
-			setHeader: jest.fn().mockReturnThis()
+			status: vi.fn().mockReturnThis(),
+			send: vi.fn().mockReturnThis(),
+			setHeader: vi.fn().mockReturnThis(),
 		};
 	});
 
@@ -38,7 +38,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should create properly typed context with user information', async () => {
 			const context = await factory.createHttpContext(
 				mockReq as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			// Type assertion validates compile-time type safety
@@ -59,7 +59,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 			const context = await factory.createHttpContext(
 				reqWithoutUser as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			const typedContext: IGraphQLContextExtended = context;
@@ -71,7 +71,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should include request ID in context', async () => {
 			const context = await factory.createHttpContext(
 				mockReq as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			const typedContext: IGraphQLContextExtended = context;
@@ -85,7 +85,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 			const context = await factory.createHttpContext(
 				mockReq as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			const afterTime = Date.now();
@@ -97,14 +97,14 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		});
 
 		it('should allow context enhancers to modify context', async () => {
-			const enhancer = jest.fn(async (ctx: IGraphQLContextExtended) => {
+			const enhancer = vi.fn(async (ctx: IGraphQLContextExtended) => {
 				ctx.custom = 'enhanced-value';
 			});
 
 			const context = await factory.createHttpContext(
 				mockReq as Request,
 				mockRes as Response,
-				{ contextEnhancers: [enhancer] }
+				{ contextEnhancers: [enhancer] },
 			);
 
 			const typedContext: IGraphQLContextExtended = context;
@@ -115,12 +115,12 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 		it('should use custom request ID generator', async () => {
 			const customId = 'custom-request-id-123';
-			const requestIdGenerator = jest.fn(() => customId);
+			const requestIdGenerator = vi.fn(() => customId);
 
 			const context = await factory.createHttpContext(
 				mockReq as Request,
 				mockRes as Response,
-				{ requestIdGenerator }
+				{ requestIdGenerator },
 			);
 
 			const typedContext: IGraphQLContextExtended = context;
@@ -137,13 +137,13 @@ describe('GraphQLContextFactory - Type Safety', () => {
 				user: {
 					id: 'user-456',
 					email: 'ws-user@example.com',
-					roles: ['subscriber']
+					roles: ['subscriber'],
 				} as IGraphQLUser,
 				id: 'conn-789',
-				params: { channelId: 'channel-1' }
+				params: { channelId: 'channel-1' },
 			};
 
-			const context = await factory.createWebSocketContext(mockConnection);
+			const context = await factory.createWebSocketContext(mockConnection as any);
 
 			const typedContext: IGraphQLContextExtended = context;
 
@@ -151,16 +151,15 @@ describe('GraphQLContextFactory - Type Safety', () => {
 			expect(typedContext.requestId).toBeDefined();
 			expect(typedContext.startTime).toBeInstanceOf(Date);
 			expect(typedContext.user?.id).toBe('user-456');
-			// @ts-expect-error Testing runtime behavior
-			expect(typedContext.connection).toBeDefined();
+			expect((typedContext as any).connection).toBeDefined();
 		});
 
 		it('should handle missing connection properties gracefully', async () => {
 			const minimalConnection = {
-				request: mockReq
+				request: mockReq,
 			};
 
-			const context = await factory.createWebSocketContext(minimalConnection);
+			const context = await factory.createWebSocketContext(minimalConnection as any);
 
 			const typedContext: IGraphQLContextExtended = context;
 
@@ -173,7 +172,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should satisfy GraphQL context interface requirements', async () => {
 			const context = await factory.createHttpContext(
 				mockReq as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			// This type check happens at compile time
@@ -186,7 +185,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should allow accessing user properties with type safety', async () => {
 			const context = await factory.createHttpContext(
 				mockReq as Request,
-				mockRes as Response
+				mockRes as Response,
 			);
 
 			const typedContext: IGraphQLContextExtended = context;

@@ -16,7 +16,7 @@ import {
 	REDIS_DEFAULT_FAMILY,
 	REDIS_DEFAULT_KEEP_ALIVE,
 	REDIS_DEFAULT_RETRY_DELAY,
-	REDIS_DEFAULT_KEY_PREFIX
+	REDIS_DEFAULT_KEY_PREFIX,
 } from './constants/redis.constants.js';
 
 /**
@@ -77,7 +77,7 @@ export function validateRedisConfig(config: Record<string, any>) {
 		REDIS_FAMILY: Joi.number().integer().valid(REDIS_IPV4_FAMILY, REDIS_IPV6_FAMILY).default(REDIS_DEFAULT_FAMILY),
 		REDIS_KEEP_ALIVE: Joi.number().integer().min(0).default(REDIS_DEFAULT_KEEP_ALIVE),
 		REDIS_RETRY_DELAY: Joi.number().integer().min(0).default(REDIS_DEFAULT_RETRY_DELAY),
-		REDIS_KEY_PREFIX: Joi.string().allow('').default(REDIS_DEFAULT_KEY_PREFIX)
+		REDIS_KEY_PREFIX: Joi.string().allow('').default(REDIS_DEFAULT_KEY_PREFIX),
 	});
 
 	const { error, value } = schema.validate(config, { allowUnknown: true });
@@ -104,7 +104,7 @@ export function getRedisConfig(): RedisConfig {
 		REDIS_FAMILY: process.env['REDIS_FAMILY'],
 		REDIS_KEEP_ALIVE: process.env['REDIS_KEEP_ALIVE'],
 		REDIS_RETRY_DELAY: process.env['REDIS_RETRY_DELAY'],
-		REDIS_KEY_PREFIX: process.env['REDIS_KEY_PREFIX']
+		REDIS_KEY_PREFIX: process.env['REDIS_KEY_PREFIX'],
 	};
 
 	validateRedisConfig(envVars);
@@ -125,7 +125,7 @@ export function getRedisConfig(): RedisConfig {
 		connectTimeout: parseInt(process.env['REDIS_CONNECT_TIMEOUT'] ?? `${REDIS_DEFAULT_CONNECT_TIMEOUT}`, 10),
 		commandTimeout: parseInt(process.env['REDIS_COMMAND_TIMEOUT'] ?? `${REDIS_DEFAULT_COMMAND_TIMEOUT}`, 10),
 		family: parseInt(process.env['REDIS_FAMILY'] ?? `${REDIS_DEFAULT_FAMILY}`, 10),
-		keepAlive: parseInt(process.env['REDIS_KEEP_ALIVE'] ?? `${REDIS_DEFAULT_KEEP_ALIVE}`, 10)
+		keepAlive: parseInt(process.env['REDIS_KEEP_ALIVE'] ?? `${REDIS_DEFAULT_KEEP_ALIVE}`, 10),
 	} as RedisConfig;
 }
 
@@ -137,7 +137,7 @@ export function getRedisConnectionOptions(): RedisConnectionOptions {
 	const config = getRedisConfig();
 	return {
 		...config,
-		ttl: parseInt(process.env['REDIS_CACHE_TTL'] ?? '3600', 10)
+		ttl: parseInt(process.env['REDIS_CACHE_TTL'] ?? '3600', 10),
 	};
 }
 
@@ -160,6 +160,6 @@ export function createRedisOptions(config: RedisConfig): RedisOptions {
 		connectTimeout: config.connectTimeout,
 		commandTimeout: config.commandTimeout,
 		family: config.family,
-		keepAlive: config.keepAlive
+		keepAlive: config.keepAlive,
 	} as RedisOptions;
 }

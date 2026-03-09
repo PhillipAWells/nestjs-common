@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -13,34 +13,34 @@ describe('QueryComplexityGuard', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [QueryComplexityGuard]
+			providers: [QueryComplexityGuard],
 		}).compile();
 
 		guard = module.get<QueryComplexityGuard>(QueryComplexityGuard);
 
 		mockRequest = {
 			headers: {},
-			user: { id: 'user123' }
+			user: { id: 'user123' },
 		};
 
 		mockExecutionContext = {};
 
 		// Mock GqlExecutionContext.create
-		jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
+		vi.spyOn(GqlExecutionContext, 'create').mockReturnValue({
 			getContext: () => ({
-				req: mockRequest
+				req: mockRequest,
 			}),
 			getArgs: () => ({
 				schema: {},
 				document: { kind: 'Document' },
 				variables: {},
-				operationName: 'TestQuery'
-			})
+				operationName: 'TestQuery',
+			}),
 		} as any);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 		guard.onModuleDestroy();
 	});
 
@@ -50,8 +50,8 @@ describe('QueryComplexityGuard', () => {
 		const COMPLEXITY_MID_RANGE = 750;
 
 		it('should allow query when complexity is within limits', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_WITHIN_LIMITS);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_WITHIN_LIMITS);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -60,8 +60,8 @@ describe('QueryComplexityGuard', () => {
 
 		it('should attach complexity to request object', async () => {
 			const complexity = COMPLEXITY_MID_RANGE;
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			await guard.canActivate(mockExecutionContext);
 
@@ -69,8 +69,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should reject query when complexity exceeds limit', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
 
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(BadRequestException);
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(/exceeds maximum/);
@@ -81,7 +81,7 @@ describe('QueryComplexityGuard', () => {
 		const COMPLEXITY_EXCEEDED = 2000;
 
 		it('should throw InternalServerErrorException on complexity calculation error', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -89,7 +89,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should NOT allow query on complexity calculation error', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -98,7 +98,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should NOT return true on calculation error (fail closed)', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -106,9 +106,8 @@ describe('QueryComplexityGuard', () => {
 			let didThrow = false;
 			try {
 				await guard.canActivate(mockExecutionContext);
-			}
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-			catch (_error) {
+			} catch (_error) {
+				// eslint-disable-next-line unused-imports/no-unused-vars
 				// Expected: should throw, not return true
 				didThrow = true;
 			}
@@ -119,21 +118,20 @@ describe('QueryComplexityGuard', () => {
 		it('should log error with context when complexity calculation fails', async () => {
 			const calculationError = new Error('Complexity calculation failed');
 
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw calculationError;
 			});
 
 			try {
 				await guard.canActivate(mockExecutionContext);
-			}
-			catch (error) {
+			} catch (error) {
 				// Expected to throw
 				expect(error).toBeInstanceOf(InternalServerErrorException);
 			}
 		});
 
 		it('should handle errors from calculateQueryComplexity function', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Schema validation failed');
 			});
 
@@ -142,13 +140,13 @@ describe('QueryComplexityGuard', () => {
 
 		it('should distinguish between BadRequestException (limit exceeded) and other errors', async () => {
 			// First test: BadRequestException should be re-thrown
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
 
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(BadRequestException);
 
 			// Second test: Other errors should throw InternalServerErrorException
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Unexpected error');
 			});
 
@@ -156,17 +154,12 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should throw InternalServerErrorException with appropriate message on error', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
 			try {
-				await guard.canActivate(mockExecutionContext);
-
-				fail('Should have thrown InternalServerErrorException');
-			}
-
-			catch (err: any) {
+				await guard.canActivate(mockExecutionContext);} catch (err: any) {
 				expect(err).toBeInstanceOf(InternalServerErrorException);
 				expect(err.message).toContain('validate');
 			}
@@ -174,7 +167,7 @@ describe('QueryComplexityGuard', () => {
 
 		it('should handle thrown errors gracefully', async () => {
 			const thrownError = new Error('Some unexpected error');
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw thrownError;
 			});
 
@@ -188,8 +181,8 @@ describe('QueryComplexityGuard', () => {
 
 		it('should handle requests without user object', async () => {
 			mockRequest.user = undefined;
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -197,20 +190,20 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should handle requests without variables', async () => {
-			(GqlExecutionContext.create as jest.Mock).mockReturnValue({
+			(GqlExecutionContext.create as any).mockReturnValue({
 				getContext: () => ({
-					req: mockRequest
+					req: mockRequest,
 				}),
 				getArgs: () => ({
 					schema: {},
 					document: { kind: 'Document' },
 					variables: undefined,
-					operationName: 'TestQuery'
-				})
+					operationName: 'TestQuery',
+				}),
 			} as any);
 
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -218,8 +211,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should handle zero complexity', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(ZERO_COMPLEXITY);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(ZERO_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -227,20 +220,20 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should handle requests without req object', async () => {
-			(GqlExecutionContext.create as jest.Mock).mockReturnValue({
+			(GqlExecutionContext.create as any).mockReturnValue({
 				getContext: () => ({
-					req: undefined
+					req: undefined,
 				}),
 				getArgs: () => ({
 					schema: {},
 					document: { kind: 'Document' },
 					variables: {},
-					operationName: 'TestQuery'
-				})
+					operationName: 'TestQuery',
+				}),
 			} as any);
 
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -251,19 +244,19 @@ describe('QueryComplexityGuard', () => {
 	describe('QueryComplexityGuard - Complexity Caching', () => {
 		it('should cache complexity calculation for identical queries', async () => {
 			const mockDocument = { kind: 'Document', definitions: [] };
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
-			(GqlExecutionContext.create as jest.Mock).mockReturnValue({
+			(GqlExecutionContext.create as any).mockReturnValue({
 				getContext: () => ({
-					req: mockRequest
+					req: mockRequest,
 				}),
 				getArgs: () => ({
 					schema: {},
 					document: mockDocument,
 					variables: {},
-					operationName: 'TestQuery'
-				})
+					operationName: 'TestQuery',
+				}),
 			} as any);
 
 			// First call - should calculate
@@ -277,20 +270,20 @@ describe('QueryComplexityGuard', () => {
 
 		it('should avoid recalculation for repeated identical queries', async () => {
 			const complexity = 750;
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const mockDocument = { kind: 'Document', definitions: [] };
-			(GqlExecutionContext.create as jest.Mock).mockReturnValue({
+			(GqlExecutionContext.create as any).mockReturnValue({
 				getContext: () => ({
-					req: mockRequest
+					req: mockRequest,
 				}),
 				getArgs: () => ({
 					schema: {},
 					document: mockDocument,
 					variables: {},
-					operationName: 'TestQuery'
-				})
+					operationName: 'TestQuery',
+				}),
 			} as any);
 
 			// Run 5 times - should only calculate once
@@ -302,8 +295,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should perform complexity calculation under 10ms', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			const start = performance.now();
 			await guard.canActivate(mockExecutionContext);
@@ -313,8 +306,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should use cache lookup under 1ms on subsequent calls', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			// Prime the cache
 			await guard.canActivate(mockExecutionContext);
@@ -330,8 +323,8 @@ describe('QueryComplexityGuard', () => {
 
 	describe('QueryComplexityGuard - Cache Management', () => {
 		it('should cleanup cache on module destroy', async () => {
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			// Populate cache
 			await guard.canActivate(mockExecutionContext);
@@ -340,7 +333,7 @@ describe('QueryComplexityGuard', () => {
 			guard.onModuleDestroy();
 
 			// Cache should be cleared - next call should recalculate
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(600);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(600);
 			await guard.canActivate(mockExecutionContext);
 
 			// Should have been called again
@@ -348,23 +341,23 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should periodically clear cache every 10 minutes', async () => {
-			jest.useFakeTimers();
+			vi.useFakeTimers();
 
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			jest.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
 
 			// Populate cache
 			await guard.canActivate(mockExecutionContext);
 			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(1);
 
 			// Fast forward 10 minutes
-			jest.advanceTimersByTime(600000);
+			vi.advanceTimersByTime(600000);
 
 			// Next call should recalculate after cleanup
-			jest.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
 			await guard.canActivate(mockExecutionContext);
 
-			jest.useRealTimers();
+			vi.useRealTimers();
 		});
 	});
 });

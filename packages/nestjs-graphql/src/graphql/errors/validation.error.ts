@@ -24,7 +24,7 @@ export class ValidationError extends GraphqlError {
 		super(message, {
 			code: 'VALIDATION_ERROR',
 			statusCode: 400,
-			context
+			context,
 		});
 	}
 }

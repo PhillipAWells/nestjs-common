@@ -4,21 +4,21 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { CacheService } from '../cache.service.js';
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
 describe('CacheService', () => {
 	let service: CacheService;
 
-	let _cacheManager: jest.Mocked<Cache>;
+	let _cacheManager: any;
 
 	const mockCacheManager: any = {
-		get: jest.fn(),
-		set: jest.fn(),
-		del: jest.fn(),
-		clear: jest.fn(),
+		get: vi.fn(),
+		set: vi.fn(),
+		del: vi.fn(),
+		clear: vi.fn(),
 		store: {
-			keys: jest.fn()
-		}
+			keys: vi.fn(),
+		},
 	};
 
 	beforeEach(async () => {
@@ -30,12 +30,12 @@ describe('CacheService', () => {
 		mockCacheManager.store.keys.mockReset();
 
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -43,13 +43,13 @@ describe('CacheService', () => {
 				CacheService,
 				{
 					provide: CACHE_MANAGER,
-					useValue: mockCacheManager
+					useValue: mockCacheManager,
 				},
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
-				}
-			]
+					useValue: mockAppLogger,
+				},
+			],
 		}).compile();
 
 		service = module.get<CacheService>(CacheService);
@@ -58,7 +58,7 @@ describe('CacheService', () => {
 	});
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 		service.resetStats();
 	});
 
@@ -225,7 +225,7 @@ describe('CacheService', () => {
 		it('should return cached value if exists', async () => {
 			const key = 'test-key';
 			const cachedValue = { data: 'cached' };
-			const factory = jest.fn();
+			const factory = vi.fn();
 
 			mockCacheManager.get.mockResolvedValue(cachedValue);
 
@@ -239,7 +239,7 @@ describe('CacheService', () => {
 		it('should execute factory and cache result if not cached', async () => {
 			const key = 'test-key';
 			const factoryValue = { data: 'fresh' };
-			const factory = jest.fn().mockResolvedValue(factoryValue);
+			const factory = vi.fn().mockResolvedValue(factoryValue);
 
 			mockCacheManager.get.mockResolvedValue(null);
 
@@ -254,7 +254,7 @@ describe('CacheService', () => {
 			const key = 'test-key';
 			const factoryValue = { data: 'fresh' };
 			const ttl = 600;
-			const factory = jest.fn().mockResolvedValue(factoryValue);
+			const factory = vi.fn().mockResolvedValue(factoryValue);
 
 			mockCacheManager.get.mockResolvedValue(null);
 
@@ -268,7 +268,7 @@ describe('CacheService', () => {
 		it('should handle factory errors', async () => {
 			const key = 'test-key';
 			const error = new Error('Factory failed');
-			const factory = jest.fn().mockRejectedValue(error);
+			const factory = vi.fn().mockRejectedValue(error);
 
 			mockCacheManager.get.mockResolvedValue(null);
 
@@ -310,16 +310,16 @@ describe('CacheService', () => {
 			const pattern = 'test:*';
 			const cacheManagerWithoutStore = {
 				...mockCacheManager,
-				store: undefined
+				store: undefined,
 			};
 
 			const mockAppLogger = {
-				createContextualLogger: jest.fn().mockReturnValue({
-					debug: jest.fn(),
-					info: jest.fn(),
-					warn: jest.fn(),
-					error: jest.fn()
-				})
+				createContextualLogger: vi.fn().mockReturnValue({
+					debug: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					error: vi.fn(),
+				}),
 			};
 
 			const module: TestingModule = await Test.createTestingModule({
@@ -327,13 +327,13 @@ describe('CacheService', () => {
 					CacheService,
 					{
 						provide: CACHE_MANAGER,
-						useValue: cacheManagerWithoutStore
+						useValue: cacheManagerWithoutStore,
 					},
 					{
 						provide: AppLogger,
-						useValue: mockAppLogger
-					}
-				]
+						useValue: mockAppLogger,
+					},
+				],
 			}).compile();
 
 			const serviceWithoutStore = module.get<CacheService>(CacheService);
@@ -366,7 +366,7 @@ describe('CacheService', () => {
 				deletes: 0,
 				clears: 0,
 				errors: 0,
-				hitRate: 0
+				hitRate: 0,
 			});
 		});
 
@@ -412,7 +412,7 @@ describe('CacheService', () => {
 
 	describe('onModuleDestroy', () => {
 		it('should log final statistics on destroy', async () => {
-			const loggerSpy = jest.spyOn(service['logger'], 'info').mockImplementation();
+			const loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation();
 
 			await service.onModuleDestroy();
 
@@ -420,17 +420,17 @@ describe('CacheService', () => {
 		});
 
 		it('should handle destroy errors gracefully', async () => {
-			const _loggerSpy = jest.spyOn(service['logger'], 'info').mockImplementation(() => {
+			const _loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation(() => {
 				throw new Error('Logging failed');
 			});
 			void (_loggerSpy); // Mark as used to satisfy linter
-			const errorSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
 
 			await service.onModuleDestroy();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				'Error during cache service cleanup:',
-				expect.any(Error)
+				expect.any(Error),
 			);
 		});
 	});
@@ -469,13 +469,13 @@ describe('CacheService', () => {
 			error.stack = 'Error: Redis error with stack\n  at someFunction (file.ts:10:5)';
 			mockCacheManager.get.mockRejectedValue(error);
 
-			const errorSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
 
 			await service.get('key');
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				expect.stringContaining('Cache get error'),
-				expect.any(String)
+				expect.any(String),
 			);
 		});
 
@@ -483,13 +483,13 @@ describe('CacheService', () => {
 			const error = new Error('Redis set error');
 			mockCacheManager.set.mockRejectedValue(error);
 
-			const errorSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
 
 			await expect(service.set('key', 'value')).rejects.toThrow();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				expect.stringContaining('Cache set error'),
-				expect.any(String)
+				expect.any(String),
 			);
 		});
 
@@ -633,22 +633,22 @@ describe('CacheService', () => {
 
 		describe('getOrSet - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
-				const factory = jest.fn();
+				const factory = vi.fn();
 				await expect(service.getOrSet('', factory)).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
-				const factory = jest.fn();
+				const factory = vi.fn();
 				await expect(service.getOrSet(null as any, factory)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with invalid characters', async () => {
-				const factory = jest.fn();
+				const factory = vi.fn();
 				await expect(service.getOrSet('key\0invalid', factory)).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should allow valid cache key', async () => {
-				const factory = jest.fn().mockResolvedValue('value');
+				const factory = vi.fn().mockResolvedValue('value');
 				mockCacheManager.get.mockResolvedValue(null);
 				mockCacheManager.set.mockResolvedValue(undefined);
 				await expect(service.getOrSet('valid:key', factory)).resolves.not.toThrow();

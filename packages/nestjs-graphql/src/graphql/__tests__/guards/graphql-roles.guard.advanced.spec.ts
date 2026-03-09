@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { GraphQLRolesGuard } from '../../guards/graphql-roles.guard.js';
 import { ForbiddenException, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -20,16 +20,16 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 				}
 				return undefined;
 			},
-			_rolesOverride: undefined as string[] | undefined
+			_rolesOverride: undefined as string[] | undefined,
 		};
 
 		// Manual mock for GqlExecutionContext
 		mockGqlContext = {
 			getContext: () => ({
 				user: undefined,
-				...((mockGqlContext as any)._contextOverride ?? {})
+				...((mockGqlContext as any)._contextOverride ?? {}),
 			}),
-			_contextOverride: undefined as any
+			_contextOverride: undefined as any,
 		};
 
 		// Manual mock for ExecutionContext
@@ -37,18 +37,18 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			getHandler: () => ({}),
 			getClass: () => ({}),
 			switchToHttp: () => ({
-				getRequest: () => ({})
-			})
+				getRequest: () => ({}),
+			}),
 		};
 
 		guard = new GraphQLRolesGuard(mockReflector);
 
-		// Mock GqlExecutionContext.create using jest.spyOn (required for static methods)
-		jest.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);
+		// Mock GqlExecutionContext.create using vi.spyOn (required for static methods)
+		vi.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('canActivate() - Role Validation', () => {
@@ -73,8 +73,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					roles: ['admin']
-				}
+					roles: ['admin'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -87,8 +87,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					roles: ['moderator', 'user']
-				}
+					roles: ['moderator', 'user'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -99,7 +99,7 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 		it('should throw ForbiddenException when user is not authenticated', () => {
 			mockReflector._rolesOverride = ['admin'];
 			mockGqlContext._contextOverride = {
-				user: undefined
+				user: undefined,
 			};
 
 			expect(() => {
@@ -112,8 +112,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					roles: ['user']
-				}
+					roles: ['user'],
+				},
 			};
 
 			expect(() => {
@@ -126,8 +126,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					role: 'editor'
-				}
+					role: 'editor',
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -140,8 +140,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					role: ['viewer', 'user']
-				}
+					role: ['viewer', 'user'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -154,8 +154,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					id: 'user-123',
-					authorities: ['ROLE_ADMIN', 'ROLE_USER']
-				}
+					authorities: ['ROLE_ADMIN', 'ROLE_USER'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -168,8 +168,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					sub: 'user-123',
-					scope: ['read:users', 'write:posts']
-				}
+					scope: ['read:users', 'write:posts'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -182,8 +182,8 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockGqlContext._contextOverride = {
 				user: {
 					sub: 'user-123',
-					scopes: ['api:access']
-				}
+					scopes: ['api:access'],
+				},
 			};
 
 			const result = guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -195,9 +195,9 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			mockReflector._rolesOverride = ['admin'];
 			mockGqlContext._contextOverride = {
 				user: {
-					id: 'user-123'
+					id: 'user-123',
 					// No roles field at all
-				}
+				},
 			};
 
 			expect(() => {

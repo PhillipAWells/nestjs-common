@@ -30,7 +30,7 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 		return {
 			whitelist: true,
 			forbidNonWhitelisted: true,
-			transform: true
+			transform: true,
 		};
 	}
 
@@ -57,8 +57,8 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 				field: error.property,
 				value: error.value,
 				constraints: error.constraints,
-				children: error.children?.length ? this.formatValidationErrors(error.children) : undefined
-			}))
+				children: error.children?.length ? this.formatValidationErrors(error.children) : undefined,
+			})),
 		};
 	}
 }

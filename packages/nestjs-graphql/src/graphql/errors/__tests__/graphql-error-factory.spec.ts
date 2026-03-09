@@ -7,7 +7,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const error = new TestError();
@@ -24,7 +24,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const error = new TestError('Custom message');
@@ -37,7 +37,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const context = { userId: '123' };
@@ -51,7 +51,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			expect(TestError.name).toBe('TEST_ERRORError');
@@ -62,7 +62,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const error = new TestError();
@@ -78,7 +78,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const error = new TestError();
@@ -87,7 +87,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				context: {},
-				timestamp: expect.any(String)
+				timestamp: expect.any(String),
 			});
 		});
 	});
@@ -98,7 +98,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const error = new TestError('Custom message', { userId: '123' });
@@ -111,7 +111,7 @@ describe('createGraphQLError', () => {
 				statusCode: 400,
 				graphqlCode: 'TEST_ERROR',
 				context: { userId: '123' },
-				timestamp: expect.any(String)
+				timestamp: expect.any(String),
 			});
 		});
 	});
@@ -122,7 +122,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const originalError = new TestError('Test error', { userId: '123' });
@@ -140,7 +140,7 @@ describe('createGraphQLError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
-				graphqlCode: 'TEST_ERROR'
+				graphqlCode: 'TEST_ERROR',
 			});
 
 			const originalError = new TestError('Original message');
@@ -157,28 +157,28 @@ describe('createGraphQLError', () => {
 				code: 'UNAUTHORIZED',
 				statusCode: 401,
 				defaultMessage: 'Authentication required',
-				graphqlCode: 'UNAUTHENTICATED'
+				graphqlCode: 'UNAUTHENTICATED',
 			});
 
 			expect(GRAPHQL_ERROR_CONFIGS.FORBIDDEN).toEqual({
 				code: 'FORBIDDEN',
 				statusCode: 403,
 				defaultMessage: 'Access forbidden',
-				graphqlCode: 'FORBIDDEN'
+				graphqlCode: 'FORBIDDEN',
 			});
 
 			expect(GRAPHQL_ERROR_CONFIGS.NOT_FOUND).toEqual({
 				code: 'NOT_FOUND',
 				statusCode: 404,
 				defaultMessage: 'Resource not found',
-				graphqlCode: 'NOT_FOUND'
+				graphqlCode: 'NOT_FOUND',
 			});
 
 			expect(GRAPHQL_ERROR_CONFIGS.BAD_USER_INPUT).toEqual({
 				code: 'BAD_REQUEST',
 				statusCode: 400,
 				defaultMessage: 'Bad request',
-				graphqlCode: 'BAD_USER_INPUT'
+				graphqlCode: 'BAD_USER_INPUT',
 			});
 		});
 	});
@@ -193,7 +193,7 @@ describe('createGraphQLError', () => {
 				'CONFLICT',
 				'VALIDATION_ERROR',
 				'INTERNAL_SERVER_ERROR',
-				'RATE_LIMIT_EXCEEDED'
+				'RATE_LIMIT_EXCEEDED',
 			];
 
 			graphqlErrorTypes.forEach(type => {

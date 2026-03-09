@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { GraphQLAuthGuard } from '../../guards/graphql-auth.guard.js';
@@ -11,28 +11,28 @@ describe('GraphQLAuthGuard', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [GraphQLAuthGuard]
+			providers: [GraphQLAuthGuard],
 		}).compile();
 
 		guard = module.get<GraphQLAuthGuard>(GraphQLAuthGuard);
 
 		mockRequest = {
 			headers: {},
-			user: null
+			user: null,
 		};
 
 		mockGqlContext = {
 			getContext: () => ({
 				req: mockRequest,
-				user: null
-			})
+				user: null,
+			}),
 		};
 
 		mockExecutionContext = {};
 
 		// Mock GqlExecutionContext.create
 		(global as any).GqlExecutionContext = {
-			create: () => mockGqlContext
+			create: () => mockGqlContext,
 		};
 	});
 
@@ -42,7 +42,7 @@ describe('GraphQLAuthGuard', () => {
 			mockRequest.user = { id: 'user123' };
 
 			// Mock parent canActivate to succeed
-			const parentCanActivate = jest.spyOn(Object.getPrototypeOf(guard), 'canActivate');
+			const parentCanActivate = vi.spyOn(Object.getPrototypeOf(guard), 'canActivate');
 			parentCanActivate.mockResolvedValue(true);
 
 			const result = await guard.canActivate(mockExecutionContext);
@@ -67,7 +67,7 @@ describe('GraphQLAuthGuard', () => {
 		it('should handle authentication failure from parent guard', async () => {
 			mockRequest.headers.authorization = 'Bearer invalid-token';
 
-			const parentCanActivate = jest.spyOn(Object.getPrototypeOf(guard), 'canActivate');
+			const parentCanActivate = vi.spyOn(Object.getPrototypeOf(guard), 'canActivate');
 			parentCanActivate.mockRejectedValue(new Error('Invalid token'));
 
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(UnauthorizedException);
@@ -121,25 +121,25 @@ describe('GraphQLAuthGuard', () => {
 		it('should return user when authentication succeeds', () => {
 			const user = { id: 'user123', email: 'test@example.com' };
 
-			const result = guard.handleRequest(null, user, null);
+			const result = (guard as any).handleRequest(null, user, null);
 
 			expect(result).toBe(user);
 		});
 
 		it('should throw UnauthorizedException when user is null', () => {
-			expect(() => guard.handleRequest(null, null, null)).toThrow(UnauthorizedException);
+			expect(() => (guard as any).handleRequest(null, null, null)).toThrow(UnauthorizedException);
 		});
 
 		it('should throw UnauthorizedException when error is provided', () => {
 			const error = new Error('Auth failed');
 
-			expect(() => guard.handleRequest(error, null, null)).toThrow(UnauthorizedException);
+			expect(() => (guard as any).handleRequest(error, null, null)).toThrow(UnauthorizedException);
 		});
 
 		it('should throw provided error when available', () => {
 			const error = new Error('Custom auth error');
 
-			expect(() => guard.handleRequest(error, null, null)).toThrow(error);
+			expect(() => (guard as any).handleRequest(error, null, null)).toThrow(error);
 		});
 	});
 });

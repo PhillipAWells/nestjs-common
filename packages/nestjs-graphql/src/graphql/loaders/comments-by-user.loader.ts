@@ -12,7 +12,7 @@ export class CommentsByUserLoader {
 	private readonly logger = new Logger(CommentsByUserLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -21,11 +21,11 @@ export class CommentsByUserLoader {
    * @returns DataLoader for comments by user
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>,
 	): DataLoader<string, Comment[]> {
 		return this.dataLoaderRegistry.createWithCache(
 			'comments-by-user-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -36,17 +36,17 @@ export class CommentsByUserLoader {
    * @returns Promise resolving to arrays of comments or errors
    */
 	private async defaultBatchLoadFn(
-		userIds: readonly string[]
+		userIds: readonly string[],
 	): Promise<(Comment[] | Error)[]> {
 		this.logger.warn(
-			'Using default comments by user batch loader. Override with actual implementation.'
+			'Using default comments by user batch loader. Override with actual implementation.',
 		);
 
 		return userIds.map(
 			(userId) =>
 				new Error(
-					`CommentsByUserLoader not implemented. Override batchLoadFn for user ID: ${userId}`
-				)
+					`CommentsByUserLoader not implemented. Override batchLoadFn for user ID: ${userId}`,
+				),
 		);
 	}
 
@@ -59,8 +59,7 @@ export class CommentsByUserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comments for user ${userId}`, error);
 			return undefined;
 		}
@@ -75,8 +74,7 @@ export class CommentsByUserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comments for users ${userIds}`, error);
 			return userIds.map(() => error as Error);
 		}

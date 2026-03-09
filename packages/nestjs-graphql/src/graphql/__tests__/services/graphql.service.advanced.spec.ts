@@ -17,10 +17,10 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 				fields: {
 					hello: {
 						type: GraphQLString,
-						resolve: () => 'world'
-					}
-				}
-			})
+						resolve: () => 'world',
+					},
+				},
+			}),
 		});
 	});
 
@@ -57,10 +57,10 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 					fields: {
 						test: {
 							type: GraphQLString,
-							resolve: () => 'test'
-						}
-					}
-				})
+							resolve: () => 'test',
+						},
+					},
+				}),
 			});
 
 			service.validateSchema(newSchema);
@@ -109,8 +109,8 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 			const error = new Error('Test error');
 			const config = {
 				errorHandling: {
-					includeStackTrace: true
-				}
+					includeStackTrace: true,
+				},
 			};
 
 			const formatted = service.formatError(error, config);
@@ -129,8 +129,8 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 			const errorRecord = {
 				message: 'Custom error',
 				extensions: {
-					customField: 'value'
-				}
+					customField: 'value',
+				},
 			};
 
 			const formatted = service.formatError(errorRecord);
@@ -186,7 +186,7 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 			{ id: '2', createdAt: new Date('2024-01-02') },
 			{ id: '3', createdAt: new Date('2024-01-03') },
 			{ id: '4', createdAt: new Date('2024-01-04') },
-			{ id: '5', createdAt: new Date('2024-01-05') }
+			{ id: '5', createdAt: new Date('2024-01-05') },
 		];
 
 		it('should paginate items with first parameter', () => {

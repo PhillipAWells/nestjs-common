@@ -22,7 +22,7 @@ export class DataLoaderRegistry {
    */
 	public getOrCreate<K, V>(
 		key: string,
-		options: DataLoaderOptions<K, V>
+		options: DataLoaderOptions<K, V>,
 	): DataLoader<K, V> {
 		if (this.loaders.has(key)) {
 			this.logger.debug(`Reusing existing DataLoader for key: ${key}`);
@@ -46,12 +46,12 @@ export class DataLoaderRegistry {
 	public createWithCache<K, V>(
 		key: string,
 		batchLoadFn: BatchLoadFn<K, V>,
-		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {}
+		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
 		return this.getOrCreate(key, {
 			batchLoadFn,
 			cache: true,
-			...options
+			...options,
 		});
 	}
 
@@ -65,12 +65,12 @@ export class DataLoaderRegistry {
 	public createWithoutCache<K, V>(
 		key: string,
 		batchLoadFn: BatchLoadFn<K, V>,
-		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {}
+		options: Omit<DataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
 		return this.getOrCreate(key, {
 			batchLoadFn,
 			cache: false,
-			...options
+			...options,
 		});
 	}
 

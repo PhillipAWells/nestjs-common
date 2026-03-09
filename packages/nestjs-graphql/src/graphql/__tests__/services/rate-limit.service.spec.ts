@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RateLimitService, RateLimitResult } from '../../services/rate-limit.service.js';
 
@@ -7,17 +7,17 @@ describe('RateLimitService', () => {
 	let service: RateLimitService;
 
 	beforeEach(async () => {
-		jest.useFakeTimers();
+		vi.useFakeTimers();
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [RateLimitService]
+			providers: [RateLimitService],
 		}).compile();
 
 		service = module.get<RateLimitService>(RateLimitService);
 	});
 
 	afterEach(() => {
-		jest.clearAllTimers();
-		jest.useRealTimers();
+		vi.clearAllTimers();
+		vi.useRealTimers();
 	});
 
 	describe('checkLimit', () => {
@@ -61,7 +61,7 @@ describe('RateLimitService', () => {
 			expect(result.allowed).toBe(false);
 
 			// Simulate time passing (15 minutes + 1 second)
-			jest.advanceTimersByTime(15 * 60 * 1000 + 1000);
+			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
 			// Should allow again
 			result = await service.checkLimit(clientId);
@@ -88,7 +88,7 @@ describe('RateLimitService', () => {
 			const operation = 'intensiveQuery';
 			service.setOperationConfig(operation, {
 				windowMs: 60000, // 1 minute
-				maxRequests: 10
+				maxRequests: 10,
 			});
 
 			const clientId = 'user123';
@@ -111,7 +111,7 @@ describe('RateLimitService', () => {
 			const operation = 'mutation';
 			const config = {
 				windowMs: 30000,
-				maxRequests: 5
+				maxRequests: 5,
 			};
 
 			service.setOperationConfig(operation, config);
@@ -166,7 +166,7 @@ describe('RateLimitService', () => {
 			await service.checkLimit(clientId);
 
 			// Advance time past reset
-			jest.advanceTimersByTime(15 * 60 * 1000 + 1000);
+			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
 			const result = service.getStatus(clientId);
 			expect(result!.allowed).toBe(false); // Entry exists but expired
@@ -184,7 +184,7 @@ describe('RateLimitService', () => {
 			expect(service.getStats().totalEntries).toBe(2);
 
 			// Advance time past reset for client1
-			jest.advanceTimersByTime(15 * 60 * 1000 + 1000);
+			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
 			// Trigger cleanup (normally done by interval)
 			(service as any).cleanup();

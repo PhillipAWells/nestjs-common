@@ -33,7 +33,7 @@ export class GraphQLContextFactory {
 	public async createHttpContext(
 		req: Request,
 		res: Response,
-		options: ContextFactoryOptions = {}
+		options: ContextFactoryOptions = {},
 	): Promise<GraphQLContext> {
 		const requestId = this.generateRequestId(options);
 		const startTime = new Date();
@@ -42,7 +42,7 @@ export class GraphQLContextFactory {
 			req,
 			res,
 			requestId,
-			startTime
+			startTime,
 		};
 
 		// Add user information if available
@@ -74,7 +74,7 @@ export class GraphQLContextFactory {
 	 */
 	public async createWebSocketContext(
 		connection: IWebSocketConnection,
-		options: ContextFactoryOptions = {}
+		options: ContextFactoryOptions = {},
 	): Promise<WebSocketContext> {
 		const requestId = this.generateRequestId(options);
 		const startTime = new Date();
@@ -90,8 +90,8 @@ export class GraphQLContextFactory {
 			connection: {
 				id: connection.id ?? uuidv4(),
 				connectedAt: new Date(),
-				params: connection.params ?? {}
-			}
+				params: connection.params ?? {},
+			},
 		};
 
 		// Add user information if available
@@ -123,7 +123,7 @@ export class GraphQLContextFactory {
 	 */
 	private async applyContextEnhancers(
 		context: GraphQLContext,
-		options: ContextFactoryOptions
+		options: ContextFactoryOptions,
 	): Promise<void> {
 		if (!options.contextEnhancers) {
 			return;
@@ -132,11 +132,10 @@ export class GraphQLContextFactory {
 		for (const enhancer of options.contextEnhancers) {
 			try {
 				await enhancer(context);
-			}
-			catch (error) {
+			} catch (error) {
 				this.logger.error(
 					`Context enhancer failed: ${error instanceof Error ? error.message : String(error)}`,
-					error instanceof Error ? error.stack : undefined
+					error instanceof Error ? error.stack : undefined,
 				);
 				// Continue with other enhancers even if one fails
 			}
@@ -163,7 +162,7 @@ export class GraphQLContextFactory {
 				factory.createHttpContext(req, res, options),
 
 			createWebSocketContext: async (connection: IWebSocketConnection) =>
-				factory.createWebSocketContext(connection, options)
+				factory.createWebSocketContext(connection, options),
 		};
 	}
 }

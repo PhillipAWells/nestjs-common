@@ -62,10 +62,10 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 				error: () => {
 					const duration = Date.now() - startTime;
 					this.logger.warn(
-						`GraphQL ${operationType} failed after ${duration}ms: ${operationName}.${fieldName}`
+						`GraphQL ${operationType} failed after ${duration}ms: ${operationName}.${fieldName}`,
 					);
-				}
-			})
+				},
+			}),
 		);
 	}
 
@@ -81,11 +81,11 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 		operationType: string,
 		operationName: string,
 		fieldName: string,
-		duration: number
+		duration: number,
 	): void {
 		// Log performance data for monitoring
 		this.logger.debug(
-			`GraphQL ${operationType} performance: ${operationName}.${fieldName} took ${duration}ms`
+			`GraphQL ${operationType} performance: ${operationName}.${fieldName} took ${duration}ms`,
 		);
 
 		// In a real application, you might send this to a metrics service
@@ -104,16 +104,15 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 		operationType: string,
 		operationName: string,
 		fieldName: string,
-		duration: number
+		duration: number,
 	): void {
 		if (duration >= this.verySlowOperationThreshold) {
 			this.logger.error(
-				`VERY SLOW GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.verySlowOperationThreshold}ms)`
+				`VERY SLOW GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.verySlowOperationThreshold}ms)`,
 			);
-		}
-		else if (duration >= this.slowOperationThreshold) {
+		} else if (duration >= this.slowOperationThreshold) {
 			this.logger.warn(
-				`Slow GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.slowOperationThreshold}ms)`
+				`Slow GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.slowOperationThreshold}ms)`,
 			);
 		}
 	}

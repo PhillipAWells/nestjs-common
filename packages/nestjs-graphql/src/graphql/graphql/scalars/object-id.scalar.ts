@@ -22,8 +22,7 @@ export class ObjectIdScalar {
 
 		try {
 			return new ObjectId(value);
-		}
-		catch {
+		} catch {
 			throw new Error('Invalid ObjectId format');
 		}
 	}
@@ -49,8 +48,7 @@ export class ObjectIdScalar {
 		if (ast.kind === Kind.STRING) {
 			try {
 				return new ObjectId(ast.value);
-			}
-			catch {
+			} catch {
 				throw new Error('Invalid ObjectId format');
 			}
 		}

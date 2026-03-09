@@ -56,8 +56,7 @@ export class GraphQLAuthGuard implements CanActivate {
 			// this.logger.debug(`User authenticated: ${user?.id ?? user?.sub ?? 'unknown'}`);
 
 			return true;
-		}
-		catch (error) {
+		} catch (error) {
 			// TODO: Re-enable logging after re-adding BaseAuthGuard
 			// this.logger.error(`Authentication failed: ${error instanceof Error ? error.message : String(error)}`);
 			throw new UnauthorizedException('Invalid authentication token');

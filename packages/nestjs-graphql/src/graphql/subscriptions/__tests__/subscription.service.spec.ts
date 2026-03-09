@@ -1,20 +1,20 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionService } from '../subscription.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('SubscriptionService', () => {
 	let service: SubscriptionService;
-	let mockLogger: jest.Mocked<AppLogger>;
+	let mockLogger: any;
 
 	beforeEach(async () => {
 		mockLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		} as any;
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -22,9 +22,9 @@ describe('SubscriptionService', () => {
 				SubscriptionService,
 				{
 					provide: AppLogger,
-					useValue: mockLogger
-				}
-			]
+					useValue: mockLogger,
+				},
+			],
 		}).compile();
 
 		service = module.get<SubscriptionService>(SubscriptionService);
@@ -58,7 +58,7 @@ describe('SubscriptionService', () => {
 
 	describe('lifecycle hooks', () => {
 		it('should call onModuleDestroy during module teardown', async () => {
-			const destroyFn = jest.spyOn(service, 'onModuleDestroy');
+			const destroyFn = vi.spyOn(service, 'onModuleDestroy');
 
 			service.onModuleDestroy();
 
@@ -79,7 +79,7 @@ describe('SubscriptionService', () => {
 			// The onModuleDestroy method should have metadata from ProfileMethod decorator
 			const descriptor = Object.getOwnPropertyDescriptor(
 				SubscriptionService.prototype,
-				'onModuleDestroy'
+				'onModuleDestroy',
 			);
 			expect(descriptor).toBeDefined();
 			expect(descriptor?.value).toBeDefined();
@@ -95,15 +95,15 @@ describe('SubscriptionService', () => {
 	describe('SubscriptionService Error Handling', () => {
 		it('should handle publish errors gracefully', async () => {
 			const mockPubSub = {
-				publish: jest.fn().mockRejectedValue(new Error('Publish failed'))
+				publish: vi.fn().mockRejectedValue(new Error('Publish failed')),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			await expect(service.publish('topic', { data: 'test' })).rejects.toThrow('Publish failed');
@@ -112,17 +112,17 @@ describe('SubscriptionService', () => {
 
 		it('should handle subscribe errors and log them', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockImplementation(() => {
+				asyncIterator: vi.fn().mockImplementation(() => {
 					throw new Error('Subscribe failed');
-				})
+				}),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			expect(() => service.subscribe('topic')).toThrow('Subscribe failed');
@@ -133,15 +133,15 @@ describe('SubscriptionService', () => {
 	describe('authenticated subscriptions', () => {
 		it('should publish with authenticated user context', async () => {
 			const mockPubSub = {
-				publish: jest.fn().mockResolvedValue(1)
+				publish: vi.fn().mockResolvedValue(1),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const data = { userId: 'user123', message: 'test message' };
@@ -152,15 +152,15 @@ describe('SubscriptionService', () => {
 
 		it('should allow only authenticated users to publish', async () => {
 			const mockPubSub = {
-				publish: jest.fn()
+				publish: vi.fn(),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			// Without userId, should still allow (auth check is at subscription layer)
@@ -172,17 +172,17 @@ describe('SubscriptionService', () => {
 
 		it('should include user metadata in subscription context', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockReturnValue({
-					[Symbol.asyncIterator]: () => ({})
-				})
+				asyncIterator: vi.fn().mockReturnValue({
+					[Symbol.asyncIterator]: () => ({}),
+				}),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const iterator = service.subscribe('user-specific-topic');
@@ -193,15 +193,15 @@ describe('SubscriptionService', () => {
 	describe('message delivery', () => {
 		it('should deliver published messages to all subscribers', async () => {
 			const mockPubSub = {
-				publish: jest.fn().mockResolvedValue(2)
+				publish: vi.fn().mockResolvedValue(2),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const message = { data: 'broadcast' };
@@ -212,17 +212,17 @@ describe('SubscriptionService', () => {
 
 		it('should handle user-specific subscriptions isolated from others', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockReturnValue({
-					[Symbol.asyncIterator]: () => ({})
-				})
+				asyncIterator: vi.fn().mockReturnValue({
+					[Symbol.asyncIterator]: () => ({}),
+				}),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const user1Iterator = service.subscribe('user:user1:updates');
@@ -234,14 +234,14 @@ describe('SubscriptionService', () => {
 
 		it('should log successful message delivery', async () => {
 			const mockLogger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const mockPubSub = {
-				publish: jest.fn().mockResolvedValue(1)
+				publish: vi.fn().mockResolvedValue(1),
 			};
 
 			(service as any).pubSub = mockPubSub;
@@ -256,24 +256,24 @@ describe('SubscriptionService', () => {
 	describe('subscription cleanup', () => {
 		it('should cleanup subscription on error', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockImplementation(() => {
+				asyncIterator: vi.fn().mockImplementation(() => {
 					throw new Error('Connection lost');
-				})
+				}),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			expect(() => service.subscribe('cleanup-topic')).toThrow('Connection lost');
 		});
 
 		it('should handle graceful cleanup on module destroy', async () => {
-			const destroyFn = jest.spyOn(service, 'onModuleDestroy');
+			const destroyFn = vi.spyOn(service, 'onModuleDestroy');
 
 			await service.onModuleDestroy();
 
@@ -282,10 +282,10 @@ describe('SubscriptionService', () => {
 
 		it('should not throw during cleanup of already-closed subscriptions', async () => {
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			expect(() => {
@@ -298,17 +298,17 @@ describe('SubscriptionService', () => {
 	describe('performance', () => {
 		it('should handle high volume subscriptions', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockReturnValue({
-					[Symbol.asyncIterator]: () => ({})
-				})
+				asyncIterator: vi.fn().mockReturnValue({
+					[Symbol.asyncIterator]: () => ({}),
+				}),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			// Subscribe to many topics
@@ -323,15 +323,15 @@ describe('SubscriptionService', () => {
 
 		it('should handle rapid publish calls', async () => {
 			const mockPubSub = {
-				publish: jest.fn().mockResolvedValue(1)
+				publish: vi.fn().mockResolvedValue(1),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			const publishPromises = [];
@@ -346,18 +346,18 @@ describe('SubscriptionService', () => {
 
 		it('should manage memory with subscription cleanup', async () => {
 			const mockPubSub = {
-				asyncIterator: jest.fn().mockReturnValue({
-					[Symbol.asyncIterator]: () => ({})
+				asyncIterator: vi.fn().mockReturnValue({
+					[Symbol.asyncIterator]: () => ({}),
 				}),
-				publish: jest.fn().mockResolvedValue(1)
+				publish: vi.fn().mockResolvedValue(1),
 			};
 
 			(service as any).pubSub = mockPubSub;
 			(service as any).logger = {
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			};
 
 			// Create and cleanup subscriptions

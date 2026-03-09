@@ -19,7 +19,7 @@ export class TagLoader {
 	private readonly logger = new Logger(TagLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -28,11 +28,11 @@ export class TagLoader {
    * @returns DataLoader for tags
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Tag | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Tag | Error)[]>,
 	): DataLoader<string, Tag> {
 		return this.dataLoaderRegistry.createWithCache(
 			'tag-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -43,17 +43,17 @@ export class TagLoader {
    * @returns Promise resolving to array of tags or errors
    */
 	private async defaultBatchLoadFn(
-		tagIds: readonly string[]
+		tagIds: readonly string[],
 	): Promise<(Tag | Error)[]> {
 		this.logger.warn(
-			'Using default tag batch loader. Override with actual implementation.'
+			'Using default tag batch loader. Override with actual implementation.',
 		);
 
 		return tagIds.map(
 			(id) =>
 				new Error(
-					`TagLoader not implemented. Override batchLoadFn for tag ID: ${id}`
-				)
+					`TagLoader not implemented. Override batchLoadFn for tag ID: ${id}`,
+				),
 		);
 	}
 
@@ -66,8 +66,7 @@ export class TagLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(tagId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load tag ${tagId}`, error);
 			return undefined;
 		}
@@ -82,8 +81,7 @@ export class TagLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(tagIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load tags ${tagIds}`, error);
 			return tagIds.map(() => error as Error);
 		}

@@ -32,7 +32,7 @@ export enum CacheInvalidationStrategy {
 	IMMEDIATE = 'immediate',
 	DELAYED = 'delayed',
 	PATTERN = 'pattern',
-	TIME_BASED = 'time_based'
+	TIME_BASED = 'time_based',
 }
 
 /**
@@ -98,7 +98,7 @@ export enum RedisConnectionStatus {
 	DISCONNECTED = 'disconnected',
 	CONNECTING = 'connecting',
 	RECONNECTING = 'reconnecting',
-	ERROR = 'error'
+	ERROR = 'error',
 }
 
 /**

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Module, DynamicModule, Global, MiddlewareConsumer, NestModule, OnModuleInit, Inject, Optional } from '@nestjs/common';
+import { Module, DynamicModule, Global, MiddlewareConsumer, NestModule, OnModuleInit, Optional } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { HttpAdapterHost } from '@nestjs/core';
@@ -37,7 +37,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	constructor(
 		@Optional() private readonly httpAdapterHost?: HttpAdapterHost,
 		@Optional() private readonly bsonService?: BsonSerializationService,
-		@Optional() private readonly bsonMiddleware?: BsonSerializationMiddleware
+		@Optional() private readonly bsonMiddleware?: BsonSerializationMiddleware,
 	) {}
 	/**
 	 * Validate GraphQL configuration options
@@ -52,7 +52,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			introspection: Joi.boolean().optional().description('Enable schema introspection'),
 			debug: Joi.boolean().optional().description('Enable debug mode'),
 			tracing: Joi.boolean().optional().description('Enable tracing'),
-			cache: Joi.boolean().optional().description('Enable caching')
+			cache: Joi.boolean().optional().description('Enable caching'),
 		});
 
 		const { error } = schema.validate(options);
@@ -82,7 +82,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			...(options.context !== undefined ? { context: options.context } : {}),
 			...(options.cors !== undefined ? { cors: options.cors } : {}),
 			...(options.formatError !== undefined ? { formatError: options.formatError } : {}),
-			...options
+			...options,
 		};
 
 		const providers: any[] = [
@@ -96,7 +96,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLRolesGuard,
 			GraphQLLoggingInterceptor,
 			GraphQLErrorInterceptor,
-			GraphQLPerformanceInterceptor
+			GraphQLPerformanceInterceptor,
 		];
 
 		// Add BSON service if enabled
@@ -118,11 +118,11 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 						environment: process.env['NODE_ENV'] ?? 'development',
 						tags: {
 							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-graphql'
-						}
-					}
+							package: 'nestjs-graphql',
+						},
+					},
 				}),
-				NestGraphQLModule.forRoot(defaultOptions)
+				NestGraphQLModule.forRoot(defaultOptions),
 			],
 			providers,
 			exports: [
@@ -138,9 +138,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLLoggingInterceptor,
 				GraphQLErrorInterceptor,
 				GraphQLPerformanceInterceptor,
-				...(options.bson?.enabled ? [BsonSerializationService, BsonResponseInterceptor] : [])
+				...(options.bson?.enabled ? [BsonSerializationService, BsonResponseInterceptor] : []),
 			],
-			global: true
+			global: true,
 		};
 	}
 
@@ -163,7 +163,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLErrorInterceptor,
 			GraphQLPerformanceInterceptor,
 			// Always include BSON service in async mode for flexibility
-			BsonSerializationService
+			BsonSerializationService,
 		];
 
 		return {
@@ -179,15 +179,15 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 						environment: process.env['NODE_ENV'] ?? 'development',
 						tags: {
 							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-graphql'
-						}
-					}
+							package: 'nestjs-graphql',
+						},
+					},
 				}),
 				NestGraphQLModule.forRootAsync({
 					driver: ApolloDriver,
 					useFactory: options.useFactory,
-					...(options.inject ? { inject: options.inject } : {})
-				})
+					...(options.inject ? { inject: options.inject } : {}),
+				}),
 			],
 			providers: [...providers, BsonResponseInterceptor],
 			exports: [
@@ -204,9 +204,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLErrorInterceptor,
 				GraphQLPerformanceInterceptor,
 				BsonSerializationService,
-				BsonResponseInterceptor
+				BsonResponseInterceptor,
 			],
-			global: true
+			global: true,
 		};
 	}
 
@@ -217,7 +217,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 		// Only configure if BSON is enabled
 		if (GraphQLModule.bsonConfig?.enabled && this.bsonMiddleware) {
 			consumer
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				.apply(this.bsonMiddleware as any)
 				.forRoutes('graphql');
 		}

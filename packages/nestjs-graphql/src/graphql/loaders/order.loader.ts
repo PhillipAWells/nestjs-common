@@ -19,7 +19,7 @@ export class OrderLoader {
 	private readonly logger = new Logger(OrderLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -28,11 +28,11 @@ export class OrderLoader {
    * @returns DataLoader for orders
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Order | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Order | Error)[]>,
 	): DataLoader<string, Order> {
 		return this.dataLoaderRegistry.createWithCache(
 			'order-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -43,17 +43,17 @@ export class OrderLoader {
    * @returns Promise resolving to array of orders or errors
    */
 	private async defaultBatchLoadFn(
-		orderIds: readonly string[]
+		orderIds: readonly string[],
 	): Promise<(Order | Error)[]> {
 		this.logger.warn(
-			'Using default order batch loader. Override with actual implementation.'
+			'Using default order batch loader. Override with actual implementation.',
 		);
 
 		return orderIds.map(
 			(id) =>
 				new Error(
-					`OrderLoader not implemented. Override batchLoadFn for order ID: ${id}`
-				)
+					`OrderLoader not implemented. Override batchLoadFn for order ID: ${id}`,
+				),
 		);
 	}
 
@@ -66,8 +66,7 @@ export class OrderLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(orderId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load order ${orderId}`, error);
 			return undefined;
 		}
@@ -82,8 +81,7 @@ export class OrderLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(orderIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load orders ${orderIds}`, error);
 			return orderIds.map(() => error as Error);
 		}

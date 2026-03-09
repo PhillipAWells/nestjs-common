@@ -34,7 +34,7 @@ export function Subscription(topic: string, options: SubscriptionOptions = {}) {
 		SetMetadata(SUBSCRIPTION_METADATA, {
 			topic,
 			...options,
-			methodName: propertyKey
+			methodName: propertyKey,
 		})(target, propertyKey, descriptor);
 
 		// Mark method as subscription resolver
@@ -52,7 +52,7 @@ export function SubscriptionFilter(filterFunction: (payload: any, variables: any
 		const existingFilters = Reflect.getMetadata('subscription:filters', target, propertyKey) ?? [];
 		existingFilters.push({
 			parameterIndex,
-			filterFunction
+			filterFunction,
 		});
 		Reflect.defineMetadata('subscription:filters', existingFilters, target, propertyKey);
 	};

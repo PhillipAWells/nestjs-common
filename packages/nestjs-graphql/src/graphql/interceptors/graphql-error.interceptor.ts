@@ -44,7 +44,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			catchError((error) => {
 				// Log the error with context
 				this.logger.error(
-					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${error instanceof Error ? error.message : String(error)}`
+					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${error instanceof Error ? error.message : String(error)}`,
 				);
 
 				// Format the error for GraphQL response
@@ -52,7 +52,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 
 				// Re-throw as GraphQLError
 				return throwError(() => formattedError);
-			})
+			}),
 		);
 	}
 
@@ -69,7 +69,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 		error: any,
 		operationType: string,
 		operationName: string,
-		fieldName: string
+		fieldName: string,
 	): GraphQLError {
 		// If it's already a GraphQLError, return it
 		if (error instanceof GraphQLError) {
@@ -86,19 +86,19 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			operation: {
 				type: operationType,
 				name: operationName,
-				field: fieldName
+				field: fieldName,
 			},
 			timestamp: new Date().toISOString(),
 			// Include stack trace in development
 			...(process.env['NODE_ENV'] !== 'production' && error instanceof Error
 				? { stacktrace: error.stack }
-				: {})
+				: {}),
 		};
 
 		// Create new GraphQLError with formatted message
 		return new GraphQLError(message, {
 			extensions,
-			originalError: error
+			originalError: error,
 		});
 	}
 
@@ -119,7 +119,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'VALIDATION_ERROR',
 				message: 'Input validation failed',
-				statusCode: HTTP_STATUS_BAD_REQUEST
+				statusCode: HTTP_STATUS_BAD_REQUEST,
 			};
 		}
 
@@ -127,7 +127,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'VALIDATION_ERROR',
 				message: 'Invalid input format',
-				statusCode: HTTP_STATUS_BAD_REQUEST
+				statusCode: HTTP_STATUS_BAD_REQUEST,
 			};
 		}
 
@@ -135,7 +135,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'AUTHENTICATION_REQUIRED',
 				message: 'Authentication required',
-				statusCode: HTTP_STATUS_UNAUTHORIZED
+				statusCode: HTTP_STATUS_UNAUTHORIZED,
 			};
 		}
 
@@ -143,7 +143,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'AUTHORIZATION_FAILED',
 				message: 'Access denied',
-				statusCode: HTTP_STATUS_FORBIDDEN
+				statusCode: HTTP_STATUS_FORBIDDEN,
 			};
 		}
 
@@ -151,7 +151,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'NOT_FOUND',
 				message: 'Resource not found',
-				statusCode: HTTP_STATUS_NOT_FOUND
+				statusCode: HTTP_STATUS_NOT_FOUND,
 			};
 		}
 
@@ -159,7 +159,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			return {
 				code: 'CONFLICT',
 				message: 'Resource already exists',
-				statusCode: HTTP_STATUS_CONFLICT
+				statusCode: HTTP_STATUS_CONFLICT,
 			};
 		}
 
@@ -169,7 +169,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 			message: process.env['NODE_ENV'] === 'production'
 				? 'An unexpected error occurred'
 				: (error instanceof Error ? error.message : 'An unexpected error occurred'),
-			statusCode: HTTP_STATUS_INTERNAL_SERVER_ERROR
+			statusCode: HTTP_STATUS_INTERNAL_SERVER_ERROR,
 		};
 	}
 }

@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { GraphQLCacheService } from '../../services/cache.service.js';
@@ -10,9 +10,9 @@ describe('GraphQLCacheService', () => {
 
 	beforeEach(async () => {
 		mockCacheManager = {
-			set: jest.fn().mockResolvedValue(undefined),
-			get: jest.fn().mockResolvedValue(null),
-			del: jest.fn().mockResolvedValue(undefined)
+			set: vi.fn().mockResolvedValue(undefined),
+			get: vi.fn().mockResolvedValue(null),
+			del: vi.fn().mockResolvedValue(undefined),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -20,16 +20,16 @@ describe('GraphQLCacheService', () => {
 				GraphQLCacheService,
 				{
 					provide: CACHE_MANAGER,
-					useValue: mockCacheManager
-				}
-			]
+					useValue: mockCacheManager,
+				},
+			],
 		}).compile();
 
 		service = module.get<GraphQLCacheService>(GraphQLCacheService);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('generateKey', () => {
@@ -58,7 +58,7 @@ describe('GraphQLCacheService', () => {
 			const args = {
 				ids: [1, 2, 3],
 				filter: { status: 'active', type: 'premium' },
-				limit: 10
+				limit: 10,
 			};
 			const key = service.generateKey('users', args);
 
@@ -175,7 +175,7 @@ describe('GraphQLCacheService', () => {
 		it('should return cached value on cache hit', async () => {
 			const key = 'test-key';
 			const cachedValue = { data: 'cached' };
-			const loader = jest.fn().mockResolvedValue({ data: 'fresh' });
+			const loader = vi.fn().mockResolvedValue({ data: 'fresh' });
 
 			mockCacheManager.get.mockResolvedValue(cachedValue);
 
@@ -188,7 +188,7 @@ describe('GraphQLCacheService', () => {
 		it('should load and cache value on cache miss', async () => {
 			const key = 'test-key';
 			const freshValue = { data: 'fresh' };
-			const loader = jest.fn().mockResolvedValue(freshValue);
+			const loader = vi.fn().mockResolvedValue(freshValue);
 
 			mockCacheManager.get.mockResolvedValue(null);
 
@@ -202,7 +202,7 @@ describe('GraphQLCacheService', () => {
 		it('should use custom TTL for getOrSet', async () => {
 			const key = 'test-key';
 			const freshValue = { data: 'fresh' };
-			const loader = jest.fn().mockResolvedValue(freshValue);
+			const loader = vi.fn().mockResolvedValue(freshValue);
 			const ttl = 600000;
 
 			mockCacheManager.get.mockResolvedValue(null);
@@ -214,7 +214,7 @@ describe('GraphQLCacheService', () => {
 
 		it('should handle loader errors', async () => {
 			const key = 'test-key';
-			const loader = jest.fn().mockRejectedValue(new Error('Load error'));
+			const loader = vi.fn().mockRejectedValue(new Error('Load error'));
 
 			mockCacheManager.get.mockResolvedValue(null);
 
@@ -385,7 +385,7 @@ describe('GraphQLCacheService', () => {
 			const userData = { id: userId, name: 'John', email: 'john@example.com' };
 			let dbCalls = 0;
 
-			const loader = jest.fn(async () => {
+			const loader = vi.fn(async () => {
 				dbCalls++;
 				return userData;
 			});
@@ -413,13 +413,13 @@ describe('GraphQLCacheService', () => {
 
 			const listData = Array.from({ length: pageSize }, (_, i) => ({
 				id: `user-${i}`,
-				name: `User ${i}`
+				name: `User ${i}`,
 			}));
 
 			mockCacheManager.get.mockResolvedValue(null);
 			mockCacheManager.set.mockResolvedValue(undefined);
 
-			const loader = jest.fn().mockResolvedValue(listData);
+			const loader = vi.fn().mockResolvedValue(listData);
 
 			const result = await service.getOrSet(listKey, loader, 600000); // 10 minutes
 

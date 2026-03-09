@@ -23,11 +23,10 @@ export class SubscriptionService implements OnModuleDestroy {
 		try {
 			this.logger.debug(`Publishing to topic: ${topic}`);
 			await (this as any).pubSub.publish(topic, data);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(
 				`Failed to publish to topic ${topic}: ${(error as Error).message}`,
-				(error as Error).stack
+				(error as Error).stack,
 			);
 			throw error;
 		}
@@ -43,11 +42,10 @@ export class SubscriptionService implements OnModuleDestroy {
 		try {
 			this.logger.debug(`Subscribing to topic: ${topic}`);
 			return (this as any).pubSub.asyncIterator(topic);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(
 				`Failed to subscribe to topic ${topic}: ${(error as Error).message}`,
-				(error as Error).stack
+				(error as Error).stack,
 			);
 			throw error;
 		}

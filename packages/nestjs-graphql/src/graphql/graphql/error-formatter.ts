@@ -24,7 +24,7 @@ export enum GraphQLErrorCode {
 
 	// Internal Errors
 	INTERNAL_ERROR = 'INTERNAL_ERROR',
-	SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE'
+	SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 }
 
 /**
@@ -131,8 +131,8 @@ export class GraphQLErrorFormatter {
 				timestamp: new Date().toISOString(),
 				...(originalError.details && { details: originalError.details }),
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -149,8 +149,8 @@ export class GraphQLErrorFormatter {
 				timestamp: new Date().toISOString(),
 				validationErrors,
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -164,8 +164,8 @@ export class GraphQLErrorFormatter {
 				code: GraphQLErrorCode.UNAUTHENTICATED,
 				timestamp: new Date().toISOString(),
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -179,8 +179,8 @@ export class GraphQLErrorFormatter {
 				code: GraphQLErrorCode.FORBIDDEN,
 				timestamp: new Date().toISOString(),
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -194,8 +194,8 @@ export class GraphQLErrorFormatter {
 				code: GraphQLErrorCode.RATE_LIMIT_EXCEEDED,
 				timestamp: new Date().toISOString(),
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -213,8 +213,8 @@ export class GraphQLErrorFormatter {
 				code: GraphQLErrorCode.INTERNAL_ERROR,
 				timestamp: new Date().toISOString(),
 				...(context?.user?.id && { userId: context.user.id }),
-				...(context?.operationName && { operationName: context.operationName })
-			}
+				...(context?.operationName && { operationName: context.operationName }),
+			},
 		};
 	}
 
@@ -226,7 +226,7 @@ export class GraphQLErrorFormatter {
 			// Class-validator errors
 			return Object.values(error.errors).map((fieldErrors: any) => ({
 				field: fieldErrors.property,
-				constraints: fieldErrors.constraints
+				constraints: fieldErrors.constraints,
 			}));
 		}
 
@@ -235,7 +235,7 @@ export class GraphQLErrorFormatter {
 		}
 
 		return [{
-			message: error.message ?? 'Validation failed'
+			message: error.message ?? 'Validation failed',
 		}];
 	}
 }

@@ -29,9 +29,9 @@ export class CacheModule {
 						environment: process.env['NODE_ENV'] ?? 'development',
 						tags: {
 							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-cache'
-						}
-					}
+							package: 'nestjs-cache',
+						},
+					},
 				}),
 				NestCacheModule.registerAsync({
 					useFactory: () => {
@@ -42,7 +42,7 @@ export class CacheModule {
 								host: redisOptions.host,
 								port: redisOptions.port,
 								database: redisOptions.db,
-								keyPrefix: redisOptions.keyPrefix
+								keyPrefix: redisOptions.keyPrefix,
 							}));
 
 							const config = {
@@ -60,24 +60,22 @@ export class CacheModule {
 								connectTimeout: redisOptions.connectTimeout,
 								commandTimeout: redisOptions.commandTimeout,
 								family: redisOptions.family,
-								keepAlive: redisOptions.keepAlive
+								keepAlive: redisOptions.keepAlive,
 							};
 
 							// Event listeners will be attached lazily on first cache operation to respect lazyConnect=true
-
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						return config as any;
-						}
-						catch (error) {
+							 
+							return config as any;
+						} catch (error) {
 							logger.error('Failed to initialize Redis cache store', JSON.stringify({
-								error: (error as Error).message
+								error: (error as Error).message,
 							}));
 							throw error; // Fail fast instead of falling back to memory
 						}
 					},
 					inject: [],
-					isGlobal: true
-				})
+					isGlobal: true,
+				}),
 			],
 			providers: [
 				CacheService,
@@ -85,10 +83,10 @@ export class CacheModule {
 				// This breaks the circular dependency by allowing auth to inject without importing CacheModule
 				{
 					provide: CACHE_PROVIDER,
-					useExisting: CacheService
-				}
+					useExisting: CacheService,
+				},
 			],
-			exports: [CacheService, NestCacheModule, CACHE_PROVIDER]
+			exports: [CacheService, NestCacheModule, CACHE_PROVIDER],
 		};
 	}
 }

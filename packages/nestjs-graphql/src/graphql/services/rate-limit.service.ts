@@ -54,8 +54,7 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
 			const resetTime = now + windowMs;
 			this.storage.set(key, { count: 1, resetTime });
 			return 1;
-		}
-		else {
+		} else {
 			// Increment existing entry
 			entry.count++;
 			this.storage.set(key, entry);
@@ -113,7 +112,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 
 	constructor(
 		@Inject(AppLogger) private readonly appLogger: AppLogger,
-		@Optional() @Inject('RATE_LIMIT_STORAGE') private readonly storage?: RateLimitStorage
+		@Optional() @Inject('RATE_LIMIT_STORAGE') private readonly storage?: RateLimitStorage,
 	) {
 		this.logger = this.appLogger.createContextualLogger(RateLimitService.name);
 	}
@@ -124,7 +123,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private readonly defaultConfig: RateLimitConfig = {
 		windowMs: 15 * 60 * 1000, // 15 minutes
-		maxRequests: 100
+		maxRequests: 100,
 	};
 
 	/**
@@ -161,8 +160,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 		// Use storage backend if available, otherwise fall back to in-memory
 		if (this.storage) {
 			return this.checkLimitWithStorage(clientId, config);
-		}
-		else {
+		} else {
 			return this.checkLimitInMemory(clientId, config);
 		}
 	}
@@ -181,10 +179,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 				remaining,
 				limit: config.maxRequests,
 				resetTime: Date.now() + config.windowMs,
-				current
+				current,
 			};
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Storage rate limit check failed for ${clientId}:`, error as string);
 			// Fall back to in-memory on storage error
 			return this.checkLimitInMemory(clientId, config);
@@ -203,7 +200,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 			// Create new entry or reset expired entry
 			entry = {
 				count: 0,
-				resetTime: now + config.windowMs
+				resetTime: now + config.windowMs,
 			};
 		}
 
@@ -220,7 +217,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 			remaining,
 			limit: config.maxRequests,
 			resetTime: entry.resetTime,
-			current: entry.count
+			current: entry.count,
 		};
 	}
 
@@ -277,7 +274,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 			allowed: entry.count < config.maxRequests && now <= entry.resetTime,
 			remaining,
 			limit: config.maxRequests,
-			resetTime: entry.resetTime
+			resetTime: entry.resetTime,
 		};
 	}
 
@@ -289,8 +286,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 		if (this.storage) {
 			try {
 				await this.storage.cleanup();
-			}
-			catch (error) {
+			} catch (error) {
 				this.logger.error('Storage cleanup failed:', error as string);
 			}
 		}
@@ -319,7 +315,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	public getStats(): { totalEntries: number; operationConfigs: number } {
 		return {
 			totalEntries: this.store.size,
-			operationConfigs: this.operationConfigs.size
+			operationConfigs: this.operationConfigs.size,
 		};
 	}
 }

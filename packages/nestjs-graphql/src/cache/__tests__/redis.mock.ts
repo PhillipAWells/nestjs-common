@@ -3,11 +3,11 @@ const Redis = require('ioredis-mock');
 export const createMockRedis = () => {
 	return new Redis({
 		// Mock configuration
-		data: {}
+		data: {},
 	});
 };
 
 export const mockRedisProvider = {
 	provide: 'REDIS_CLIENT',
-	useFactory: () => createMockRedis()
+	useFactory: () => createMockRedis(),
 };

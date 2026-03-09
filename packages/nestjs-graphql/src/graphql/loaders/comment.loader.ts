@@ -19,7 +19,7 @@ export class CommentLoader {
 	private readonly logger = new Logger(CommentLoader.name);
 
 	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry
+		private readonly dataLoaderRegistry: DataLoaderRegistry,
 	) {}
 
 	/**
@@ -28,11 +28,11 @@ export class CommentLoader {
    * @returns DataLoader for comments
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment | Error)[]>,
 	): DataLoader<string, Comment> {
 		return this.dataLoaderRegistry.createWithCache(
 			'comment-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -43,17 +43,17 @@ export class CommentLoader {
    * @returns Promise resolving to array of comments or errors
    */
 	private async defaultBatchLoadFn(
-		commentIds: readonly string[]
+		commentIds: readonly string[],
 	): Promise<(Comment | Error)[]> {
 		this.logger.warn(
-			'Using default comment batch loader. Override with actual implementation.'
+			'Using default comment batch loader. Override with actual implementation.',
 		);
 
 		return commentIds.map(
 			(id) =>
 				new Error(
-					`CommentLoader not implemented. Override batchLoadFn for comment ID: ${id}`
-				)
+					`CommentLoader not implemented. Override batchLoadFn for comment ID: ${id}`,
+				),
 		);
 	}
 
@@ -66,8 +66,7 @@ export class CommentLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(commentId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comment ${commentId}`, error);
 			return undefined;
 		}
@@ -82,8 +81,7 @@ export class CommentLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(commentIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load comments ${commentIds}`, error);
 			return commentIds.map(() => error as Error);
 		}

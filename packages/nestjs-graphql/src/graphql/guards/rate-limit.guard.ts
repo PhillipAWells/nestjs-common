@@ -43,16 +43,16 @@ export class GraphQLRateLimitGuard implements CanActivate {
 
 			if (!result.allowed) {
 				this.logger.warn(
-					`Rate limit exceeded for client ${clientId}. Reset in ${result.resetTime - Date.now()}ms`
+					`Rate limit exceeded for client ${clientId}. Reset in ${result.resetTime - Date.now()}ms`,
 				);
 
 				throw new HttpException(
 					{
 						message: 'Rate limit exceeded',
 						resetTime: new Date(result.resetTime),
-						retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000)
+						retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
 					},
-					HttpStatus.TOO_MANY_REQUESTS
+					HttpStatus.TOO_MANY_REQUESTS,
 				);
 			}
 
@@ -65,8 +65,7 @@ export class GraphQLRateLimitGuard implements CanActivate {
 			}
 
 			return true;
-		}
-		catch (error) {
+		} catch (error) {
 			if (error instanceof HttpException) {
 				throw error;
 			}

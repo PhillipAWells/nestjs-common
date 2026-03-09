@@ -6,7 +6,7 @@ describe('WebSocketAuthService', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [WebSocketAuthService]
+			providers: [WebSocketAuthService],
 		}).compile();
 
 		service = module.get<WebSocketAuthService>(WebSocketAuthService);
@@ -18,7 +18,7 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'user123',
-				exp: Math.floor(Date.now() / 1000) + 3600 // Expires in 1 hour
+				exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
 			})).toString('base64url');
 			const signature = 'dummy-signature';
 			const token = `${header}.${payload}.${signature}`;
@@ -45,7 +45,7 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'user123',
-				exp: Math.floor(Date.now() / 1000) - 3600 // Expired 1 hour ago
+				exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
 			})).toString('base64url');
 			const signature = 'dummy-signature';
 			const token = `${header}.${payload}.${signature}`;
@@ -112,7 +112,7 @@ describe('WebSocketAuthService', () => {
 		it('should prioritize authorization over other fields', () => {
 			const connectionParams = {
 				authorization: 'auth-token',
-				token: 'token-field'
+				token: 'token-field',
 			};
 			const token = (service as any).extractToken(connectionParams);
 			expect(token).toBe('auth-token');
@@ -233,7 +233,7 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'extracted-user',
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const signature = 'sig';
 			const token = `${header}.${payload}.${signature}`;
@@ -249,7 +249,7 @@ describe('WebSocketAuthService', () => {
 				sub: 'user-with-claims',
 				exp: Math.floor(Date.now() / 1000) + 3600,
 				email: 'user@example.com',
-				roles: ['admin', 'user']
+				roles: ['admin', 'user'],
 			})).toString('base64url');
 			const token = `header.${payload}.signature`;
 
@@ -265,7 +265,7 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'context-user',
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const token = `${header}.${payload}.sig`;
 
@@ -280,14 +280,14 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'metadata-user',
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const token = `${header}.${payload}.sig`;
 
 			const connectionParams = {
 				authorization: token,
 				userAgent: 'test-client',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const result = await service.authenticate(connectionParams);
@@ -300,7 +300,7 @@ describe('WebSocketAuthService', () => {
 			const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url');
 			const payload = Buffer.from(JSON.stringify({
 				sub: 'connection-user',
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const token = `${header}.${payload}.sig`;
 
@@ -359,7 +359,7 @@ describe('WebSocketAuthService', () => {
 	describe('token validation variations', () => {
 		it('should accept token with minimal valid payload', async () => {
 			const payload = Buffer.from(JSON.stringify({
-				sub: 'minimal-user'
+				sub: 'minimal-user',
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 
@@ -372,7 +372,7 @@ describe('WebSocketAuthService', () => {
 		it('should handle token with numeric user ID', async () => {
 			const payload = Buffer.from(JSON.stringify({
 				sub: 12345,
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 
@@ -386,7 +386,7 @@ describe('WebSocketAuthService', () => {
 			const uuid = '550e8400-e29b-41d4-a716-446655440000';
 			const payload = Buffer.from(JSON.stringify({
 				sub: uuid,
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 

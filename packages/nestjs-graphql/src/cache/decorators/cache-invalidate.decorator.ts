@@ -20,7 +20,7 @@ export function CacheInvalidate(options: CacheInvalidateOptions) {
 	return function(
 		_target: any,
 		propertyKey: string,
-		descriptor: PropertyDescriptor
+		descriptor: PropertyDescriptor,
 	) {
 		const originalMethod = descriptor.value;
 
@@ -46,15 +46,13 @@ export function CacheInvalidate(options: CacheInvalidateOptions) {
 					try {
 						await cacheManager.del(key);
 						logger.debug(`Invalidated cache key: ${key}`);
-					}
-					catch (error) {
+					} catch (error) {
 						logger.error(`Failed to invalidate cache key ${key}:`, error);
 					}
 				}
 
 				return result;
-			}
-			catch (error) {
+			} catch (error) {
 				logger.error(`Method execution error for ${propertyKey}:`, error);
 				throw error;
 			}
@@ -63,7 +61,7 @@ export function CacheInvalidate(options: CacheInvalidateOptions) {
 		// Apply profiling to the wrapped method
 		ProfileMethod({
 			name: `${_target.constructor.name}.${propertyKey}.cacheInvalidate`,
-			tags: { decorator: 'cache_invalidate', operation: 'cache_decorator' }
+			tags: { decorator: 'cache_invalidate', operation: 'cache_decorator' },
 		})(_target, propertyKey, descriptor);
 
 		return descriptor;

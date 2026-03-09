@@ -22,7 +22,7 @@ export {
 	EXTENDED_GRAPHQL_TYPES,
 	ALL_GRAPHQL_TYPES,
 	validateTypeRegistrationOrder,
-	getTypeNames
+	getTypeNames,
 } from './type-registry.js';
 
 // Pagination types
@@ -43,5 +43,5 @@ export type {
 	ICORSConfig,
 	ErrorFormatterFn,
 	ContextFactoryFn,
-	IWebSocketConnection
+	IWebSocketConnection,
 } from './graphql-safety.types.js';

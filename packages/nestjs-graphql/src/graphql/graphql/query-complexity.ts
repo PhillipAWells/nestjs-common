@@ -25,12 +25,12 @@ export const DEFAULT_COMPLEXITY_CONFIG: ComplexityConfig = {
 	defaultComplexity: 1,
 	multipliers: {
 		depth: QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER,
-		list: QUERY_COMPLEXITY_SCALAR_WEIGHT
+		list: QUERY_COMPLEXITY_SCALAR_WEIGHT,
 	},
 	limits: {
 		maxComplexity: QUERY_COMPLEXITY_THRESHOLD,
-		maxDepth: QUERY_DEPTH_LIMIT
-	}
+		maxDepth: QUERY_DEPTH_LIMIT,
+	},
 };
 
 /**
@@ -47,7 +47,7 @@ export function calculateQueryComplexity(
 	query: any,
 	variables: Record<string, any> | undefined,
 	operationName: string | undefined,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	const { defaultComplexity = 1 } = config;
 
@@ -59,13 +59,12 @@ export function calculateQueryComplexity(
 			...(operationName !== undefined ? { operationName } : {}),
 			estimators: [
 				fieldExtensionsEstimator(),
-				simpleEstimator({ defaultComplexity })
-			]
+				simpleEstimator({ defaultComplexity }),
+			],
 		});
 
 		return complexity;
-	}
-	catch (error) {
+	} catch (error) {
 		// If complexity calculation fails, return a high complexity to be safe
 		const logger = new Logger('QueryComplexity');
 		logger.warn('Failed to calculate query complexity:', error);
@@ -81,7 +80,7 @@ export function calculateQueryComplexity(
  */
 export function exceedsComplexityLimit(
 	complexity: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
 	const { maxComplexity } = config.limits ?? {};
 	return maxComplexity ? complexity > maxComplexity : false;
@@ -95,7 +94,7 @@ export function exceedsComplexityLimit(
  */
 export function calculateQueryDepth(
 	info: GraphQLResolveInfo,
-	maxDepth: number = QUERY_DEPTH_LIMIT
+	maxDepth: number = QUERY_DEPTH_LIMIT,
 ): number {
 	let depth = 0;
 	let current = info.fieldNodes[0];
@@ -107,7 +106,7 @@ export function calculateQueryDepth(
 
 		// Find the first field selection (skip fragments for simplicity)
 		const fieldSelection = selections.find(
-			(selection: any) => selection.kind === 'Field'
+			(selection: any) => selection.kind === 'Field',
 		) as any;
 
 		if (!fieldSelection) break;
@@ -125,7 +124,7 @@ export function calculateQueryDepth(
  */
 export function exceedsDepthLimit(
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
 	const { maxDepth } = config.limits ?? {};
 	return maxDepth ? depth > maxDepth : false;
@@ -138,7 +137,7 @@ export function exceedsDepthLimit(
  */
 export function getFieldComplexity(
 	fieldConfig: any,
-	defaultComplexity: number = 1
+	defaultComplexity: number = 1,
 ): number {
 	return fieldConfig?.extensions?.complexity ?? defaultComplexity;
 }
@@ -153,7 +152,7 @@ export function getFieldComplexity(
 export function applyListMultiplier(
 	complexity: number,
 	isList: boolean,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	if (!isList) return complexity;
 
@@ -171,7 +170,7 @@ export function applyListMultiplier(
 export function applyDepthMultiplier(
 	complexity: number,
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG
+	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	const { depth: depthMultiplier = QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } = config.multipliers ?? {};
 	return complexity * Math.pow(depthMultiplier, depth - 1);

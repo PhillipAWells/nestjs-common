@@ -28,7 +28,7 @@ export class WebSocketAuthService {
 			if (!token) {
 				return {
 					authenticated: false,
-					error: 'No authentication token provided'
+					error: 'No authentication token provided',
 				};
 			}
 
@@ -38,21 +38,20 @@ export class WebSocketAuthService {
 			if (!userId) {
 				return {
 					authenticated: false,
-					error: 'Invalid authentication token'
+					error: 'Invalid authentication token',
 				};
 			}
 
 			this.logger.debug(`WebSocket connection authenticated for user: ${userId}`);
 			return {
 				authenticated: true,
-				userId
+				userId,
 			};
-		}
-		catch (error: any) {
+		} catch (error: any) {
 			this.logger.error(`WebSocket authentication error: ${error.message}`, error.stack);
 			return {
 				authenticated: false,
-				error: 'Authentication failed'
+				error: 'Authentication failed',
 			};
 		}
 	}
@@ -78,8 +77,7 @@ export class WebSocketAuthService {
 			}
 
 			return payload.sub;
-		}
-		catch (error: any) {
+		} catch (error: any) {
 			this.logger.warn(`Token validation error: ${error.message}`);
 			return null;
 		}
@@ -115,8 +113,7 @@ export class WebSocketAuthService {
 
 			const payload = Buffer.from(parts[1] ?? '', 'base64url').toString();
 			return JSON.parse(payload);
-		}
-		catch {
+		} catch {
 			return null;
 		}
 	}

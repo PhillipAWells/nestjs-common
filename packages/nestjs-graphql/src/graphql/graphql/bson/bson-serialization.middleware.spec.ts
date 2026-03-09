@@ -17,7 +17,7 @@ describe('BsonSerializationMiddleware', () => {
 		nextFn = vi.fn();
 		mockResponse = {
 			status: vi.fn().mockReturnThis(),
-			json: vi.fn().mockReturnThis()
+			json: vi.fn().mockReturnThis(),
 		};
 	});
 
@@ -25,7 +25,7 @@ describe('BsonSerializationMiddleware', () => {
 		it('should pass through when Content-Type is not application/bson', () => {
 			mockRequest = {
 				get: vi.fn().mockReturnValue('application/json'),
-				on: vi.fn()
+				on: vi.fn(),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -36,7 +36,7 @@ describe('BsonSerializationMiddleware', () => {
 		it('should pass through when Content-Type header is missing', () => {
 			mockRequest = {
 				get: vi.fn().mockReturnValue(undefined),
-				on: vi.fn()
+				on: vi.fn(),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -47,7 +47,7 @@ describe('BsonSerializationMiddleware', () => {
 		it('should be case-insensitive for Content-Type', () => {
 			mockRequest = {
 				get: vi.fn().mockReturnValue('Application/JSON'),
-				on: vi.fn()
+				on: vi.fn(),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -72,7 +72,7 @@ describe('BsonSerializationMiddleware', () => {
 						handler();
 					}
 				}),
-				body: undefined
+				body: undefined,
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -103,7 +103,7 @@ describe('BsonSerializationMiddleware', () => {
 						handler();
 					}
 				}),
-				body: undefined
+				body: undefined,
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -126,7 +126,7 @@ describe('BsonSerializationMiddleware', () => {
 					} else if (event === 'end') {
 						handler();
 					}
-				})
+				}),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -150,7 +150,7 @@ describe('BsonSerializationMiddleware', () => {
 					} else if (event === 'end') {
 						handler();
 					}
-				})
+				}),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);
@@ -171,7 +171,7 @@ describe('BsonSerializationMiddleware', () => {
 					if (event === 'error') {
 						errorFn.mockImplementation(handler);
 					}
-				})
+				}),
 			} as any;
 
 			middleware.use(mockRequest as Request, mockResponse as Response, nextFn);

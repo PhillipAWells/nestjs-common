@@ -7,7 +7,7 @@ describe('GraphQLService', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [GraphQLService]
+			providers: [GraphQLService],
 		}).compile();
 
 		service = module.get<GraphQLService>(GraphQLService);
@@ -20,12 +20,12 @@ describe('GraphQLService', () => {
 	describe('validateSchema', () => {
 		it('should validate a valid schema', () => {
 			const schema = new GraphQLSchema({
-				query: undefined // Will be set later
+				query: undefined, // Will be set later
 			});
 
 			// Mock schema with query type
 			Object.defineProperty(schema, 'getQueryType', {
-				value: () => ({})
+				value: () => ({}),
 			});
 
 			expect(() => service.validateSchema(schema)).not.toThrow();
@@ -44,21 +44,21 @@ describe('GraphQLService', () => {
 			const error = { message: 'validation error' };
 			const formatted = service.formatError(error);
 
-			expect(formatted.extensions.code).toBe('VALIDATION_ERROR');
+			expect((formatted.extensions as any).code).toBe('VALIDATION_ERROR');
 		});
 
 		it('should format authentication error', () => {
 			const error = { message: 'authentication failed' };
 			const formatted = service.formatError(error);
 
-			expect(formatted.extensions.code).toBe('AUTHENTICATION_ERROR');
+			expect((formatted.extensions as any).code).toBe('AUTHENTICATION_ERROR');
 		});
 
 		it('should format unknown error as internal error', () => {
 			const error = { message: 'some error' };
 			const formatted = service.formatError(error);
 
-			expect(formatted.extensions.code).toBe('INTERNAL_ERROR');
+			expect((formatted.extensions as any).code).toBe('INTERNAL_ERROR');
 		});
 	});
 
@@ -93,7 +93,7 @@ describe('GraphQLService', () => {
 		const items = [
 			{ id: '1', name: 'Item 1', createdAt: new Date('2023-01-01') },
 			{ id: '2', name: 'Item 2', createdAt: new Date('2023-01-02') },
-			{ id: '3', name: 'Item 3', createdAt: new Date('2023-01-03') }
+			{ id: '3', name: 'Item 3', createdAt: new Date('2023-01-03') },
 		];
 
 		it('should return all items when no pagination', () => {

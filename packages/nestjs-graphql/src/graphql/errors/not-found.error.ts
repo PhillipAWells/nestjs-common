@@ -21,7 +21,7 @@ export class NotFoundError extends GraphqlError {
 	constructor(message = 'Resource not found', context?: Record<string, any>) {
 		const options: any = {
 			code: 'NOT_FOUND',
-			statusCode: 404
+			statusCode: 404,
 		};
 		if (context !== undefined) {
 			options.context = context;

@@ -37,7 +37,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 
 		const pubSub = new RedisPubSub({
 			publisher,
-			subscriber
+			subscriber,
 		});
 
 		this.pubSubInstances.push(pubSub);
@@ -61,7 +61,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 			host: config.host,
 			port: config.port,
 			db: config.db ?? 0,
-			connectTimeout: config.connectTimeout ?? REDIS_PUBSUB_RESPONSE_TIMEOUT
+			connectTimeout: config.connectTimeout ?? REDIS_PUBSUB_RESPONSE_TIMEOUT,
 		};
 
 		if (config.password !== undefined) {
@@ -109,8 +109,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 				if (this.subscriberClient) {
 					this.checkClientHealth(this.subscriberClient, 'subscriber');
 				}
-			}
-			catch (error) {
+			} catch (error) {
 				const err = error as Error;
 				this.logger.error(`Health check failed: ${err.message}`, err.stack);
 			}
@@ -132,11 +131,9 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 				clearTimeout(timeout);
 				if (error) {
 					reject(error);
-				}
-				else if (result !== 'PONG') {
+				} else if (result !== 'PONG') {
 					reject(new Error(`${type} client ping returned: ${result}`));
-				}
-				else {
+				} else {
 					resolve();
 				}
 			});
@@ -155,7 +152,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		const status = {
 			publisher: false,
 			subscriber: false,
-			pubSubInstances: this.pubSubInstances.length
+			pubSubInstances: this.pubSubInstances.length,
 		};
 
 		try {
@@ -163,8 +160,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 				await this.checkClientHealth(this.publisherClient, 'publisher');
 				status.publisher = true;
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			const err = error as Error;
 			this.logger.warn(`Publisher health check failed: ${err.message}`);
 		}
@@ -174,8 +170,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 				await this.checkClientHealth(this.subscriberClient, 'subscriber');
 				status.subscriber = true;
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			const err = error as Error;
 			this.logger.warn(`Subscriber health check failed: ${err.message}`);
 		}
@@ -198,8 +193,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		for (const pubSub of this.pubSubInstances) {
 			try {
 				await pubSub.close();
-			}
-			catch (error) {
+			} catch (error) {
 				const err = error as Error;
 				this.logger.error(`Error closing PubSub instance: ${err.message}`, err.stack);
 			}

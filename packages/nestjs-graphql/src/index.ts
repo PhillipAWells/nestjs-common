@@ -10,7 +10,7 @@ export { BaseCacheInterceptor } from './cache/interceptors/base-cache.intercepto
 export type {
 	CacheKeyGenerator,
 	CacheMetadataExtractor,
-	CacheContextHandler
+	CacheContextHandler,
 } from './cache/interceptors/base-cache.interceptor.js';
 
 // Configuration
@@ -27,7 +27,7 @@ export type {
 	CacheOperationResult,
 	CacheWarmingOptions,
 	CacheInvalidationOptions,
-	RedisConnectionInfo
+	RedisConnectionInfo,
 } from './cache/cache.types.js';
 export { CacheInvalidationStrategy, RedisConnectionStatus } from './cache/cache.types.js';
 

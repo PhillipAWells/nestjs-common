@@ -23,8 +23,8 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 				},
 				error: (...args: any[]) => {
 					logCalls.push({ level: 'error', args });
-				}
-			})
+				},
+			}),
 		};
 
 		service = new GraphQLPerformanceService(mockAppLogger);
@@ -80,7 +80,7 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 			await expect(
 				service.measure('failingOperation', async () => {
 					throw new Error('Test error');
-				})
+				}),
 			).rejects.toThrow('Test error');
 
 			const metrics = service.getRecentMetrics(1);
@@ -92,7 +92,7 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 			await service.measure(
 				'metadataOperation',
 				async () => 'result',
-				{ userId: '123', type: 'query' }
+				{ userId: '123', type: 'query' },
 			);
 
 			const metrics = service.getRecentMetrics(1);
@@ -121,8 +121,7 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 				await service.measure('op3', async () => {
 					throw new Error('Failed');
 				});
-			}
-			catch {
+			} catch {
 				// Expected
 			}
 		});
@@ -268,16 +267,14 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 				await service.measure('errorOp1', async () => {
 					throw new Error('Error 1');
 				});
-			}
-			catch {
+			} catch {
 				// Expected
 			}
 			try {
 				await service.measure('errorOp2', async () => {
 					throw new Error('Error 2');
 				});
-			}
-			catch {
+			} catch {
 				// Expected
 			}
 		});
@@ -312,8 +309,7 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 				await service.measure('queryUser', async () => {
 					throw new Error('Failed');
 				});
-			}
-			catch {
+			} catch {
 				// Expected
 			}
 		});

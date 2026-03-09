@@ -72,11 +72,11 @@ export function createGraphQLError(config: GraphQLErrorConfig) {
 				code: graphqlCode,
 				statusCode,
 				context: mergedContext,
-				timestamp: new Date().toISOString()
+				timestamp: new Date().toISOString(),
 			};
 
 			super(message, {
-				extensions
+				extensions,
 			});
 
 			this.statusCode = statusCode;
@@ -103,7 +103,7 @@ export function createGraphQLError(config: GraphQLErrorConfig) {
 				context: this.context,
 				timestamp: this.timestamp.toISOString(),
 				// Include stack trace in development
-				...(process.env['NODE_ENV'] !== 'production' ? { stack: this.stack } : {})
+				...(process.env['NODE_ENV'] !== 'production' ? { stack: this.stack } : {}),
 			};
 		}
 
@@ -136,7 +136,7 @@ export function createGraphQLError(config: GraphQLErrorConfig) {
 	// Set the class name for better debugging
 	Object.defineProperty(GeneratedGraphQLError, 'name', {
 		value: name,
-		writable: false
+		writable: false,
 	});
 
 	return GeneratedGraphQLError;
@@ -151,50 +151,50 @@ export const GRAPHQL_ERROR_CONFIGS = {
 		code: 'UNAUTHORIZED',
 		statusCode: 401,
 		defaultMessage: 'Authentication required',
-		graphqlCode: 'UNAUTHENTICATED'
+		graphqlCode: 'UNAUTHENTICATED',
 	},
 	FORBIDDEN: {
 		code: 'FORBIDDEN',
 		statusCode: 403,
 		defaultMessage: 'Access forbidden',
-		graphqlCode: 'FORBIDDEN'
+		graphqlCode: 'FORBIDDEN',
 	},
 	NOT_FOUND: {
 		code: 'NOT_FOUND',
 		statusCode: 404,
 		defaultMessage: 'Resource not found',
-		graphqlCode: 'NOT_FOUND'
+		graphqlCode: 'NOT_FOUND',
 	},
 	BAD_USER_INPUT: {
 		code: 'BAD_REQUEST',
 		statusCode: 400,
 		defaultMessage: 'Bad request',
-		graphqlCode: 'BAD_USER_INPUT'
+		graphqlCode: 'BAD_USER_INPUT',
 	},
 	CONFLICT: {
 		code: 'CONFLICT',
 		statusCode: 409,
 		defaultMessage: 'Resource conflict',
-		graphqlCode: 'CONFLICT'
+		graphqlCode: 'CONFLICT',
 	},
 	VALIDATION_ERROR: {
 		code: 'VALIDATION_ERROR',
 		statusCode: 400,
 		defaultMessage: 'Validation failed',
-		graphqlCode: 'BAD_USER_INPUT'
+		graphqlCode: 'BAD_USER_INPUT',
 	},
 	INTERNAL_SERVER_ERROR: {
 		code: 'INTERNAL_SERVER_ERROR',
 		statusCode: 500,
 		defaultMessage: 'Internal server error',
-		graphqlCode: 'INTERNAL_SERVER_ERROR'
+		graphqlCode: 'INTERNAL_SERVER_ERROR',
 	},
 	RATE_LIMIT_EXCEEDED: {
 		code: 'RATE_LIMIT_EXCEEDED',
 		statusCode: 429,
 		defaultMessage: 'Rate limit exceeded',
-		graphqlCode: 'RATE_LIMIT_EXCEEDED'
-	}
+		graphqlCode: 'RATE_LIMIT_EXCEEDED',
+	},
 } as const;
 
 /**

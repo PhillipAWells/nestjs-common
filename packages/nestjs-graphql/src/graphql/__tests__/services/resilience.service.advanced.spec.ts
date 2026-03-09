@@ -11,23 +11,23 @@ describe('Resilience Service - Advanced Connection Management', () => {
 			resilience: {
 				keepalive: {
 					enabled: true,
-					interval: 30000
+					interval: 30000,
 				},
 				reconnection: {
 					enabled: true,
 					attempts: 3,
 					delay: 1000,
-					backoff: 'exponential' as const
+					backoff: 'exponential' as const,
 				},
 				errorRecovery: {
 					enabled: true,
 					maxRetries: 3,
-					retryDelay: 1000
+					retryDelay: 1000,
 				},
 				shutdown: {
-					timeout: 5000
-				}
-			}
+					timeout: 5000,
+				},
+			},
 		};
 
 		service = new ResilienceService(mockConfig);
@@ -328,7 +328,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 			// Should not throw
 			await expect(
-				service.gracefulShutdown(shutdownCallback)
+				service.gracefulShutdown(shutdownCallback),
 			).resolves.not.toThrow();
 		});
 

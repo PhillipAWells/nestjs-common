@@ -24,7 +24,7 @@ describe('GraphQLModule', () => {
 			const options = {
 				autoSchemaFile: './custom-schema.gql',
 				playground: false,
-				introspection: false
+				introspection: false,
 			};
 
 			const module = GraphQLModule.forRoot(options);
@@ -39,8 +39,8 @@ describe('GraphQLModule', () => {
 			const module = GraphQLModule.forRootAsync({
 				useFactory: () => ({
 					autoSchemaFile: './test-schema.gql',
-					playground: true
-				})
+					playground: true,
+				}) as any,
 			});
 
 			expect(module).toBeDefined();
@@ -52,7 +52,7 @@ describe('GraphQLModule', () => {
 
 		it('should include GraphQLService in providers and exports for async config', () => {
 			const module = GraphQLModule.forRootAsync({
-				useFactory: () => ({})
+				useFactory: () => ({}) as any,
 			});
 
 			expect(module.providers).toContain(GraphQLService);

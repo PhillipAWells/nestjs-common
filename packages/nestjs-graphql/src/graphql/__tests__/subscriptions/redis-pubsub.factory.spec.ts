@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisPubSubFactory } from '../../subscriptions/redis-pubsub.factory.js';
 import { RedisConfig } from '../../subscriptions/subscription-config.interface.js';
@@ -10,31 +10,31 @@ describe('RedisPubSubFactory', () => {
 
 	beforeEach(async () => {
 		mockRedis = {
-			on: jest.fn(),
-			ping: jest.fn(),
-			quit: jest.fn()
+			on: vi.fn(),
+			ping: vi.fn(),
+			quit: vi.fn(),
 		};
 
 		// Mock the Redis constructor
-		const mockRedisConstructor = jest.fn().mockReturnValue(mockRedis);
+		const mockRedisConstructor = vi.fn().mockReturnValue(mockRedis);
 		(global as any).Redis = mockRedisConstructor;
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [RedisPubSubFactory]
+			providers: [RedisPubSubFactory],
 		}).compile();
 
 		factory = module.get<RedisPubSubFactory>(RedisPubSubFactory);
 	});
 
 	afterEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('createPubSub', () => {
 		it('should create a Redis PubSub instance with basic config', () => {
 			const config: RedisConfig = {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			};
 
 			const pubSub = factory.createPubSub(config);
@@ -53,7 +53,7 @@ describe('RedisPubSubFactory', () => {
 				password: 'secret',
 				db: 1,
 				connectTimeout: 30000,
-				tls: { ca: 'ca-cert' }
+				tls: { ca: 'ca-cert' },
 			};
 
 			factory.createPubSub(config);
@@ -64,7 +64,7 @@ describe('RedisPubSubFactory', () => {
 				password: 'secret',
 				db: 1,
 				connectTimeout: 30000,
-				tls: { ca: 'ca-cert' }
+				tls: { ca: 'ca-cert' },
 			});
 		});
 
@@ -74,8 +74,8 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 				healthCheck: {
 					enabled: true,
-					interval: 60000
-				}
+					interval: 60000,
+				},
 			};
 
 			factory.createPubSub(config);
@@ -89,8 +89,8 @@ describe('RedisPubSubFactory', () => {
 				host: 'localhost',
 				port: 6379,
 				healthCheck: {
-					enabled: false
-				}
+					enabled: false,
+				},
 			};
 
 			factory.createPubSub(config);
@@ -109,7 +109,7 @@ describe('RedisPubSubFactory', () => {
 		it('should return healthy status when clients are connected', async () => {
 			const config: RedisConfig = {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			};
 
 			factory.createPubSub(config);
@@ -128,7 +128,7 @@ describe('RedisPubSubFactory', () => {
 
 			const config: RedisConfig = {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			};
 
 			factory.createPubSub(config);
@@ -147,7 +147,7 @@ describe('RedisPubSubFactory', () => {
 
 			const config: RedisConfig = {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			};
 
 			factory.createPubSub(config);
@@ -164,15 +164,15 @@ describe('RedisPubSubFactory', () => {
 			const config: RedisConfig = {
 				host: 'localhost',
 				port: 6379,
-				healthCheck: { enabled: true }
+				healthCheck: { enabled: true },
 			};
 
 			const mockPubSub = {
-				close: jest.fn().mockResolvedValue(undefined)
+				close: vi.fn().mockResolvedValue(undefined),
 			};
 
 			// Mock RedisPubSub constructor
-			const mockRedisPubSubConstructor = jest.fn().mockReturnValue(mockPubSub);
+			const mockRedisPubSubConstructor = vi.fn().mockReturnValue(mockPubSub);
 			(global as any).RedisPubSub = mockRedisPubSubConstructor;
 
 			factory.createPubSub(config);
@@ -186,14 +186,14 @@ describe('RedisPubSubFactory', () => {
 		it('should handle errors during cleanup', async () => {
 			const config: RedisConfig = {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			};
 
 			const mockPubSub = {
-				close: jest.fn().mockRejectedValue(new Error('Close failed'))
+				close: vi.fn().mockRejectedValue(new Error('Close failed')),
 			};
 
-			const mockRedisPubSubConstructor = jest.fn().mockReturnValue(mockPubSub);
+			const mockRedisPubSubConstructor = vi.fn().mockReturnValue(mockPubSub);
 			(global as any).RedisPubSub = mockRedisPubSubConstructor;
 
 			factory.createPubSub(config);

@@ -15,35 +15,35 @@ describe('SubscriptionService', () => {
 		mockPubSub = {
 			publish: async () => Promise.resolve(),
 			subscribe: async () => Promise.resolve(subIdCounter++),
-			unsubscribe: async () => Promise.resolve()
+			unsubscribe: async () => Promise.resolve(),
 		};
 
 		config = {
 			redis: {
 				host: 'localhost',
-				port: 6379
+				port: 6379,
 			},
 			websocket: {
 				path: '/subscriptions',
 				maxPayloadSize: 100 * 1024, // 100KB
 				keepalive: 30000,
-				connectionTimeout: 60000
+				connectionTimeout: 60000,
 			},
 			auth: {
 				jwtSecret: 'test-secret',
-				tokenExpiration: '1h'
+				tokenExpiration: '1h',
 			},
 			connection: {
 				maxSubscriptionsPerUser: 10,
 				cleanupInterval: 60000,
-				timeout: 300000
+				timeout: 300000,
 			},
 			resilience: {
 				keepalive: { enabled: true, interval: 30000, timeout: 5000 },
 				reconnection: { enabled: true, attempts: 3, delay: 1000, backoff: 'exponential' },
 				errorRecovery: { enabled: true, retryDelay: 1000, maxRetries: 3 },
-				shutdown: { timeout: 10000, force: true }
-			}
+				shutdown: { timeout: 10000, force: true },
+			},
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -52,14 +52,14 @@ describe('SubscriptionService', () => {
 				{
 					provide: RedisPubSubFactory,
 					useValue: {
-						createPubSub: () => mockPubSub // Return synchronously
-					}
+						createPubSub: () => mockPubSub, // Return synchronously
+					},
 				},
 				{
 					provide: 'SUBSCRIPTION_CONFIG',
-					useValue: config
-				}
-			]
+					useValue: config,
+				},
+			],
 		}).compile();
 
 		service = module.get<SubscriptionService>(SubscriptionService);
@@ -111,8 +111,7 @@ describe('SubscriptionService', () => {
 			for (let i = 0; i < config.connection.maxSubscriptionsPerUser + 1; i++) {
 				if (i < config.connection.maxSubscriptionsPerUser) {
 					await service.subscribe(`${topic}${i}`, onMessage, undefined, userId);
-				}
-				else {
+				} else {
 					await expect(service.subscribe(`${topic}${i}`, onMessage, undefined, userId))
 						.rejects.toThrow('Subscription limit exceeded');
 				}

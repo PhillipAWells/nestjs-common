@@ -46,7 +46,7 @@ export function createGraphQLError(config: GraphQLErrorConfig) {
 		constructor(message = defaultMessage, context?: Record<string, any>) {
 			const options: any = {
 				code,
-				statusCode
+				statusCode,
 			};
 			if (context !== undefined) {
 				options.context = context;
@@ -58,7 +58,7 @@ export function createGraphQLError(config: GraphQLErrorConfig) {
 	// Set the class name for better debugging
 	Object.defineProperty(GeneratedGraphQLError, 'name', {
 		value: `${code}Error`,
-		writable: false
+		writable: false,
 	});
 
 	return GeneratedGraphQLError;
@@ -71,38 +71,38 @@ export const ERROR_CONFIGS = {
 	UNAUTHORIZED: {
 		code: 'UNAUTHORIZED',
 		statusCode: 401,
-		defaultMessage: 'Authentication required'
+		defaultMessage: 'Authentication required',
 	},
 	NOT_FOUND: {
 		code: 'NOT_FOUND',
 		statusCode: 404,
-		defaultMessage: 'Resource not found'
+		defaultMessage: 'Resource not found',
 	},
 	FORBIDDEN: {
 		code: 'FORBIDDEN',
 		statusCode: 403,
-		defaultMessage: 'Access forbidden'
+		defaultMessage: 'Access forbidden',
 	},
 	BAD_REQUEST: {
 		code: 'BAD_REQUEST',
 		statusCode: 400,
-		defaultMessage: 'Bad request'
+		defaultMessage: 'Bad request',
 	},
 	CONFLICT: {
 		code: 'CONFLICT',
 		statusCode: 409,
-		defaultMessage: 'Resource conflict'
+		defaultMessage: 'Resource conflict',
 	},
 	INTERNAL_SERVER_ERROR: {
 		code: 'INTERNAL_SERVER_ERROR',
 		statusCode: 500,
-		defaultMessage: 'Internal server error'
+		defaultMessage: 'Internal server error',
 	},
 	RATE_LIMIT_EXCEEDED: {
 		code: 'RATE_LIMIT_EXCEEDED',
 		statusCode: 429,
-		defaultMessage: 'Rate limit exceeded'
-	}
+		defaultMessage: 'Rate limit exceeded',
+	},
 } as const;
 
 /**

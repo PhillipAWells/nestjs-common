@@ -22,7 +22,7 @@ export function Cacheable(options: CacheableOptions = {}) {
 	return function(
 		target: any,
 		propertyKey: string,
-		descriptor: PropertyDescriptor
+		descriptor: PropertyDescriptor,
 	) {
 		const originalMethod = descriptor.value;
 		const cacheKeyFn = typeof options.key === 'function' ? options.key : () => options.key ?? `${target.constructor.name}:${propertyKey}`;
@@ -55,8 +55,7 @@ export function Cacheable(options: CacheableOptions = {}) {
 				logger.debug(`Cache miss for ${cacheKey}, stored result`);
 
 				return result;
-			}
-			catch (error) {
+			} catch (error) {
 				logger.error(`Cache error for ${cacheKey}:`, error);
 				// Fallback to original method
 				return originalMethod.apply(this, args);
@@ -66,7 +65,7 @@ export function Cacheable(options: CacheableOptions = {}) {
 		// Apply profiling to the wrapped method
 		ProfileMethod({
 			name: `${target.constructor.name}.${propertyKey}.cacheable`,
-			tags: { decorator: 'cacheable', operation: 'cache_decorator' }
+			tags: { decorator: 'cacheable', operation: 'cache_decorator' },
 		})(target, propertyKey, descriptor);
 
 		return descriptor;

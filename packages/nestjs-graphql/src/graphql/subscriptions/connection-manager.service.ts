@@ -169,7 +169,7 @@ export class ConnectionManagerService {
 			totalConnections: this.getConnectionCount(),
 			totalSubscriptions: this.getSubscriptionCount(),
 			connectionsByUser,
-			subscriptionsByUser
+			subscriptionsByUser,
 		};
 	}
 

@@ -58,8 +58,8 @@ export class GraphQLService {
 			message,
 			extensions: {
 				code: this.mapErrorToCode(error),
-				...extensions
-			}
+				...extensions,
+			},
 		};
 
 		// Include stack trace in development if configured
@@ -108,7 +108,7 @@ export class GraphQLService {
 	public createCursor(id: string, timestamp?: number): string {
 		const cursorData = {
 			id,
-			timestamp: timestamp ?? Date.now()
+			timestamp: timestamp ?? Date.now(),
 		};
 		return Buffer.from(JSON.stringify(cursorData)).toString('base64');
 	}
@@ -122,8 +122,7 @@ export class GraphQLService {
 		try {
 			const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
 			return JSON.parse(decoded);
-		}
-		catch {
+		} catch {
 			throw new Error('Invalid cursor format');
 		}
 	}
@@ -138,7 +137,7 @@ export class GraphQLService {
 	public paginateItems<T extends { id: string; createdAt?: Date }>(
 		items: T[],
 		first?: number,
-		after?: string
+		after?: string,
 	): {
 		edges: Array<{ cursor: string; node: T }>;
 		pageInfo: {
@@ -163,7 +162,7 @@ export class GraphQLService {
 
 		const edges = paginatedItems.map(item => ({
 			cursor: this.createCursor(item.id, item.createdAt ? item.createdAt.getTime() : undefined),
-			node: item
+			node: item,
 		}));
 
 		return {
@@ -173,9 +172,9 @@ export class GraphQLService {
 				hasPreviousPage: startIndex > 0,
 				...(edges.length > 0 ? {
 					startCursor: edges[0]!.cursor,
-					endCursor: edges[edges.length - 1]!.cursor
-				} : {})
-			}
+					endCursor: edges[edges.length - 1]!.cursor,
+				} : {}),
+			},
 		};
 	}
 }

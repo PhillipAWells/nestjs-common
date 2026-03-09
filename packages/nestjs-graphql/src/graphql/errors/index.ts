@@ -14,7 +14,7 @@ export {
 	InternalServerError as BaseInternalServerError,
 	BadGatewayError as BaseBadGatewayError,
 	ServiceUnavailableError as BaseServiceUnavailableError,
-	GatewayTimeoutError as BaseGatewayTimeoutError
+	GatewayTimeoutError as BaseGatewayTimeoutError,
 } from '@pawells/nestjs-shared/common';
 
 // GraphQL-specific error factory

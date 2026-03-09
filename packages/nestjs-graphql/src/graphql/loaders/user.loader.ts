@@ -21,7 +21,7 @@ export class UserLoader {
 
 	constructor(
 		private readonly dataLoaderRegistry: DataLoaderRegistry,
-		@Inject(AppLogger) private readonly appLogger: AppLogger
+		@Inject(AppLogger) private readonly appLogger: AppLogger,
 	) {
 		this.logger = this.appLogger.createContextualLogger(UserLoader.name);
 	}
@@ -32,11 +32,11 @@ export class UserLoader {
    * @returns DataLoader for users
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(User | Error)[]>
+		batchLoadFn?: (keys: readonly string[]) => Promise<(User | Error)[]>,
 	): DataLoader<string, User> {
 		return this.dataLoaderRegistry.createWithCache(
 			'user-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this)
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -47,10 +47,10 @@ export class UserLoader {
    * @returns Promise resolving to array of users or errors
    */
 	private async defaultBatchLoadFn(
-		userIds: readonly string[]
+		userIds: readonly string[],
 	): Promise<(User | Error)[]> {
 		this.logger.warn(
-			'Using default user batch loader. Override with actual implementation.'
+			'Using default user batch loader. Override with actual implementation.',
 		);
 
 		// This is a placeholder - in real implementation, this would query the database
@@ -58,8 +58,8 @@ export class UserLoader {
 		return userIds.map(
 			(id) =>
 				new Error(
-					`UserLoader not implemented. Override batchLoadFn for user ID: ${id}`
-				)
+					`UserLoader not implemented. Override batchLoadFn for user ID: ${id}`,
+				),
 		);
 	}
 
@@ -72,8 +72,7 @@ export class UserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load user ${userId}`, error instanceof Error ? error.stack : String(error));
 			return undefined;
 		}
@@ -88,8 +87,7 @@ export class UserLoader {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to load users ${userIds}`, error instanceof Error ? error.stack : String(error));
 			return userIds.map(() => error as Error);
 		}

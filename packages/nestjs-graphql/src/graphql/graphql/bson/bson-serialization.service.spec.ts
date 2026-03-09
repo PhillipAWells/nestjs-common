@@ -32,9 +32,9 @@ describe('BsonSerializationService', () => {
 				user: {
 					name: 'John',
 					age: 30,
-					email: 'john@example.com'
+					email: 'john@example.com',
 				},
-				active: true
+				active: true,
 			};
 			const buffer = await service.serialize(data);
 
@@ -45,7 +45,7 @@ describe('BsonSerializationService', () => {
 		it('should serialize arrays', async () => {
 			const data = {
 				items: [1, 2, 3, 4, 5],
-				names: ['Alice', 'Bob', 'Charlie']
+				names: ['Alice', 'Bob', 'Charlie'],
 			};
 			const buffer = await service.serialize(data);
 
@@ -74,9 +74,9 @@ describe('BsonSerializationService', () => {
 			const original = {
 				user: {
 					name: 'John',
-					age: 30
+					age: 30,
 				},
-				active: true
+				active: true,
 			};
 			const buffer = await service.serialize(original);
 			const deserialized = await service.deserialize(buffer);
@@ -87,7 +87,7 @@ describe('BsonSerializationService', () => {
 		it('should deserialize arrays', async () => {
 			const original = {
 				items: [1, 2, 3],
-				names: ['Alice', 'Bob']
+				names: ['Alice', 'Bob'],
 			};
 			const buffer = await service.serialize(original);
 			const deserialized = await service.deserialize(buffer);
@@ -99,7 +99,7 @@ describe('BsonSerializationService', () => {
 			const original = {
 				query: 'query GetUser { user { id name email } }',
 				variables: { id: 'user123' },
-				operationName: 'GetUser'
+				operationName: 'GetUser',
 			};
 
 			const buffer = await service.serialize(original);

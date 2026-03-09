@@ -49,12 +49,12 @@ export class GraphQLCacheService {
 
 	private readonly cacheStats = {
 		hits: 0,
-		misses: 0
+		misses: 0,
 	};
 
 	constructor(
 		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-		@Inject(AppLogger) private readonly appLogger: AppLogger
+		@Inject(AppLogger) private readonly appLogger: AppLogger,
 	) {
 		this.logger = this.appLogger.createContextualLogger(GraphQLCacheService.name);
 	}
@@ -100,8 +100,7 @@ export class GraphQLCacheService {
 			const cacheTtl = ttl ?? DEFAULT_CACHE_TTL;
 			await this.cacheManager.set(key, value, cacheTtl);
 			this.logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to cache value for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
 		}
@@ -124,8 +123,7 @@ export class GraphQLCacheService {
 			this.cacheStats.misses++;
 			this.logger.debug(`Cache miss for key: ${key}`);
 			return undefined;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to get cached value for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
 			return undefined;
 		}
@@ -150,8 +148,7 @@ export class GraphQLCacheService {
 			const value = await loader();
 			await this.set(key, value, ttl);
 			return value;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed in getOrSet for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
 		}
@@ -167,8 +164,7 @@ export class GraphQLCacheService {
 		try {
 			await this.cacheManager.del(key);
 			this.logger.debug(`Deleted cache entry for key: ${key}`);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to delete cache entry for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
 		}
@@ -184,8 +180,7 @@ export class GraphQLCacheService {
 			// Note: cache-manager doesn't have a reset method in all implementations
 			// This is a placeholder - actual implementation depends on the cache store
 			this.logger.debug('Clear operation called (implementation depends on cache store)');
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to clear cache: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
 		}
@@ -240,7 +235,7 @@ export class GraphQLCacheService {
 			misses: this.cacheStats.misses,
 			hitRate: this.getHitRate(),
 			size: 0, // Redis would provide this
-			store: 'CacheManager'
+			store: 'CacheManager',
 		};
 	}
 }

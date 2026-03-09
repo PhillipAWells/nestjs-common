@@ -1,5 +1,5 @@
 
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { GraphQLRateLimitGuard } from '../../guards/rate-limit.guard.js';
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -27,46 +27,46 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 					allowed: true,
 					limit: 100,
 					remaining: 95,
-					resetTime: Date.now() + 60000
+					resetTime: Date.now() + 60000,
 				};
 			},
-			_checkLimitOverride: undefined as ((clientId: string) => any) | undefined
+			_checkLimitOverride: undefined as ((clientId: string) => any) | undefined,
 		};
 
 		// Manual mock for request/response
 		mockRequest = {
 			user: undefined,
-			ip: '127.0.0.1'
+			ip: '127.0.0.1',
 		};
 
 		mockResponse = {
 			setHeader: (key: string, value: any) => {
 				responseHeaders[key] = value;
-			}
+			},
 		};
 
 		// Manual mock for GqlExecutionContext
 		mockGqlContext = {
 			getContext: () => ({
 				req: mockRequest,
-				res: mockResponse
-			})
+				res: mockResponse,
+			}),
 		};
 
 		// Manual mock for ExecutionContext
 		mockExecutionContext = {
 			getHandler: () => ({}),
-			getClass: () => ({})
+			getClass: () => ({}),
 		};
 
 		guard = new GraphQLRateLimitGuard(mockRateLimitService);
 
-		// Mock GqlExecutionContext.create using jest.spyOn (required for static methods)
-		jest.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);
+		// Mock GqlExecutionContext.create using vi.spyOn (required for static methods)
+		vi.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);
 	});
 
 	afterEach(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	describe('canActivate() - Rate Limit Enforcement', () => {
@@ -75,7 +75,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 				allowed: true,
 				limit: 100,
 				remaining: 50,
-				resetTime: Date.now() + 60000
+				resetTime: Date.now() + 60000,
 			});
 
 			const result = await guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -89,11 +89,11 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 				allowed: false,
 				limit: 100,
 				remaining: 0,
-				resetTime
+				resetTime,
 			});
 
 			await expect(
-				guard.canActivate(mockExecutionContext as ExecutionContext)
+				guard.canActivate(mockExecutionContext as ExecutionContext),
 			).rejects.toThrow(HttpException);
 		});
 
@@ -103,20 +103,17 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 				allowed: false,
 				limit: 100,
 				remaining: 0,
-				resetTime
+				resetTime,
 			});
 
 			try {
-				await guard.canActivate(mockExecutionContext as ExecutionContext);
-				fail('Should have thrown exception');
-			}
-			catch (error: any) {
+				await guard.canActivate(mockExecutionContext as ExecutionContext);} catch (error: any) {
 				expect(error).toBeInstanceOf(HttpException);
 				expect(error.getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
 				expect(error.getResponse()).toMatchObject({
 					message: 'Rate limit exceeded',
 					resetTime: new Date(resetTime),
-					retryAfter: expect.any(Number)
+					retryAfter: expect.any(Number),
 				});
 			}
 		});
@@ -127,7 +124,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 				allowed: true,
 				limit: 100,
 				remaining: 75,
-				resetTime
+				resetTime,
 			});
 
 			await guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -145,7 +142,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 					allowed: true,
 					limit: 100,
 					remaining: 90,
-					resetTime: Date.now() + 60000
+					resetTime: Date.now() + 60000,
 				};
 			};
 
@@ -164,7 +161,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 					allowed: true,
 					limit: 100,
 					remaining: 90,
-					resetTime: Date.now() + 60000
+					resetTime: Date.now() + 60000,
 				};
 			};
 
@@ -183,7 +180,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 					allowed: true,
 					limit: 100,
 					remaining: 90,
-					resetTime: Date.now() + 60000
+					resetTime: Date.now() + 60000,
 				};
 			};
 
@@ -203,13 +200,13 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 					allowed: true,
 					limit: 100,
 					remaining: 90,
-					resetTime: Date.now() + 60000
+					resetTime: Date.now() + 60000,
 				};
 			};
 
 			mockRequest.ip = undefined;
 			mockRequest.headers = {
-				'x-forwarded-for': '10.0.0.1, 10.0.0.2'
+				'x-forwarded-for': '10.0.0.1, 10.0.0.2',
 			};
 
 			await guard.canActivate(mockExecutionContext as ExecutionContext);
@@ -230,7 +227,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 		it('should not set headers when response is undefined', async () => {
 			mockGqlContext.getContext = () => ({
 				req: mockRequest,
-				res: undefined
+				res: undefined,
 			});
 
 			const result = await guard.canActivate(mockExecutionContext as ExecutionContext);

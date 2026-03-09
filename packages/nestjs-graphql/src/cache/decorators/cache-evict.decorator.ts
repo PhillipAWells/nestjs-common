@@ -19,7 +19,7 @@ export function CacheEvict(options: CacheEvictOptions) {
 	return function(
 		_target: any,
 		propertyKey: string,
-		descriptor: PropertyDescriptor
+		descriptor: PropertyDescriptor,
 	) {
 		const originalMethod = descriptor.value;
 
@@ -44,22 +44,18 @@ export function CacheEvict(options: CacheEvictOptions) {
 								await cacheManager.del(key);
 							}
 							logger.debug(`Evicted ${keys.length} cache keys matching pattern: ${options.pattern}`);
-						}
-						else {
+						} else {
 							logger.debug(`No cache keys found matching pattern: ${options.pattern}`);
 						}
-					}
-					else {
+					} else {
 						logger.warn(`Store does not support pattern-based eviction for pattern: ${options.pattern}`);
 					}
-				}
-				catch (error) {
+				} catch (error) {
 					logger.error(`Failed to evict cache pattern ${options.pattern}:`, error);
 				}
 
 				return result;
-			}
-			catch (error) {
+			} catch (error) {
 				logger.error(`Method execution error for ${propertyKey}:`, error);
 				throw error;
 			}
