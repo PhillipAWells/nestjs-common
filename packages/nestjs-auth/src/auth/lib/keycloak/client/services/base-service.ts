@@ -9,7 +9,7 @@ import {
 	NotFoundError,
 	ValidationError,
 	TimeoutError,
-	NetworkError
+	NetworkError,
 } from '../errors/index.js';
 
 /**
@@ -19,7 +19,7 @@ export abstract class BaseService {
 	constructor(
 		protected adminClient: KcAdminClient,
 		protected logger?: Logger,
-		protected retryConfig?: RetryConfig
+		protected retryConfig?: RetryConfig,
 	) {}
 
 	/**
@@ -27,12 +27,12 @@ export abstract class BaseService {
 	 */
 	protected async withRetry<T>(
 		fn: () => Promise<T>,
-		options?: RetryConfig
+		options?: RetryConfig,
 	): Promise<T> {
 		const config = {
 			...this.retryConfig,
 			...options,
-			...(this.logger && { logger: this.logger })
+			...(this.logger && { logger: this.logger }),
 		};
 
 		return withRetry(fn, config);

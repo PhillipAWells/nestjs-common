@@ -22,7 +22,7 @@ export class AuthService implements LazyModuleRefService {
 
 	constructor(
 		public readonly moduleRef: ModuleRef,
-		@Inject(USER_REPOSITORY) private readonly userRepository: IUserRepository
+		@Inject(USER_REPOSITORY) private readonly userRepository: IUserRepository,
 	) {}
 
 	public get JwtService(): JwtService {
@@ -46,8 +46,7 @@ export class AuthService implements LazyModuleRefService {
 		// This allows auth to work without cache, but token blacklisting will be disabled
 		try {
 			return this.moduleRef.get<ICacheProvider>(CACHE_PROVIDER);
-		}
-		catch {
+		} catch {
 			return null;
 		}
 	}
@@ -100,7 +99,7 @@ export class AuthService implements LazyModuleRefService {
 			role: user.role ?? 'user',
 			firstName: user.firstName,
 			lastName: user.lastName,
-			isActive: user.isActive
+			isActive: user.isActive,
 		};
 	}
 
@@ -117,7 +116,7 @@ export class AuthService implements LazyModuleRefService {
 		const payload: JWTPayload = {
 			email: user.email,
 			sub: user.id,
-			role: user.role ?? 'user'
+			role: user.role ?? 'user',
 		};
 
 		const accessTokenExpiry = '15m';
@@ -125,12 +124,12 @@ export class AuthService implements LazyModuleRefService {
 
 		const accessToken = this.JwtService.sign(payload, {
 			expiresIn: accessTokenExpiry,
-			algorithm: 'HS256'
+			algorithm: 'HS256',
 		});
 
 		const refreshToken = this.JwtService.sign(payload, {
 			expiresIn: refreshTokenExpiry,
-			algorithm: 'HS256'
+			algorithm: 'HS256',
 		});
 
 		// Validate tokens have correct expiration
@@ -153,8 +152,8 @@ export class AuthService implements LazyModuleRefService {
 				email: user.email,
 				role: user.role ?? 'user',
 				firstName: user.firstName,
-				lastName: user.lastName
-			}
+				lastName: user.lastName,
+			},
 		};
 	}
 
@@ -189,11 +188,10 @@ export class AuthService implements LazyModuleRefService {
 				displayName,
 				profile,
 				accessToken,
-				refreshToken
+				refreshToken,
 			});
 			this.logger.info(`Created new OAuth2 user: ${email}`);
-		}
-		else {
+		} else {
 			// Update existing user with OAuth info
 			user = await this.updateOAuthUser(user, profile, accessToken, refreshToken);
 			this.logger.info(`Updated existing OAuth2 user: ${email}`);
@@ -227,15 +225,14 @@ export class AuthService implements LazyModuleRefService {
 				oauthProfile: userData.profile,
 				oauthTokens: {
 					accessToken: userData.accessToken,
-					refreshToken: userData.refreshToken
-				}
+					refreshToken: userData.refreshToken,
+				},
 			});
 
 			this.AuditLogger.logAuthenticationAttempt(user.email, true, user.id, 'OAuth user created');
 			this.logger.debug(`Created OAuth2 user: ${user.email}`);
 			return user;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to create OAuth user: ${(error as Error).message}`);
 			throw error;
 		}
@@ -255,16 +252,15 @@ export class AuthService implements LazyModuleRefService {
 				oauthProfile: profile,
 				oauthTokens: {
 					accessToken,
-					refreshToken
+					refreshToken,
 				},
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			});
 
 			this.AuditLogger.logAuthenticationAttempt(updated.email, true, updated.id, 'OAuth user updated');
 			this.logger.debug(`Updated OAuth2 user: ${updated.email}`);
 			return updated;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to update OAuth user: ${(error as Error).message}`);
 			throw error;
 		}
@@ -278,8 +274,7 @@ export class AuthService implements LazyModuleRefService {
 	decodeToken(token: string): JWTPayload | null {
 		try {
 			return this.JwtService.decode(token) as JWTPayload;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to decode token: ${error instanceof Error ? error.message : String(error)}`);
 			return null;
 		}
@@ -299,8 +294,7 @@ export class AuthService implements LazyModuleRefService {
 			// For validation, we just check that the token has an expiration
 			// The actual expiry validation is handled by the JWT library
 			this.logger.debug(`Token expiration validated: ${new Date(decoded.exp * 1000).toISOString()}`);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Token expiration validation failed: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
 		}
@@ -315,7 +309,7 @@ export class AuthService implements LazyModuleRefService {
 	@ProfileMethod({ tags: { operation: 'refreshToken' } })
 	async refreshToken(
 		refreshToken: string,
-		userLookupFn: (userId: string) => Promise<User | null>
+		userLookupFn: (userId: string) => Promise<User | null>,
 	): Promise<{ accessToken: string; expiresIn: number; tokenType: string }> {
 		this.logger.info('Token refresh initiated');
 
@@ -342,13 +336,13 @@ export class AuthService implements LazyModuleRefService {
 			const newPayload: JWTPayload = {
 				email: user.email,
 				sub: user.id,
-				role: user.role ?? 'user'
+				role: user.role ?? 'user',
 			};
 
 			const accessTokenExpiry = '15m';
 			const newAccessToken = this.JwtService.sign(newPayload, {
 				expiresIn: accessTokenExpiry,
-				algorithm: 'HS256'
+				algorithm: 'HS256',
 			});
 
 			// Blacklist the old refresh token
@@ -365,10 +359,9 @@ export class AuthService implements LazyModuleRefService {
 			return {
 				accessToken: newAccessToken,
 				expiresIn: 900, // 15 minutes
-				tokenType: 'Bearer'
+				tokenType: 'Bearer',
 			};
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Token refresh failed: ${(error as Error).message}`);
 			if (error instanceof UnauthorizedException) {
 				throw error;
@@ -396,7 +389,7 @@ export class AuthService implements LazyModuleRefService {
 	async trackUserSession(
 		userId: string,
 		sessionId: string,
-		maxConcurrentSessions: number = 5
+		maxConcurrentSessions: number = 5,
 	): Promise<{ allowed: boolean; activeSessions: string[] }> {
 		// Validate inputs for cache key generation
 		if (!userId || typeof userId !== 'string' || userId.length === 0) {
@@ -417,7 +410,7 @@ export class AuthService implements LazyModuleRefService {
 			this.logger.warn('Cache service is not available, allowing session');
 			return {
 				allowed: true,
-				activeSessions: [sessionId]
+				activeSessions: [sessionId],
 			};
 		}
 		const sessionKey = `sessions:${userId}`;
@@ -428,8 +421,7 @@ export class AuthService implements LazyModuleRefService {
 			try {
 				const cached = await cacheService.get(sessionKey);
 				sessions = cached ? JSON.parse(String(cached)) : [];
-			}
-			catch {
+			} catch {
 				sessions = [];
 			}
 
@@ -459,15 +451,14 @@ export class AuthService implements LazyModuleRefService {
 
 			return {
 				allowed,
-				activeSessions: sessions
+				activeSessions: sessions,
 			};
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Session tracking failed for user ${userId}: ${(error as Error).message}`);
 			// Fail open - allow session
 			return {
 				allowed: true,
-				activeSessions: [sessionId]
+				activeSessions: [sessionId],
 			};
 		}
 	}

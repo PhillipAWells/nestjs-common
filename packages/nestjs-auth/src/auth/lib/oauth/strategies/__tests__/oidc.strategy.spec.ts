@@ -10,8 +10,8 @@ describe('OIDCStrategy', () => {
 		const mockLogger = {
 			createContextualLogger: jest.fn().mockReturnValue({
 				debug: jest.fn(),
-				error: jest.fn()
-			})
+				error: jest.fn(),
+			}),
 		};
 
 		const module = await Test.createTestingModule({
@@ -19,9 +19,9 @@ describe('OIDCStrategy', () => {
 				OIDCStrategy,
 				{
 					provide: AppLogger,
-					useValue: mockLogger
-				}
-			]
+					useValue: mockLogger,
+				},
+			],
 		}).compile();
 
 		strategy = module.get<OIDCStrategy>(OIDCStrategy);
@@ -37,7 +37,7 @@ describe('OIDCStrategy', () => {
 			email: 'oidc@example.com',
 			name: 'OIDC User',
 			given_name: 'OIDC',
-			family_name: 'User'
+			family_name: 'User',
 		};
 
 		const user = await strategy.validate(
@@ -46,7 +46,7 @@ describe('OIDCStrategy', () => {
 			'access-token',
 			'refresh-token',
 			'id-token',
-			jest.fn()
+			jest.fn(),
 		);
 
 		expect(user).toBeDefined();
@@ -59,7 +59,7 @@ describe('OIDCStrategy', () => {
 		const profile = {
 			sub: 'oidc_user_123',
 			email: 'oidc@example.com',
-			name: 'OIDC User'
+			name: 'OIDC User',
 		};
 
 		// Mock the validate method to throw an error
@@ -74,15 +74,15 @@ describe('OIDCStrategy', () => {
 				'access-token',
 				'refresh-token',
 				'id-token',
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow();
 	});
 
 	it('should throw error when profile missing user identifier', async () => {
 		const profile = {
 			email: 'test@example.com',
-			name: 'Test User'
+			name: 'Test User',
 			// missing sub and id
 		};
 
@@ -93,15 +93,15 @@ describe('OIDCStrategy', () => {
 				'access-token',
 				'refresh-token',
 				'id-token',
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow('user identifier');
 	});
 
 	it('should throw error when profile missing email', async () => {
 		const profile = {
 			sub: 'user_123',
-			name: 'Test User'
+			name: 'Test User',
 			// missing email
 		};
 
@@ -112,8 +112,8 @@ describe('OIDCStrategy', () => {
 				'access-token',
 				'refresh-token',
 				'id-token',
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow('email address');
 	});
 });

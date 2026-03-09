@@ -5,7 +5,7 @@ import {
 	GraphQLCurrentUser,
 	GraphQLAuthToken,
 	GraphQLContextParam,
-	GraphQLUser
+	GraphQLUser,
 } from '../graphql-auth-decorators.js';
 
 describe('GraphQL Auth Decorators', () => {

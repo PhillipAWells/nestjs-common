@@ -10,8 +10,8 @@ describe('KeycloakStrategy', () => {
 		const mockLogger = {
 			createContextualLogger: jest.fn().mockReturnValue({
 				debug: jest.fn(),
-				error: jest.fn()
-			})
+				error: jest.fn(),
+			}),
 		};
 
 		const module = await Test.createTestingModule({
@@ -19,9 +19,9 @@ describe('KeycloakStrategy', () => {
 				KeycloakStrategy,
 				{
 					provide: AppLogger,
-					useValue: mockLogger
-				}
-			]
+					useValue: mockLogger,
+				},
+			],
 		}).compile();
 
 		strategy = module.get<KeycloakStrategy>(KeycloakStrategy);
@@ -37,14 +37,14 @@ describe('KeycloakStrategy', () => {
 			email: 'keycloak@example.com',
 			name: 'Keycloak User',
 			given_name: 'Keycloak',
-			family_name: 'User'
+			family_name: 'User',
 		};
 
 		const user = await strategy.validate(
 			'access-token',
 			'refresh-token',
 			profile,
-			jest.fn()
+			jest.fn(),
 		);
 
 		expect(user).toBeDefined();
@@ -57,7 +57,7 @@ describe('KeycloakStrategy', () => {
 		const profile = {
 			sub: 'keycloak_user_123',
 			email: 'keycloak@example.com',
-			name: 'Keycloak User'
+			name: 'Keycloak User',
 		};
 
 		// Mock the validate method to throw an error
@@ -70,15 +70,15 @@ describe('KeycloakStrategy', () => {
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow();
 	});
 
 	it('should throw error when profile missing user identifier', async () => {
 		const profile = {
 			email: 'test@example.com',
-			name: 'Test User'
+			name: 'Test User',
 			// missing sub and id
 		};
 
@@ -87,15 +87,15 @@ describe('KeycloakStrategy', () => {
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow('user identifier');
 	});
 
 	it('should throw error when profile missing email', async () => {
 		const profile = {
 			sub: 'user_123',
-			name: 'Test User'
+			name: 'Test User',
 			// missing email
 		};
 
@@ -104,8 +104,8 @@ describe('KeycloakStrategy', () => {
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn()
-			)
+				jest.fn(),
+			),
 		).rejects.toThrow('email address');
 	});
 });

@@ -19,19 +19,19 @@ describe('AuthService', () => {
 		role: 'user',
 		firstName: 'Test',
 		lastName: 'User',
-		isActive: true
+		isActive: true,
 	};
 
 	beforeEach(async () => {
 		const mockJwtService = {
 			sign: jest.fn(),
 			verify: jest.fn(),
-			decode: jest.fn()
+			decode: jest.fn(),
 		};
 
 		const mockCacheService = {
 			exists: jest.fn(),
-			set: jest.fn()
+			set: jest.fn(),
 		};
 
 		const mockAppLogger = {
@@ -39,8 +39,8 @@ describe('AuthService', () => {
 				debug: jest.fn(),
 				info: jest.fn(),
 				warn: jest.fn(),
-				error: jest.fn()
-			})
+				error: jest.fn(),
+			}),
 		};
 
 		// Create a mock repository
@@ -49,7 +49,7 @@ describe('AuthService', () => {
 			findById: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn(),
-			delete: jest.fn()
+			delete: jest.fn(),
 		};
 
 		const mockAuditLogger = {
@@ -57,7 +57,7 @@ describe('AuthService', () => {
 			logTokenGeneration: jest.fn(),
 			logTokenRevocation: jest.fn(),
 			logSessionCreated: jest.fn(),
-			logSessionTerminated: jest.fn()
+			logSessionTerminated: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -65,25 +65,25 @@ describe('AuthService', () => {
 				AuthService,
 				{
 					provide: USER_REPOSITORY,
-					useValue: mockRepository
+					useValue: mockRepository,
 				},
 				{
 					provide: JwtService,
-					useValue: mockJwtService
+					useValue: mockJwtService,
 				},
 				{
 					provide: CacheService,
-					useValue: mockCacheService
+					useValue: mockCacheService,
 				},
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
+					useValue: mockAppLogger,
 				},
 				{
 					provide: AuditLoggerService,
-					useValue: mockAuditLogger
-				}
-			]
+					useValue: mockAuditLogger,
+				},
+			],
 		}).compile();
 
 		service = module.get<AuthService>(AuthService);
@@ -101,7 +101,7 @@ describe('AuthService', () => {
 				sub: 'user_123',
 				email: 'test@example.com',
 				role: 'user',
-				exp: Math.floor(Date.now() / 1000) + 900
+				exp: Math.floor(Date.now() / 1000) + 900,
 			};
 
 			jwtService.decode.mockReturnValue(mockPayload);
@@ -127,7 +127,7 @@ describe('AuthService', () => {
 			sub: 'user_123',
 			email: 'test@example.com',
 			role: 'user',
-			exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+			exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
 		};
 
 		const userLookupFn = jest.fn<(userId: string) => Promise<User | null>>();
@@ -145,7 +145,7 @@ describe('AuthService', () => {
 			expect(result).toEqual({
 				accessToken: 'new.access.token',
 				expiresIn: 900,
-				tokenType: 'Bearer'
+				tokenType: 'Bearer',
 			});
 
 			expect(jwtService.verify).toHaveBeenCalledWith(mockRefreshToken);
@@ -154,15 +154,15 @@ describe('AuthService', () => {
 			expect(cacheService.set).toHaveBeenCalledWith(
 				`blacklist:${mockRefreshToken}`,
 				true,
-				expect.any(Number)
+				expect.any(Number),
 			);
 			expect(jwtService.sign).toHaveBeenCalledWith({
 				email: 'test@example.com',
 				sub: 'user_123',
-				role: 'user'
+				role: 'user',
 			}, {
 				expiresIn: '15m',
-				algorithm: 'HS256'
+				algorithm: 'HS256',
 			});
 		});
 
@@ -203,7 +203,7 @@ describe('AuthService', () => {
 			const passwordHash = await bcrypt.hash('password123', 10);
 			const userWithHash = {
 				...mockUser,
-				passwordHash
+				passwordHash,
 			};
 
 			const result = await service.validateUser(userWithHash, 'password123');
@@ -213,7 +213,7 @@ describe('AuthService', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				isActive: true
+				isActive: true,
 			});
 		});
 
@@ -234,7 +234,7 @@ describe('AuthService', () => {
 			const passwordHash = await bcrypt.hash('password123', 10);
 			const userWithHash = {
 				...mockUser,
-				passwordHash
+				passwordHash,
 			};
 
 			const result = await service.validateUser(userWithHash, 'wrongpassword');
@@ -251,7 +251,7 @@ describe('AuthService', () => {
 				firstName: 'Real',
 				lastName: 'User',
 				isActive: true,
-				passwordHash
+				passwordHash,
 			};
 
 			const result = await service.validateUser(mockUserDifferent, 'password123');
@@ -288,28 +288,28 @@ describe('AuthService', () => {
 					email: 'test@example.com',
 					role: 'user',
 					firstName: 'Test',
-					lastName: 'User'
-				}
+					lastName: 'User',
+				},
 			});
 
 			expect(jwtService.sign).toHaveBeenCalledWith({
 				email: 'test@example.com',
 				sub: 'user_123',
-				role: 'user'
+				role: 'user',
 			}, {
 				expiresIn: '15m',
-				algorithm: 'HS256'
+				algorithm: 'HS256',
 			});
 			expect(jwtService.sign).toHaveBeenCalledWith(
 				{
 					email: 'test@example.com',
 					sub: 'user_123',
-					role: 'user'
+					role: 'user',
 				},
 				{
 					expiresIn: '3d',
-					algorithm: 'HS256'
-				}
+					algorithm: 'HS256',
+				},
 			);
 		});
 	});
@@ -324,7 +324,7 @@ describe('AuthService', () => {
 				findById: jest.fn(),
 				create: jest.fn(),
 				update: jest.fn(),
-				delete: jest.fn()
+				delete: jest.fn(),
 			};
 
 			mockAuditLogger = {
@@ -332,13 +332,13 @@ describe('AuthService', () => {
 				logTokenGeneration: jest.fn(),
 				logTokenRevocation: jest.fn(),
 				logSessionCreated: jest.fn(),
-				logSessionTerminated: jest.fn()
+				logSessionTerminated: jest.fn(),
 			} as any;
 
 			const mockJwtService = {
 				sign: jest.fn(),
 				verify: jest.fn(),
-				decode: jest.fn()
+				decode: jest.fn(),
 			};
 
 			const mockAppLogger = {
@@ -346,8 +346,8 @@ describe('AuthService', () => {
 					debug: jest.fn(),
 					info: jest.fn(),
 					warn: jest.fn(),
-					error: jest.fn()
-				})
+					error: jest.fn(),
+				}),
 			};
 
 			const module: TestingModule = await Test.createTestingModule({
@@ -355,21 +355,21 @@ describe('AuthService', () => {
 					AuthService,
 					{
 						provide: USER_REPOSITORY,
-						useValue: mockRepository
+						useValue: mockRepository,
 					},
 					{
 						provide: JwtService,
-						useValue: mockJwtService
+						useValue: mockJwtService,
 					},
 					{
 						provide: AppLogger,
-						useValue: mockAppLogger
+						useValue: mockAppLogger,
 					},
 					{
 						provide: AuditLoggerService,
-						useValue: mockAuditLogger
-					}
-				]
+						useValue: mockAuditLogger,
+					},
+				],
 			}).compile();
 
 			service = module.get<AuthService>(AuthService);
@@ -384,12 +384,12 @@ describe('AuthService', () => {
 					email: 'new@example.com',
 					isActive: true,
 					displayName: 'New User',
-					role: 'user'
+					role: 'user',
 				});
 
 				const profile = {
 					emails: [{ value: 'new@example.com' }],
-					displayName: 'New User'
+					displayName: 'New User',
 				};
 
 				const result = await service.validateOAuthUser(profile, 'access', 'refresh');
@@ -405,20 +405,20 @@ describe('AuthService', () => {
 					id: 'existing_123',
 					email: 'existing@example.com',
 					isActive: true,
-					role: 'user'
+					role: 'user',
 				};
 
 				mockRepository.findByEmail.mockResolvedValue(existingUser);
 				mockRepository.update.mockResolvedValue({
 					...existingUser,
 					oauthProfile: { id: 'oauth_123' },
-					updatedAt: new Date()
+					updatedAt: new Date(),
 				});
 
 				const profile = {
 					id: 'oauth_123',
 					emails: [{ value: 'existing@example.com' }],
-					displayName: 'Existing User'
+					displayName: 'Existing User',
 				};
 
 				const result = await service.validateOAuthUser(profile, 'access', 'refresh');
@@ -427,8 +427,8 @@ describe('AuthService', () => {
 				expect(mockRepository.update).toHaveBeenCalledWith(
 					'existing_123',
 					expect.objectContaining({
-						oauthProfile: profile
-					})
+						oauthProfile: profile,
+					}),
 				);
 				expect(result.id).toBe('existing_123');
 			});

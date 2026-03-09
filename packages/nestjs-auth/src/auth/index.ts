@@ -40,7 +40,7 @@ export {
 	GraphQLCurrentUser,
 	GraphQLAuthToken,
 	GraphQLContextParam,
-	GraphQLUser
+	GraphQLUser,
 } from './decorators/index.js';
 
 export type { ContextOptions } from './decorators/index.js';

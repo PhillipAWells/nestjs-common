@@ -12,7 +12,7 @@ export class KeycloakAdminService implements OnModuleInit {
 
 	constructor(
 		@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) private readonly config: KeycloakAdminConfig,
-		@Inject(AppLogger) private readonly appLogger: AppLogger
+		@Inject(AppLogger) private readonly appLogger: AppLogger,
 	) {}
 
 	public async onModuleInit(): Promise<void> {
@@ -29,16 +29,15 @@ export class KeycloakAdminService implements OnModuleInit {
 				credentials: this.config.credentials as any,
 				timeout: this.config.timeout,
 				retry: this.config.retry,
-				logger: this.appLogger as any
+				logger: this.appLogger as any,
 			} as any);
 
 			await this.client.authenticate();
 			this.logger.log('Keycloak admin client initialized successfully');
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(
 				'Failed to initialize Keycloak admin client',
-				error instanceof Error ? error.stack : String(error)
+				error instanceof Error ? error.stack : String(error),
 			);
 		}
 	}

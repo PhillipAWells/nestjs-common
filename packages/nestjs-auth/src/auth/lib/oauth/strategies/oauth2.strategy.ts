@@ -13,7 +13,7 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
 			clientID: process.env['OAUTH2_CLIENT_ID'] ?? '',
 			clientSecret: process.env['OAUTH2_CLIENT_SECRET'] ?? '',
 			callbackURL: process.env['OAUTH2_CALLBACK_URL'] ?? '',
-			scope: ['openid', 'profile', 'email']
+			scope: ['openid', 'profile', 'email'],
 		});
 	}
 

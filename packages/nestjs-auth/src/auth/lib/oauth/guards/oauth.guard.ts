@@ -9,7 +9,7 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) {
 
 	constructor(
 		private readonly oauthService: OAuthService,
-		@Inject(AppLogger) private readonly appLogger: AppLogger
+		@Inject(AppLogger) private readonly appLogger: AppLogger,
 	) {
 		super();
 		this.logger = this.appLogger.createContextualLogger(OAuthGuard.name);
@@ -32,8 +32,7 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) {
 			request.user = user;
 			this.logger.info(`OAuth guard successful for user ${user.email} accessing ${request.path}`);
 			return true;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.warn(`OAuth service verification failed, falling back to passport strategies: ${error instanceof Error ? error.message : String(error)}`);
 			// Fallback to passport strategies
 			return super.canActivate(context) as Promise<boolean>;

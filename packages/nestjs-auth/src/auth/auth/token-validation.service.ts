@@ -46,8 +46,7 @@ export class TokenValidationService implements LazyModuleRefService {
 			this.JwtService.verify(token);
 
 			return decoded;
-		}
-		catch (error) {
+		} catch (error) {
 			if (error instanceof UnauthorizedException) {
 				throw error;
 			}
@@ -102,7 +101,7 @@ export class TokenValidationService implements LazyModuleRefService {
 
 		if (tokenType !== expectedType) {
 			throw new UnauthorizedException(
-				`Invalid token type. Expected ${expectedType}, got ${tokenType}`
+				`Invalid token type. Expected ${expectedType}, got ${tokenType}`,
 			);
 		}
 	}
@@ -127,7 +126,7 @@ export class TokenValidationService implements LazyModuleRefService {
 
 		if (payload.iss !== expectedIssuer) {
 			throw new UnauthorizedException(
-				`Invalid issuer. Expected ${expectedIssuer}, got ${payload.iss}`
+				`Invalid issuer. Expected ${expectedIssuer}, got ${payload.iss}`,
 			);
 		}
 	}
@@ -140,7 +139,7 @@ export class TokenValidationService implements LazyModuleRefService {
 
 		if (payload.aud !== expectedAudience) {
 			throw new UnauthorizedException(
-				`Invalid audience. Expected ${expectedAudience}, got ${payload.aud}`
+				`Invalid audience. Expected ${expectedAudience}, got ${payload.aud}`,
 			);
 		}
 	}

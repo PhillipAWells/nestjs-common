@@ -1,4 +1,4 @@
-/// <reference types="jest" />
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SessionRepository } from '../session.repository.js';
 
 describe('SessionRepository', () => {
@@ -7,13 +7,13 @@ describe('SessionRepository', () => {
 
 	beforeEach(() => {
 		mockSessionModel = {
-			create: jest.fn(),
-			findOne: jest.fn(),
-			find: jest.fn(),
-			findOneAndUpdate: jest.fn(),
-			updateOne: jest.fn(),
-			deleteOne: jest.fn(),
-			deleteMany: jest.fn()
+			create: vi.fn(),
+			findOne: vi.fn(),
+			find: vi.fn(),
+			findOneAndUpdate: vi.fn(),
+			updateOne: vi.fn(),
+			deleteOne: vi.fn(),
+			deleteMany: vi.fn(),
 		};
 
 		repository = new SessionRepository(mockSessionModel);
@@ -27,10 +27,10 @@ describe('SessionRepository', () => {
 				deviceInfo: { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' },
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
-				expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+				expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
 			};
 
-			const mockDocument = { ...sessionData, toObject: jest.fn().mockReturnValue(sessionData) };
+			const mockDocument = { ...sessionData, toObject: vi.fn().mockReturnValue(sessionData) };
 			mockSessionModel.create.mockResolvedValue(mockDocument);
 
 			const result = await repository.Create(sessionData as any);
@@ -44,8 +44,8 @@ describe('SessionRepository', () => {
 		it('should find session by sessionId', async () => {
 			const sessionData = { sessionId: 'test-123' };
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue(sessionData)
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue(sessionData),
 			};
 
 			mockSessionModel.findOne.mockReturnValue(mockQuery);
@@ -60,8 +60,8 @@ describe('SessionRepository', () => {
 
 		it('should return null if session not found', async () => {
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue(null)
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue(null),
 			};
 
 			mockSessionModel.findOne.mockReturnValue(mockQuery);
@@ -76,8 +76,8 @@ describe('SessionRepository', () => {
 		it('should find all sessions for a user', async () => {
 			const sessions = [{ sessionId: 'session-1' }, { sessionId: 'session-2' }];
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue(sessions)
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue(sessions),
 			};
 
 			mockSessionModel.find.mockReturnValue(mockQuery);
@@ -96,8 +96,8 @@ describe('SessionRepository', () => {
 			const sessionData = { sessionId: 'session-123', userId: 'user-456' };
 			const updateData = { lastActivityAt: new Date() };
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue({ ...sessionData, ...updateData })
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue({ ...sessionData, ...updateData }),
 			};
 
 			mockSessionModel.findOneAndUpdate.mockReturnValue(mockQuery);
@@ -107,7 +107,7 @@ describe('SessionRepository', () => {
 			expect(mockSessionModel.findOneAndUpdate).toHaveBeenCalledWith(
 				{ sessionId: 'session-123' },
 				updateData,
-				{ new: true }
+				{ new: true },
 			);
 			expect(mockQuery.lean).toHaveBeenCalled();
 			expect(mockQuery.exec).toHaveBeenCalled();
@@ -116,8 +116,8 @@ describe('SessionRepository', () => {
 
 		it('should return null if session not found during update', async () => {
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue(null)
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue(null),
 			};
 
 			mockSessionModel.findOneAndUpdate.mockReturnValue(mockQuery);
@@ -131,7 +131,7 @@ describe('SessionRepository', () => {
 	describe('UpdateSessionActivity', () => {
 		it('should update lastActivityAt', async () => {
 			const mockQuery = {
-				exec: jest.fn().mockResolvedValue({ modifiedCount: 1 })
+				exec: vi.fn().mockResolvedValue({ modifiedCount: 1 }),
 			};
 
 			mockSessionModel.updateOne.mockReturnValue(mockQuery);
@@ -140,7 +140,7 @@ describe('SessionRepository', () => {
 
 			expect(mockSessionModel.updateOne).toHaveBeenCalledWith(
 				{ sessionId: 'session-123' },
-				{ lastActivityAt: expect.any(Date) }
+				{ lastActivityAt: expect.any(Date) },
 			);
 			expect(mockQuery.exec).toHaveBeenCalled();
 		});
@@ -149,7 +149,7 @@ describe('SessionRepository', () => {
 	describe('DeleteSession', () => {
 		it('should delete a session', async () => {
 			const mockQuery = {
-				exec: jest.fn().mockResolvedValue({ deletedCount: 1 })
+				exec: vi.fn().mockResolvedValue({ deletedCount: 1 }),
 			};
 
 			mockSessionModel.deleteOne.mockReturnValue(mockQuery);
@@ -164,7 +164,7 @@ describe('SessionRepository', () => {
 	describe('DeleteUserSessions', () => {
 		it('should delete all sessions for a user', async () => {
 			const mockQuery = {
-				exec: jest.fn().mockResolvedValue({ deletedCount: 2 })
+				exec: vi.fn().mockResolvedValue({ deletedCount: 2 }),
 			};
 
 			mockSessionModel.deleteMany.mockReturnValue(mockQuery);
@@ -180,11 +180,11 @@ describe('SessionRepository', () => {
 		it('should find non-expired sessions for a user', async () => {
 			const sessions = [
 				{ sessionId: 'session-1', userId: 'user-123', expiresAt: new Date(Date.now() + 3600000) },
-				{ sessionId: 'session-2', userId: 'user-123', expiresAt: new Date(Date.now() + 7200000) }
+				{ sessionId: 'session-2', userId: 'user-123', expiresAt: new Date(Date.now() + 7200000) },
 			];
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue(sessions)
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue(sessions),
 			};
 
 			mockSessionModel.find.mockReturnValue(mockQuery);
@@ -193,7 +193,7 @@ describe('SessionRepository', () => {
 
 			expect(mockSessionModel.find).toHaveBeenCalledWith({
 				userId: 'user-123',
-				expiresAt: { $gt: expect.any(Date) }
+				expiresAt: { $gt: expect.any(Date) },
 			});
 			expect(mockQuery.lean).toHaveBeenCalled();
 			expect(mockQuery.exec).toHaveBeenCalled();
@@ -202,8 +202,8 @@ describe('SessionRepository', () => {
 
 		it('should return empty array if user has no active sessions', async () => {
 			const mockQuery = {
-				lean: jest.fn().mockReturnThis(),
-				exec: jest.fn().mockResolvedValue([])
+				lean: vi.fn().mockReturnThis(),
+				exec: vi.fn().mockResolvedValue([]),
 			};
 
 			mockSessionModel.find.mockReturnValue(mockQuery);

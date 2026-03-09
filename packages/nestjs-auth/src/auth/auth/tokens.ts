@@ -34,5 +34,5 @@ export { CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
  */
 export const AuthTokens = {
 	USER_REPOSITORY,
-	USER_LOOKUP_FN
+	USER_LOOKUP_FN,
 } as const;

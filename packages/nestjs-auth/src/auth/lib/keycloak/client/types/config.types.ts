@@ -56,7 +56,7 @@ export type KeycloakCredentials =
  * Check if credentials are username/password
  */
 export function isPasswordCredentials(
-	credentials: KeycloakCredentials
+	credentials: KeycloakCredentials,
 ): credentials is { username: string; password: string } {
 	return 'username' in credentials && 'password' in credentials;
 }
@@ -65,7 +65,7 @@ export function isPasswordCredentials(
  * Check if credentials are client credentials
  */
 export function isClientCredentials(
-	credentials: KeycloakCredentials
+	credentials: KeycloakCredentials,
 ): credentials is { clientId: string; clientSecret: string } {
 	return 'clientId' in credentials && 'clientSecret' in credentials;
 }

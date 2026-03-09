@@ -20,7 +20,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					exp: now + 900,
 					iss: 'nestjs-app',
 					aud: 'nestjs-api',
-					type: 'access'
+					type: 'access',
 				};
 			},
 			verify(token: string) {
@@ -29,14 +29,14 @@ describe('TokenValidationService - Additional Tests', () => {
 			},
 			getJwtCalls() {
 				return jwtCalls;
-			}
+			},
 		};
 
 		mockModuleRef = {
 			get(token: any) {
 				if (token === JwtService) return mockJwtService;
 				return null;
-			}
+			},
 		};
 
 		service = new TokenValidationService(mockModuleRef);
@@ -61,7 +61,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					exp: now + 259200, // 3 days
 					iss: 'nestjs-app',
 					aud: 'nestjs-api',
-					type: 'refresh'
+					type: 'refresh',
 				};
 			};
 
@@ -87,7 +87,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				return {
 					email: 'user@example.com',
 					iat: now,
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -102,7 +102,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				return {
 					sub: 'user-123',
 					iat: now,
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -117,7 +117,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				return {
 					sub: 'user-123',
 					email: 'user@example.com',
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -132,7 +132,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				return {
 					sub: 'user-123',
 					email: 'user@example.com',
-					iat: now
+					iat: now,
 				};
 			};
 
@@ -150,7 +150,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					sub: '',
 					email: 'user@example.com',
 					iat: now,
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -166,7 +166,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					sub: 'user-123',
 					email: 'invalid-email',
 					iat: now,
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -179,7 +179,7 @@ describe('TokenValidationService - Additional Tests', () => {
 			const validEmails = [
 				'user@example.com',
 				'first.last@example.co.uk',
-				'user+tag@example.org'
+				'user+tag@example.org',
 			];
 
 			for (const email of validEmails) {
@@ -191,7 +191,7 @@ describe('TokenValidationService - Additional Tests', () => {
 						iat: now,
 						exp: now + 900,
 						iss: 'nestjs-app',
-						aud: 'nestjs-api'
+						aud: 'nestjs-api',
 					};
 				};
 
@@ -207,7 +207,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					sub: 'user-123',
 					email: 'user@example.com',
 					iat: -1,
-					exp: now + 900
+					exp: now + 900,
 				};
 			};
 
@@ -223,7 +223,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					sub: 'user-123',
 					email: 'user@example.com',
 					iat: now,
-					exp: -1
+					exp: -1,
 				};
 			};
 
@@ -244,7 +244,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					exp: now + 900,
 					iss: 'nestjs-app',
 					aud: 'nestjs-api',
-					type: 'access'
+					type: 'access',
 				};
 			};
 
@@ -262,7 +262,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					exp: now + 900,
 					iss: 'nestjs-app',
 					aud: 'nestjs-api',
-					type: 'refresh'
+					type: 'refresh',
 				};
 			};
 
@@ -280,7 +280,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 					// No type field
 				};
 			};
@@ -300,7 +300,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -318,7 +318,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: oneDayAgo,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -339,7 +339,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -357,7 +357,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'custom-issuer',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -377,7 +377,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'wrong-issuer',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -400,7 +400,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
@@ -418,7 +418,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'custom-api'
+					aud: 'custom-api',
 				};
 			};
 
@@ -438,7 +438,7 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'wrong-api'
+					aud: 'wrong-api',
 				};
 			};
 
@@ -486,8 +486,7 @@ describe('TokenValidationService - Additional Tests', () => {
 
 			try {
 				service.validateToken('token', 'access');
-			}
-			catch (e) {
+			} catch (e) {
 				expect(e instanceof UnauthorizedException).toBe(true);
 			}
 		});
@@ -501,14 +500,13 @@ describe('TokenValidationService - Additional Tests', () => {
 					iat: now,
 					exp: now + 900,
 					iss: 'nestjs-app',
-					aud: 'nestjs-api'
+					aud: 'nestjs-api',
 				};
 			};
 
 			try {
 				service.validateToken('token', 'access');
-			}
-			catch (e) {
+			} catch (e) {
 				expect((e as any).message).toContain('Invalid email claim');
 			}
 		});
@@ -524,7 +522,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				exp: now + 900,
 				iss: 'nestjs-app',
 				aud: 'nestjs-api',
-				type: 'access'
+				type: 'access',
 			});
 
 			const token = 'complete-token';
@@ -539,7 +537,7 @@ describe('TokenValidationService - Additional Tests', () => {
 			const tokens = ['token1', 'token2', 'token3'];
 
 			const results = tokens.map(token =>
-				service.validateToken(token, 'access')
+				service.validateToken(token, 'access'),
 			);
 
 			results.forEach(result => {
@@ -559,7 +557,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				exp: now + 900,
 				iss: 'nestjs-app',
 				aud: 'nestjs-api',
-				type: 'access'
+				type: 'access',
 			});
 
 			const accessResult = service.validateToken('access-token', 'access');
@@ -573,7 +571,7 @@ describe('TokenValidationService - Additional Tests', () => {
 				exp: now + 259200,
 				iss: 'nestjs-app',
 				aud: 'nestjs-api',
-				type: 'refresh'
+				type: 'refresh',
 			});
 
 			const refreshResult = service.validateToken('refresh-token', 'refresh');

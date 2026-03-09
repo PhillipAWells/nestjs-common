@@ -36,7 +36,7 @@ export class SessionService implements LazyModuleRefService {
 			createdAt: now,
 			lastActivityAt: now,
 			expiresAt,
-			loginHistory: []
+			loginHistory: [],
 		});
 
 		return session;
@@ -50,7 +50,7 @@ export class SessionService implements LazyModuleRefService {
 		accessTokenExpiresAt: Date,
 		refreshTokenExpiresAt: Date,
 		deviceInfo: IDeviceInfo,
-		provider: string = 'keycloak'
+		provider: string = 'keycloak',
 	): Promise<Session> {
 		const session = await this.Repository.FindBySessionId(sessionId);
 		if (!session) {
@@ -68,7 +68,7 @@ export class SessionService implements LazyModuleRefService {
 					this.EventEmitter.EmitSessionEvent(
 						oldestSession.sessionId,
 						SessionEventType.SESSION_REVOKED,
-						{ reason: 'Max concurrent sessions exceeded' }
+						{ reason: 'Max concurrent sessions exceeded' },
 					);
 				}
 			}
@@ -79,7 +79,7 @@ export class SessionService implements LazyModuleRefService {
 			timestamp: now,
 			deviceInfo,
 			success: true,
-			provider
+			provider,
 		};
 
 		const updatedSession = await this.Repository.Update(sessionId, {
@@ -91,7 +91,7 @@ export class SessionService implements LazyModuleRefService {
 			accessTokenExpiresAt,
 			refreshTokenExpiresAt,
 			lastActivityAt: now,
-			loginHistory: [...(session.loginHistory || []), loginRecord]
+			loginHistory: [...(session.loginHistory || []), loginRecord],
 		});
 
 		if (!updatedSession) {
@@ -100,7 +100,7 @@ export class SessionService implements LazyModuleRefService {
 
 		this.EventEmitter.EmitSessionEvent(sessionId, SessionEventType.AUTHENTICATED, {
 			userId: userProfile.id,
-			provider
+			provider,
 		});
 
 		return updatedSession;
@@ -113,7 +113,7 @@ export class SessionService implements LazyModuleRefService {
 		}
 
 		const updateData: Record<string, any> = {
-			isAuthenticated: false
+			isAuthenticated: false,
 		};
 
 		// Set optional fields to undefined explicitly
@@ -125,7 +125,7 @@ export class SessionService implements LazyModuleRefService {
 		await this.Repository.Update(sessionId, updateData);
 
 		this.EventEmitter.EmitSessionEvent(sessionId, SessionEventType.LOGGED_OUT, {
-			userId: session.userId
+			userId: session.userId,
 		});
 	}
 
@@ -134,7 +134,7 @@ export class SessionService implements LazyModuleRefService {
 		newAccessToken: string,
 		newAccessTokenExpiresAt: Date,
 		newRefreshToken?: string,
-		newRefreshTokenExpiresAt?: Date
+		newRefreshTokenExpiresAt?: Date,
 	): Promise<Session> {
 		const session = await this.Repository.FindBySessionId(sessionId);
 		if (!session) {
@@ -144,7 +144,7 @@ export class SessionService implements LazyModuleRefService {
 		const updateData: Partial<Session> = {
 			accessToken: newAccessToken,
 			accessTokenExpiresAt: newAccessTokenExpiresAt,
-			lastActivityAt: new Date()
+			lastActivityAt: new Date(),
 		};
 
 		if (newRefreshToken && newRefreshTokenExpiresAt) {
@@ -159,7 +159,7 @@ export class SessionService implements LazyModuleRefService {
 		}
 
 		this.EventEmitter.EmitSessionEvent(sessionId, SessionEventType.TOKEN_REFRESHED, {
-			userId: session.userId
+			userId: session.userId,
 		});
 
 		return updatedSession;
@@ -184,7 +184,7 @@ export class SessionService implements LazyModuleRefService {
 			await this.Repository.DeleteSession(session.sessionId);
 			this.EventEmitter.EmitSessionEvent(session.sessionId, SessionEventType.SESSION_REVOKED, {
 				userId,
-				reason: 'User invalidated all sessions'
+				reason: 'User invalidated all sessions',
 			});
 		}
 	}
@@ -199,7 +199,7 @@ export class SessionService implements LazyModuleRefService {
 
 		this.EventEmitter.EmitSessionEvent(sessionId, SessionEventType.SESSION_REVOKED, {
 			userId: session.userId,
-			reason: 'Session revoked by administrator'
+			reason: 'Session revoked by administrator',
 		});
 	}
 
@@ -211,7 +211,7 @@ export class SessionService implements LazyModuleRefService {
 
 		const updatedSession = await this.Repository.Update(sessionId, {
 			preferences: preferences as Record<string, string>,
-			lastActivityAt: new Date()
+			lastActivityAt: new Date(),
 		});
 
 		if (!updatedSession) {
@@ -231,8 +231,7 @@ export class SessionService implements LazyModuleRefService {
 			const updateData: Record<string, any> = {};
 			if (max !== null) {
 				updateData['maxConcurrentSessions'] = max;
-			}
-			else {
+			} else {
 				updateData['maxConcurrentSessions'] = undefined;
 			}
 			await this.Repository.Update(session.sessionId, updateData);

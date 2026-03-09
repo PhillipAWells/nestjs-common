@@ -6,7 +6,7 @@ export class KeycloakClientError extends Error {
 		message: string,
 		public readonly statusCode?: number,
 		public readonly response?: unknown,
-		public override readonly cause?: Error
+		public override readonly cause?: Error,
 	) {
 		super(message);
 		this.name = 'KeycloakClientError';

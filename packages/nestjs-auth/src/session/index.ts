@@ -14,6 +14,6 @@ export {
 	Session_DeviceInfo,
 	Session_UserProfile,
 	Session_LoginRecord,
-	Session_PreferencesInput
+	Session_PreferencesInput,
 } from './session.graphql.js';
 export type { ISessionEvent, ISessionConfig, IDeviceInfo, IUserProfile } from './session.types.js';

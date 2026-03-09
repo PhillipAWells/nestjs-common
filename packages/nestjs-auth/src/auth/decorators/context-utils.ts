@@ -25,7 +25,7 @@ export interface ContextOptions {
  * Default context options with auto-detection enabled
  */
 export const DEFAULT_CONTEXT_OPTIONS: ContextOptions = {
-	autoDetect: true
+	autoDetect: true,
 };
 
 /**
@@ -48,20 +48,17 @@ export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | '
 		// Try GraphQL context first
 		GqlExecutionContext.create(ctx);
 		return 'graphql';
-	}
-	catch {
+	} catch {
 		// Check for WebSocket context
 		try {
 			ctx.switchToWs();
 			return 'websocket';
-		}
-		catch {
+		} catch {
 			// Fall back to HTTP context
 			try {
 				ctx.switchToHttp();
 				return 'http';
-			}
-			catch {
+			} catch {
 				throw new Error('Unable to determine execution context type');
 			}
 		}
@@ -85,7 +82,7 @@ export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | '
  */
 export function ExtractRequestFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS
+	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): any {
 	const contextType = options.autoDetect
 		? DetectContextType(ctx)
@@ -136,7 +133,7 @@ export function ExtractRequestFromContext(
  */
 export function ExtractUserFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions & { property?: string } = DEFAULT_CONTEXT_OPTIONS
+	options: ContextOptions & { property?: string } = DEFAULT_CONTEXT_OPTIONS,
 ): any {
 	const request = ExtractRequestFromContext(ctx, options);
 
@@ -152,8 +149,7 @@ export function ExtractUserFromContext(
 		for (const key of keys) {
 			if (user && typeof user === 'object') {
 				user = user[key];
-			}
-			else {
+			} else {
 				return undefined;
 			}
 		}
@@ -187,7 +183,7 @@ export const extractUserFromContext = ExtractUserFromContext;
  */
 export function ExtractAuthTokenFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS
+	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): string | undefined {
 	const request = ExtractRequestFromContext(ctx, options);
 

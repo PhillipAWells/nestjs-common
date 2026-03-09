@@ -11,10 +11,9 @@ export class IdentityProviderService extends BaseService {
 	async list(realm: string): Promise<IdentityProviderRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.identityProviders.find({ realm })
+				this.adminClient.identityProviders.find({ realm }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -25,10 +24,9 @@ export class IdentityProviderService extends BaseService {
 	async get(realm: string, alias: string): Promise<IdentityProviderRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.identityProviders.findOne({ realm, alias })
+				this.adminClient.identityProviders.findOne({ realm, alias }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -39,10 +37,9 @@ export class IdentityProviderService extends BaseService {
 	async create(realm: string, idp: IdentityProviderRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.identityProviders.create({ ...idp, realm })
+				this.adminClient.identityProviders.create({ ...idp, realm }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -53,14 +50,13 @@ export class IdentityProviderService extends BaseService {
 	async update(
 		realm: string,
 		alias: string,
-		idp: IdentityProviderRepresentation
+		idp: IdentityProviderRepresentation,
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.identityProviders.update({ realm, alias }, idp)
+				this.adminClient.identityProviders.update({ realm, alias }, idp),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -71,10 +67,9 @@ export class IdentityProviderService extends BaseService {
 	async delete(realm: string, alias: string): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.identityProviders.del({ realm, alias })
+				this.adminClient.identityProviders.del({ realm, alias }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}

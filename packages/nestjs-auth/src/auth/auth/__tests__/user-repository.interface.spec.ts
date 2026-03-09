@@ -23,7 +23,7 @@ describe('IUserRepository Interface Contract', () => {
 			email: 'new@example.com',
 			firstName: 'New',
 			lastName: 'User',
-			isActive: true
+			isActive: true,
 		};
 		const user = await repository.create(userData);
 		expect(user.id).toBeDefined();
@@ -33,10 +33,10 @@ describe('IUserRepository Interface Contract', () => {
 	it('should update existing user', async () => {
 		const created = await repository.create({
 			email: 'update@example.com',
-			isActive: true
+			isActive: true,
 		});
 		const updated = await repository.update(created.id, {
-			firstName: 'Updated'
+			firstName: 'Updated',
 		});
 		expect(updated.firstName).toBe('Updated');
 	});
@@ -44,7 +44,7 @@ describe('IUserRepository Interface Contract', () => {
 	it('should delete user', async () => {
 		const created = await repository.create({
 			email: 'delete@example.com',
-			isActive: true
+			isActive: true,
 		});
 		const result = await repository.delete(created.id);
 		expect(result).toBe(true);
@@ -55,41 +55,41 @@ describe('IUserRepository Interface Contract', () => {
 	it('should throw error when creating user with duplicate email', async () => {
 		await repository.create({
 			email: 'duplicate@example.com',
-			isActive: true
+			isActive: true,
 		});
 
 		await expect(repository.create({
 			email: 'duplicate@example.com',
-			isActive: true
+			isActive: true,
 		})).rejects.toThrow('already exists');
 	});
 
 	it('should throw error when updating to duplicate email', async () => {
 		const user1 = await repository.create({
 			email: 'user1@example.com',
-			isActive: true
+			isActive: true,
 		});
 
 		await repository.create({
 			email: 'user2@example.com',
-			isActive: true
+			isActive: true,
 		});
 
 		await expect(repository.update(user1.id, {
-			email: 'user2@example.com'
+			email: 'user2@example.com',
 		})).rejects.toThrow('already exists');
 	});
 
 	it('should throw error when updating non-existent user', async () => {
 		await expect(repository.update('non-existent-id', {
-			firstName: 'Test'
+			firstName: 'Test',
 		})).rejects.toThrow('not found');
 	});
 
 	it('should handle email case-insensitivity', async () => {
 		await repository.create({
 			email: 'Test@Example.com',
-			isActive: true
+			isActive: true,
 		});
 
 		// Should find by lowercase
@@ -100,7 +100,7 @@ describe('IUserRepository Interface Contract', () => {
 		// Should prevent duplicate with different case
 		await expect(repository.create({
 			email: 'TEST@EXAMPLE.COM',
-			isActive: true
+			isActive: true,
 		})).rejects.toThrow('already exists');
 	});
 });

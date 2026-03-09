@@ -1,4 +1,5 @@
 
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthService } from '../auth.service.js';
 import * as bcrypt from 'bcryptjs';
 
@@ -24,16 +25,16 @@ describe('Auth Service - User Validation & Token Management', () => {
 						isActive: true,
 						role: 'user',
 						firstName: 'John',
-						lastName: 'Doe'
+						lastName: 'Doe',
 					};
 				}
 				return null;
-			}
+			},
 		};
 
 		mockJwtService = {
 			sign: (payload: any) => 'jwt-token-signed',
-			verify: (token: string) => ({ sub: 'user-id', iat: Date.now() })
+			verify: (token: string) => ({ sub: 'user-id', iat: Date.now() }),
 		};
 
 		mockAppLogger = {
@@ -49,8 +50,8 @@ describe('Auth Service - User Validation & Token Management', () => {
 				},
 				error: (...args: any[]) => {
 					logCalls.push({ level: 'error', args });
-				}
-			})
+				},
+			}),
 		};
 
 		mockAuditLogger = {
@@ -59,7 +60,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 			},
 			logTokenRefresh: (userId: string, newTokenId: string) => {
 				logCalls.push({ method: 'logTokenRefresh', userId, newTokenId });
-			}
+			},
 		};
 
 		mockModuleRef = {
@@ -70,7 +71,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				if (token === 'TokenBlacklistService') return { isTokenBlacklisted: async () => false };
 				if (token === 'CACHE_PROVIDER') return defaultValue ?? null;
 				return null;
-			}
+			},
 		};
 
 		service = new AuthService(mockModuleRef, mockRepository);
@@ -85,7 +86,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'user',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -103,7 +104,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'user',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -117,7 +118,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(user, 'password123');
@@ -133,7 +134,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'wrongpassword');
@@ -146,7 +147,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(user, 'wrongpassword');
@@ -164,7 +165,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'inactive-user-id',
 				email: 'inactive@example.com',
 				isActive: false,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(inactiveUser, 'password123');
@@ -177,7 +178,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'inactive-user-id',
 				email: 'inactive@example.com',
 				isActive: false,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(inactiveUser, 'password123');
@@ -200,7 +201,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 			const userWithoutHash = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 				// No passwordHash property
 			};
 
@@ -213,7 +214,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 			const userWithoutHash = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 			};
 
 			await service.validateUser(userWithoutHash as any, 'password123');
@@ -229,7 +230,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, '');
@@ -243,7 +244,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, longPassword);
@@ -257,7 +258,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash(specialPassword, 10)
+				passwordHash: await bcrypt.hash(specialPassword, 10),
 			};
 
 			const result = await service.validateUser(user, specialPassword);
@@ -275,7 +276,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'admin',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -291,7 +292,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'user',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -305,7 +306,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				email: 'user@example.com',
 				isActive: true,
 				// No role property
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user as any, 'password123');
@@ -321,7 +322,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'admin',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -337,7 +338,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				role: 'user',
 				firstName: 'Jane',
 				lastName: 'Smith',
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			const result = await service.validateUser(user, 'password123');
@@ -355,7 +356,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: hashedPassword
+				passwordHash: hashedPassword,
 			};
 
 			await service.validateUser(user, 'password123');
@@ -370,7 +371,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: errorHashPassword
+				passwordHash: errorHashPassword,
 			};
 
 			await expect(service.validateUser(user, 'password123')).rejects.toThrow();
@@ -406,7 +407,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'test@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(user, 'password123');
@@ -420,7 +421,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(user, 'password123');
@@ -434,7 +435,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				isActive: true,
-				passwordHash: await bcrypt.hash('password123', 10)
+				passwordHash: await bcrypt.hash('password123', 10),
 			};
 
 			await service.validateUser(user, 'wrongpassword');

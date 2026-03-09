@@ -11,19 +11,19 @@ export class SessionEventEmitter implements OnModuleDestroy {
 		@Inject('REDIS_CLIENT')
 		private readonly redisClient: Redis,
 		@Inject(AppLogger)
-		private readonly logger: AppLogger
+		private readonly logger: AppLogger,
 	) {}
 
 	public EmitSessionEvent(
 		sessionId: string,
 		eventType: SessionEventType,
-		data: Record<string, any>
+		data: Record<string, any>,
 	): void {
 		const event: ISessionEvent = {
 			eventType,
 			sessionId,
 			timestamp: new Date(),
-			data
+			data,
 		};
 
 		const channel = `${this.CHANNEL_PREFIX}${sessionId}`;
@@ -34,7 +34,7 @@ export class SessionEventEmitter implements OnModuleDestroy {
 			this.logger.error('Failed to emit session event', error, {
 				channel,
 				sessionId,
-				eventType
+				eventType,
 			});
 		});
 	}

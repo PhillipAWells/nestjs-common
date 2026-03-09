@@ -10,7 +10,7 @@ export {
 	PERMISSIONS_KEY,
 	detectContextType,
 	extractRequestFromContext,
-	extractUserFromContext
+	extractUserFromContext,
 } from './auth-decorators.js';
 
 export type { ContextOptions } from './auth-decorators.js';
@@ -22,5 +22,5 @@ export {
 	GraphQLCurrentUser,
 	GraphQLAuthToken,
 	GraphQLContextParam,
-	GraphQLUser
+	GraphQLUser,
 } from './graphql-auth-decorators.js';

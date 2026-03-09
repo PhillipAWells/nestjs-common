@@ -13,19 +13,33 @@ export class KeycloakAdminModule {
 		const mergedConfig = { ...KeycloakAdminDefaults, ...config };
 		validateKeycloakAdminConfig(mergedConfig);
 
+		// Validate that credentials are provided if Keycloak is enabled
+		if (mergedConfig.enabled && mergedConfig.credentials) {
+			const creds = mergedConfig.credentials;
+			if (creds.type === 'password') {
+				if (!creds.username || !creds.password) {
+					throw new Error('Keycloak enabled but username/password credentials are empty. Set KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD environment variables.');
+				}
+			} else if (creds.type === 'clientCredentials') {
+				if (!creds.clientId || !creds.clientSecret) {
+					throw new Error('Keycloak enabled but clientId/clientSecret credentials are empty. Set KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET environment variables.');
+				}
+			}
+		}
+
 		return {
 			module: KeycloakAdminModule,
 			imports: [CommonModule],
 			providers: [
 				{
 					provide: KEYCLOAK_ADMIN_CONFIG_TOKEN,
-					useValue: mergedConfig
+					useValue: mergedConfig,
 				},
 				KeycloakAdminService,
-				KeycloakHealthIndicator
+				KeycloakHealthIndicator,
 			],
 			exports: [KeycloakAdminService, KeycloakHealthIndicator],
-			global: true
+			global: true,
 		};
 	}
 
@@ -41,13 +55,13 @@ export class KeycloakAdminModule {
 				{
 					provide: KEYCLOAK_ADMIN_CONFIG_TOKEN,
 					useFactory: options.useFactory,
-					inject: options.inject ?? []
+					inject: options.inject ?? [],
 				},
 				KeycloakAdminService,
-				KeycloakHealthIndicator
+				KeycloakHealthIndicator,
 			],
 			exports: [KeycloakAdminService, KeycloakHealthIndicator],
-			global: true
+			global: true,
 		};
 	}
 }

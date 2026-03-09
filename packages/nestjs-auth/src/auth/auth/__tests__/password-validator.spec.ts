@@ -8,7 +8,7 @@ describe('PasswordValidatorService', () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [PasswordValidatorService]
+			providers: [PasswordValidatorService],
 		}).compile();
 
 		service = module.get<PasswordValidatorService>(PasswordValidatorService);
@@ -28,7 +28,7 @@ describe('PasswordValidatorService', () => {
 
 			expect(result.isValid).toBe(false);
 			expect(result.feedback).toContain(
-				'Password must contain at least one uppercase letter'
+				'Password must contain at least one uppercase letter',
 			);
 		});
 
@@ -37,7 +37,7 @@ describe('PasswordValidatorService', () => {
 
 			expect(result.isValid).toBe(false);
 			expect(result.feedback).toContain(
-				'Password must contain at least one lowercase letter'
+				'Password must contain at least one lowercase letter',
 			);
 		});
 
@@ -53,7 +53,7 @@ describe('PasswordValidatorService', () => {
 
 			expect(result.isValid).toBe(false);
 			expect(result.feedback).toContain(
-				'Password must contain at least one special character'
+				'Password must contain at least one special character',
 			);
 		});
 
@@ -62,7 +62,7 @@ describe('PasswordValidatorService', () => {
 
 			expect(result.isValid).toBe(false);
 			expect(result.feedback).toContain(
-				'Password must be at least 12 characters long'
+				'Password must be at least 12 characters long',
 			);
 		});
 

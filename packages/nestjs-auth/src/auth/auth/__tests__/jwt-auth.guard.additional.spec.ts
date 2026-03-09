@@ -22,12 +22,12 @@ describe('JWTAuthGuard - Additional Tests', () => {
 					},
 					error(...args: any[]) {
 						logCalls.push({ level: 'error', args });
-					}
+					},
 				};
 			},
 			getLogCalls() {
 				return logCalls;
-			}
+			},
 		};
 
 		guard = new JWTAuthGuard(mockAppLogger);
@@ -38,30 +38,30 @@ describe('JWTAuthGuard - Additional Tests', () => {
 					getRequest() {
 						return {
 							headers: {},
-							user: null
+							user: null,
 						};
 					},
 					getResponse() {
 						return {
-							setHeader: () => {}
+							setHeader: () => {},
 						};
-					}
+					},
 				};
 			},
 			switchToWs() {
 				return {
 					getData() {
 						return {};
-					}
+					},
 				};
 			},
 			switchToRpc() {
 				return {
 					getData() {
 						return {};
-					}
+					},
 				};
-			}
+			},
 		};
 	});
 
@@ -70,8 +70,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'test-jwt-token-123';
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
-				}
+					authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -82,8 +82,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'test-jwt-token-456';
 			const request = {
 				headers: {
-					Authorization: `Bearer ${token}`
-				}
+					Authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -92,7 +92,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 
 		it('should return null when Authorization header missing', () => {
 			const request = {
-				headers: {}
+				headers: {},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -102,8 +102,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should return null for malformed Bearer header', () => {
 			const request = {
 				headers: {
-					authorization: 'Bearer' // Missing token
-				}
+					authorization: 'Bearer', // Missing token
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -114,8 +114,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'Basic dXNlcjpwYXNz';
 			const request = {
 				headers: {
-					authorization: token
-				}
+					authorization: token,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -125,8 +125,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should handle empty Authorization header', () => {
 			const request = {
 				headers: {
-					authorization: ''
-				}
+					authorization: '',
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -137,8 +137,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
-				}
+					authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -149,8 +149,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'test-token-with-spaces';
 			const request = {
 				headers: {
-					authorization: `Bearer  ${token}` // Double space
-				}
+					authorization: `Bearer  ${token}`, // Double space
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -163,8 +163,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const request = {
 				headers: {
 					authorization: `Bearer ${token1}`,
-					Authorization: `Bearer ${token2}`
-				}
+					Authorization: `Bearer ${token2}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -200,8 +200,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 
 			try {
 				guard['handleAuthError'](error, null, null);
-			}
-			catch (e) {
+			} catch (e) {
 				expect((e as any).message).toContain('Invalid signature');
 			}
 		});
@@ -215,8 +214,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should log authentication failures', () => {
 			try {
 				guard['handleAuthError'](new Error('Test error'), null, null);
-			}
-			catch (e) {
+			} catch (e) {
 				// Error expected
 			}
 
@@ -242,7 +240,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should extract context from HTTP execution', () => {
 			const request = { headers: { authorization: 'Bearer test-token' } };
 			mockExecutionContext.switchToHttp = () => ({
-				getRequest: () => request
+				getRequest: () => request,
 			});
 
 			const context = guard['getContext'](mockExecutionContext);
@@ -253,11 +251,11 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const request = {
 				headers: {
 					authorization: 'Bearer valid-token',
-					'content-type': 'application/json'
-				}
+					'content-type': 'application/json',
+				},
 			};
 			mockExecutionContext.switchToHttp = () => ({
-				getRequest: () => request
+				getRequest: () => request,
 			});
 
 			const context = guard['getContext'](mockExecutionContext);
@@ -267,7 +265,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should handle request with no headers', () => {
 			const request = {};
 			mockExecutionContext.switchToHttp = () => ({
-				getRequest: () => request
+				getRequest: () => request,
 			});
 
 			const context = guard['getContext'](mockExecutionContext);
@@ -302,9 +300,9 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'jwt-token-123456';
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
+					authorization: `Bearer ${token}`,
 				},
-				user: { id: 'user-123', email: 'user@test.com' }
+				user: { id: 'user-123', email: 'user@test.com' },
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -317,7 +315,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should handle missing token scenario', () => {
 			const request = {
 				headers: {},
-				user: null
+				user: null,
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -331,8 +329,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should handle invalid token scenario', () => {
 			const request = {
 				headers: {
-					authorization: 'Bearer invalid-token'
-				}
+					authorization: 'Bearer invalid-token',
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -349,8 +347,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
-				}
+					authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -406,8 +404,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'token-with-special_chars.and-numbers123';
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
-				}
+					authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -418,8 +416,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'x'.repeat(2000);
 			const request = {
 				headers: {
-					authorization: `Bearer ${token}`
-				}
+					authorization: `Bearer ${token}`,
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);
@@ -430,8 +428,8 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			const token = 'test-token';
 			const request = {
 				headers: {
-					authorization: `bearer ${token}` // lowercase
-				}
+					authorization: `bearer ${token}`, // lowercase
+				},
 			};
 
 			const extracted = guard['extractTokenFromHeader'](request);

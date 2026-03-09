@@ -60,8 +60,7 @@ export class GraphQLTokenExtractionStrategy implements TokenExtractionStrategy {
 				// Try alternative locations in GraphQL context
 				return gqlContext.token ?? gqlContext.authorization;
 			}
-		}
-		catch {
+		} catch {
 			// Not a GraphQL context
 		}
 
@@ -76,7 +75,7 @@ export class GraphQLTokenExtractionStrategy implements TokenExtractionStrategy {
 export class JWTTokenValidationStrategy implements AuthValidationStrategy {
 	constructor(
 		private readonly jwtService: JwtService,
-		private readonly logger: AppLogger
+		private readonly logger: AppLogger,
 	) {}
 
 	public async validate(token: string, _context: ExecutionContext): Promise<any> {
@@ -84,8 +83,7 @@ export class JWTTokenValidationStrategy implements AuthValidationStrategy {
 			const payload = await this.jwtService.verifyAsync(token);
 			this.logger.debug('JWT token validated successfully');
 			return payload;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.warn(`JWT token validation failed: ${error instanceof Error ? error.message : String(error)}`);
 			throw new UnauthorizedException('Invalid or expired token');
 		}
@@ -145,7 +143,7 @@ export class BaseAuthGuard implements CanActivate {
 	constructor(
 		private readonly jwtService: JwtService,
 		@Inject(AppLogger) appLogger: AppLogger,
-		private readonly config: AuthMiddlewareConfig
+		private readonly config: AuthMiddlewareConfig,
 	) {
 		this.logger = appLogger.createContextualLogger(BaseAuthGuard.name);
 	}
@@ -185,8 +183,7 @@ export class BaseAuthGuard implements CanActivate {
 			}
 
 			return true;
-		}
-		catch (error) {
+		} catch (error) {
 			this.handleAuthError(error, context);
 		}
 	}
@@ -207,8 +204,7 @@ export class BaseAuthGuard implements CanActivate {
 			// Try GraphQL context
 			(context as any).getContext?.();
 			return new GraphQLTokenExtractionStrategy();
-		}
-		catch {
+		} catch {
 			// Fall back to HTTP
 			return new HeaderTokenExtractionStrategy();
 		}
@@ -240,16 +236,14 @@ export class BaseAuthGuard implements CanActivate {
 			// Try HTTP context first
 			const request = context.switchToHttp().getRequest();
 			request.user = payload;
-		}
-		catch {
+		} catch {
 			// Try GraphQL context
 			try {
 				const gqlContext = (context as any).getContext?.();
 				if (gqlContext) {
 					gqlContext.user = payload;
 				}
-			}
-			catch {
+			} catch {
 				this.logger.warn('Could not set user in context - unsupported context type');
 			}
 		}
@@ -273,7 +267,7 @@ export class BaseAuthGuard implements CanActivate {
 		// Check permissions
 		if (this.config.permissions) {
 			const hasRequiredPermission = this.config.permissions.some(permission =>
-				userPermissions.includes(permission)
+				userPermissions.includes(permission),
 			);
 			if (!hasRequiredPermission) {
 				throw new UnauthorizedException(`Required permissions: ${this.config.permissions.join(', ')}`);
@@ -292,7 +286,7 @@ export class AuthMiddlewareFactory {
 	public static createJWTAuth(config: Partial<AuthMiddlewareConfig> = {}): AuthMiddlewareConfig {
 		return {
 			required: true,
-			...config
+			...config,
 		};
 	}
 
@@ -302,7 +296,7 @@ export class AuthMiddlewareFactory {
 	public static createOptionalAuth(config: Partial<AuthMiddlewareConfig> = {}): AuthMiddlewareConfig {
 		return {
 			required: false,
-			...config
+			...config,
 		};
 	}
 
@@ -313,7 +307,7 @@ export class AuthMiddlewareFactory {
 		return {
 			required: true,
 			roles,
-			...config
+			...config,
 		};
 	}
 
@@ -324,7 +318,7 @@ export class AuthMiddlewareFactory {
 		return {
 			required: true,
 			permissions,
-			...config
+			...config,
 		};
 	}
 
@@ -333,12 +327,12 @@ export class AuthMiddlewareFactory {
 	 */
 	public static createCustomAuth(
 		customValidator: (payload: any, context: ExecutionContext) => boolean | Promise<boolean>,
-		config: Partial<AuthMiddlewareConfig> = {}
+		config: Partial<AuthMiddlewareConfig> = {},
 	): AuthMiddlewareConfig {
 		return {
 			required: true,
 			customValidator,
-			...config
+			...config,
 		};
 	}
 }

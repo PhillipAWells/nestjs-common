@@ -1,6 +1,8 @@
 
 import { UnauthorizedException } from '@nestjs/common';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { JWTStrategy } from '../jwt.strategy.js';
+import type { TokenBlacklistService } from '../token-blacklist.service.js';
 
 // Helper to create a mock Express request object
 function createMockRequest(authHeader?: string) {
@@ -11,7 +13,7 @@ function createMockRequest(authHeader?: string) {
 
 	return {
 		headers,
-		get: (name: string) => headers[name.toLowerCase()]
+		get: (name: string) => headers[name.toLowerCase()],
 	} as any;
 }
 
@@ -20,6 +22,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
+	let mockTokenBlacklistService: unknown;
 	let logCalls: any[];
 	let validateTokenCalls: any[];
 
@@ -33,7 +36,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 					id: 'valid-user-id',
 					email: 'user@example.com',
 					isActive: true,
-					role: 'user'
+					role: 'user',
 				};
 			}
 			return null;
@@ -48,8 +51,13 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 				if (token === 'invalid-token') {
 					throw new Error('Invalid signature');
 				}
-			}
+			},
 		};
+
+		mockTokenBlacklistService = {
+			isTokenBlacklisted: vi.fn().mockResolvedValue(false),
+			hasUserRevokedTokens: vi.fn().mockResolvedValue(false),
+		} as unknown as TokenBlacklistService;
 
 		mockAppLogger = {
 			createContextualLogger: () => ({
@@ -64,15 +72,15 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 				},
 				error: (...args: any[]) => {
 					logCalls.push({ level: 'error', args });
-				}
-			})
+				},
+			}),
 		};
 
 		// Set valid JWT configuration
 		process.env['JWT_SECRET'] = 'MySecretKeyWith32CharactersMin!@#$%';
 		process.env['JWT_EXPIRES_IN'] = '15m';
 
-		strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService);
+		strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 	});
 
 	afterEach(() => {
@@ -82,7 +90,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 	describe('validate() - Normal Operation', () => {
 		it('should validate JWT payload and return active user', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			const user = await strategy.validate(payload, request);
@@ -91,7 +99,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 				id: 'valid-user-id',
 				email: 'user@example.com',
 				isActive: true,
-				role: 'user'
+				role: 'user',
 			});
 
 			const infoLog = logCalls.find(l => l.level === 'info');
@@ -100,7 +108,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 		});
 
 		it('should log debug message when JWT validation initiates', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			await strategy.validate(payload, request);
@@ -112,7 +120,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 	describe('validate() - Token Extraction', () => {
 		it('should throw UnauthorizedException when no token in request', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest();
 
 			await expect(strategy.validate(payload, request)).rejects.toThrow(UnauthorizedException);
@@ -120,13 +128,12 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 		});
 
 		it('should log warning when no token provided', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest();
 
 			try {
 				await strategy.validate(payload, request);
-			}
-			catch (e) {
+			} catch (e) {
 				// Expected
 			}
 
@@ -137,7 +144,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 	describe('validate() - Token Validation', () => {
 		it('should call tokenValidationService for comprehensive token validation', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			validateTokenCalls = [];
@@ -148,20 +155,19 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 		});
 
 		it('should throw error when token validation fails', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer expired-token');
 
 			await expect(strategy.validate(payload, request)).rejects.toThrow('Token expired');
 		});
 
 		it('should log warning when token validation fails', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer expired-token');
 
 			try {
 				await strategy.validate(payload, request);
-			}
-			catch (e) {
+			} catch (e) {
 				// Expected
 			}
 
@@ -172,7 +178,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 	describe('validate() - User Lookup', () => {
 		it('should lookup user by JWT sub claim', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			const user = await strategy.validate(payload, request);
@@ -183,7 +189,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 		});
 
 		it('should throw UnauthorizedException when user not found', async () => {
-			const payload = { sub: 'unknown-user-id' };
+			const payload = { sub: 'unknown-user-id', email: 'unknown@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			await expect(strategy.validate(payload, request)).rejects.toThrow(UnauthorizedException);
@@ -195,25 +201,24 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 				id: 'inactive-user-id',
 				email: 'inactive@example.com',
 				isActive: false,
-				role: 'user'
+				role: 'user',
 			});
 
-			const inactiveStrategy = new JWTStrategy(inactiveUserLookup, mockAppLogger, mockTokenValidationService);
+			const inactiveStrategy = new JWTStrategy(inactiveUserLookup, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 
-			const payload = { sub: 'inactive-user-id' };
+			const payload = { sub: 'inactive-user-id', email: 'inactive@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			await expect(inactiveStrategy.validate(payload, request)).rejects.toThrow(UnauthorizedException);
 		});
 
 		it('should log warning when user inactive or not found', async () => {
-			const payload = { sub: 'unknown-user-id' };
+			const payload = { sub: 'unknown-user-id', email: 'unknown@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			try {
 				await strategy.validate(payload, request);
-			}
-			catch (e) {
+			} catch (e) {
 				// Expected
 			}
 
@@ -224,14 +229,14 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 	describe('validate() - Error Handling', () => {
 		it('should propagate token validation errors', async () => {
-			const payload = { sub: 'valid-user-id' };
+			const payload = { sub: 'valid-user-id', email: 'user@example.com', role: 'user' };
 			const request = createMockRequest('Bearer invalid-token');
 
 			await expect(strategy.validate(payload, request)).rejects.toThrow('Invalid signature');
 		});
 
 		it('should handle missing payload.sub gracefully', async () => {
-			const payload = { sub: null };
+			const payload = { sub: null, email: 'test@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
 
 			await expect(strategy.validate(payload as any, request)).rejects.toThrow();
@@ -243,7 +248,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_SECRET'] = 'AnotherSecretKeyWith32Characters!@';
 			process.env['JWT_EXPIRES_IN'] = '1h';
 
-			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService);
+			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 			expect(newStrategy).toBeDefined();
 		});
 
@@ -251,7 +256,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			delete process.env['JWT_EXPIRES_IN'];
 			process.env['JWT_SECRET'] = 'SecretKeyWith32CharactersRequired!@';
 
-			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService);
+			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 			expect(newStrategy).toBeDefined();
 		});
 
@@ -260,7 +265,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService);
+				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -269,7 +274,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService);
+				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
 			}).toThrow('JWT configuration validation failed');
 		});
 	});

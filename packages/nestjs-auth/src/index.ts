@@ -46,7 +46,7 @@ export {
 	GraphQLCurrentUser,
 	GraphQLAuthToken,
 	GraphQLContextParam,
-	GraphQLUser
+	GraphQLUser,
 } from './auth/decorators/index.js';
 
 export type { ContextOptions } from './auth/decorators/index.js';
@@ -72,6 +72,6 @@ export {
 	Session_DeviceInfo,
 	Session_UserProfile,
 	Session_LoginRecord,
-	Session_PreferencesInput
+	Session_PreferencesInput,
 } from './session/session.graphql.js';
 export type { ISessionEvent, ISessionConfig, IDeviceInfo, IUserProfile } from './session/session.types.js';

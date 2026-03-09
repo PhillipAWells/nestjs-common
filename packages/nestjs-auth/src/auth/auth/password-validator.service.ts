@@ -18,7 +18,7 @@ import {
 	PASSWORD_STRENGTH_THRESHOLD_WEAK,
 	PASSWORD_STRENGTH_THRESHOLD_FAIR,
 	PASSWORD_STRENGTH_THRESHOLD_GOOD,
-	PASSWORD_STRENGTH_THRESHOLD_STRONG
+	PASSWORD_STRENGTH_THRESHOLD_STRONG,
 } from '../constants/password-policy.constants.js';
 
 export interface PasswordStrengthResult {
@@ -40,54 +40,48 @@ export class PasswordValidatorService implements LazyModuleRefService {
 			isValid: false,
 			score: 0,
 			feedback: [],
-			strength: 'weak'
+			strength: 'weak',
 		};
 
 		// Check minimum length
 		if (password.length < PASSWORD_MIN_LENGTH) {
 			result.feedback.push(`Password must be at least ${PASSWORD_MIN_LENGTH} characters long`);
-		}
-		else {
+		} else {
 			result.score += PASSWORD_SCORE_LENGTH_LONG;
 		}
 
 		// Check maximum length
 		if (password.length > PASSWORD_MAX_LENGTH) {
 			result.feedback.push(`Password must not exceed ${PASSWORD_MAX_LENGTH} characters`);
-		}
-		else if (password.length >= 16) {
+		} else if (password.length >= 16) {
 			result.score += PASSWORD_SCORE_LENGTH_EXTRA;
 		}
 
 		// Check for uppercase letters
 		if (!/[A-Z]/.test(password)) {
 			result.feedback.push('Password must contain at least one uppercase letter');
-		}
-		else {
+		} else {
 			result.score += PASSWORD_SCORE_UPPERCASE;
 		}
 
 		// Check for lowercase letters
 		if (!/[a-z]/.test(password)) {
 			result.feedback.push('Password must contain at least one lowercase letter');
-		}
-		else {
+		} else {
 			result.score += PASSWORD_SCORE_LOWERCASE;
 		}
 
 		// Check for numbers
 		if (!/\d/.test(password)) {
 			result.feedback.push('Password must contain at least one number');
-		}
-		else {
+		} else {
 			result.score += PASSWORD_SCORE_NUMBERS;
 		}
 
 		// Check for special characters
 		if (!/[!@#$%^&*()_+\-=[]{};':"\\|,.<>?`]/.test(password)) {
 			result.feedback.push('Password must contain at least one special character');
-		}
-		else {
+		} else {
 			result.score += PASSWORD_SCORE_SPECIAL_CHARS;
 		}
 
@@ -127,7 +121,7 @@ export class PasswordValidatorService implements LazyModuleRefService {
 				message: 'Password does not meet strength requirements',
 				feedback: result.feedback,
 				strength: result.strength,
-				score: result.score
+				score: result.score,
 			});
 		}
 	}
@@ -139,7 +133,7 @@ export class PasswordValidatorService implements LazyModuleRefService {
 		const commonPatterns = [
 			'123', '234', '345', '456', '567', '678', '789', '890',
 			'abc', 'bcd', 'cde', 'def', 'efg', 'fgh', 'ghi', 'hij',
-			'password', 'admin', 'user', 'test', 'demo', 'qwerty'
+			'password', 'admin', 'user', 'test', 'demo', 'qwerty',
 		];
 
 		const lowerPassword = password.toLowerCase();

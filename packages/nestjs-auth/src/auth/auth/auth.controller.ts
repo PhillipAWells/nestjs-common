@@ -11,12 +11,13 @@ import { RefreshTokenValidationInput } from './auth.validation.js';
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
-		private readonly tokenBlacklistService: TokenBlacklistService
+		private readonly tokenBlacklistService: TokenBlacklistService,
 	) {}
 
 	/**
 	 * Logout endpoint - blacklists the current access token
 	 */
+	// TODO: Add rate limiting via @nestjs/throttler - e.g., @Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('logout')
 	@UseGuards(JWTAuthGuard)
 	public async logout(@Request() req: any): Promise<{ message: string }> {
@@ -40,6 +41,7 @@ export class AuthController {
 	 * Refresh token endpoint
 	 * Validates refresh token format and detects invalid/suspicious input
 	 */
+	// TODO: Add rate limiting via @nestjs/throttler - e.g., @Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('refresh')
 	@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
 	public async refresh(@Body() _refreshTokenDto: RefreshTokenValidationInput): Promise<any> {

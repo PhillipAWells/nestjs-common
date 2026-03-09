@@ -4,7 +4,7 @@ import {
 	MinLength,
 	MaxLength,
 	Matches,
-	ValidateIf
+	ValidateIf,
 } from 'class-validator';
 
 const MAX_EMAIL_LENGTH = 254;
@@ -40,8 +40,8 @@ export class LoginValidationInput {
 	@Matches(
 		/^(?!.*['";\\-]{2,})[^'";\\]*$/,
 		{
-			message: 'Password contains invalid characters or patterns'
-		}
+			message: 'Password contains invalid characters or patterns',
+		},
 	)
 	 
 	public password!: string;

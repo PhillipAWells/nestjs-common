@@ -6,7 +6,7 @@ import {
 	Session_Type,
 	Session_AuthPayload,
 	Session_Event,
-	Session_PreferencesInput
+	Session_PreferencesInput,
 } from './session.graphql.js';
 import { Redis } from 'ioredis';
 
@@ -19,7 +19,7 @@ export class SessionResolver {
 	constructor(
 		private readonly sessionService: SessionService,
 		@Inject('REDIS_CLIENT') private readonly redisClient: Redis,
-		@Inject(AppLogger) private readonly logger: AppLogger
+		@Inject(AppLogger) private readonly logger: AppLogger,
 	) {}
 
 	/**
@@ -41,7 +41,7 @@ export class SessionResolver {
 	@Query(() => [Session_Type], { name: 'Session_UserSessions' })
 	public async Session_UserSessions(
 		@Context() _context: any,
-		@Args('userId', { type: () => ID }) userId: string
+		@Args('userId', { type: () => ID }) userId: string,
 	): Promise<Session_Type[]> {
 		// Admin-only operation - verify in guard/decorator
 		return this.sessionService.GetUserSessions(userId);
@@ -54,7 +54,7 @@ export class SessionResolver {
 	public async Session_Login(
 		_context: any,
 		@Args('email') _email: string,
-		@Args('password') _password: string
+		@Args('password') _password: string,
 	): Promise<Session_AuthPayload> {
 		// This is a placeholder - actual implementation will integrate with Keycloak
 		// For now, just return structure that tests expect
@@ -99,7 +99,7 @@ export class SessionResolver {
 	@Mutation(() => Session_Type, { name: 'Session_UpdatePreferences' })
 	public async Session_UpdatePreferences(
 		@Context() context: any,
-		@Args('input') input: Session_PreferencesInput
+		@Args('input') input: Session_PreferencesInput,
 	): Promise<Session_Type> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
@@ -134,7 +134,7 @@ export class SessionResolver {
 	@Mutation(() => Boolean, { name: 'Session_RevokeSession' })
 	public async Session_RevokeSession(
 		@Context() _context: any,
-		@Args('sessionId', { type: () => ID }) sessionId: string
+		@Args('sessionId', { type: () => ID }) sessionId: string,
 	): Promise<boolean> {
 		// Admin-only - verify in guard/decorator
 		await this.sessionService.RevokeSession(sessionId);
@@ -147,7 +147,7 @@ export class SessionResolver {
 	@Mutation(() => Boolean, { name: 'Session_SetMaxConcurrentSessions' })
 	public async Session_SetMaxConcurrentSessions(
 		@Context() context: any,
-		@Args('max', { type: () => Number, nullable: true }) max: number | null
+		@Args('max', { type: () => Number, nullable: true }) max: number | null,
 	): Promise<boolean> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
@@ -169,7 +169,7 @@ export class SessionResolver {
 	 */
 	@Subscription(() => Session_Event, {
 		name: 'Session_OnChange',
-		resolve: (payload) => payload
+		resolve: (payload) => payload,
 	})
 	public async *Session_OnChange(context: any) {
 		const sessionId = context?.sessionId;
@@ -185,14 +185,13 @@ export class SessionResolver {
 			eventType: 'SUBSCRIPTION_ACTIVE',
 			sessionId,
 			timestamp: new Date(),
-			data: { subscribed: true }
+			data: { subscribed: true },
 		};
 
 		try {
 			// Create async generator that continuously yields messages from Redis subscriber
 			yield* this._ListenForMessages(subscriber, sessionId);
-		}
-		finally {
+		} finally {
 			await subscriber.unsubscribe();
 			subscriber.disconnect();
 		}
@@ -234,19 +233,17 @@ export class SessionResolver {
 						yield {
 							...eventData,
 							sessionId,
-							timestamp: eventData.timestamp ? new Date(eventData.timestamp) : new Date()
+							timestamp: eventData.timestamp ? new Date(eventData.timestamp) : new Date(),
 						} as Session_Event;
-					}
-					catch (error) {
+					} catch (error) {
 						// Log parsing error but continue listening
 						logger.warn('Failed to parse session event message', {
 							error: error instanceof Error ? error.message : String(error),
-							sessionId
+							sessionId,
 						});
 					}
 				}
-			}
-			finally {
+			} finally {
 				subscriber.off('message', messageHandler);
 			}
 		})();

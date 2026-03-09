@@ -9,7 +9,7 @@ import {
 	RoleService,
 	GroupService,
 	IdentityProviderService,
-	AuthenticationService
+	AuthenticationService,
 } from './services/index.js';
 
 /**
@@ -78,7 +78,7 @@ export class KeycloakClient {
 		this.config = {
 			realmName: 'master',
 			timeout: 30000,
-			...config
+			...config,
 		};
 
 		// Generate client identifiers
@@ -88,7 +88,7 @@ export class KeycloakClient {
 		// Initialize admin client
 		this.adminClient = new KcAdminClient({
 			baseUrl: this.config.baseUrl,
-			...(this.config.realmName && { realmName: this.config.realmName })
+			...(this.config.realmName && { realmName: this.config.realmName }),
 		});
 
 		// Initialize services
@@ -106,7 +106,7 @@ export class KeycloakClient {
 			this.config.logger.info('KeycloakClient initialized', {
 				clientId: this.ClientID,
 				baseUrl: this.config.baseUrl,
-				realm: this.config.realmName
+				realm: this.config.realmName,
 			});
 		}
 	}
@@ -122,30 +122,28 @@ export class KeycloakClient {
 					username: this.config.credentials.username,
 					password: this.config.credentials.password,
 					grantType: 'password',
-					clientId: 'admin-cli'
+					clientId: 'admin-cli',
 				});
 
 				if (this.config.logger) {
 					this.config.logger.info('Authenticated with Keycloak using password credentials', {
-						username: this.config.credentials.username
+						username: this.config.credentials.username,
 					});
 				}
-			}
-			else if (isClientCredentials(this.config.credentials)) {
+			} else if (isClientCredentials(this.config.credentials)) {
 				await this.adminClient.auth({
 					grantType: 'client_credentials',
 					clientId: this.config.credentials.clientId,
-					clientSecret: this.config.credentials.clientSecret
+					clientSecret: this.config.credentials.clientSecret,
 				});
 
 				if (this.config.logger) {
 					this.config.logger.info('Authenticated with Keycloak using client credentials', {
-						clientId: this.config.credentials.clientId
+						clientId: this.config.credentials.clientId,
 					});
 				}
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			if (this.config.logger) {
 				this.config.logger.error('Failed to authenticate with Keycloak', { error });
 			}

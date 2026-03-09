@@ -38,7 +38,7 @@ export class MockUserRepository implements IUserRepository {
 			id: randomUUID(),
 			...userData,
 			createdAt: new Date(),
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 
 		this.users.set(user.id, user);
@@ -72,7 +72,7 @@ export class MockUserRepository implements IUserRepository {
 			...existing,
 			...updates,
 			id, // Preserve ID
-			updatedAt: new Date()
+			updatedAt: new Date(),
 		};
 
 		this.users.set(id, updated);

@@ -18,9 +18,9 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 					firstName: profile.displayName?.split(' ')[0],
 					lastName: profile.displayName?.split(' ')[1],
 					role: 'user',
-					isActive: true
+					isActive: true,
 				};
-			}
+			},
 		};
 
 		// Set OAuth2 configuration
@@ -46,7 +46,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'oauth-user-123',
 				displayName: 'John Doe',
-				emails: [{ value: 'john@example.com' }]
+				emails: [{ value: 'john@example.com' }],
 			};
 			const accessToken = 'oauth-access-token-xyz';
 			const refreshToken = 'oauth-refresh-token-abc';
@@ -59,7 +59,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 				firstName: 'John',
 				lastName: 'Doe',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			});
 		});
 
@@ -67,7 +67,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'oauth-user-456',
 				displayName: 'Jane Smith',
-				emails: [{ value: 'jane@example.com' }]
+				emails: [{ value: 'jane@example.com' }],
 			};
 			const accessToken = 'access-token-123';
 			const refreshToken = 'refresh-token-456';
@@ -78,7 +78,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			expect(validateCalls[0]).toEqual({
 				profile,
 				accessToken,
-				refreshToken
+				refreshToken,
 			});
 		});
 
@@ -108,7 +108,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'Test User',
-				emails: [{ value: 'test@example.com' }]
+				emails: [{ value: 'test@example.com' }],
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -120,7 +120,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'Test User',
-				email: 'fallback@example.com'
+				email: 'fallback@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -132,7 +132,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'John Michael',
-				email: 'john@example.com'
+				email: 'john@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -144,7 +144,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'John Michael',
-				email: 'john@example.com'
+				email: 'john@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -156,7 +156,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'Madonna',
-				email: 'madonna@example.com'
+				email: 'madonna@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -169,7 +169,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'unique-oauth-id-789',
 				displayName: 'Test',
-				email: 'test@example.com'
+				email: 'test@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -183,7 +183,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'User',
-				email: 'user@example.com'
+				email: 'user@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -195,7 +195,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'User',
-				email: 'user@example.com'
+				email: 'user@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -209,7 +209,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const errorService = {
 				validateOAuthUser: async () => {
 					throw new Error('OAuth validation failed');
-				}
+				},
 			};
 			const errorStrategy = new OAuth2Strategy(errorService);
 
@@ -221,7 +221,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 		it('should handle missing email gracefully', async () => {
 			const profile = {
 				id: 'user-id',
-				displayName: 'User Without Email'
+				displayName: 'User Without Email',
 				// No email or emails property
 			};
 
@@ -235,7 +235,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'User',
-				emails: [] // Empty array
+				emails: [], // Empty array
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -273,7 +273,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: longName,
-				email: 'user@example.com'
+				email: 'user@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -285,7 +285,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 'user-id',
 				displayName: 'José García',
-				email: 'jose@example.com'
+				email: 'jose@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile);
@@ -298,7 +298,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 			const profile = {
 				id: 12345,
 				displayName: 'User',
-				email: 'user@example.com'
+				email: 'user@example.com',
 			};
 
 			const result = await strategy.validate('token', 'refresh', profile as any);

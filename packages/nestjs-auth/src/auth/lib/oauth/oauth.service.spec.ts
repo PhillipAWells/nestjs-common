@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { OAuthService } from './oauth.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
@@ -8,12 +9,12 @@ describe('OAuthService', () => {
 
 	beforeEach(async () => {
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -21,9 +22,9 @@ describe('OAuthService', () => {
 				OAuthService,
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
-				}
-			]
+					useValue: mockAppLogger,
+				},
+			],
 		}).compile();
 
 		service = module.get<OAuthService>(OAuthService);
@@ -41,19 +42,19 @@ describe('OAuthService', () => {
 				q: '3dfOR9cuYq-0S-mkFLzgItgMEfFzB2q3hWehMuG0Zlca4ZyHn2Q9QgQ2I6VK8w',
 				dp: 'G4sPXkc6Ya9y8oJW9_ILj4xuppu0lziCfIEiwOFjZGURcHED3U3z9InSwwHBi',
 				dq: 's9wc9r3tAE85TMI3DhSYcfqjzRCwmRsdBNGDvFZncBHd',
-				qi: 'GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqw'
+				qi: 'GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqw',
 			};
 
 			// Mock axios response
 			const mockAxiosResponse = {
-				data: { keys: [mockJwk] }
+				data: { keys: [mockJwk] },
 			};
 
 			// Mock the httpClient.get method
-			jest.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
 
 			// Mock getJwksUrl to return a URL
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			const pem = await (service as any).getPublicKey('test-provider');
 
@@ -67,15 +68,15 @@ describe('OAuthService', () => {
 			const mockJwk = {
 				kty: 'RSA',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
-				e: 'AQAB'
+				e: 'AQAB',
 			};
 
 			const mockAxiosResponse = {
-				data: { keys: [mockJwk] }
+				data: { keys: [mockJwk] },
 			};
 
-			jest.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			const pem = await (service as any).getPublicKey('test-provider');
 
@@ -85,17 +86,17 @@ describe('OAuthService', () => {
 
 		it('should throw error when JWKS response has no keys', async () => {
 			const mockAxiosResponse = {
-				data: { keys: [] }
+				data: { keys: [] },
 			};
 
-			jest.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			await expect((service as any).getPublicKey('test-provider')).rejects.toThrow('No JWK found');
 		});
 
 		it('should throw error when JWKS URL is not configured', async () => {
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue(null);
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue(null);
 
 			await expect((service as any).getPublicKey('test-provider')).rejects.toThrow('JWKS URL not configured for provider test-provider');
 		});
@@ -104,15 +105,15 @@ describe('OAuthService', () => {
 			const mockJwk = {
 				kty: 'RSA',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
-				e: 'AQAB'
+				e: 'AQAB',
 			};
 
 			const mockAxiosResponse = {
-				data: { keys: [mockJwk] }
+				data: { keys: [mockJwk] },
 			};
 
-			const httpClientSpy = jest.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			const httpClientSpy = vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			// First call
 			const pem1 = await (service as any).getPublicKey('test-provider');
@@ -129,19 +130,19 @@ describe('OAuthService', () => {
 			const mockJwk = {
 				kty: 'RSA',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
-				e: 'AQAB'
+				e: 'AQAB',
 			};
 
 			const mockAxiosResponse = {
-				data: { keys: [mockJwk] }
+				data: { keys: [mockJwk] },
 			};
 
-			jest.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
-			jest.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			// Mock jwt.verify
 			const jwt = require('jsonwebtoken');
-			const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation((token, key, options, callback) => {
+			const verifySpy = vi.spyOn(jwt, 'verify').mockImplementation((token: any, key: any, options: any, callback: any) => {
 				callback(null, { sub: 'user123', email: 'test@example.com' });
 			});
 
@@ -155,7 +156,7 @@ describe('OAuthService', () => {
 				sub: 'user123',
 				preferred_username: undefined,
 				given_name: undefined,
-				family_name: undefined
+				family_name: undefined,
 			});
 
 			expect(verifySpy).toHaveBeenCalledWith('valid.jwt.token', expect.any(String), { algorithms: ['RS256'] }, expect.any(Function));

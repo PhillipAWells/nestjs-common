@@ -8,7 +8,7 @@ export const GetOAuthUser = createParamDecorator(
 	(_data: unknown, ctx: ExecutionContext): OAuthUser => {
 		const request = ctx.switchToHttp().getRequest();
 		return request.user;
-	}
+	},
 );
 
 /**

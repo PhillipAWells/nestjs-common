@@ -1,28 +1,29 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { TokenValidationService } from '../token-validation.service.js';
 import { UnauthorizedException } from '@nestjs/common';
+import { vi } from 'vitest';
 
 describe('TokenValidationService', () => {
 	let service: TokenValidationService;
-	let jwtService: JwtService;
+	let mockJwtService: any;
+	let mockModuleRef: any;
 
-	beforeEach(async () => {
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				TokenValidationService,
-				{
-					provide: JwtService,
-					useValue: {
-						decode: jest.fn(),
-						verify: jest.fn()
-					}
+	beforeEach(() => {
+		mockJwtService = {
+			decode: vi.fn(),
+			verify: vi.fn(),
+		};
+
+		mockModuleRef = {
+			get: (token: any) => {
+				if (token === JwtService) {
+					return mockJwtService;
 				}
-			]
-		}).compile();
+				return null;
+			},
+		};
 
-		service = module.get<TokenValidationService>(TokenValidationService);
-		jwtService = module.get<JwtService>(JwtService);
+		service = new TokenValidationService(mockModuleRef);
 	});
 
 	describe('validateToken', () => {
@@ -33,12 +34,12 @@ describe('TokenValidationService', () => {
 				iat: Math.floor(Date.now() / 1000),
 				exp: Math.floor(Date.now() / 1000) + 3600,
 				iss: 'nestjs-app',
-				aud: 'nestjs-api'
+				aud: 'nestjs-api',
 			};
 
 			const token = 'valid-jwt-token';
-			jest.spyOn(jwtService, 'decode').mockReturnValue(payload);
-			jest.spyOn(jwtService, 'verify').mockReturnValue(payload);
+			mockJwtService.decode.mockReturnValue(payload);
+			mockJwtService.verify.mockReturnValue(payload);
 
 			const result = service.validateToken(token);
 			expect(result.sub).toBe('user-123');
@@ -47,11 +48,11 @@ describe('TokenValidationService', () => {
 
 		it('should reject token with missing claims', () => {
 			const payload = {
-				sub: 'user-123'
+				sub: 'user-123',
 				// Missing email, iat, exp
 			};
 
-			jest.spyOn(jwtService, 'decode').mockReturnValue(payload);
+			mockJwtService.decode.mockReturnValue(payload);
 
 			expect(() => service.validateToken('token')).toThrow(UnauthorizedException);
 		});
@@ -61,10 +62,10 @@ describe('TokenValidationService', () => {
 				sub: 'user-123',
 				email: 'invalid-email',
 				iat: Math.floor(Date.now() / 1000),
-				exp: Math.floor(Date.now() / 1000) + 3600
+				exp: Math.floor(Date.now() / 1000) + 3600,
 			};
 
-			jest.spyOn(jwtService, 'decode').mockReturnValue(payload);
+			mockJwtService.decode.mockReturnValue(payload);
 
 			expect(() => service.validateToken('token')).toThrow(UnauthorizedException);
 		});
@@ -76,10 +77,10 @@ describe('TokenValidationService', () => {
 				iat: Math.floor(Date.now() / 1000),
 				exp: Math.floor(Date.now() / 1000) + 3600,
 				iss: 'wrong-issuer',
-				aud: 'nestjs-api'
+				aud: 'nestjs-api',
 			};
 
-			jest.spyOn(jwtService, 'decode').mockReturnValue(payload);
+			mockJwtService.decode.mockReturnValue(payload);
 
 			expect(() => service.validateToken('token')).toThrow(UnauthorizedException);
 		});

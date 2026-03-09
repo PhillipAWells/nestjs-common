@@ -2,7 +2,7 @@ import type {
 	UserRepresentation,
 	UserQuery,
 	CredentialRepresentation,
-	RoleRepresentation
+	RoleRepresentation,
 } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
@@ -16,10 +16,9 @@ export class UserService extends BaseService {
 	async list(realm: string, query?: UserQuery): Promise<UserRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.users.find({ ...query, realm })
+				this.adminClient.users.find({ ...query, realm }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -30,10 +29,9 @@ export class UserService extends BaseService {
 	async get(realm: string, userId: string): Promise<UserRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.users.findOne({ realm, id: userId })
+				this.adminClient.users.findOne({ realm, id: userId }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -44,10 +42,9 @@ export class UserService extends BaseService {
 	async create(realm: string, user: UserRepresentation): Promise<{ id: string }> {
 		try {
 			return await this.withRetry(async () =>
-				this.adminClient.users.create({ ...user, realm })
+				this.adminClient.users.create({ ...user, realm }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -58,10 +55,9 @@ export class UserService extends BaseService {
 	async update(realm: string, userId: string, user: UserRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.users.update({ realm, id: userId }, user)
+				this.adminClient.users.update({ realm, id: userId }, user),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -72,10 +68,9 @@ export class UserService extends BaseService {
 	async delete(realm: string, userId: string): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.users.del({ realm, id: userId })
+				this.adminClient.users.del({ realm, id: userId }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -86,18 +81,17 @@ export class UserService extends BaseService {
 	async resetPassword(
 		realm: string,
 		userId: string,
-		credential: CredentialRepresentation
+		credential: CredentialRepresentation,
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
 				this.adminClient.users.resetPassword({
 					realm,
 					id: userId,
-					credential
-				})
+					credential,
+				}),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -108,18 +102,17 @@ export class UserService extends BaseService {
 	async addRealmRoles(
 		realm: string,
 		userId: string,
-		roles: RoleRepresentation[]
+		roles: RoleRepresentation[],
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
 				this.adminClient.users.addRealmRoleMappings({
 					realm,
 					id: userId,
-					roles: roles as any
-				})
+					roles: roles as any,
+				}),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -130,10 +123,9 @@ export class UserService extends BaseService {
 	async getRealmRoles(realm: string, userId: string): Promise<RoleRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.users.listRealmRoleMappings({ realm, id: userId })
+				this.adminClient.users.listRealmRoleMappings({ realm, id: userId }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -144,18 +136,17 @@ export class UserService extends BaseService {
 	async deleteRealmRoles(
 		realm: string,
 		userId: string,
-		roles: RoleRepresentation[]
+		roles: RoleRepresentation[],
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
 				this.adminClient.users.delRealmRoleMappings({
 					realm,
 					id: userId,
-					roles: roles as any
-				})
+					roles: roles as any,
+				}),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -167,7 +158,7 @@ export class UserService extends BaseService {
 		realm: string,
 		userId: string,
 		clientId: string,
-		roles: RoleRepresentation[]
+		roles: RoleRepresentation[],
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
@@ -175,11 +166,10 @@ export class UserService extends BaseService {
 					realm,
 					id: userId,
 					clientUniqueId: clientId,
-					roles: roles as any
-				})
+					roles: roles as any,
+				}),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -190,18 +180,17 @@ export class UserService extends BaseService {
 	async getClientRoles(
 		realm: string,
 		userId: string,
-		clientId: string
+		clientId: string,
 	): Promise<RoleRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
 				this.adminClient.users.listClientRoleMappings({
 					realm,
 					id: userId,
-					clientUniqueId: clientId
-				})
+					clientUniqueId: clientId,
+				}),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -213,7 +202,7 @@ export class UserService extends BaseService {
 		realm: string,
 		userId: string,
 		clientId: string,
-		roles: RoleRepresentation[]
+		roles: RoleRepresentation[],
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
@@ -221,11 +210,10 @@ export class UserService extends BaseService {
 					realm,
 					id: userId,
 					clientUniqueId: clientId,
-					roles: roles as any
-				})
+					roles: roles as any,
+				}),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}

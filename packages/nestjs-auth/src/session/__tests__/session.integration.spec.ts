@@ -67,14 +67,14 @@ describe('Session Module Integration Tests', () => {
 			}),
 			FindActiveSessions: jest.fn(async (userId: string): Promise<Session[]> => {
 				return Array.from(sessions.values()).filter(
-					(s) => s.userId === userId && s.expiresAt > new Date()
+					(s) => s.userId === userId && s.expiresAt > new Date(),
 				);
-			})
+			}),
 		} as any;
 
 		// Create mock event emitter
 		sessionEventEmitter = {
-			EmitSessionEvent: jest.fn()
+			EmitSessionEvent: jest.fn(),
 		} as any;
 
 		// Create test module with mocks
@@ -89,10 +89,10 @@ describe('Session Module Integration Tests', () => {
 						sessionTtlMinutes: 1440,
 						inactivityTimeoutMinutes: 60,
 						defaultMaxConcurrentSessions: null,
-						enforceSessionLimit: false
-					}
-				}
-			]
+						enforceSessionLimit: false,
+					},
+				},
+			],
 		}).compile();
 
 		sessionService = app.get<SessionService>(SessionService);
@@ -114,7 +114,7 @@ describe('Session Module Integration Tests', () => {
 		it('should create, authenticate, and logout a session', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			// Step 1: Create session
@@ -133,7 +133,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'test@example.com',
 				name: 'Test User',
 				roles: ['user'],
-				permissions: ['read:data']
+				permissions: ['read:data'],
 			};
 
 			const authSession = await sessionService.AuthenticateSession(
@@ -143,7 +143,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh-token-123',
 				new Date(Date.now() + 900000), // 15 minutes
 				new Date(Date.now() + 86400000), // 24 hours
-				deviceInfo
+				deviceInfo,
 			);
 
 			expect(authSession.isAuthenticated).toBe(true);
@@ -169,7 +169,7 @@ describe('Session Module Integration Tests', () => {
 		it('should maintain login history through multiple sessions', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '192.168.1.1'
+				ipAddress: '192.168.1.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -177,7 +177,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'user@example.com',
 				name: 'User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			// Create first session
@@ -189,7 +189,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh1',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			const fetchedSession1 = await sessionService.GetSession(session1.sessionId);
@@ -204,7 +204,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh2',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			const fetchedSession2 = await sessionService.GetSession(session2.sessionId);
@@ -222,7 +222,7 @@ describe('Session Module Integration Tests', () => {
 		it('should refresh access token while keeping session active', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -230,7 +230,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'refresh@example.com',
 				name: 'Refresh User',
 				roles: ['user'],
-				permissions: ['read:streams']
+				permissions: ['read:streams'],
 			};
 
 			// Create and authenticate session
@@ -245,7 +245,7 @@ describe('Session Module Integration Tests', () => {
 				'old-refresh-token',
 				initialAccessTokenExpiry,
 				initialRefreshTokenExpiry,
-				deviceInfo
+				deviceInfo,
 			);
 
 			// Refresh token
@@ -257,7 +257,7 @@ describe('Session Module Integration Tests', () => {
 				'new-access-token',
 				newAccessTokenExpiry,
 				'new-refresh-token',
-				newRefreshTokenExpiry
+				newRefreshTokenExpiry,
 			);
 
 			expect(refreshedSession.accessToken).toBe('new-access-token');
@@ -269,7 +269,7 @@ describe('Session Module Integration Tests', () => {
 		it('should update last activity when token is refreshed', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -282,12 +282,12 @@ describe('Session Module Integration Tests', () => {
 			await sessionService.RefreshSessionToken(
 				session.sessionId,
 				'new-token',
-				new Date(Date.now() + 900000)
+				new Date(Date.now() + 900000),
 			);
 
 			const refreshedSession = await sessionService.GetSession(session.sessionId);
 			expect(refreshedSession.lastActivityAt.getTime()).toBeGreaterThan(
-				initialLastActivity.getTime()
+				initialLastActivity.getTime(),
 			);
 		});
 	});
@@ -296,7 +296,7 @@ describe('Session Module Integration Tests', () => {
 		it('should update and persist session preferences', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -304,12 +304,12 @@ describe('Session Module Integration Tests', () => {
 			const preferences = {
 				theme: 'dark',
 				language: 'en',
-				notifications: 'enabled'
+				notifications: 'enabled',
 			};
 
 			const updatedSession = await sessionService.UpdateSessionPreferences(
 				session.sessionId,
-				preferences
+				preferences,
 			);
 
 			expect(updatedSession.preferences).toBeDefined();
@@ -324,7 +324,7 @@ describe('Session Module Integration Tests', () => {
 		it('should update last activity timestamp', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -337,7 +337,7 @@ describe('Session Module Integration Tests', () => {
 
 			const updatedSession = await sessionService.GetSession(session.sessionId);
 			expect(updatedSession.lastActivityAt.getTime()).toBeGreaterThan(
-				initialLastActivity.getTime()
+				initialLastActivity.getTime(),
 			);
 		});
 	});
@@ -346,7 +346,7 @@ describe('Session Module Integration Tests', () => {
 		it('should revoke a single session', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -354,14 +354,14 @@ describe('Session Module Integration Tests', () => {
 			await sessionService.RevokeSession(session.sessionId);
 
 			await expect(sessionService.GetSession(session.sessionId)).rejects.toThrow(
-				'Session not found'
+				'Session not found',
 			);
 		});
 
 		it('should invalidate all sessions for a user', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -369,7 +369,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'invalidate@example.com',
 				name: 'Invalidate User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			// Create multiple sessions for same user
@@ -384,7 +384,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh1',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			await sessionService.AuthenticateSession(
@@ -394,7 +394,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh2',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			await sessionService.AuthenticateSession(
@@ -404,7 +404,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh3',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			// Verify all sessions exist
@@ -426,7 +426,7 @@ describe('Session Module Integration Tests', () => {
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -434,7 +434,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'event@example.com',
 				name: 'Event User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -445,7 +445,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			expect(emitSpy).toHaveBeenCalledWith(
@@ -453,8 +453,8 @@ describe('Session Module Integration Tests', () => {
 				SessionEventType.AUTHENTICATED,
 				expect.objectContaining({
 					userId: 'user-event',
-					provider: 'keycloak'
-				})
+					provider: 'keycloak',
+				}),
 			);
 
 			emitSpy.mockRestore();
@@ -465,7 +465,7 @@ describe('Session Module Integration Tests', () => {
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -473,7 +473,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'logout@example.com',
 				name: 'Logout User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -484,7 +484,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			emitSpy.mockClear();
@@ -495,8 +495,8 @@ describe('Session Module Integration Tests', () => {
 				session.sessionId,
 				SessionEventType.LOGGED_OUT,
 				expect.objectContaining({
-					userId: 'user-logout'
-				})
+					userId: 'user-logout',
+				}),
 			);
 
 			emitSpy.mockRestore();
@@ -507,7 +507,7 @@ describe('Session Module Integration Tests', () => {
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -515,7 +515,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'refresh@example.com',
 				name: 'Refresh User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -526,7 +526,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			emitSpy.mockClear();
@@ -534,15 +534,15 @@ describe('Session Module Integration Tests', () => {
 			await sessionService.RefreshSessionToken(
 				session.sessionId,
 				'new-token',
-				new Date(Date.now() + 900000)
+				new Date(Date.now() + 900000),
 			);
 
 			expect(emitSpy).toHaveBeenCalledWith(
 				session.sessionId,
 				SessionEventType.TOKEN_REFRESHED,
 				expect.objectContaining({
-					userId: 'user-refresh'
-				})
+					userId: 'user-refresh',
+				}),
 			);
 
 			emitSpy.mockRestore();
@@ -553,7 +553,7 @@ describe('Session Module Integration Tests', () => {
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -561,7 +561,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'revoke@example.com',
 				name: 'Revoke User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			const session = await sessionService.CreateOrGetSession(deviceInfo);
@@ -572,7 +572,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			emitSpy.mockClear();
@@ -584,8 +584,8 @@ describe('Session Module Integration Tests', () => {
 				SessionEventType.SESSION_REVOKED,
 				expect.objectContaining({
 					userId: 'user-revoke',
-					reason: 'Session revoked by administrator'
-				})
+					reason: 'Session revoked by administrator',
+				}),
 			);
 
 			emitSpy.mockRestore();
@@ -638,9 +638,9 @@ describe('Session Module Integration Tests', () => {
 				}),
 				FindActiveSessions: jest.fn(async (userId: string): Promise<Session[]> => {
 					return Array.from(limitedSessions.values()).filter(
-						(s) => s.userId === userId && s.expiresAt > new Date()
+						(s) => s.userId === userId && s.expiresAt > new Date(),
 					);
-				})
+				}),
 			} as any;
 
 			// Create test module with enforced session limit
@@ -655,17 +655,17 @@ describe('Session Module Integration Tests', () => {
 							sessionTtlMinutes: 1440,
 							inactivityTimeoutMinutes: 60,
 							defaultMaxConcurrentSessions: 2,
-							enforceSessionLimit: true
-						}
-					}
-				]
+							enforceSessionLimit: true,
+						},
+					},
+				],
 			}).compile();
 
 			const limitedSessionService = limitedApp.get<SessionService>(SessionService);
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
-				ipAddress: '127.0.0.1'
+				ipAddress: '127.0.0.1',
 			};
 
 			const userProfile: IUserProfile = {
@@ -673,7 +673,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'limit@example.com',
 				name: 'Limit User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			// Create first session
@@ -685,7 +685,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh1',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			// Create second session
@@ -697,7 +697,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh2',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			// Create third session (should trigger removal of oldest)
@@ -709,7 +709,7 @@ describe('Session Module Integration Tests', () => {
 				'refresh3',
 				new Date(Date.now() + 900000),
 				new Date(Date.now() + 86400000),
-				deviceInfo
+				deviceInfo,
 			);
 
 			// Check that max 2 active sessions exist
@@ -727,7 +727,7 @@ describe('Session Module Integration Tests', () => {
 				email: 'notfound@example.com',
 				name: 'Not Found User',
 				roles: ['user'],
-				permissions: []
+				permissions: [],
 			};
 
 			await expect(
@@ -738,14 +738,14 @@ describe('Session Module Integration Tests', () => {
 					'refresh',
 					new Date(Date.now() + 900000),
 					new Date(Date.now() + 86400000),
-					{ userAgent: 'Mozilla', ipAddress: '127.0.0.1' }
-				)
+					{ userAgent: 'Mozilla', ipAddress: '127.0.0.1' },
+				),
 			).rejects.toThrow('Session not found');
 		});
 
 		it('should throw NotFoundException when logging out non-existent session', async () => {
 			await expect(sessionService.LogoutSession('non-existent-session')).rejects.toThrow(
-				'Session not found'
+				'Session not found',
 			);
 		});
 
@@ -754,14 +754,14 @@ describe('Session Module Integration Tests', () => {
 				sessionService.RefreshSessionToken(
 					'non-existent-session',
 					'new-token',
-					new Date(Date.now() + 900000)
-				)
+					new Date(Date.now() + 900000),
+				),
 			).rejects.toThrow('Session not found');
 		});
 
 		it('should throw NotFoundException when getting non-existent session', async () => {
 			await expect(sessionService.GetSession('non-existent-session')).rejects.toThrow(
-				'Session not found'
+				'Session not found',
 			);
 		});
 	});

@@ -59,7 +59,7 @@ export const PERMISSIONS_KEY = 'permissions';
  */
 export const Public = () => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
-	value: true
+	value: true,
 });
 
 /**
@@ -90,7 +90,7 @@ export const Public = () => createConditionalDecorator({
  */
 export const Auth = () => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
-	value: false
+	value: false,
 });
 
 /**
@@ -123,7 +123,7 @@ export const Auth = () => createConditionalDecorator({
  */
 export const Roles = (...roles: string[]) => createConditionalDecorator({
 	key: ROLES_KEY,
-	value: roles
+	value: roles,
 });
 
 /**
@@ -213,7 +213,7 @@ export function CurrentUser(property?: string, options?: ContextOptions) {
 				opts.property = property;
 			}
 			return extractUserFromContext(ctx, opts);
-		}
+		},
 	)();
 }
 
@@ -249,6 +249,6 @@ export function AuthToken(options?: ContextOptions) {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
 			return extractAuthTokenFromContext(ctx, options);
-		}
+		},
 	)();
 }

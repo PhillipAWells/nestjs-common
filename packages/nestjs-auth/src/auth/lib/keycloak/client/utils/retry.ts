@@ -49,7 +49,7 @@ const DEFAULT_RETRY_CONFIG: Required<Omit<RetryConfig, 'logger'>> = {
 	initialDelay: 1000,
 	maxDelay: 30000,
 	backoffMultiplier: 2,
-	retryableStatuses: [408, 429, 500, 502, 503, 504]
+	retryableStatuses: [408, 429, 500, 502, 503, 504],
 };
 
 /**
@@ -75,7 +75,7 @@ function calculateDelay(
 	attempt: number,
 	initialDelay: number,
 	maxDelay: number,
-	backoffMultiplier: number
+	backoffMultiplier: number,
 ): number {
 	const exponentialDelay = initialDelay * Math.pow(backoffMultiplier, attempt);
 	const delayWithCap = Math.min(exponentialDelay, maxDelay);
@@ -90,14 +90,14 @@ function calculateDelay(
  */
 export async function withRetry<T>(
 	fn: () => Promise<T>,
-	config: RetryConfig = {}
+	config: RetryConfig = {},
 ): Promise<T> {
 	const {
 		maxRetries,
 		initialDelay,
 		maxDelay,
 		backoffMultiplier,
-		retryableStatuses
+		retryableStatuses,
 	} = { ...DEFAULT_RETRY_CONFIG, ...config };
 
 	let lastError: Error | undefined;
@@ -105,8 +105,7 @@ export async function withRetry<T>(
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		try {
 			return await fn();
-		}
-		catch (error) {
+		} catch (error) {
 			lastError = error instanceof Error ? error : new Error(String(error));
 
 			// Don't retry on last attempt
@@ -125,7 +124,7 @@ export async function withRetry<T>(
 			if (config.logger) {
 				config.logger.warn(
 					`Retrying after ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
-					{ error: lastError.message }
+					{ error: lastError.message },
 				);
 			}
 

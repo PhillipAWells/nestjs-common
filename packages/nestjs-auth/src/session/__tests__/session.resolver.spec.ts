@@ -25,15 +25,15 @@ describe('SessionResolver', () => {
 			RevokeSession: jest.fn(),
 			GetUserSessions: jest.fn(),
 			UpdateLastActivity: jest.fn(),
-			SetMaxConcurrentSessions: jest.fn()
+			SetMaxConcurrentSessions: jest.fn(),
 		} as any;
 
 		mockRedisClient = {
-			duplicate: jest.fn()
+			duplicate: jest.fn(),
 		} as any;
 
 		mockLogger = {
-			warn: jest.fn()
+			warn: jest.fn(),
 		} as any;
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -41,8 +41,8 @@ describe('SessionResolver', () => {
 				SessionResolver,
 				{ provide: SessionService, useValue: mockSessionService },
 				{ provide: 'REDIS_CLIENT', useValue: mockRedisClient },
-				{ provide: AppLogger, useValue: mockLogger }
-			]
+				{ provide: AppLogger, useValue: mockLogger },
+			],
 		}).compile();
 
 		resolver = module.get<SessionResolver>(SessionResolver);
@@ -58,7 +58,7 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
@@ -86,8 +86,8 @@ describe('SessionResolver', () => {
 					createdAt: new Date(),
 					lastActivityAt: new Date(),
 					expiresAt: new Date(),
-					loginHistory: []
-				}
+					loginHistory: [],
+				},
 			];
 
 			mockSessionService.GetUserSessions.mockResolvedValue(mockSessions as any);
@@ -128,13 +128,13 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
 			await expect(resolver.Session_RefreshToken({ sessionId } as any)).rejects.toThrow(
-				BadRequestException
+				BadRequestException,
 			);
 		});
 
@@ -154,13 +154,13 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
 			await expect(resolver.Session_RefreshToken({ sessionId } as any)).rejects.toThrow(
-				BadRequestException
+				BadRequestException,
 			);
 		});
 	});
@@ -177,14 +177,14 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.UpdateSessionPreferences.mockResolvedValue(mockSession as any);
 
 			const result = await resolver.Session_UpdatePreferences(
 				{ sessionId } as any,
-				{ preferences }
+				{ preferences },
 			);
 
 			expect(mockSessionService.UpdateSessionPreferences).toHaveBeenCalledWith(sessionId, preferences);
@@ -193,7 +193,7 @@ describe('SessionResolver', () => {
 
 		it('should throw BadRequestException when sessionId is not provided', async () => {
 			await expect(
-				resolver.Session_UpdatePreferences({} as any, { preferences: {} })
+				resolver.Session_UpdatePreferences({} as any, { preferences: {} }),
 			).rejects.toThrow(BadRequestException);
 		});
 	});
@@ -210,7 +210,7 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
@@ -232,13 +232,13 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
 			await expect(resolver.Session_InvalidateAllSessions({ sessionId } as any)).rejects.toThrow(
-				BadRequestException
+				BadRequestException,
 			);
 		});
 	});
@@ -269,7 +269,7 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
@@ -277,7 +277,7 @@ describe('SessionResolver', () => {
 
 			const result = await resolver.Session_SetMaxConcurrentSessions(
 				{ sessionId } as any,
-				maxSessions
+				maxSessions,
 			);
 
 			expect(mockSessionService.GetSession).toHaveBeenCalledWith(sessionId);
@@ -296,7 +296,7 @@ describe('SessionResolver', () => {
 				createdAt: new Date(),
 				lastActivityAt: new Date(),
 				expiresAt: new Date(),
-				loginHistory: []
+				loginHistory: [],
 			};
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);

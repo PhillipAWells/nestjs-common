@@ -8,6 +8,6 @@ import { CommonModule } from '@pawells/nestjs-shared/common';
 @Module({
 	imports: [PassportModule, CommonModule],
 	providers: [OAuth2Strategy, AuthService],
-	exports: [OAuth2Strategy]
+	exports: [OAuth2Strategy],
 })
 export class OAuth2Module {}

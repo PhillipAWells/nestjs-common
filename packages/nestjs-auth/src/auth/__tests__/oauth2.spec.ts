@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { OAuth2Strategy } from '../lib/oauth/strategies/oauth2.strategy.js';
 import { AuthService } from '../auth/auth.service.js';
 import { OAuthService } from '../lib/oauth/oauth.service.js';
@@ -11,16 +12,16 @@ describe('OAuth2 Integration Tests', () => {
 
 	beforeEach(async () => {
 		const mockAuthService = {
-			validateOAuthUser: jest.fn().mockResolvedValue({})
+			validateOAuthUser: vi.fn().mockResolvedValue({}),
 		};
 
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -29,13 +30,13 @@ describe('OAuth2 Integration Tests', () => {
 				OAuthService,
 				{
 					provide: AuthService,
-					useValue: mockAuthService
+					useValue: mockAuthService,
 				},
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
-				}
-			]
+					useValue: mockAppLogger,
+				},
+			],
 		}).compile();
 
 		strategy = module.get<OAuth2Strategy>(OAuth2Strategy);
@@ -52,8 +53,8 @@ describe('OAuth2 Integration Tests', () => {
 				emails: [{ value: 'test@example.com' }],
 				name: {
 					givenName: 'Test',
-					familyName: 'User'
-				}
+					familyName: 'User',
+				},
 			};
 
 			const accessToken = 'oauth-access-token';
@@ -65,7 +66,7 @@ describe('OAuth2 Integration Tests', () => {
 				email: 'test@example.com',
 				name: 'Test User',
 				roles: ['user'],
-				isActive: true
+				isActive: true,
 			};
 
 			(authService as any).validateOAuthUser.mockResolvedValue(mockUser);
@@ -77,7 +78,7 @@ describe('OAuth2 Integration Tests', () => {
 			expect(authService.validateOAuthUser).toHaveBeenCalledWith(
 				profile,
 				accessToken,
-				refreshToken
+				refreshToken,
 			);
 			expect(result).toEqual(mockUser);
 		});
@@ -87,25 +88,25 @@ describe('OAuth2 Integration Tests', () => {
 			const mockJwk = {
 				kty: 'RSA',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
-				e: 'AQAB'
+				e: 'AQAB',
 			};
 
 			const mockAxiosResponse = {
-				data: { keys: [mockJwk] }
+				data: { keys: [mockJwk] },
 			};
 
 			// Mock axios
-			jest.spyOn((oauthService as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
-			jest.spyOn(oauthService as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn((oauthService as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
+			vi.spyOn(oauthService as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
 			// Mock JWT verification
 			const jwt = require('jsonwebtoken');
-			const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation((token, key, options, callback: any) => {
+			const verifySpy = vi.spyOn(jwt, 'verify').mockImplementation((token: any, key: any, options: any, callback: any) => {
 				callback(null, {
 					sub: 'user123',
 					email: 'test@example.com',
 					iss: 'https://example.com',
-					aud: 'client-id'
+					aud: 'client-id',
 				});
 			});
 
@@ -121,7 +122,7 @@ describe('OAuth2 Integration Tests', () => {
 				given_name: undefined,
 				family_name: undefined,
 				iss: 'https://example.com',
-				aud: 'client-id'
+				aud: 'client-id',
 			});
 
 			expect(verifySpy).toHaveBeenCalled();
@@ -129,7 +130,7 @@ describe('OAuth2 Integration Tests', () => {
 
 		it('should handle invalid OAuth2 tokens', async () => {
 			const jwt = require('jsonwebtoken');
-			jest.spyOn(jwt, 'verify').mockImplementation((token, key, options, callback: any) => {
+			vi.spyOn(jwt, 'verify').mockImplementation((token: any, key: any, options: any, callback: any) => {
 				callback(new Error('Invalid token'), null);
 			});
 

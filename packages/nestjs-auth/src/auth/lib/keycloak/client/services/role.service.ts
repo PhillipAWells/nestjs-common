@@ -11,8 +11,7 @@ export class RoleService extends BaseService {
 	async listRealm(realm: string): Promise<RoleRepresentation[]> {
 		try {
 			return (await this.withRetry(async () => this.adminClient.roles.find({ realm }))) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -23,10 +22,9 @@ export class RoleService extends BaseService {
 	async listClient(realm: string, clientId: string): Promise<RoleRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.clients.listRoles({ realm, id: clientId })
+				this.adminClient.clients.listRoles({ realm, id: clientId }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -37,10 +35,9 @@ export class RoleService extends BaseService {
 	async getByName(realm: string, name: string): Promise<RoleRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.roles.findOneByName({ realm, name })
+				this.adminClient.roles.findOneByName({ realm, name }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -51,8 +48,7 @@ export class RoleService extends BaseService {
 	async create(realm: string, role: RoleRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () => this.adminClient.roles.create({ ...role, realm }));
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -63,10 +59,9 @@ export class RoleService extends BaseService {
 	async update(realm: string, name: string, role: RoleRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.roles.updateByName({ realm, name }, role)
+				this.adminClient.roles.updateByName({ realm, name }, role),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -77,8 +72,7 @@ export class RoleService extends BaseService {
 	async delete(realm: string, name: string): Promise<void> {
 		try {
 			await this.withRetry(async () => this.adminClient.roles.delByName({ realm, name }));
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}

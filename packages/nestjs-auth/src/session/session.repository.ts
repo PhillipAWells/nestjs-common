@@ -30,7 +30,7 @@ export class SessionRepository {
 	public async UpdateSessionActivity(sessionId: string): Promise<void> {
 		await this.sessionModel.updateOne(
 			{ sessionId },
-			{ lastActivityAt: new Date() }
+			{ lastActivityAt: new Date() },
 		).exec();
 	}
 
@@ -46,7 +46,7 @@ export class SessionRepository {
 		return this.sessionModel
 			.find({
 				userId,
-				expiresAt: { $gt: new Date() }
+				expiresAt: { $gt: new Date() },
 			})
 			.lean()
 			.exec();

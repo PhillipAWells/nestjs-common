@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuthService } from '../auth/auth.service.js';
 import { JWTAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TokenBlacklistService } from '../auth/token-blacklist.service.js';
@@ -18,22 +19,22 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 
 	beforeEach(async () => {
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn()
-			})
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
 		};
 
 		const mockAuditLogger = {
-			logAuthenticationAttempt: jest.fn(),
-			logTokenGeneration: jest.fn()
+			logAuthenticationAttempt: vi.fn(),
+			logTokenGeneration: vi.fn(),
 		};
 
 		const mockCacheService = {
-			get: jest.fn(),
-			set: jest.fn()
+			get: vi.fn(),
+			set: vi.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -44,17 +45,17 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				TokenBlacklistService,
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
+					useValue: mockAppLogger,
 				},
 				{
 					provide: AuditLoggerService,
-					useValue: mockAuditLogger
+					useValue: mockAuditLogger,
 				},
 				{
 					provide: 'CacheService',
-					useValue: mockCacheService
-				}
-			]
+					useValue: mockCacheService,
+				},
+			],
 		}).compile();
 
 		authService = module.get<AuthService>(AuthService);
@@ -78,7 +79,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: false,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const result = await authService.validateUser(inactiveUser, 'password123');
@@ -92,7 +93,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const result = await authService.validateUser(userWithoutHash, 'password123');
@@ -107,7 +108,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: await require('bcryptjs').hash('correctpassword', 12)
+				passwordHash: await require('bcryptjs').hash('correctpassword', 12),
 			};
 
 			const result = await authService.validateUser(userWithHash, 'wrongpassword');
@@ -120,7 +121,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				'\' OR \'1\'=\'1\' --',
 				'\' OR 1=1 --',
 				'admin\' --',
-				'\' UNION SELECT * FROM users --'
+				'\' UNION SELECT * FROM users --',
 			];
 
 			const userWithHash = {
@@ -130,7 +131,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: await require('bcryptjs').hash('correctpassword', 12)
+				passwordHash: await require('bcryptjs').hash('correctpassword', 12),
 			};
 
 			for (const sqlPassword of sqlInjectionPasswords) {
@@ -148,7 +149,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				'header.payload.signature.extra',
 				'',
 				'null',
-				'undefined'
+				'undefined',
 			];
 
 			for (const token of malformedTokens) {
@@ -163,16 +164,15 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				sub: 'user123',
 				role: 'user',
 				iat: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-				exp: Math.floor(Date.now() / 1000) - 1800 // 30 minutes ago
+				exp: Math.floor(Date.now() / 1000) - 1800, // 30 minutes ago
 			};
 
 			const expiredToken = jwtService.sign(expiredPayload);
 
 			try {
 				jwtService.verify(expiredToken);
-				fail('Should have thrown TokenExpiredError');
-			}
-			catch (error: any) {
+				expect.fail('Should have thrown TokenExpiredError');
+			} catch (error: any) {
 				expect(error.name).toBe('TokenExpiredError');
 			}
 		});
@@ -181,7 +181,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			const payload: JWTPayload = {
 				email: 'test@example.com',
 				sub: 'user123',
-				role: 'user'
+				role: 'user',
 			};
 
 			const validToken = jwtService.sign(payload);
@@ -189,9 +189,8 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 
 			try {
 				jwtService.verify(tamperedToken);
-				fail('Should have thrown JsonWebTokenError');
-			}
-			catch (error: any) {
+				expect.fail('Should have thrown JsonWebTokenError');
+			} catch (error: any) {
 				expect(error.name).toBe('JsonWebTokenError');
 			}
 		});
@@ -200,7 +199,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			const userPayload: JWTPayload = {
 				email: 'test@example.com',
 				sub: 'user123',
-				role: 'user'
+				role: 'user',
 			};
 
 			const userToken = jwtService.sign(userPayload);
@@ -218,7 +217,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			const payload: JWTPayload = {
 				email: 'test@example.com',
 				sub: 'user123',
-				role: 'user'
+				role: 'user',
 			};
 
 			const token = jwtService.sign(payload, { algorithm: 'HS256' });
@@ -226,9 +225,8 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			// Attempt to verify with different secret (simulating algorithm confusion)
 			try {
 				jwtService.verify(token, { secret: 'different-secret' });
-				fail('Should have thrown JsonWebTokenError');
-			}
-			catch (error: any) {
+				expect.fail('Should have thrown JsonWebTokenError');
+			} catch (error: any) {
 				expect(error.name).toBe('JsonWebTokenError');
 			}
 		});
@@ -237,7 +235,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			const payload: JWTPayload = {
 				email: 'test@example.com',
 				sub: 'user123',
-				role: 'user'
+				role: 'user',
 			};
 
 			const token = jwtService.sign(payload);
@@ -260,7 +258,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				'{"alg":"none"}',
 				'{"alg":"HS256","typ":"JWT","kid":"../../../dev/null"}',
 				'{"alg":"RS256","jku":"http://evil.com/jwk"}',
-				'{"alg":"HS256","crit":["http://example.com/evil"],"http://example.com/evil":"value"}'
+				'{"alg":"HS256","crit":["http://example.com/evil"],"http://example.com/evil":"value"}',
 			];
 
 			for (const header of maliciousHeaders) {
@@ -282,7 +280,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const authResponse = await authService.login(user);
@@ -301,8 +299,8 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 		it('should require proper authorization header format', () => {
 			const mockRequest = {
 				headers: {
-					authorization: 'InvalidFormat token123'
-				}
+					authorization: 'InvalidFormat token123',
+				},
 			};
 
 			// This would be tested in integration with actual guard usage
@@ -314,7 +312,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 
 		it('should reject requests without authorization header', () => {
 			const mockRequest = {
-				headers: {}
+				headers: {},
 			};
 
 			const guard = new JWTAuthGuard();
@@ -325,8 +323,8 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 		it('should accept properly formatted Bearer tokens', () => {
 			const mockRequest = {
 				headers: {
-					authorization: 'Bearer valid.jwt.token'
-				}
+					authorization: 'Bearer valid.jwt.token',
+				},
 			};
 
 			const guard = new JWTAuthGuard();
@@ -348,8 +346,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				if (i < maxSessions) {
 					expect(result.allowed).toBe(true);
 					expect(result.activeSessions).toContain(sessionIds[i]);
-				}
-				else {
+				} else {
 					// Should not allow more than maxSessions
 					expect(result.allowed).toBe(false);
 				}
@@ -365,7 +362,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			// Simulate multiple failed login attempts
@@ -379,7 +376,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				'test@example.com',
 				false,
 				undefined,
-				'Invalid password'
+				'Invalid password',
 			);
 		});
 	});
@@ -392,7 +389,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const authResponse = await authService.login(user);
@@ -418,7 +415,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const userLookupFn = async (userId: string) => {
@@ -448,7 +445,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: 'Test',
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			const userLookupFn = async (userId: string) => {
@@ -473,7 +470,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				'test@example.com\r\nBCC: victim@example.com',
 				'test@example.com\nCC: victim@example.com',
 				'test@example.com\r\n\r\nEvil-Header: value',
-				'test@example.com\n\nSubject: Hacked'
+				'test@example.com\n\nSubject: Hacked',
 			];
 
 			// These should be caught by validation, but for auth service
@@ -485,7 +482,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 					isActive: true,
 					role: 'user',
 					firstName: 'Test',
-					lastName: 'User'
+					lastName: 'User',
 				};
 
 				expect(async () => authService.login(user)).not.toThrow();
@@ -502,7 +499,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				isActive: true,
 				role: 'user',
 				firstName: longName,
-				lastName: 'User'
+				lastName: 'User',
 			};
 
 			// Should not crash with long inputs
@@ -513,7 +510,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			const maliciousInputs = [
 				'test@example.com\x00evil.com',
 				'test\x00@example.com',
-				'user\x00123'
+				'user\x00123',
 			];
 
 			for (const input of maliciousInputs) {
@@ -523,7 +520,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 					isActive: true,
 					role: 'user',
 					firstName: 'Test',
-					lastName: 'User'
+					lastName: 'User',
 				};
 
 				// Should handle null bytes gracefully

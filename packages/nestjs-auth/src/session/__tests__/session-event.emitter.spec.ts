@@ -12,19 +12,19 @@ describe('SessionEventEmitter', () => {
 
 	beforeEach(async () => {
 		mockRedis = {
-			publish: jest.fn<(channel: string, message: string) => Promise<number>>().mockResolvedValue(1)
+			publish: jest.fn<(channel: string, message: string) => Promise<number>>().mockResolvedValue(1),
 		} as any;
 
 		mockLogger = {
-			error: jest.fn()
+			error: jest.fn(),
 		} as any;
 
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				SessionEventEmitter,
 				{ provide: 'REDIS_CLIENT', useValue: mockRedis },
-				{ provide: AppLogger, useValue: mockLogger }
-			]
+				{ provide: AppLogger, useValue: mockLogger },
+			],
 		}).compile();
 
 		emitter = module.get<SessionEventEmitter>(SessionEventEmitter);

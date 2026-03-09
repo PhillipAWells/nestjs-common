@@ -21,7 +21,7 @@ export const ROLES_KEY = 'roles';
  */
 export const Public = () => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
-	value: true
+	value: true,
 });
 
 /**
@@ -35,7 +35,7 @@ export const Public = () => createConditionalDecorator({
  */
 export const Auth = () => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
-	value: false
+	value: false,
 });
 
 /**
@@ -50,7 +50,7 @@ export const Auth = () => createConditionalDecorator({
  */
 export const Roles = (...roles: string[]) => createConditionalDecorator({
 	key: ROLES_KEY,
-	value: roles
+	value: roles,
 });
 
 /**

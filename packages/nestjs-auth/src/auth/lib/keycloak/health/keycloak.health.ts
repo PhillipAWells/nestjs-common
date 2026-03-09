@@ -8,7 +8,7 @@ import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
 export class KeycloakHealthIndicator extends HealthIndicator {
 	constructor(
 		@Inject(KeycloakAdminService) private readonly keycloakService: KeycloakAdminService,
-		@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) private readonly config: KeycloakAdminConfig
+		@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) private readonly config: KeycloakAdminConfig,
 	) {
 		super();
 	}
@@ -26,12 +26,11 @@ export class KeycloakHealthIndicator extends HealthIndicator {
 				authenticated: isAuthenticated,
 				baseUrl: this.config.baseUrl,
 				realm: this.config.realmName,
-				initialized: client !== null
+				initialized: client !== null,
 			});
-		}
-		catch (error) {
+		} catch (error) {
 			return this.getStatus(key, false, {
-				error: error instanceof Error ? error.message : String(error)
+				error: error instanceof Error ? error.message : String(error),
 			});
 		}
 	}

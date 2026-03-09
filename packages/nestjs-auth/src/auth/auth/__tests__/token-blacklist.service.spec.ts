@@ -12,7 +12,7 @@ describe('TokenBlacklistService', () => {
 	beforeEach(async () => {
 		const mockCacheService = {
 			exists: jest.fn(),
-			set: jest.fn()
+			set: jest.fn(),
 		};
 
 		const mockAppLogger = {
@@ -20,8 +20,8 @@ describe('TokenBlacklistService', () => {
 				debug: jest.fn(),
 				info: jest.fn(),
 				warn: jest.fn(),
-				error: jest.fn()
-			})
+				error: jest.fn(),
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -29,13 +29,13 @@ describe('TokenBlacklistService', () => {
 				TokenBlacklistService,
 				{
 					provide: CacheService,
-					useValue: mockCacheService
+					useValue: mockCacheService,
 				},
 				{
 					provide: AppLogger,
-					useValue: mockAppLogger
-				}
-			]
+					useValue: mockAppLogger,
+				},
+			],
 		}).compile();
 
 		service = module.get<TokenBlacklistService>(TokenBlacklistService);
@@ -56,7 +56,7 @@ describe('TokenBlacklistService', () => {
 			expect(cacheService.set).toHaveBeenCalledWith(
 				'blacklist:test.token',
 				true,
-				900
+				900,
 			);
 		});
 
@@ -104,7 +104,7 @@ describe('TokenBlacklistService', () => {
 			expect(cacheService.set).toHaveBeenCalledWith(
 				'revoke:user_123',
 				expect.any(Number),
-				86400
+				86400,
 			);
 		});
 

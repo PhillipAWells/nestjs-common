@@ -47,12 +47,12 @@ export class AuthModule {
 				signOptions: {
 					expiresIn: options.jwtExpiresIn ?? '15m' as any,
 					issuer: 'auth-service',
-					audience: 'clients'
-				}
+					audience: 'clients',
+				},
 			}),
 
 			// Common module for shared utilities
-			CommonModule
+			CommonModule,
 
 			// Note: CacheModule is injected by the application, not by this module
 			// This prevents circular dependency with nestjs-graphql/cache
@@ -77,22 +77,22 @@ export class AuthModule {
 				JWTAuthGuard,
 				{
 					provide: USER_REPOSITORY,
-					useClass: MockUserRepository
+					useClass: MockUserRepository,
 				},
 				{
 					provide: USER_LOOKUP_FN,
-					useValue: options.userLookupFn
+					useValue: options.userLookupFn,
 				},
 				{
 					provide: JWTStrategy,
 					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: any, tokenValidationService: TokenValidationService) => {
 						return new JWTStrategy(userLookupFn, appLogger, tokenValidationService);
 					},
-					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService]
-				}
+					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService],
+				},
 			],
 			controllers: [AuthController],
-			exports: [AuthService, TokenBlacklistService, JWTStrategy, PassportModule, JWTAuthGuard]
+			exports: [AuthService, TokenBlacklistService, JWTStrategy, PassportModule, JWTAuthGuard],
 		};
 	}
 }

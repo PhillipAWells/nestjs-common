@@ -1,7 +1,7 @@
 import type {
 	ClientRepresentation,
 	RoleRepresentation,
-	ProtocolMapperRepresentation
+	ProtocolMapperRepresentation,
 } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
@@ -15,8 +15,7 @@ export class ClientService extends BaseService {
 	async list(realm: string): Promise<ClientRepresentation[]> {
 		try {
 			return (await this.withRetry(async () => this.adminClient.clients.find({ realm }))) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -27,10 +26,9 @@ export class ClientService extends BaseService {
 	async get(realm: string, id: string): Promise<ClientRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.clients.findOne({ realm, id })
+				this.adminClient.clients.findOne({ realm, id }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -41,11 +39,10 @@ export class ClientService extends BaseService {
 	async findByClientId(realm: string, clientId: string): Promise<ClientRepresentation | undefined> {
 		try {
 			const clients = (await this.withRetry(async () =>
-				this.adminClient.clients.find({ realm, clientId })
+				this.adminClient.clients.find({ realm, clientId }),
 			)) as any;
 			return clients[0];
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -56,10 +53,9 @@ export class ClientService extends BaseService {
 	async create(realm: string, client: ClientRepresentation): Promise<{ id: string }> {
 		try {
 			return await this.withRetry(async () =>
-				this.adminClient.clients.create({ ...client, realm })
+				this.adminClient.clients.create({ ...client, realm }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -70,10 +66,9 @@ export class ClientService extends BaseService {
 	async update(realm: string, id: string, client: ClientRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.clients.update({ realm, id }, client)
+				this.adminClient.clients.update({ realm, id }, client),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -84,8 +79,7 @@ export class ClientService extends BaseService {
 	async delete(realm: string, id: string): Promise<void> {
 		try {
 			await this.withRetry(async () => this.adminClient.clients.del({ realm, id }));
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -96,10 +90,9 @@ export class ClientService extends BaseService {
 	async getSecret(realm: string, id: string): Promise<{ type?: string; value?: string }> {
 		try {
 			return await this.withRetry(async () =>
-				this.adminClient.clients.getClientSecret({ realm, id })
+				this.adminClient.clients.getClientSecret({ realm, id }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -110,14 +103,13 @@ export class ClientService extends BaseService {
 	async createProtocolMapper(
 		realm: string,
 		id: string,
-		mapper: ProtocolMapperRepresentation
+		mapper: ProtocolMapperRepresentation,
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.clients.addProtocolMapper({ realm, id }, mapper)
+				this.adminClient.clients.addProtocolMapper({ realm, id }, mapper),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -127,14 +119,13 @@ export class ClientService extends BaseService {
 	 */
 	async listProtocolMappers(
 		realm: string,
-		id: string
+		id: string,
 	): Promise<ProtocolMapperRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.clients.listProtocolMappers({ realm, id })
+				this.adminClient.clients.listProtocolMappers({ realm, id }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -145,14 +136,13 @@ export class ClientService extends BaseService {
 	async deleteProtocolMapper(
 		realm: string,
 		id: string,
-		mapperId: string
+		mapperId: string,
 	): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.clients.delProtocolMapper({ realm, id, mapperId })
+				this.adminClient.clients.delProtocolMapper({ realm, id, mapperId }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -163,10 +153,9 @@ export class ClientService extends BaseService {
 	async createRole(realm: string, id: string, role: RoleRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.clients.createRole({ realm, id }, role as any)
+				this.adminClient.clients.createRole({ realm, id }, role as any),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -177,10 +166,9 @@ export class ClientService extends BaseService {
 	async listRoles(realm: string, id: string): Promise<RoleRepresentation[]> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.clients.listRoles({ realm, id })
+				this.adminClient.clients.listRoles({ realm, id }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -191,10 +179,9 @@ export class ClientService extends BaseService {
 	async findRole(realm: string, id: string, roleName: string): Promise<RoleRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.clients.findRole({ realm, id, roleName })
+				this.adminClient.clients.findRole({ realm, id, roleName }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -205,10 +192,9 @@ export class ClientService extends BaseService {
 	async deleteRole(realm: string, id: string, roleName: string): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.clients.delRole({ realm, id, roleName })
+				this.adminClient.clients.delRole({ realm, id, roleName }),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}

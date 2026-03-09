@@ -24,13 +24,13 @@ export class OAuthModule {
 				OAuthService,
 				{
 					provide: 'OAUTH_MODULE_OPTIONS',
-					useValue: options
+					useValue: options,
 				},
 				KeycloakStrategy,
 				OIDCStrategy,
-				OAuthGuard
+				OAuthGuard,
 			],
-			exports: [OAuthService, KeycloakStrategy, OIDCStrategy, OAuthGuard]
+			exports: [OAuthService, KeycloakStrategy, OIDCStrategy, OAuthGuard],
 		};
 	}
 
@@ -53,13 +53,13 @@ export class OAuthModule {
 				{
 					provide: 'OAUTH_MODULE_OPTIONS',
 					useFactory: options.useFactory,
-					inject: options.inject ?? []
+					inject: options.inject ?? [],
 				},
 				KeycloakStrategy,
 				OIDCStrategy,
-				OAuthGuard
+				OAuthGuard,
 			],
-			exports: [OAuthService, KeycloakStrategy, OIDCStrategy, OAuthGuard]
+			exports: [OAuthService, KeycloakStrategy, OIDCStrategy, OAuthGuard],
 		};
 	}
 }

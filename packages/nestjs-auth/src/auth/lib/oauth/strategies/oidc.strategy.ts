@@ -9,15 +9,31 @@ export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc'
 	private _contextualLogger: AppLogger | undefined;
 
 	constructor(private readonly appLogger: AppLogger) {
+		const issuer = process.env['OIDC_ISSUER'];
+		const authorizationURL = process.env['OIDC_AUTHORIZATION_URL'];
+		const tokenURL = process.env['OIDC_TOKEN_URL'];
+		const userInfoURL = process.env['OIDC_USERINFO_URL'];
+		const clientID = process.env['OIDC_CLIENT_ID'];
+		const clientSecret = process.env['OIDC_CLIENT_SECRET'];
+		const callbackURL = process.env['OIDC_CALLBACK_URL'];
+
+		if (!issuer) throw new Error('OIDC_ISSUER environment variable is required');
+		if (!authorizationURL) throw new Error('OIDC_AUTHORIZATION_URL environment variable is required');
+		if (!tokenURL) throw new Error('OIDC_TOKEN_URL environment variable is required');
+		if (!userInfoURL) throw new Error('OIDC_USERINFO_URL environment variable is required');
+		if (!clientID) throw new Error('OIDC_CLIENT_ID environment variable is required');
+		if (!clientSecret) throw new Error('OIDC_CLIENT_SECRET environment variable is required');
+		if (!callbackURL) throw new Error('OIDC_CALLBACK_URL environment variable is required');
+
 		super({
-			issuer: process.env['OIDC_ISSUER'] ?? 'https://oidc.example.com',
-			authorizationURL: process.env['OIDC_AUTHORIZATION_URL'] ?? `${process.env['OIDC_ISSUER'] ?? 'https://oidc.example.com'}/oauth/authorize`,
-			tokenURL: process.env['OIDC_TOKEN_URL'] ?? `${process.env['OIDC_ISSUER'] ?? 'https://oidc.example.com'}/oauth/token`,
-			userInfoURL: process.env['OIDC_USERINFO_URL'] ?? `${process.env['OIDC_ISSUER'] ?? 'https://oidc.example.com'}/oauth/userinfo`,
-			clientID: process.env['OIDC_CLIENT_ID'] ?? 'client-id',
-			clientSecret: process.env['OIDC_CLIENT_SECRET'] ?? 'client-secret',
-			callbackURL: process.env['OIDC_CALLBACK_URL'] ?? 'http://localhost:3000/auth/oidc/callback',
-			scope: ['openid', 'profile', 'email']
+			issuer,
+			authorizationURL,
+			tokenURL,
+			userInfoURL,
+			clientID,
+			clientSecret,
+			callbackURL,
+			scope: ['openid', 'profile', 'email'],
 		});
 	}
 
@@ -33,7 +49,7 @@ export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc'
 		accessToken: string,
 		refreshToken: string,
 		idToken: string,
-		_done: any
+		_done: any,
 	): Promise<any> {
 		try {
 			// Validate required profile fields
@@ -58,14 +74,13 @@ export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc'
 				oauthTokens: {
 					accessToken,
 					refreshToken,
-					idToken
-				}
+					idToken,
+				},
 			};
 
 			return user;
-		}
-		catch (error) {
-			this.logger.error(`OIDC validation failed: ${(error as Error).message}`, (error as Error).stack);
+		} catch (error) {
+			this.logger.error(`OIDC validation failed: ${(error as Error).message}`);
 			throw error instanceof UnauthorizedException ? error : new UnauthorizedException('OIDC authentication failed');
 		}
 	}

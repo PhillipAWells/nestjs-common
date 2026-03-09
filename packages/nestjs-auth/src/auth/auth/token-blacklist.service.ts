@@ -7,6 +7,8 @@ import { TOKEN_TTL_24_HOURS } from '../constants/auth-timeouts.constants.js';
 /**
  * Token blacklist service for managing revoked tokens
  */
+import { UnauthorizedException } from '@nestjs/common';
+
 @Injectable()
 export class TokenBlacklistService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
@@ -21,8 +23,7 @@ export class TokenBlacklistService implements LazyModuleRefService {
 		// Optional cache provider - applications may not have cache configured
 		try {
 			return this.moduleRef.get<ICacheProvider>(CACHE_PROVIDER);
-		}
-		catch {
+		} catch {
 			return null;
 		}
 	}
@@ -48,11 +49,10 @@ export class TokenBlacklistService implements LazyModuleRefService {
 			await cacheProvider.set(
 				`blacklist:${token}`,
 				true,
-				expiresInSeconds
+				expiresInSeconds,
 			);
 			this.logger.info('Token blacklisted successfully');
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to blacklist token: ${(error as Error).message}`);
 			throw error;
 		}
@@ -66,10 +66,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async isTokenBlacklisted(token: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - cannot check blacklist
-			// Return false to allow token to pass (degraded mode)
-			this.logger.warn('Cache provider not available - cannot check token blacklist');
-			return false;
+			// Cache provider not available - throw to fail securely
+			this.logger.error('Cache provider not available - cannot check token blacklist');
+			throw new UnauthorizedException('Token validation service unavailable');
 		}
 		try {
 			const isBlacklisted = await cacheProvider.exists(`blacklist:${token}`);
@@ -77,10 +76,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 				this.logger.debug(`Token is blacklisted: ${token.substring(0, 20)}...`);
 			}
 			return isBlacklisted;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to check token blacklist: ${(error as Error).message}`);
-			return false; // Fail open for security
+			throw new UnauthorizedException('Failed to validate token blacklist status');
 		}
 	}
 
@@ -101,11 +99,10 @@ export class TokenBlacklistService implements LazyModuleRefService {
 			await cacheProvider.set(
 				`revoke:${userId}`,
 				Date.now(),
-				TOKEN_TTL_24_HOURS
+				TOKEN_TTL_24_HOURS,
 			);
 			this.logger.info(`All tokens revoked for user: ${userId}`);
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to revoke user tokens: ${(error as Error).message}`);
 			throw error;
 		}
@@ -119,9 +116,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async hasUserRevokedTokens(userId: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - cannot check revocation
-			this.logger.warn('Cache provider not available - cannot check user token revocation');
-			return false;
+			// Cache provider not available - throw to fail securely
+			this.logger.error('Cache provider not available - cannot check user token revocation');
+			throw new UnauthorizedException('Token validation service unavailable');
 		}
 		try {
 			const revoked = await cacheProvider.exists(`revoke:${userId}`);
@@ -129,10 +126,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 				this.logger.debug(`User tokens are revoked: ${userId}`);
 			}
 			return revoked;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to check user token revocation: ${(error as Error).message}`);
-			return false; // Fail open for security
+			throw new UnauthorizedException('Failed to validate user token revocation status');
 		}
 	}
 

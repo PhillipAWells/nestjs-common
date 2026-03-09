@@ -11,8 +11,7 @@ export class RealmService extends BaseService {
 	async list(): Promise<RealmRepresentation[]> {
 		try {
 			return (await this.withRetry(async () => this.adminClient.realms.find())) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -23,10 +22,9 @@ export class RealmService extends BaseService {
 	async get(realm: string): Promise<RealmRepresentation> {
 		try {
 			return (await this.withRetry(async () =>
-				this.adminClient.realms.findOne({ realm })
+				this.adminClient.realms.findOne({ realm }),
 			)) as any;
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -37,8 +35,7 @@ export class RealmService extends BaseService {
 	async create(realm: RealmRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () => this.adminClient.realms.create(realm));
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -49,10 +46,9 @@ export class RealmService extends BaseService {
 	async update(realmName: string, realm: RealmRepresentation): Promise<void> {
 		try {
 			await this.withRetry(async () =>
-				this.adminClient.realms.update({ realm: realmName }, realm)
+				this.adminClient.realms.update({ realm: realmName }, realm),
 			);
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}
@@ -63,8 +59,7 @@ export class RealmService extends BaseService {
 	async delete(realm: string): Promise<void> {
 		try {
 			await this.withRetry(async () => this.adminClient.realms.del({ realm }));
-		}
-		catch (error) {
+		} catch (error) {
 			return this.handleError(error);
 		}
 	}

@@ -28,12 +28,12 @@ describe('AuthService - Additional Tests', () => {
 					},
 					error(...args: any[]) {
 						logCalls.push({ level: 'error', args });
-					}
+					},
 				};
 			},
 			getLogCalls() {
 				return logCalls;
-			}
+			},
 		};
 
 		const auditCalls: any[] = [];
@@ -49,7 +49,7 @@ describe('AuthService - Additional Tests', () => {
 			},
 			getAuditCalls() {
 				return auditCalls;
-			}
+			},
 		};
 
 		const tokenCalls: any[] = [];
@@ -62,7 +62,7 @@ describe('AuthService - Additional Tests', () => {
 			},
 			getTokenCalls() {
 				return tokenCalls;
-			}
+			},
 		};
 
 		const jwtCalls: any[] = [];
@@ -81,12 +81,12 @@ describe('AuthService - Additional Tests', () => {
 				return {
 					sub: 'user-123',
 					email: 'user@test.com',
-					exp: now + 900 // Expires in 15 minutes
+					exp: now + 900, // Expires in 15 minutes
 				};
 			},
 			getJwtCalls() {
 				return jwtCalls;
-			}
+			},
 		};
 
 		mockUserRepository = {
@@ -99,7 +99,7 @@ describe('AuthService - Additional Tests', () => {
 						role: 'user',
 						firstName: 'John',
 						lastName: 'Doe',
-						passwordHash: '$2b$10$mockbcrypthashshouldbeat32chars'
+						passwordHash: '$2b$10$mockbcrypthashshouldbeat32chars',
 					};
 				}
 				return null;
@@ -110,11 +110,11 @@ describe('AuthService - Additional Tests', () => {
 						id: 'user-123',
 						email: 'user@test.com',
 						isActive: true,
-						role: 'user'
+						role: 'user',
 					};
 				}
 				return null;
-			}
+			},
 		};
 
 		mockModuleRef = {
@@ -125,7 +125,7 @@ describe('AuthService - Additional Tests', () => {
 				if (token === TokenBlacklistService) return mockTokenBlacklistService;
 				if (token === CACHE_PROVIDER) return null;
 				return defaultValue ?? null;
-			}
+			},
 		};
 
 		// Create service directly with mocked dependencies
@@ -141,7 +141,7 @@ describe('AuthService - Additional Tests', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: '$2b$10$...hash...'
+				passwordHash: '$2b$10$...hash...',
 			};
 
 			const result = await service.validateUser(testUser, 'correct-password');
@@ -158,7 +158,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-456',
 				email: 'inactive@example.com',
 				isActive: false,
-				role: 'user'
+				role: 'user',
 			};
 
 			const result = await service.validateUser(inactiveUser, 'password');
@@ -170,7 +170,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-789',
 				email: 'nohash@example.com',
 				isActive: true,
-				role: 'user'
+				role: 'user',
 			};
 
 			const result = await service.validateUser(userNoHash, 'password');
@@ -182,7 +182,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				isActive: true,
-				passwordHash: '$2b$10$hash'
+				passwordHash: '$2b$10$hash',
 			};
 
 			const result = await service.validateUser(user, '');
@@ -195,7 +195,7 @@ describe('AuthService - Additional Tests', () => {
 				email: 'admin@example.com',
 				isActive: true,
 				role: 'admin',
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			const result = await service.validateUser(user, 'password');
@@ -209,7 +209,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				isActive: true,
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			const result = await service.validateUser(user, 'password');
@@ -225,7 +225,7 @@ describe('AuthService - Additional Tests', () => {
 				isActive: true,
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			const result = await service.validateUser(user, 'password');
@@ -243,7 +243,7 @@ describe('AuthService - Additional Tests', () => {
 				role: 'user',
 				firstName: 'John',
 				lastName: 'Doe',
-				passwordHash: 'secret-hash'
+				passwordHash: 'secret-hash',
 			};
 
 			const result = await service.validateUser(user, 'correct-password');
@@ -261,7 +261,7 @@ describe('AuthService - Additional Tests', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -273,7 +273,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -286,7 +286,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-456',
 				email: 'john@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -301,7 +301,7 @@ describe('AuthService - Additional Tests', () => {
 				role: 'admin',
 				firstName: 'John',
 				lastName: 'Doe',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -310,7 +310,7 @@ describe('AuthService - Additional Tests', () => {
 				email: 'john@example.com',
 				role: 'admin',
 				firstName: 'John',
-				lastName: 'Doe'
+				lastName: 'Doe',
 			});
 		});
 
@@ -319,7 +319,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -331,7 +331,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -342,7 +342,7 @@ describe('AuthService - Additional Tests', () => {
 			const user = {
 				id: 'user-123',
 				email: 'test@example.com',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -354,7 +354,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-789',
 				email: 'alice@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -366,7 +366,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'unique-user-id',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -378,7 +378,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -391,7 +391,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const result1 = await service.login(user);
@@ -453,7 +453,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				isActive: true,
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			await service.validateUser(user, 'password');
@@ -466,7 +466,7 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				isActive: true,
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			const logCalls1 = mockAppLogger.getLogCalls();
@@ -497,7 +497,7 @@ describe('AuthService - Additional Tests', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				isActive: true
+				isActive: true,
 			};
 
 			const result = await service.login(user);
@@ -512,12 +512,12 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const [result1, result2] = await Promise.all([
 				service.login(user),
-				service.login(user)
+				service.login(user),
 			]);
 
 			expect(result1).toBeDefined();
@@ -532,7 +532,7 @@ describe('AuthService - Additional Tests', () => {
 				firstName: 'Test',
 				lastName: 'User',
 				isActive: true,
-				passwordHash: 'hash'
+				passwordHash: 'hash',
 			};
 
 			const validated = await service.validateUser(user, 'password');
@@ -547,14 +547,14 @@ describe('AuthService - Additional Tests', () => {
 				id: 'user-1',
 				email: 'user1@example.com',
 				role: 'user',
-				isActive: true
+				isActive: true,
 			};
 
 			const user2 = {
 				id: 'user-2',
 				email: 'user2@example.com',
 				role: 'admin',
-				isActive: true
+				isActive: true,
 			};
 
 			const result1 = await service.login(user1);

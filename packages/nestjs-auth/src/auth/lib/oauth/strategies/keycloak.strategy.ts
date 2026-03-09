@@ -9,13 +9,25 @@ export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak
 	private _contextualLogger: AppLogger | undefined;
 
 	constructor(private readonly appLogger: AppLogger) {
+		const authorizationURL = process.env['KEYCLOAK_AUTH_URL'];
+		const tokenURL = process.env['KEYCLOAK_TOKEN_URL'];
+		const clientID = process.env['KEYCLOAK_CLIENT_ID'];
+		const clientSecret = process.env['KEYCLOAK_CLIENT_SECRET'];
+		const callbackURL = process.env['KEYCLOAK_CALLBACK_URL'];
+
+		if (!authorizationURL) throw new Error('KEYCLOAK_AUTH_URL environment variable is required');
+		if (!tokenURL) throw new Error('KEYCLOAK_TOKEN_URL environment variable is required');
+		if (!clientID) throw new Error('KEYCLOAK_CLIENT_ID environment variable is required');
+		if (!clientSecret) throw new Error('KEYCLOAK_CLIENT_SECRET environment variable is required');
+		if (!callbackURL) throw new Error('KEYCLOAK_CALLBACK_URL environment variable is required');
+
 		super({
-			authorizationURL: process.env['KEYCLOAK_AUTH_URL'] ?? 'https://keycloak.example.com/auth/realms/master/protocol/openid-connect/auth',
-			tokenURL: process.env['KEYCLOAK_TOKEN_URL'] ?? 'https://keycloak.example.com/auth/realms/master/protocol/openid-connect/token',
-			clientID: process.env['KEYCLOAK_CLIENT_ID'] ?? 'client-id',
-			clientSecret: process.env['KEYCLOAK_CLIENT_SECRET'] ?? 'client-secret',
-			callbackURL: process.env['KEYCLOAK_CALLBACK_URL'] ?? 'http://localhost:3000/auth/keycloak/callback',
-			scope: ['openid', 'profile', 'email']
+			authorizationURL,
+			tokenURL,
+			clientID,
+			clientSecret,
+			callbackURL,
+			scope: ['openid', 'profile', 'email'],
 		});
 	}
 
@@ -48,14 +60,13 @@ export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak
 				oauthProfile: profile,
 				oauthTokens: {
 					accessToken,
-					refreshToken
-				}
+					refreshToken,
+				},
 			};
 
 			return user;
-		}
-		catch (error) {
-			this.logger.error(`Keycloak validation failed: ${(error as Error).message}`, (error as Error).stack);
+		} catch (error) {
+			this.logger.error(`Keycloak validation failed: ${(error as Error).message}`);
 			throw error instanceof UnauthorizedException ? error : new UnauthorizedException('Keycloak authentication failed');
 		}
 	}

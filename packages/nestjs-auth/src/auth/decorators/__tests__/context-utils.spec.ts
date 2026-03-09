@@ -5,7 +5,7 @@ import {
 	detectContextType,
 	extractRequestFromContext,
 	extractUserFromContext,
-	extractAuthTokenFromContext
+	extractAuthTokenFromContext,
 } from '../context-utils.js';
 
 describe('Context Utils', () => {
@@ -13,11 +13,11 @@ describe('Context Utils', () => {
 		it('should detect HTTP context', () => {
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => ({})
+					getRequest: () => ({}),
 				}),
 				switchToWs: jest.fn().mockImplementation(() => {
 					throw new Error('Not WebSocket context');
-				})
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -34,7 +34,7 @@ describe('Context Utils', () => {
 
 			// Mock GqlExecutionContext.create to succeed
 			jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
-				getContext: () => ({})
+				getContext: () => ({}),
 			} as any);
 
 			const result = detectContextType(mockGraphQLCtx);
@@ -47,8 +47,8 @@ describe('Context Utils', () => {
 					throw new Error('Not HTTP context');
 				}),
 				switchToWs: jest.fn().mockReturnValue({
-					getClient: () => ({})
-				})
+					getClient: () => ({}),
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -67,7 +67,7 @@ describe('Context Utils', () => {
 				}),
 				switchToWs: jest.fn().mockImplementation(() => {
 					throw new Error('Not WebSocket context');
-				})
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -84,8 +84,8 @@ describe('Context Utils', () => {
 			const mockRequest = { user: { id: 1 } };
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -103,7 +103,7 @@ describe('Context Utils', () => {
 
 			// Mock GqlExecutionContext.create to return context with req
 			jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
-				getContext: () => ({ req: mockRequest })
+				getContext: () => ({ req: mockRequest }),
 			} as any);
 
 			const result = extractRequestFromContext(mockGraphQLCtx);
@@ -114,8 +114,8 @@ describe('Context Utils', () => {
 			const mockClient = { id: 'socket-1' };
 			const mockWsCtx = {
 				switchToWs: jest.fn().mockReturnValue({
-					getClient: () => mockClient
-				})
+					getClient: () => mockClient,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -146,8 +146,8 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -164,8 +164,8 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw for HTTP context
@@ -181,8 +181,8 @@ describe('Context Utils', () => {
 			const mockRequest = {};
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -199,8 +199,8 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw for HTTP context
@@ -216,12 +216,12 @@ describe('Context Utils', () => {
 	describe('extractAuthTokenFromContext', () => {
 		it('should extract token from Authorization header', () => {
 			const mockRequest = {
-				headers: { authorization: 'Bearer token123' }
+				headers: { authorization: 'Bearer token123' },
 			};
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -235,12 +235,12 @@ describe('Context Utils', () => {
 
 		it('should extract token without Bearer prefix', () => {
 			const mockRequest = {
-				headers: { authorization: 'token123' }
+				headers: { authorization: 'token123' },
 			};
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -254,12 +254,12 @@ describe('Context Utils', () => {
 
 		it('should handle case-insensitive header names', () => {
 			const mockRequest = {
-				headers: { Authorization: 'Bearer token123' }
+				headers: { Authorization: 'Bearer token123' },
 			};
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -275,8 +275,8 @@ describe('Context Utils', () => {
 			const mockRequest = { headers: {} };
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => mockRequest
-				})
+					getRequest: () => mockRequest,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw
@@ -291,8 +291,8 @@ describe('Context Utils', () => {
 		it('should return undefined when request not found', () => {
 			const mockHttpCtx = {
 				switchToHttp: jest.fn().mockReturnValue({
-					getRequest: () => null
-				})
+					getRequest: () => null,
+				}),
 			} as unknown as ExecutionContext;
 
 			// Mock GqlExecutionContext.create to throw

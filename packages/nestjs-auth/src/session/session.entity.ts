@@ -30,9 +30,9 @@ export class Session {
 		type: {
 			userAgent: String,
 			ipAddress: String,
-			deviceId: String
+			deviceId: String,
 		},
-		required: true
+		required: true,
 	})
 	public deviceInfo!: {
 		userAgent: string;
@@ -47,8 +47,8 @@ export class Session {
 			name: String,
 			avatar: String,
 			roles: [String],
-			permissions: [String]
-		}
+			permissions: [String],
+		},
 	})
 	public userProfile?: {
 		id: string;
@@ -77,13 +77,13 @@ export class Session {
 				timestamp: Date,
 				deviceInfo: {
 					userAgent: String,
-					ipAddress: String
+					ipAddress: String,
 				},
 				success: Boolean,
-				provider: String
-			}
+				provider: String,
+			},
 		],
-		default: []
+		default: [],
 	})
 	public loginHistory!: Array<{
 		timestamp: Date;

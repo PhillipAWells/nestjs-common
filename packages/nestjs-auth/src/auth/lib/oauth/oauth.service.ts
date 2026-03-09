@@ -16,7 +16,7 @@ export class OAuthService {
 	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
 		this.logger = this.appLogger.createContextualLogger(OAuthService.name);
 		this.httpClient = axios.create({
-			timeout: OAUTH_SERVICE_TIMEOUT * OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER // 10 seconds
+			timeout: OAUTH_SERVICE_TIMEOUT * OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER, // 10 seconds
 		});
 	}
 
@@ -31,8 +31,7 @@ export class OAuthService {
 			const user = this.extractUserFromToken(decoded);
 			this.logger.info(`Token verification successful for provider ${provider}, user ${user.email}`);
 			return user;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Token verification failed for provider ${provider}`, (error as Error).stack);
 			throw new Error('Invalid token');
 		}
@@ -72,13 +71,12 @@ export class OAuthService {
 			this.publicKeyCache.set(cacheKey, {
 				key: pem,
 
-				expires: Date.now() + (5 * 60 * 1000) // 5 minutes
+				expires: Date.now() + (5 * 60 * 1000), // 5 minutes
 			});
 
 			this.logger.info(`Public key cached for provider ${provider}`);
 			return pem;
-		}
-		catch (error) {
+		} catch (error) {
 			this.logger.error(`Failed to fetch public key for provider ${provider}`, (error as Error).stack);
 			throw error;
 		}
@@ -95,8 +93,7 @@ export class OAuthService {
 				if (err) {
 					this.logger.warn('JWT token validation failed', err.message);
 					reject(err);
-				}
-				else {
+				} else {
 					this.logger.debug('JWT token validation successful');
 					resolve(decoded);
 				}
@@ -118,7 +115,7 @@ export class OAuthService {
 			preferred_username: decoded.preferred_username,
 			given_name: decoded.given_name,
 			family_name: decoded.family_name,
-			...decoded
+			...decoded,
 		};
 		this.logger.debug(`User info extracted: ${user.email} with roles [${user.roles.join(', ')}]`);
 		return user;
@@ -148,8 +145,7 @@ export class OAuthService {
 		if (decoded.roles) {
 			if (Array.isArray(decoded.roles)) {
 				roles.push(...decoded.roles);
-			}
-			else if (typeof decoded.roles === 'string') {
+			} else if (typeof decoded.roles === 'string') {
 				roles.push(decoded.roles);
 			}
 		}
@@ -182,7 +178,7 @@ export class OAuthService {
 				grant_type: 'refresh_token',
 				refresh_token: refreshToken,
 				client_id: process.env[`${provider.toUpperCase()}_CLIENT_ID`],
-				client_secret: process.env[`${provider.toUpperCase()}_CLIENT_SECRET`]
+				client_secret: process.env[`${provider.toUpperCase()}_CLIENT_SECRET`],
 			});
 
 			if (!response.data.access_token) {
@@ -194,13 +190,12 @@ export class OAuthService {
 				accessToken: response.data.access_token,
 				refreshToken: response.data.refresh_token ?? refreshToken,
 				expiresIn: response.data.expires_in ?? 3600,
-				tokenType: response.data.token_type ?? 'Bearer'
+				tokenType: response.data.token_type ?? 'Bearer',
 			};
 
 			this.logger.info(`Token refresh successful for provider ${provider}`);
 			return token;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			this.logger.error(`Token refresh failed for provider ${provider}: ${errorMessage}`);
 			throw error;
@@ -228,8 +223,8 @@ export class OAuthService {
 			// Request user info from provider
 			const response = await this.httpClient.get<any>(userInfoEndpoint, {
 				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
+					Authorization: `Bearer ${accessToken}`,
+				},
 			});
 
 			if (!response.data) {
@@ -242,8 +237,7 @@ export class OAuthService {
 
 			this.logger.info(`User info retrieved successfully for provider ${provider}, user ${user.email}`);
 			return user;
-		}
-		catch (error) {
+		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			this.logger.error(`Failed to retrieve user info from provider ${provider}: ${errorMessage}`);
 			throw error;

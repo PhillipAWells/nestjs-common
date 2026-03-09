@@ -64,7 +64,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const userProfile = {
 				id: userId,
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 			};
 
 			// Simulate the response construction
@@ -74,7 +74,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: userProfile.role ?? 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.id).toBe('unique-user-id-123');
@@ -84,7 +84,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const userProfile = {
 				id: 'user-id',
 				email: 'specific@example.com',
-				isActive: true
+				isActive: true,
 			};
 
 			const response = {
@@ -93,7 +93,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.email).toBe('specific@example.com');
@@ -103,7 +103,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const userProfile = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 				// No role property
 			};
 
@@ -113,7 +113,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: (userProfile as any).role ?? 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.role).toBe('user');
@@ -124,7 +124,7 @@ describe('Auth Service - Password & User Validation', () => {
 				id: 'user-id',
 				email: 'user@example.com',
 				role: 'admin',
-				isActive: true
+				isActive: true,
 			};
 
 			const response = {
@@ -133,7 +133,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: (userProfile as any).role ?? 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.role).toBe('admin');
@@ -145,7 +145,7 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				firstName: 'Jane',
 				lastName: 'Smith',
-				isActive: true
+				isActive: true,
 			};
 
 			const response = {
@@ -154,7 +154,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.firstName).toBe('Jane');
@@ -165,7 +165,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const userProfile = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 				// No firstName or lastName
 			};
 
@@ -175,7 +175,7 @@ describe('Auth Service - Password & User Validation', () => {
 				role: 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
-				isActive: userProfile.isActive
+				isActive: userProfile.isActive,
 			};
 
 			expect(response.firstName).toBeUndefined();
@@ -188,7 +188,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const user = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 			};
 
 			expect(user.isActive).toBe(true);
@@ -198,7 +198,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const user = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: false
+				isActive: false,
 			};
 
 			expect(user.isActive).toBe(false);
@@ -216,7 +216,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const user = {
 				id: 'user-id',
 				email: 'user@example.com',
-				isActive: true
+				isActive: true,
 				// No passwordHash
 			};
 
@@ -232,14 +232,14 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				success: true,
 				userId: 'user-id',
-				reason: 'Valid credentials'
+				reason: 'Valid credentials',
 			};
 
 			expect(auditLog).toEqual({
 				email: 'user@example.com',
 				success: true,
 				userId: 'user-id',
-				reason: 'Valid credentials'
+				reason: 'Valid credentials',
 			});
 		});
 
@@ -248,7 +248,7 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				success: false,
 				userId: undefined,
-				reason: 'Invalid password'
+				reason: 'Invalid password',
 			};
 
 			expect(auditLog.success).toBe(false);
@@ -260,7 +260,7 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				success: false,
 				userId: undefined,
-				reason: 'User inactive or not found'
+				reason: 'User inactive or not found',
 			};
 
 			expect(auditLog.reason).toContain('User inactive or not found');
@@ -271,7 +271,7 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				success: false,
 				userId: undefined,
-				reason: 'No password hash'
+				reason: 'No password hash',
 			};
 
 			expect(auditLog.reason).toContain('No password hash');
@@ -282,7 +282,7 @@ describe('Auth Service - Password & User Validation', () => {
 		it('should log token refresh with userId and newTokenId', () => {
 			const tokenRefreshLog = {
 				userId: 'user-123',
-				newTokenId: 'token-refresh-id'
+				newTokenId: 'token-refresh-id',
 			};
 
 			expect(tokenRefreshLog.userId).toBe('user-123');
@@ -306,7 +306,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const user = {
 				id: 'user-id',
 				email: 'user+tag@subdomain.example.co.uk',
-				isActive: true
+				isActive: true,
 			};
 
 			expect(user.email).toContain('@');
@@ -318,7 +318,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const user = {
 				id: 'user-id',
 				email: longEmail,
-				isActive: true
+				isActive: true,
 			};
 
 			expect(user.email.length).toBeGreaterThan(50);
@@ -329,7 +329,7 @@ describe('Auth Service - Password & User Validation', () => {
 				'123456789',
 				'abc-def-ghi',
 				'user@uuid-format',
-				'00000000-0000-0000-0000-000000000000'
+				'00000000-0000-0000-0000-000000000000',
 			];
 
 			userIds.forEach(id => {
@@ -344,7 +344,7 @@ describe('Auth Service - Password & User Validation', () => {
 				email: 'user@example.com',
 				firstName: 'José',
 				lastName: 'O\'Brien',
-				isActive: true
+				isActive: true,
 			};
 
 			expect(user.firstName).toBe('José');

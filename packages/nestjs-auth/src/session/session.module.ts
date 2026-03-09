@@ -23,25 +23,25 @@ export class SessionModule {
 				MongooseModule.forFeature([
 					{
 						name: Session.name,
-						schema: SessionSchema
-					}
-				])
+						schema: SessionSchema,
+					},
+				]),
 			],
 			providers: [
 				{
 					provide: 'SESSION_CONFIG',
-					useValue: options.config
+					useValue: options.config,
 				},
 				{
 					provide: 'REDIS_CLIENT',
-					useValue: options.redisClient
+					useValue: options.redisClient,
 				},
 				SessionRepository,
 				SessionEventEmitter,
 				SessionService,
-				SessionResolver
+				SessionResolver,
 			],
-			exports: [SessionService, SessionRepository, SessionEventEmitter]
+			exports: [SessionService, SessionRepository, SessionEventEmitter],
 		};
 	}
 }

@@ -23,12 +23,12 @@ describe('TokenBlacklistService - Additional Tests', () => {
 					},
 					error(...args: any[]) {
 						logCalls.push({ level: 'error', args });
-					}
+					},
 				};
 			},
 			getLogCalls() {
 				return logCalls;
-			}
+			},
 		};
 
 		const cacheData: Map<string, any> = new Map();
@@ -50,7 +50,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 			},
 			getCacheData() {
 				return cacheData;
-			}
+			},
 		};
 
 		mockModuleRef = {
@@ -58,7 +58,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				if (token === AppLogger) return mockAppLogger;
 				if (token === CACHE_PROVIDER) return mockCacheProvider;
 				return defaultValue ?? null;
-			}
+			},
 		};
 
 		service = new TokenBlacklistService(mockModuleRef);
@@ -119,7 +119,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				get(token: any) {
 					if (token === AppLogger) return mockAppLogger;
 					return null; // No cache provider
-				}
+				},
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
@@ -173,7 +173,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				get(token: any) {
 					if (token === AppLogger) return mockAppLogger;
 					return null;
-				}
+				},
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
@@ -233,7 +233,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				get(token: any) {
 					if (token === AppLogger) return mockAppLogger;
 					return null;
-				}
+				},
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
@@ -330,7 +330,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				get(token: any) {
 					if (token === AppLogger) return mockAppLogger;
 					return null;
-				}
+				},
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
@@ -355,7 +355,7 @@ describe('TokenBlacklistService - Additional Tests', () => {
 				get(token: any) {
 					if (token === AppLogger) return mockAppLogger;
 					return null;
-				}
+				},
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
