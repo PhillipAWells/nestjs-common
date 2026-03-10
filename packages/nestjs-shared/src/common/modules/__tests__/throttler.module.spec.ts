@@ -436,7 +436,6 @@ describe('SharedThrottlerModule', () => {
 
 		it('should support useClass returning Promise', () => {
 			class ConfigService {
-			// eslint-disable-next-line require-await
 				async createThrottlerConfig(): Promise<SharedThrottlerConfig> {
 					return { ttl: 30000, limit: 50 };
 				}
