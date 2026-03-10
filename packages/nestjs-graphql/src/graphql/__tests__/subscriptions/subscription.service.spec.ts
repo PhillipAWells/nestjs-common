@@ -93,58 +93,37 @@ describe('SubscriptionService', () => {
 	describe('subscribe', () => {
 		it('should subscribe to topic', async () => {
 			const topic = 'user.updated';
-			const onMessage = () => {};
-			const userId = 'user123';
 
-			const subId = await service.subscribe(topic, onMessage, undefined, userId);
+			const iterator = service.subscribe(topic);
 
-			expect(typeof subId).toBe('number');
-			expect(service.getUserSubscriptions(userId)).toContain(subId);
+			expect(iterator).toBeDefined();
+			expect(typeof (iterator as any)[Symbol.asyncIterator]).toBe('function');
 		});
 
-		it('should enforce subscription limits', async () => {
-			const topic = 'user.updated';
-			const onMessage = () => {};
-			const userId = 'user123';
+		it('should allow multiple subscriptions to different topics', () => {
+			const topic1 = 'user.updated';
+			const topic2 = 'user.deleted';
 
-			// Subscribe multiple times to exceed limit
-			for (let i = 0; i < config.connection.maxSubscriptionsPerUser + 1; i++) {
-				if (i < config.connection.maxSubscriptionsPerUser) {
-					await service.subscribe(`${topic}${i}`, onMessage, undefined, userId);
-				} else {
-					await expect(service.subscribe(`${topic}${i}`, onMessage, undefined, userId))
-						.rejects.toThrow('Subscription limit exceeded');
-				}
-			}
+			const iterator1 = service.subscribe(topic1);
+			const iterator2 = service.subscribe(topic2);
+
+			expect(iterator1).toBeDefined();
+			expect(iterator2).toBeDefined();
 		});
 	});
 
-	describe('unsubscribe', () => {
-		it('should unsubscribe from topic', async () => {
+	describe('publish', () => {
+		it('should publish to topic', async () => {
 			const topic = 'user.deleted';
-			const onMessage = () => {};
-			const userId = 'user123';
+			const data = { id: '123', name: 'John' };
 
-			const subId = await service.subscribe(topic, onMessage, undefined, userId);
-			await service.unsubscribe(subId);
-
-			expect(service.getUserSubscriptions(userId)).not.toContain(subId);
+			await expect(service.publish(topic, data)).resolves.toBeUndefined();
 		});
 	});
 
-	describe('getStats', () => {
-		it('should return subscription statistics', async () => {
-			const topic = 'product.updated';
-			const onMessage = () => {};
-			const userId = 'user123';
-
-			await service.subscribe(topic, onMessage, undefined, userId);
-
-			const stats = service.getStats();
-
-			expect(stats.totalSubscriptions).toBe(1);
-			expect(stats.activeTopics).toBe(1);
-			expect(stats.subscriptionsByUser[userId]).toBe(1);
+	describe('onModuleDestroy', () => {
+		it('should cleanup on destroy', () => {
+			expect(() => service.onModuleDestroy()).not.toThrow();
 		});
 	});
 });

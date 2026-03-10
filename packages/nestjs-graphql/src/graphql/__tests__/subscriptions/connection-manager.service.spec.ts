@@ -137,7 +137,7 @@ describe('ConnectionManagerService', () => {
 
 		it('should reject connection when at limit', () => {
 			// Add connections up to limit
-			for (let i = 0; i < config.websocket.maxConnections; i++) {
+			for (let i = 0; i < config.websocket.maxConnections!; i++) {
 				service.addConnection({ id: `ws${i}` }, 'user123');
 			}
 
@@ -146,7 +146,7 @@ describe('ConnectionManagerService', () => {
 
 		it('should allow connections for different users', () => {
 			// Fill up one user
-			for (let i = 0; i < config.websocket.maxConnections; i++) {
+			for (let i = 0; i < config.websocket.maxConnections!; i++) {
 				service.addConnection({ id: `ws${i}` }, 'user123');
 			}
 
@@ -311,7 +311,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should enforce max connections per user', () => {
-			for (let i = 0; i < config.websocket.maxConnections; i++) {
+			for (let i = 0; i < config.websocket.maxConnections!; i++) {
 				service.addConnection({ id: `ws${i}` }, 'user123');
 			}
 

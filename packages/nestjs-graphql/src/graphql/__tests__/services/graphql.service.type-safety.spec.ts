@@ -185,7 +185,7 @@ describe('GraphQLService - Type Safety', () => {
 			expect(formatted).toBeDefined();
 			expect(formatted.message).toBe('Validation failed');
 			expect((formatted.extensions as any)).toBeDefined();
-			expect(typeof formatted.extensions.code).toBe('string');
+			expect(typeof (formatted.extensions as any).code).toBe('string');
 		});
 
 		it('should map validation errors correctly', () => {

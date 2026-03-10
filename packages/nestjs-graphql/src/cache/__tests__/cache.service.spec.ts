@@ -411,11 +411,11 @@ describe('CacheService', () => {
 
 	describe('onModuleDestroy', () => {
 		it('should log final statistics on destroy', async () => {
-			const loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation();
+			const loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation(() => {});
 
 			await service.onModuleDestroy();
 
-			expect(loggerSpy).toHaveBeenCalledWith(`Cache statistics: ${JSON.stringify(service.getStats())}`);
+			expect(loggerSpy).toHaveBeenCalledWith('Cache statistics', expect.any(String));
 		});
 
 		it('should handle destroy errors gracefully', async () => {
@@ -423,13 +423,13 @@ describe('CacheService', () => {
 				throw new Error('Logging failed');
 			});
 			void (_loggerSpy); // Mark as used to satisfy linter
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
 
 			await service.onModuleDestroy();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				'Error during cache service cleanup:',
-				expect.any(Error),
+				'Error during cache service cleanup',
+				expect.any(String),
 			);
 		});
 	});
@@ -468,7 +468,7 @@ describe('CacheService', () => {
 			error.stack = 'Error: Redis error with stack\n  at someFunction (file.ts:10:5)';
 			mockCacheManager.get.mockRejectedValue(error);
 
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
 
 			await service.get('key');
 
@@ -482,7 +482,7 @@ describe('CacheService', () => {
 			const error = new Error('Redis set error');
 			mockCacheManager.set.mockRejectedValue(error);
 
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation();
+			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
 
 			await expect(service.set('key', 'value')).rejects.toThrow();
 

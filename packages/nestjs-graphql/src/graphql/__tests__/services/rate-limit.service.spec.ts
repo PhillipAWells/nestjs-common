@@ -210,13 +210,21 @@ describe('RateLimitService', () => {
 
 	describe('lifecycle', () => {
 		it('should initialize and destroy properly', async () => {
-			const newService = new RateLimitService();
+			const mockLogger = {
+				createContextualLogger: vi.fn().mockReturnValue({
+					debug: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					error: vi.fn(),
+				}),
+			};
+			const newService = new RateLimitService(mockLogger as any);
 
 			// Should initialize without throwing
-			await newService.onModuleInit();
+			newService.onModuleInit();
 
 			// Should destroy without throwing
-			await newService.onModuleDestroy();
+			newService.onModuleDestroy();
 		});
 	});
 });

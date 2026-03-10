@@ -75,6 +75,7 @@ describe('RedisPubSubFactory', () => {
 				healthCheck: {
 					enabled: true,
 					interval: 60000,
+					timeout: 5000,
 				},
 			};
 
@@ -90,6 +91,8 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 				healthCheck: {
 					enabled: false,
+					interval: 60000,
+					timeout: 5000,
 				},
 			};
 
@@ -164,7 +167,7 @@ describe('RedisPubSubFactory', () => {
 			const config: RedisConfig = {
 				host: 'localhost',
 				port: 6379,
-				healthCheck: { enabled: true },
+				healthCheck: { enabled: true, interval: 60000, timeout: 5000 },
 			};
 
 			const mockPubSub = {
