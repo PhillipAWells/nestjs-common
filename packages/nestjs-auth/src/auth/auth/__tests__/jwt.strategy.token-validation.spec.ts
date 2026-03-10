@@ -2,12 +2,13 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { JWTStrategy } from '../jwt.strategy.js';
 import type { TokenBlacklistService } from '../token-blacklist.service.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('JWT Strategy - Token Validation & User Lookup', () => {
 	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
-	let mockTokenBlacklistService: unknown;
+	let mockTokenBlacklistService: TokenBlacklistService;
 	let logCalls: any[];
 
 	beforeEach(() => {
@@ -56,7 +57,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 		mockTokenBlacklistService = {
 			isTokenBlacklisted: vi.fn().mockResolvedValue(false),
 			hasUserRevokedTokens: vi.fn().mockResolvedValue(false),
-		} as TokenBlacklistService;
+		} as unknown as TokenBlacklistService;
 
 		process.env['JWT_SECRET'] = 'MySecretKeyWith32CharactersMin!@#$%';
 		process.env['JWT_EXPIRES_IN'] = '15m';
@@ -216,7 +217,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 				createContextualLogger: mockLoggerFactory,
 			};
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockLoggerApp, mockTokenValidationService);
+			const strategy = new JWTStrategy(mockUserLookupFn, mockLoggerApp as unknown as AppLogger, mockTokenValidationService, mockTokenBlacklistService);
 
 			expect(strategy).toBeDefined();
 		});

@@ -313,7 +313,7 @@ describe('Session Module Integration Tests', () => {
 			);
 
 			expect(updatedSession.preferences).toBeDefined();
-			const preferencesObj = Object.fromEntries(updatedSession.preferences!);
+			const preferencesObj = updatedSession.preferences instanceof Map ? Object.fromEntries(updatedSession.preferences) : updatedSession.preferences!;
 			expect(preferencesObj['theme']).toBe('dark');
 			expect(preferencesObj['language']).toBe('en');
 			expect(preferencesObj['notifications']).toBe('enabled');

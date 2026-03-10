@@ -4,13 +4,13 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { TokenBlacklistService } from './token-blacklist.service.js';
 
 describe('JWT Strategy Configuration Validation', () => {
-	let mockUserLookupFn: ReturnType<typeof vi.fn>;
+	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
-	let mockTokenBlacklistService: unknown;
+	let mockTokenBlacklistService: TokenBlacklistService;
 
 	beforeEach(() => {
-		mockUserLookupFn = vi.fn();
+		mockUserLookupFn = vi.fn(async () => null);
 		mockTokenValidationService = {};
 		mockTokenBlacklistService = {
 			isTokenBlacklisted: vi.fn().mockResolvedValue(false),
@@ -157,7 +157,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(mockUser);
 
-			const result = await strategy.validate(mockPayload);
+			const result = await strategy.validate(mockPayload, {} as any);
 			expect(result).toEqual(mockUser);
 			expect(mockUserLookupFn).toHaveBeenCalledWith('123');
 		});
@@ -168,7 +168,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(mockUser);
 
-			await expect(strategy.validate(mockPayload)).rejects.toThrow('User not found or inactive');
+			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('User not found or inactive');
 		});
 
 		it('should throw UnauthorizedException for non-existent user', async () => {
@@ -176,7 +176,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(null);
 
-			await expect(strategy.validate(mockPayload)).rejects.toThrow('User not found or inactive');
+			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('User not found or inactive');
 		});
 
 		it('should handle user lookup errors', async () => {
@@ -184,7 +184,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockRejectedValue(new Error('Database error'));
 
-			await expect(strategy.validate(mockPayload)).rejects.toThrow('Database error');
+			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('Database error');
 		});
 	});
 

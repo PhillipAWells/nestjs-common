@@ -1,5 +1,6 @@
 
 import { OAuth2Strategy } from '../strategies/oauth2.strategy.js';
+import type { AuthService } from '../../../auth/auth.service.js';
 
 describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 	let strategy: OAuth2Strategy;
@@ -210,7 +211,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 				validateOAuthUser: async () => {
 					throw new Error('OAuth validation failed');
 				},
-			};
+			} as unknown as AuthService;
 			const errorStrategy = new OAuth2Strategy(errorService);
 
 			const profile = { id: 'user-id', displayName: 'User', email: 'user@example.com' };

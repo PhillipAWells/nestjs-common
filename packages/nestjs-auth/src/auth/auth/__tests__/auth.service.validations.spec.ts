@@ -71,7 +71,7 @@ describe('Auth Service - Password & User Validation', () => {
 			const response = {
 				id: userProfile.id,
 				email: userProfile.email,
-				role: userProfile.role ?? 'user',
+				role: (userProfile as any).role ?? 'user',
 				firstName: (userProfile as any).firstName,
 				lastName: (userProfile as any).lastName,
 				isActive: userProfile.isActive,
@@ -205,7 +205,7 @@ describe('Auth Service - Password & User Validation', () => {
 		});
 
 		it('should handle null user gracefully', () => {
-			const user = null;
+			const user: any = null;
 
 			const isActive = user?.isActive ?? false;
 

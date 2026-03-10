@@ -111,6 +111,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 		it('should set session TTL from configuration', async () => {
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
+				ipAddress: '127.0.0.1',
 			};
 			const beforeCreate = Date.now();
 			const session = await service.CreateOrGetSession(deviceInfo);
@@ -119,7 +120,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 			expect(session.expiresAt.getTime()).toBeGreaterThan(beforeCreate);
 		});
 		it('should call repository.Create with proper session data', async () => {
-			const deviceInfo: IDeviceInfo = { userAgent: 'Test Agent', browser: 'Test' };
+			const deviceInfo: IDeviceInfo = { userAgent: 'Test Agent', ipAddress: '127.0.0.1' };
 			await service.CreateOrGetSession(deviceInfo);
 			expect(repositoryCalls).toContainEqual(
 				expect.objectContaining({
@@ -139,6 +140,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 				id: 'user-123',
 				email: 'user@example.com',
 				roles: ['user'], permissions: [],
+				name: 'Test User',
 			};
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			const now = new Date();
@@ -157,8 +159,8 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 			expect(session.isAuthenticated).toBe(true);
 		});
 		it('should add login record to loginHistory', async () => {
-			const userProfile = { id: 'user-456', email: 'test@example.com', roles: ['user'], permissions: [] };
-			const deviceInfo: IDeviceInfo = { userAgent: 'Safari', browser: 'Safari' };
+			const userProfile = { id: 'user-456', email: 'test@example.com', name: 'Test User', roles: ['user'], permissions: [] };
+			const deviceInfo: IDeviceInfo = { userAgent: 'Safari', ipAddress: '127.0.0.1' };
 			const session = await service.AuthenticateSession(
 				'valid-session-id',
 				userProfile,
@@ -220,7 +222,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 			service = new SessionService(mockModuleRef);
 		});
 		it('should enforce session limit when enabled', async () => {
-			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', roles: ['user'], permissions: [] };
+			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			// User already has 2 active sessions (mocked above)
 			// Creating a new session should delete the oldest one
@@ -242,7 +244,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 			);
 		});
 		it('should emit SESSION_REVOKED event when max sessions exceeded', async () => {
-			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', roles: ['user'], permissions: [] };
+			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			await service.AuthenticateSession(
 				'valid-session-id',
@@ -274,7 +276,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 				return defaultValue ?? null;
 			};
 			service = new SessionService(mockModuleRef);
-			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', roles: ['user'], permissions: [] };
+			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			await service.AuthenticateSession(
 				'valid-session-id',
@@ -291,7 +293,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 		it('should identify oldest session by createdAt timestamp', async () => {
 			// The mock returns sessions with different createdAt times
 			// The oldest one should be deleted
-			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', roles: ['user'], permissions: [] };
+			const userProfile = { id: 'user-with-sessions', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			await service.AuthenticateSession(
 				'valid-session-id',
@@ -308,7 +310,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 	});
 	describe('AuthenticateSession() - Token Storage', () => {
 		it('should store access and refresh tokens', async () => {
-			const userProfile = { id: 'user-789', email: 'user@example.com', roles: ['user'], permissions: [] };
+			const userProfile = { id: 'user-789', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			const accessToken = 'my-access-token-value';
 			const refreshToken = 'my-refresh-token-value';

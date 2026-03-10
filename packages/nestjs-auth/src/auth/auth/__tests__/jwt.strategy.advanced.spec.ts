@@ -22,7 +22,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
-	let mockTokenBlacklistService: unknown;
+	let mockTokenBlacklistService: TokenBlacklistService;
 	let logCalls: any[];
 	let validateTokenCalls: any[];
 

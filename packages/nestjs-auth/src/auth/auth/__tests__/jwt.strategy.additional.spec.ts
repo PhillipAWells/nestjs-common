@@ -3,12 +3,14 @@ import { JWTStrategy } from '../jwt.strategy.js';
 import { UnauthorizedException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { TokenBlacklistService } from '../token-blacklist.service.js';
+import type { TokenValidationService } from '../token-validation.service.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('JWTStrategy - Additional Validation Tests', () => {
 	let userLookupFn: (userId: string) => Promise<any>;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
-	let mockTokenBlacklistService: unknown;
+	let mockTokenBlacklistService: TokenBlacklistService;
 
 	beforeEach(() => {
 		// Manual mocking - no vi.fn() at module scope
@@ -251,10 +253,9 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, errorTokenValidation);
+			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, errorTokenValidation as unknown as TokenValidationService, mockTokenBlacklistService);
 			expect(strategy).toBeDefined();
 		});
-
 		it('should handle timeout in token validation', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
@@ -264,10 +265,9 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, slowValidation);
+			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, slowValidation as unknown as TokenValidationService, mockTokenBlacklistService);
 			expect(strategy).toBeDefined();
 		});
-
 		it('should validate access tokens specifically', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
@@ -383,7 +383,7 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, errorLogger, mockTokenValidationService);
+			const strategy = new JWTStrategy(userLookupFn, errorLogger as unknown as AppLogger, mockTokenValidationService, mockTokenBlacklistService);
 			expect(strategy).toBeDefined();
 		});
 	});
