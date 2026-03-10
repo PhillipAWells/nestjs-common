@@ -4,8 +4,6 @@
  * Tests sync/async method signature preservation and tracing functionality.
  */
 
-/* eslint-disable require-await */
-
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { Injectable } from '@nestjs/common';
 import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized, SpanKind } from '@pawells/open-telemetry-client';

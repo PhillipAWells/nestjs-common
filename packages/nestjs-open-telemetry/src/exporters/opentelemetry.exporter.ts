@@ -120,7 +120,8 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 
 			this.instruments.set(descriptor.name, instrument);
 		} catch (error) {
-			console.warn(`[OpenTelemetryExporter] Failed to register descriptor "${descriptor.name}":`, (error as Error).message);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			console.warn(`[OpenTelemetryExporter] Failed to register descriptor "${descriptor.name}":`, errorMessage);
 			return;
 		}
 	}
@@ -155,6 +156,9 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				break;
 			case 'updown_counter':
 				(instrument as UpDownCounter).add(value.value, attributes);
+				break;
+			default:
+				console.warn(`[OpenTelemetryExporter] Unhandled metric type: ${value.descriptor.type}`);
 				break;
 		}
 	}

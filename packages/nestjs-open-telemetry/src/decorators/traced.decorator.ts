@@ -174,7 +174,8 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 						},
 						(error) => {
 							// Record exception and set error status
-							span.recordException(error as Error);
+							const errorInstance = error instanceof Error ? error : new Error(String(error));
+							span.recordException(errorInstance);
 							const message = error instanceof Error ? error.message : String(error);
 							span.setStatus({ code: SpanStatusCode.ERROR, message });
 
@@ -211,7 +212,8 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 				}
 			} catch (error) {
 				// Record exception and set error status (for sync errors only)
-				span.recordException(error as Error);
+				const errorInstance = error instanceof Error ? error : new Error(String(error));
+				span.recordException(errorInstance);
 				const message = error instanceof Error ? error.message : String(error);
 				span.setStatus({ code: SpanStatusCode.ERROR, message });
 
