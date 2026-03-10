@@ -135,20 +135,15 @@ export class QdrantModule {
 						const result = options.useFactory?.(...args);
 						// Handle both sync and async results
 						if (result instanceof Promise) {
-							return await result.then((opts: QdrantModuleOptions) => {
-								const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
-								return cleanOptions;
-							}).catch((err: unknown) => {
-								throw new Error(`QdrantModule async factory failed: ${(err as Error).message}`);
-							});
+							const opts = await result;
+							const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
+							return cleanOptions;
 						}
 						const { name: _name, apiKey: _apiKey, ...cleanOptions } = result as QdrantModuleOptions;
 						return cleanOptions;
 					} catch (error) {
-						if (error instanceof Error && error.message.includes('QdrantModule async factory failed')) {
-							throw error;
-						}
-						throw new Error(`QdrantModule async factory failed: ${(error as Error).message}`);
+						const errorMessage = error instanceof Error ? error.message : String(error);
+						throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
 					}
 				},
 				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
@@ -163,7 +158,8 @@ export class QdrantModule {
 					const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
 					return cleanOptions;
 				} catch (error) {
-					throw new Error(`QdrantModule async factory failed: ${(error as Error).message}`);
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
 				}
 			},
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion

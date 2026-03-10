@@ -25,7 +25,8 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.search(this.collectionName, params);
 		} catch (error) {
-			throw new Error(`Qdrant search failed on collection "${this.collectionName}": ${(error as Error).message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Qdrant search failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
 		}
 	}
 
@@ -39,7 +40,8 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.upsert(this.collectionName, params);
 		} catch (error) {
-			throw new Error(`Qdrant upsert failed on collection "${this.collectionName}": ${(error as Error).message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Qdrant upsert failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
 		}
 	}
 
@@ -53,7 +55,8 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.delete(this.collectionName, params);
 		} catch (error) {
-			throw new Error(`Qdrant delete failed on collection "${this.collectionName}": ${(error as Error).message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Qdrant delete failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
 		}
 	}
 
@@ -66,7 +69,8 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.getCollection(this.collectionName);
 		} catch (error) {
-			throw new Error(`Qdrant getCollection failed on collection "${this.collectionName}": ${(error as Error).message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Qdrant getCollection failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
 		}
 	}
 }
