@@ -177,9 +177,8 @@ export class GraphQLCacheService {
 	 */
 	public async clear(): Promise<void> {
 		try {
-			// Note: cache-manager doesn't have a reset method in all implementations
-			// This is a placeholder - actual implementation depends on the cache store
-			this.logger.debug('Clear operation called (implementation depends on cache store)');
+			await this.cacheManager.reset();
+			this.logger.debug('Cache cleared successfully');
 		} catch (error) {
 			this.logger.error(`Failed to clear cache: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;

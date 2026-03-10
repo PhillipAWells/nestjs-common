@@ -71,8 +71,13 @@ export class GraphQLRateLimitGuard implements CanActivate {
 			}
 
 			this.logger.error(`Rate limit check failed for client ${clientId}: ${error instanceof Error ? error.message : String(error)}`);
-			// Allow request to proceed if rate limiting fails
-			return true;
+			// Block request if rate limiting check fails (fail-closed for security)
+			throw new HttpException(
+				{
+					message: 'Rate limit check unavailable',
+				},
+				HttpStatus.SERVICE_UNAVAILABLE,
+			);
 		}
 	}
 

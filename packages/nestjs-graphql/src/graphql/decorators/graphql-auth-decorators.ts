@@ -33,3 +33,7 @@
 // 	GraphQLContextParam,
 // 	GraphQLUser
 // } from '@pawells/nestjs-auth';
+
+// This is a placeholder to avoid circular dependency with @pawells/nestjs-auth
+// The actual decorators are re-exported when circular dependency is resolved
+export {};

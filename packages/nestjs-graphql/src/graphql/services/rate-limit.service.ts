@@ -189,7 +189,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 				current,
 			};
 		} catch (error) {
-			this.logger.error(`Storage rate limit check failed for ${clientId}:`, error as string);
+			this.logger.error(`Storage rate limit check failed for ${clientId}:`, error instanceof Error ? error.message : String(error));
 			// Fall back to in-memory on storage error
 			return this.checkLimitInMemory(clientId, config);
 		}
@@ -294,7 +294,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 			try {
 				await this.storage.cleanup();
 			} catch (error) {
-				this.logger.error('Storage cleanup failed:', error as string);
+				this.logger.error('Storage cleanup failed:', error instanceof Error ? error.message : String(error));
 			}
 		}
 

@@ -383,7 +383,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.logger.info('Cache cleared successfully');
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error('Cache clear error:', error as string);
+			this.logger.error('Cache clear error', error instanceof Error ? error.message : String(error));
 			throw error;
 		}
 	}
@@ -401,7 +401,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			return value !== null && value !== undefined;
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error(`Cache exists error for key ${key}:`, error as string);
+			this.logger.error(`Cache exists error for key ${key}`, error instanceof Error ? error.message : String(error));
 			return false;
 		}
 	}
@@ -437,7 +437,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.logger.debug(`Factory result cached for key: ${key}`);
 			return value;
 		} catch (error) {
-			this.logger.error(`Factory function error for key ${key}:`, error as string);
+			this.logger.error(`Factory function error for key ${key}`, error instanceof Error ? error.message : String(error));
 			throw error;
 		}
 	}

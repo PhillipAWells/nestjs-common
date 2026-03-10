@@ -1,31 +1,6 @@
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { Logger } from '@nestjs/common';
-
-/**
- * GraphQL Error Codes
- *
- * Standardized error codes for GraphQL operations
- */
-export enum GraphQLErrorCode {
-	// Authentication & Authorization
-	UNAUTHENTICATED = 'UNAUTHENTICATED',
-	FORBIDDEN = 'FORBIDDEN',
-
-	// Validation
-	BAD_USER_INPUT = 'BAD_USER_INPUT',
-	VALIDATION_ERROR = 'VALIDATION_ERROR',
-
-	// Business Logic
-	CONFLICT = 'CONFLICT',
-	NOT_FOUND = 'NOT_FOUND',
-
-	// Rate Limiting
-	RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-
-	// Internal Errors
-	INTERNAL_ERROR = 'INTERNAL_ERROR',
-	SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
-}
+import { GraphQLErrorCode } from './error-codes.js';
 
 /**
  * GraphQL Error Formatter
