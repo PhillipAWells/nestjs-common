@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.js';
@@ -13,6 +19,7 @@ export class ConnectionManagerService {
 
 	private readonly subscriptions = new Map<string, Set<string>>();
 
+	// eslint-disable-next-line no-undef
 	private readonly connectionTimers = new Map<string, NodeJS.Timeout>();
 
 	constructor(@Inject('SUBSCRIPTION_CONFIG') private readonly config: SubscriptionConfig) {}

@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import {
 	Injectable,
 	CanActivate,
@@ -32,6 +38,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 
 	private readonly complexityCache = new Map<string, number>();
 
+	// eslint-disable-next-line no-undef
 	private cleanupIntervalRef: NodeJS.Timeout | null = null;
 
 	constructor(@Optional() private readonly config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG) {

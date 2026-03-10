@@ -13,7 +13,7 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 	beforeEach(() => {
 		// Manual mock for Reflector
 		mockReflector = {
-			getAllAndOverride: (key: string, targets: any[]) => {
+			getAllAndOverride: (_key: string, _targets: any[]) => {
 				// Default return value for testing
 				if ((mockReflector as any)._rolesOverride !== undefined) {
 					return (mockReflector as any)._rolesOverride;

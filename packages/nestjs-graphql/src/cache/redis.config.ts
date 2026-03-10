@@ -64,7 +64,7 @@ export interface RedisConnectionOptions {
  * @returns Validated configuration with defaults
  * @throws Error if validation fails
  */
-export function validateRedisConfig(config: Record<string, any>) {
+export function validateRedisConfig(config: Record<string, any>): Record<string, any> {
 	// Allow undefined values - they will use defaults
 	const schema = Joi.object({
 		REDIS_HOST: Joi.string().hostname().default('localhost'),

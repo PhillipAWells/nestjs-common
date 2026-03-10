@@ -1,7 +1,6 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { CacheService } from '../cache.service.js';
 import { vi } from 'vitest';
@@ -762,7 +761,7 @@ describe('CacheService', () => {
 			const finalMemory = finalStats.memoryUsage ?? 0;
 
 			// Memory growth should be reasonable
-			const memoryGrowth = finalMemory - initialMemory;
+			const _memoryGrowth = finalMemory - initialMemory;
 
 			// Should not grow excessively (if tracking is implemented)
 			if (finalMemory > 0) {

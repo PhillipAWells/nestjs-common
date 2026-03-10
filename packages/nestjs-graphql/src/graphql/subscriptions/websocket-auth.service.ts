@@ -14,7 +14,7 @@ export class WebSocketAuthService {
    * @param connectionParams Connection parameters from client
    * @returns Authentication result
    */
-	async authenticate(connectionParams: any): Promise<{
+	public async authenticate(connectionParams: any): Promise<{
 		authenticated: boolean;
 		userId?: string;
 		error?: string;

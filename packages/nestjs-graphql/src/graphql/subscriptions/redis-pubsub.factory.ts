@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Redis } from 'ioredis';
@@ -17,6 +23,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 
 	private subscriberClient?: any;
 
+	// eslint-disable-next-line no-undef
 	private healthCheckInterval?: NodeJS.Timeout;
 
 	/**

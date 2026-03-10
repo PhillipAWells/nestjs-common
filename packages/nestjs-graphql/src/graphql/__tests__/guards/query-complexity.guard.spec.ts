@@ -107,7 +107,6 @@ describe('QueryComplexityGuard', () => {
 			try {
 				await guard.canActivate(mockExecutionContext);
 			} catch (_error) {
-				// eslint-disable-next-line unused-imports/no-unused-vars
 				// Expected: should throw, not return true
 				didThrow = true;
 			}
@@ -159,7 +158,8 @@ describe('QueryComplexityGuard', () => {
 			});
 
 			try {
-				await guard.canActivate(mockExecutionContext);} catch (err: any) {
+				await guard.canActivate(mockExecutionContext);
+			} catch (err: any) {
 				expect(err).toBeInstanceOf(InternalServerErrorException);
 				expect(err.message).toContain('validate');
 			}

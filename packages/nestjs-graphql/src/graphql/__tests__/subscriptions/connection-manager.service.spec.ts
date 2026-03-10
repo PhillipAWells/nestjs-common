@@ -351,9 +351,9 @@ describe('ConnectionManagerService', () => {
 
 	describe('connection state tracking', () => {
 		it('should track connection creation time', () => {
-			const beforeAdd = Date.now();
+			const _beforeAdd = Date.now();
 			service.addConnection(mockWs, 'user123');
-			const afterAdd = Date.now();
+			const _afterAdd = Date.now();
 
 			// Connection was added within this timeframe
 			expect(service.getConnectionCount()).toBe(1);

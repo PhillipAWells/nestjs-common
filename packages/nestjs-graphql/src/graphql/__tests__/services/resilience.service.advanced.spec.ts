@@ -39,9 +39,9 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 	describe('startKeepalive() - Keepalive Management', () => {
 		it('should start keepalive timer when enabled', () => {
-			let callbackCount = 0;
+			let _callbackCount = 0;
 			const callback = () => {
-				callbackCount++;
+				_callbackCount++;
 			};
 
 			service.startKeepalive('conn-1', callback);

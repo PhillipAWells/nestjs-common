@@ -12,11 +12,11 @@ export class GraphQLWebSocketServer implements OnModuleDestroy {
 	// private readonly wsServer: WebSocketServer | null = null; // Unused in stub
 	private readonly disposeServer: (() => Promise<void>) | (() => void) = () => {};
 
-	async initialize(): Promise<void> {
+	public async initialize(): Promise<void> {
 		this.logger.warn('GraphQLWebSocketServer is stubbed - GraphQL subscriptions disabled');
 	}
 
-	async onModuleDestroy(): Promise<void> {
+	public async onModuleDestroy(): Promise<void> {
 		if (this.disposeServer) {
 			await Promise.resolve(this.disposeServer());
 		}

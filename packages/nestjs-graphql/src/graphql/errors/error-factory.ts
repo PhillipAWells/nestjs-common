@@ -30,7 +30,7 @@ export interface GraphQLErrorConfig {
  * });
  * ```
  */
-export function createGraphQLError(config: GraphQLErrorConfig) {
+export function createGraphQLError(config: GraphQLErrorConfig): typeof GraphqlError {
 	const { code, statusCode, defaultMessage } = config;
 
 	/**

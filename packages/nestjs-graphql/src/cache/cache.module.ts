@@ -15,7 +15,12 @@ const CACHE_DEFAULT_TTL_SECONDS = 3_600;
 @Global()
 @Module({})
 export class CacheModule {
-	public static forRoot() {
+	public static forRoot(): {
+		module: typeof CacheModule;
+		imports: unknown[];
+		providers: unknown[];
+		exports: unknown[];
+	} {
 		return {
 			module: CacheModule,
 			imports: [

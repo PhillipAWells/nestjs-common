@@ -41,6 +41,7 @@ describe('GraphQLModule', () => {
 					autoSchemaFile: './test-schema.gql',
 					playground: true,
 				}) as any,
+				inject: [],
 			});
 
 			expect(module).toBeDefined();
@@ -53,6 +54,7 @@ describe('GraphQLModule', () => {
 		it('should include GraphQLService in providers and exports for async config', () => {
 			const module = GraphQLModule.forRootAsync({
 				useFactory: () => ({}) as any,
+				inject: [],
 			});
 
 			expect(module.providers).toContain(GraphQLService);

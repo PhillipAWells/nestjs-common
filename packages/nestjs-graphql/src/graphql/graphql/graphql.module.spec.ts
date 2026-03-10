@@ -165,6 +165,7 @@ describe('GraphQL Module Configuration Validation', () => {
 		it('should include GraphQLService in async module', () => {
 			const asyncConfig = {
 				useFactory: () => ({}),
+				inject: [],
 			};
 
 			const module = GraphQLModule.forRootAsync(asyncConfig);

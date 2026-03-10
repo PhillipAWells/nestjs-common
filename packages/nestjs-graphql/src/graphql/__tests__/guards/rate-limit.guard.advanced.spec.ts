@@ -107,7 +107,8 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 			});
 
 			try {
-				await guard.canActivate(mockExecutionContext as ExecutionContext);} catch (error: any) {
+				await guard.canActivate(mockExecutionContext as ExecutionContext);
+			} catch (error: any) {
 				expect(error).toBeInstanceOf(HttpException);
 				expect(error.getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
 				expect(error.getResponse()).toMatchObject({

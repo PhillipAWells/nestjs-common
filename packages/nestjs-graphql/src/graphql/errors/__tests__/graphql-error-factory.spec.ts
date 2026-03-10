@@ -13,9 +13,9 @@ describe('createGraphQLError', () => {
 			const error = new TestError();
 
 			expect(error.message).toBe('Test GraphQL error occurred');
-			expect(error.code).toBe('TEST_ERROR');
-			expect(error.statusCode).toBe(400);
-			expect(error.context).toEqual({});
+			expect((error as any).code).toBe('TEST_ERROR');
+			expect((error as any).statusCode).toBe(400);
+			expect((error as any).context).toEqual({});
 			expect(error.extensions).toBeDefined();
 		});
 
@@ -68,9 +68,9 @@ describe('createGraphQLError', () => {
 			const error = new TestError();
 
 			expect(error).toBeInstanceOf(TestError);
-			expect(error.toPlainObject).toBeDefined();
-			expect(error.withContext).toBeDefined();
-			expect(error.withMessage).toBeDefined();
+			expect((error as any).toPlainObject).toBeDefined();
+			expect((error as any).withContext).toBeDefined();
+			expect((error as any).withMessage).toBeDefined();
 		});
 
 		it('should include GraphQL extensions', () => {
@@ -102,7 +102,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const error = new TestError('Custom message', { userId: '123' });
-			const plain = error.toPlainObject();
+			const plain = (error as any).toPlainObject();
 
 			expect(plain).toEqual({
 				name: 'TEST_ERRORError',
@@ -126,7 +126,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const originalError = new TestError('Test error', { userId: '123' });
-			const newError = originalError.withContext({ action: 'login' });
+			const newError = (originalError as any).withContext({ action: 'login' });
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('Test error');
@@ -144,7 +144,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const originalError = new TestError('Original message');
-			const newError = originalError.withMessage('New message');
+			const newError = (originalError as any).withMessage('New message');
 
 			expect(newError.message).toBe('New message');
 			expect(newError.code).toBe('TEST_ERROR');

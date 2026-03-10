@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import { Injectable, OnModuleDestroy, BadRequestException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { ModuleRef } from '@nestjs/core';
@@ -83,6 +89,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	private static readonly CLEANUP_INTERVAL_MS = CACHE_CLEANUP_INTERVAL_MS;
 
 	// Cleanup interval reference for cleanup on destroy
+	// eslint-disable-next-line no-undef
 	private cleanupIntervalRef: NodeJS.Timeout | undefined;
 
 	// Cache manager - memoized for frequent access

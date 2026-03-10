@@ -154,7 +154,10 @@ export class GraphQLContextFactory {
 	 * @param options - Default factory options
 	 * @returns Configured factory functions
 	 */
-	public static createFactory(options: ContextFactoryOptions = {}) {
+	public static createFactory(options: ContextFactoryOptions = {}): {
+		createHttpContext: (req: Request, res: Response) => Promise<GraphQLContext>;
+		createWebSocketContext: (connection: IWebSocketConnection) => Promise<GraphQLContext>;
+	} {
 		const factory = new GraphQLContextFactory();
 
 		return {

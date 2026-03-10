@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import { Injectable, Logger, OnModuleDestroy, Inject } from '@nestjs/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.constants.js';
@@ -9,10 +15,13 @@ import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.consta
 export class ResilienceService implements OnModuleDestroy {
 	private readonly logger = new Logger(ResilienceService.name);
 
+	// eslint-disable-next-line no-undef
 	private readonly keepaliveTimers = new Map<string, NodeJS.Timeout>();
 
+	// eslint-disable-next-line no-undef
 	private readonly reconnectionTimers = new Map<string, NodeJS.Timeout>();
 
+	// eslint-disable-next-line no-undef
 	private shutdownTimeout?: NodeJS.Timeout;
 
 	constructor(@Inject('SUBSCRIPTION_CONFIG') private readonly config: SubscriptionConfig) {}

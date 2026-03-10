@@ -1,3 +1,9 @@
+declare global {
+	namespace NodeJS {
+		interface Timeout {}
+	}
+}
+
 import { Injectable, OnModuleInit, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
@@ -108,6 +114,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly store = new Map<string, RateLimitEntry>();
 
+	// eslint-disable-next-line no-undef
 	private cleanupInterval?: NodeJS.Timeout;
 
 	constructor(
@@ -131,7 +138,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private readonly operationConfigs = new Map<string, RateLimitConfig>();
 
-	public onModuleInit() {
+	public onModuleInit(): void {
 		// Start cleanup interval to remove expired entries
 		this.cleanupInterval = setInterval(async () => {
 			await this.cleanup();
@@ -140,7 +147,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 		this.logger.info('Rate limit service initialized');
 	}
 
-	public onModuleDestroy() {
+	public onModuleDestroy(): void {
 		if (this.cleanupInterval) {
 			clearInterval(this.cleanupInterval);
 		}
