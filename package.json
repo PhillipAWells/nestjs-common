@@ -25,10 +25,6 @@
 	"workspaces": [
 		"packages/*"
 	],
-	"resolutions": {
-		"@pawells/logger": "portal:../logger",
-		"@pawells/typescript-common": "portal:../typescript-common"
-	},
 	"devDependencies": {
 		"@apollo/server": "^4.0.0",
 		"@eslint/js": "^9.0.0",
@@ -54,10 +50,10 @@
 		"@nx/vite": "~21.0.0",
 		"@nx/web": "~21.0.0",
 		"@opentelemetry/api": "^1.9.0",
-		"@pawells/logger": "portal:../logger",
-		"@pawells/open-telemetry-client": "portal:../open-telemetry-client",
-		"@pawells/typescript-common": "portal:../typescript-common",
-		"@pyroscope/nodejs": "^0.2.0",
+		"@pawells/logger": "^1",
+		"@pawells/open-telemetry-client": "^1",
+		"@pawells/typescript-common": "^1",
+		"@pyroscope/nodejs": "^0.4.10",
 		"@qdrant/js-client-rest": "^1.13.0",
 		"@stylistic/eslint-plugin": "^5.0.0",
 		"@types/bcryptjs": "^2.4.6",
