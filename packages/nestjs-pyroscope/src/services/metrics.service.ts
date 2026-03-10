@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
-	METRICS_STATUS_WARNING,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -94,7 +93,7 @@ export class MetricsService {
 		this.totalRequests++;
 		this.totalResponseTime += duration;
 
-		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_WARNING) {
+		if (statusCode >= METRICS_STATUS_OK && statusCode < 300) {
 			this.successfulRequests++;
 		} else {
 			this.failedRequests++;

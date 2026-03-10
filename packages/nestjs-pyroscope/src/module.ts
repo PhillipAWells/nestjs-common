@@ -98,18 +98,17 @@ export class PyroscopeModule {
 			healthIndicatorProvider,
 		];
 
-		// Note: For async config, we can't conditionally enable controllers
-		// Health checks will be enabled by default, can be disabled via config
-		const controllers = [HealthController];
 		const exports = [PyroscopeService, ProfilingHealthIndicator];
 
-		return {
+		const dynamicModule: DynamicModule = {
 			module: PyroscopeModule,
 			global: options.isGlobal ?? true,
 			imports: options.imports ?? [],
-			controllers,
+			controllers: [HealthController],
 			providers,
 			exports,
 		};
+
+		return dynamicModule;
 	}
 }

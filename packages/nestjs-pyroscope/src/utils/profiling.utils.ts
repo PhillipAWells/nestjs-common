@@ -1,8 +1,9 @@
 import { IPyroscopeConfig, TProfileType } from '../interfaces/profiling.interface.js';
 import {
-	PROFILING_UTILS_TIMEOUT,
-	PROFILING_UTILS_MEMORY_THRESHOLD,
 	PROFILING_TAG_MAX_LENGTH,
+	PROFILING_RETRY_BASE_DELAY_MS,
+	PROFILING_RETRY_MAX_DELAY_MS,
+	PROFILING_RETRY_JITTER_MS,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -198,9 +199,9 @@ export class ProfilingErrorHandler {
 		}
 
 		// Exponential backoff with jitter
-		const baseDelay = baseDelayMs ?? PROFILING_UTILS_TIMEOUT;
-		const maxDelay = maxDelayMs ?? PROFILING_UTILS_MEMORY_THRESHOLD;
-		const jitter = jitterMs ?? PROFILING_UTILS_TIMEOUT;
+		const baseDelay = baseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS;
+		const maxDelay = maxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS;
+		const jitter = jitterMs ?? PROFILING_RETRY_JITTER_MS;
 
 		const calculatedDelay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
 		return calculatedDelay + Math.random() * jitter;
