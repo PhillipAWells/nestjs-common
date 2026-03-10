@@ -28,8 +28,8 @@ export interface AuthErrorHandlingStrategy {
  */
 @Injectable()
 export class HeaderTokenExtractionStrategy implements TokenExtractionStrategy {
-	public extract(_context: ExecutionContext): string | null {
-		const request = _context.switchToHttp().getRequest();
+	public extract(context: ExecutionContext): string | null {
+		const request = context.switchToHttp().getRequest();
 		const authHeader = request.headers?.authorization ?? request.headers?.Authorization;
 
 		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
@@ -45,10 +45,10 @@ export class HeaderTokenExtractionStrategy implements TokenExtractionStrategy {
  */
 @Injectable()
 export class GraphQLTokenExtractionStrategy implements TokenExtractionStrategy {
-	public extract(_context: ExecutionContext): string | null {
+	public extract(context: ExecutionContext): string | null {
 		try {
 			// Try to get from GraphQL context
-			const gqlContext = (_context as any).getContext?.();
+			const gqlContext = (context as any).getContext?.();
 			if (gqlContext) {
 				const authHeader = gqlContext.req?.headers?.authorization ??
 					gqlContext.req?.headers?.Authorization;
@@ -78,7 +78,7 @@ export class JWTTokenValidationStrategy implements AuthValidationStrategy {
 		private readonly logger: AppLogger,
 	) {}
 
-	public async validate(token: string, _context: ExecutionContext): Promise<any> {
+	public async validate(token: string, context: ExecutionContext): Promise<any> {
 		try {
 			const payload = await this.jwtService.verifyAsync(token);
 			this.logger.debug('JWT token validated successfully');
@@ -95,7 +95,7 @@ export class JWTTokenValidationStrategy implements AuthValidationStrategy {
  */
 @Injectable()
 export class DefaultAuthErrorHandlingStrategy implements AuthErrorHandlingStrategy {
-	public handleError(error: any, _context: ExecutionContext): void {
+	public handleError(error: any, context: ExecutionContext): void {
 		if (error instanceof UnauthorizedException) {
 			throw error;
 		}
@@ -221,9 +221,9 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Handle authentication errors using configured strategy
 	 */
-	private handleAuthError(error: any, _context: ExecutionContext): never {
+	private handleAuthError(error: any, context: ExecutionContext): never {
 		const strategy = this.config.errorHandlingStrategy ?? new DefaultAuthErrorHandlingStrategy();
-		strategy.handleError(error, _context);
+		strategy.handleError(error, context);
 		// This should never be reached as handleError throws
 		throw error;
 	}
@@ -252,7 +252,7 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Check roles and permissions
 	 */
-	private async checkRolesAndPermissions(payload: any, _context: ExecutionContext): Promise<void> {
+	private async checkRolesAndPermissions(payload: any, context: ExecutionContext): Promise<void> {
 		const userRoles = payload.roles ?? [];
 		const userPermissions = payload.permissions ?? [];
 

@@ -9,6 +9,8 @@ export { JWTAuthGuard } from './auth/jwt-auth.guard.js';
 
 // Guards
 export { BaseAuthGuard } from './guards/base-auth.guard.js';
+export { RoleGuard } from './guards/role.guard.js';
+export { PermissionGuard } from './guards/permission.guard.js';
 
 // Auth Middleware
 export * from './middleware/auth-middleware.js';

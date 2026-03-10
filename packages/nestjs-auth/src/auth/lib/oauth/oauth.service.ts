@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import jwkToPem from 'jwk-to-pem';
+import * as jwt from 'jsonwebtoken';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { OAuthUser, OAuthToken } from './types/oauth-config.types.js';
 import { OAUTH_SERVICE_TIMEOUT, OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER } from '../../constants/auth-timeouts.constants.js';
@@ -87,7 +88,6 @@ export class OAuthService {
     */
 	public async validateToken(token: string, publicKey: string): Promise<any> {
 		this.logger.debug('JWT token validation initiated');
-		const jwt = require('jsonwebtoken');
 		return new Promise((resolve, reject) => {
 			jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err: any, decoded: any) => {
 				if (err) {

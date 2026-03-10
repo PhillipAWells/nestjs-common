@@ -45,7 +45,7 @@ export class AuthModule {
 			JwtModule.register({
 				secret: options.jwtSecret,
 				signOptions: {
-					expiresIn: options.jwtExpiresIn ?? '15m' as any,
+					expiresIn: (options.jwtExpiresIn ?? '15m') as string,
 					issuer: 'auth-service',
 					audience: 'clients',
 				},
