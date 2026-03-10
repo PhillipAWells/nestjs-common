@@ -129,7 +129,7 @@ describe('PrometheusExporter', () => {
 		});
 
 		it('should warn when metric is recorded before descriptor registration', () => {
-			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const warnSpy = vi.spyOn(exporter['logger'], 'warn').mockImplementation(() => {});
 
 			const descriptor = {
 				name: 'unregistered_metric',

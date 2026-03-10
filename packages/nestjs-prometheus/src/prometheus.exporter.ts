@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
 import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/nestjs-shared';
 
@@ -59,10 +59,17 @@ export class PrometheusExporter implements IMetricsExporter {
 	// eslint-disable-next-line no-magic-numbers
 	private readonly MAX_PENDING_PER_METRIC = 1000;
 
+	/**
+	 * Logger instance for warnings and errors
+	 * @private
+	 */
+	private readonly logger: Logger;
+
 	constructor() {
 		this.registry = new Registry();
 		this.instruments = new Map();
 		this.pending = new Map();
+		this.logger = new Logger(PrometheusExporter.name);
 
 		// Collect Node.js default metrics into our registry
 		collectDefaultMetrics({ register: this.registry });
@@ -163,7 +170,7 @@ export class PrometheusExporter implements IMetricsExporter {
 			}
 		} else {
 			// Warn if metric recorded before descriptor registration (data will be lost)
-			console.warn(`Metric recorded before descriptor registration: ${metricName}`);
+			this.logger.warn(`Metric recorded before descriptor registration: ${metricName}`);
 		}
 	}
 
