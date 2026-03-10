@@ -1,7 +1,7 @@
 
 import { JWTStrategy } from '../jwt.strategy.js';
 import { UnauthorizedException } from '@nestjs/common';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { TokenBlacklistService } from '../token-blacklist.service.js';
 
 describe('JWTStrategy - Additional Validation Tests', () => {

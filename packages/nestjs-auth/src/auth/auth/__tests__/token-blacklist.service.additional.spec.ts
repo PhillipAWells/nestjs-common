@@ -309,8 +309,8 @@ describe('TokenBlacklistService - Additional Tests', () => {
 		});
 
 		it('should have ModuleRef available', () => {
-			expect(service.Module).toBeDefined();
-			expect(service.Module === mockModuleRef).toBe(true);
+			expect(service.moduleRef).toBeDefined();
+			expect(service.moduleRef === mockModuleRef).toBe(true);
 		});
 
 		it('should lazily load AppLogger', () => {

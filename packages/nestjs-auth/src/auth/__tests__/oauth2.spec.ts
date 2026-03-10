@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { OAuth2Strategy } from '../lib/oauth/strategies/oauth2.strategy.js';
 import { AuthService } from '../auth/auth.service.js';
 import { OAuthService } from '../lib/oauth/oauth.service.js';

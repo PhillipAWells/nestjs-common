@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { SessionService } from '../session.service.js';
-import type { IDeviceInfo, IUserProfile } from '../session.types.js';
+import type { IDeviceInfo } from '../session.types.js';
 describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 	let service: SessionService;
 	let mockRepository: any;
@@ -377,32 +377,31 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 	describe('AuthenticateSession() - Error Cases', () => {
 		it('should throw when repository.Update fails', async () => {
 			const failureService = new SessionService(
-			{
-				get: (token: any, defaultValue?: any) => {
-					if (token === 'SESSION_CONFIG') {
-
-						return {
-							sessionTtlMinutes: 1440,
-							enforceSessionLimit: false,
-							defaultMaxConcurrentSessions: 5,
-						};
-					}
-					if (token === 'SessionRepository') {
-						return {
-							FindBySessionId: async () => ({
-								sessionId: 'valid-session-id',
-								isAuthenticated: false,
-								deviceInfo: {},
-								loginHistory: [],
-							}),
-							FindActiveSessions: async () => [],
-							Update: async () => null, // Simulate update failure
-						};
-					}
-					if (token === 'SessionEventEmitter') return mockEventEmitter;
-					return defaultValue ?? null;
-				},
-			} as any);
+				{
+					get: (token: any, defaultValue?: any) => {
+						if (token === 'SESSION_CONFIG') {
+							return {
+								sessionTtlMinutes: 1440,
+								enforceSessionLimit: false,
+								defaultMaxConcurrentSessions: 5,
+							};
+						}
+						if (token === 'SessionRepository') {
+							return {
+								FindBySessionId: async () => ({
+									sessionId: 'valid-session-id',
+									isAuthenticated: false,
+									deviceInfo: {},
+									loginHistory: [],
+								}),
+								FindActiveSessions: async () => [],
+								Update: async () => null, // Simulate update failure
+							};
+						}
+						if (token === 'SessionEventEmitter') return mockEventEmitter;
+						return defaultValue ?? null;
+					},
+				} as any);
 			const userProfile = { id: 'user-id', email: 'user@example.com', name: 'Test User', roles: ['user'], permissions: [] };
 			const deviceInfo: IDeviceInfo = { userAgent: 'Mozilla/5.0', ipAddress: '127.0.0.1' };
 			await expect(

@@ -55,8 +55,8 @@ export class AuthModule {
 			CommonModule,
 
 			// Note: CacheModule is injected by the application, not by this module
-			// This prevents circular dependency with nestjs-graphql/cache
-			// Applications should import { CacheModule } from '@pawells/nestjs-graphql/cache'
+			// This prevents circular dependency with nestjs-graphql
+			// Applications should import { CacheModule } from '@pawells/nestjs-graphql'
 			// before importing AuthModule to enable token blacklisting
 			// Note: PyroscopeModule is imported by TracingModule - do not duplicate here
 		];
@@ -85,10 +85,10 @@ export class AuthModule {
 				},
 				{
 					provide: JWTStrategy,
-					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: any, tokenValidationService: TokenValidationService) => {
-						return new JWTStrategy(userLookupFn, appLogger, tokenValidationService);
+					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: any, tokenValidationService: TokenValidationService, tokenBlacklistService: TokenBlacklistService) => {
+						return new JWTStrategy(userLookupFn, appLogger, tokenValidationService, tokenBlacklistService);
 					},
-					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService],
+					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService, TokenBlacklistService],
 				},
 			],
 			controllers: [AuthController],

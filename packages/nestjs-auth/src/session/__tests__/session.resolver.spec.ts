@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionResolver } from '../session.resolver.js';
 import { SessionService } from '../session.service.js';
-import { AppLogger } from '@pawells/nestjs-shared/common/services/logger.service.ts';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { v4 as uuidv4 } from 'uuid';
 import { BadRequestException } from '@nestjs/common';
 import { Redis } from 'ioredis';

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CacheService } from '@pawells/nestjs-graphql/cache';
+import { CacheService } from '@pawells/nestjs-graphql';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { TokenBlacklistService } from '../token-blacklist.service.js';
 import { jest } from '@jest/globals';

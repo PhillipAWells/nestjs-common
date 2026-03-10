@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '@pawells/nestjs-shared/common/utils/lazy-getter.types';
 import { AppLogger, CACHE_PROVIDER, type ICacheProvider } from '@pawells/nestjs-shared/common';
@@ -7,7 +7,6 @@ import { TOKEN_TTL_24_HOURS } from '../constants/auth-timeouts.constants.js';
 /**
  * Token blacklist service for managing revoked tokens
  */
-import { UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class TokenBlacklistService implements LazyModuleRefService {

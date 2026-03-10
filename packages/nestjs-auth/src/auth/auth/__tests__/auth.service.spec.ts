@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { CacheService } from '@pawells/nestjs-graphql/cache';
+import { CacheService } from '@pawells/nestjs-graphql';
 import { AppLogger, AuditLoggerService } from '@pawells/nestjs-shared/common';
 import { AuthService } from '../auth.service.js';
 import { User, JWTPayload } from '../auth.types.js';

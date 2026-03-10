@@ -1,5 +1,5 @@
 
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from '../auth.service.js';
 import * as bcrypt from 'bcryptjs';
 
@@ -350,7 +350,7 @@ describe('Auth Service - User Validation & Token Management', () => {
 
 	describe('validateUser() - Bcrypt Integration', () => {
 		it('should use bcrypt.compare for password validation', async () => {
-			const compareSpy = jest.spyOn(bcrypt, 'compare');
+			const compareSpy = vi.spyOn(bcrypt, 'compare');
 			const hashedPassword = await bcrypt.hash('password123', 10);
 			const user = {
 				id: 'user-id',

@@ -2,7 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { AuthService } from '../auth/auth.service.js';
 import { JWTAuthGuard } from '../auth/jwt-auth.guard.js';
 import { TokenBlacklistService } from '../auth/token-blacklist.service.js';
