@@ -190,7 +190,7 @@ export function CreateOptionalLazyGetter<T>(
  * ```
  */
 export function IsLazyModuleRefService(value: any): value is LazyModuleRefService {
-	return value && typeof value === 'object' && value.moduleRef instanceof ModuleRef;
+	return !!(value && typeof value === 'object' && 'moduleRef' in value && value.moduleRef instanceof ModuleRef);
 }
 
 /**

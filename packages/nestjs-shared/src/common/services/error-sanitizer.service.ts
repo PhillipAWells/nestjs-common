@@ -51,7 +51,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * Precompiled regex pattern for matching file paths with code extensions
 	 * Used to redact file paths from error messages
 	 */
-	private static readonly FILE_PATH_REGEX = /\/[a-zA-Z0-9_./:-]*\.(?:ts|js|json|py|go|rb|java|cs|php)/g;
+	private static readonly FILE_PATH_REGEX = /\/[a-zA-Z0-9_./:-]{0,200}\.(?:ts|js|json|py|go|rb|java|cs|php)/g;
 
 	/**
 	 * Precompiled regex pattern for matching IPv4 addresses
