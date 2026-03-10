@@ -90,6 +90,17 @@ describe('PrometheusExporter', () => {
 			expect(exporter).toBeDefined();
 			expect(exporter['instruments'].has('test_updown')).toBe(true);
 		});
+
+		it('should throw error for unsupported metric type', () => {
+			expect(() => {
+				exporter.onDescriptorRegistered({
+					name: 'test_invalid',
+					type: 'invalid_type' as any,
+					help: 'Test invalid',
+					labelNames: [],
+				});
+			}).toThrow('Unsupported metric type "invalid_type" for descriptor "test_invalid"');
+		});
 	});
 
 	describe('onMetricRecorded', () => {
@@ -115,6 +126,59 @@ describe('PrometheusExporter', () => {
 			expect(exporter).toBeDefined();
 			expect(exporter['pending'].has('test_metric')).toBe(true);
 			expect(exporter['pending'].get('test_metric')).toHaveLength(1);
+		});
+
+		it('should warn when metric is recorded before descriptor registration', () => {
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+			const descriptor = {
+				name: 'unregistered_metric',
+				type: 'counter' as const,
+				help: 'Unregistered metric',
+				labelNames: [],
+			};
+
+			const metricValue = {
+				descriptor,
+				value: 5,
+				labels: {},
+				timestamp: Date.now(),
+			};
+
+			exporter.onMetricRecorded(metricValue);
+
+			expect(warnSpy).toHaveBeenCalledWith(
+				'Metric recorded before descriptor registration: unregistered_metric',
+			);
+			warnSpy.mockRestore();
+		});
+
+		it('should cap pending array to MAX_PENDING_PER_METRIC', () => {
+			const descriptor = {
+				name: 'test_metric',
+				type: 'counter' as const,
+				help: 'Test metric',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			const metricValue = {
+				descriptor,
+				value: 5,
+				labels: {},
+				timestamp: Date.now(),
+			};
+
+			// Record MAX_PENDING_PER_METRIC + 100 values
+			 
+			for (let i = 0; i < 1100; i++) {
+				exporter.onMetricRecorded(metricValue);
+			}
+
+			// Should have at most MAX_PENDING_PER_METRIC items
+			 
+			expect(exporter['pending'].get('test_metric')).toHaveLength(1000);
 		});
 	});
 
@@ -223,11 +287,131 @@ describe('PrometheusExporter', () => {
 		});
 	});
 
+	describe('getMetrics', () => {
+		it('should skip empty pending arrays', async () => {
+			const descriptor = {
+				name: 'test_counter',
+				type: 'counter' as const,
+				help: 'Test counter',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// Call getMetrics without recording any metrics
+			await exporter.getMetrics();
+
+			// Counter.inc should not have been called since pendingValues is empty
+			expect(mockCounter.inc).not.toHaveBeenCalled();
+		});
+
+		it('should skip pending metrics without instruments', async () => {
+			const descriptor = {
+				name: 'test_counter',
+				type: 'counter' as const,
+				help: 'Test counter',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			const metricValue = {
+				descriptor,
+				value: 10,
+				labels: {},
+				timestamp: Date.now(),
+			};
+
+			exporter.onMetricRecorded(metricValue);
+
+			// Remove the instrument before calling getMetrics
+			exporter['instruments'].delete('test_counter');
+
+			await exporter.getMetrics();
+
+			// Counter.inc should not have been called since instrument was removed
+			expect(mockCounter.inc).not.toHaveBeenCalled();
+		});
+
+		it('should handle metric with no descriptor in pending values', async () => {
+			const descriptor = {
+				name: 'test_counter',
+				type: 'counter' as const,
+				help: 'Test counter',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// Manually add a pending array with an entry that has no descriptor
+			exporter['pending'].set('test_no_descriptor', [
+				{
+					descriptor: undefined as any,
+					value: 5,
+					labels: {},
+					timestamp: Date.now(),
+				},
+			]);
+
+			await exporter.getMetrics();
+
+			expect(mockCounter.inc).not.toHaveBeenCalled();
+		});
+
+		it('should handle updown_counter type in getMetrics', async () => {
+			const descriptor = {
+				name: 'test_updown',
+				type: 'updown_counter' as const,
+				help: 'Test updown counter',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			const metricValue = {
+				descriptor,
+				value: 42,
+				labels: {},
+				timestamp: Date.now(),
+			};
+
+			exporter.onMetricRecorded(metricValue);
+			await exporter.getMetrics();
+
+			expect(mockGauge.set).toHaveBeenCalledWith({}, 42);
+		});
+	});
+
 	describe('shutdown', () => {
 		it('should clear the registry', async () => {
 			await exporter.shutdown();
 
 			expect(mockRegistry.clear).toHaveBeenCalled();
+		});
+
+		it('should clear all internal state', async () => {
+			const descriptor = {
+				name: 'test_counter',
+				type: 'counter' as const,
+				help: 'Test counter',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			const metricValue = {
+				descriptor,
+				value: 5,
+				labels: {},
+				timestamp: Date.now(),
+			};
+
+			exporter.onMetricRecorded(metricValue);
+
+			await exporter.shutdown();
+
+			expect(exporter['instruments'].size).toBe(0);
+			expect(exporter['pending'].size).toBe(0);
 		});
 	});
 });
