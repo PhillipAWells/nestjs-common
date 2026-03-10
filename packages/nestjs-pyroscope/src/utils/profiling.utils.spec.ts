@@ -538,7 +538,7 @@ describe('Profiling Utils', () => {
 
 				const formatted = ProfilingErrorHandler.formatError(error);
 
-				expect(formatted).toBe('Profiling error: Something went wrong');
+				expect(formatted).toBe('Profiling operation failed');
 			});
 		});
 

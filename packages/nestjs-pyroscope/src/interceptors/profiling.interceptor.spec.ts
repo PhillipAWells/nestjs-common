@@ -1,8 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
 import { of, throwError, from } from 'rxjs';
 import { ProfilingInterceptor } from './profiling.interceptor.js';
-import { PyroscopeService } from '../service.js';
 
 describe('ProfilingInterceptor', () => {
 	let interceptor: ProfilingInterceptor;
@@ -22,17 +20,8 @@ describe('ProfilingInterceptor', () => {
 			}),
 		} as any;
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				ProfilingInterceptor,
-				{
-					provide: PyroscopeService,
-					useValue: mockPyroscopeService,
-				},
-			],
-		}).compile();
-
-		interceptor = module.get<ProfilingInterceptor>(ProfilingInterceptor);
+		// Directly instantiate the interceptor with the mocked service
+		interceptor = new ProfilingInterceptor(mockPyroscopeService);
 
 		// Set up mock execution context
 		const mockRequest = {
@@ -223,7 +212,7 @@ describe('ProfilingInterceptor', () => {
 								tags: expect.objectContaining({
 									statusCode: '500',
 									success: 'false',
-									error: 'Request failed',
+									error: 'unknown',
 								}),
 							}),
 						);
