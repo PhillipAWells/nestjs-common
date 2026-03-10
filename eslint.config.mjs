@@ -196,6 +196,7 @@ export default [
 		},
 		rules: {
 			'no-magic-numbers': 'off',
+			'require-await': 'off',
 			'@typescript-eslint/no-non-null-assertion': 'off',
 			'@typescript-eslint/naming-convention': 'off',
 			'@typescript-eslint/explicit-function-return-type': 'off',
