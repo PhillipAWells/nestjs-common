@@ -157,7 +157,6 @@ export class QdrantModule {
 		return {
 			provide: optionsToken,
 			// The factory receives a QdrantOptionsFactory instance which may be async
-
 			useFactory: async (factory: QdrantOptionsFactory) => {
 				try {
 					const opts = await factory.createQdrantOptions();

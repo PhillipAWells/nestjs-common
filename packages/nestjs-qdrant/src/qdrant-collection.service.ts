@@ -21,7 +21,6 @@ export class QdrantCollectionService {
 	 * @returns Search results
 	 * @throws Error with context if search fails
 	 */
-	 
 	public async search(params: Parameters<QdrantClient['search']>[1]): ReturnType<QdrantClient['search']> {
 		try {
 			return await this.client.search(this.collectionName, params);
@@ -36,7 +35,6 @@ export class QdrantCollectionService {
 	 * @returns Upsert result
 	 * @throws Error with context if upsert fails
 	 */
-	 
 	public async upsert(params: Parameters<QdrantClient['upsert']>[1]): ReturnType<QdrantClient['upsert']> {
 		try {
 			return await this.client.upsert(this.collectionName, params);
@@ -51,7 +49,6 @@ export class QdrantCollectionService {
 	 * @returns Delete result
 	 * @throws Error with context if delete fails
 	 */
-	 
 	public async delete(params: Parameters<QdrantClient['delete']>[1]): ReturnType<QdrantClient['delete']> {
 		try {
 			return await this.client.delete(this.collectionName, params);
@@ -65,7 +62,6 @@ export class QdrantCollectionService {
 	 * @returns Collection info
 	 * @throws Error with context if getInfo fails
 	 */
-	 
 	public async getInfo(): ReturnType<QdrantClient['getCollection']> {
 		try {
 			return await this.client.getCollection(this.collectionName);

@@ -34,7 +34,8 @@ describe('QdrantModule', () => {
 
 		it('should provide QDRANT_MODULE_OPTIONS', () => {
 			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
-			expect(options).toStrictEqual(mockQdrantOptions);
+			// Note: apiKey is stripped for security when storing options
+			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
 
 		it('should provide QDRANT_CLIENT_TOKEN', () => {
@@ -84,7 +85,8 @@ describe('QdrantModule', () => {
 
 		it('should provide QDRANT_MODULE_OPTIONS from factory', () => {
 			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
-			expect(options).toStrictEqual(mockQdrantOptions);
+			// Note: apiKey is stripped for security when storing options
+			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
 
 		it('should provide QDRANT_CLIENT_TOKEN', () => {
@@ -129,7 +131,8 @@ describe('QdrantModule', () => {
 
 		it('should provide QDRANT_MODULE_OPTIONS from factory class', () => {
 			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
-			expect(options).toEqual(mockQdrantOptions);
+			// Note: apiKey is stripped for security when storing options
+			expect(options).toEqual({ url: 'http://localhost:6333' });
 		});
 
 		it('should provide QDRANT_CLIENT_TOKEN', () => {
@@ -185,7 +188,8 @@ describe('QdrantModule', () => {
 				const options = module.get<QdrantModuleOptions>(namedOptionsToken);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://qdrant-archive:6333');
-				expect(options.apiKey).toBe('archive-api-key');
+				// Note: apiKey is stripped for security when storing options
+				expect((options as any).apiKey).toBeUndefined();
 				expect((options as any).name).toBeUndefined();
 			});
 

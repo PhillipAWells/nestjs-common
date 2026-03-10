@@ -3,7 +3,7 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { jest } from '@jest/globals';
+import { describe, it, expect, beforeEach , vi } from 'vitest';
 import { QdrantCollectionService } from '../qdrant-collection.service.js';
 
 describe('QdrantCollectionService', () => {
@@ -13,10 +13,10 @@ describe('QdrantCollectionService', () => {
 
 	beforeEach(() => {
 		mockClient = {
-			search: jest.fn(),
-			upsert: jest.fn(),
-			delete: jest.fn(),
-			getCollection: jest.fn(),
+			search: vi.fn(),
+			upsert: vi.fn(),
+			delete: vi.fn(),
+			getCollection: vi.fn(),
 		} as unknown as QdrantClient;
 
 		service = new QdrantCollectionService(mockClient, collectionName);
