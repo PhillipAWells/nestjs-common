@@ -49,26 +49,10 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 * Called after module initialization.
 	 * Registers the OpenTelemetry exporter with the instrumentation registry.
 	 */
-	/**
-	 * Called after module initialization.
-	 * Registers the OpenTelemetry exporter with the instrumentation registry.
-	 */
 	public onModuleInit(): void {
 		this.registry.registerExporter(this.exporter);
 	}
 
-	/**
-	 * Create a global OpenTelemetryModule for root application
-	 * @returns DynamicModule configured as global
-	 *
-	 * @example
-	 * ```typescript
-	 * @Module({
-	 *   imports: [OpenTelemetryModule.forRoot()],
-	 * })
-	 * export class AppModule {}
-	 * ```
-	 */
 	/**
 	 * Create a global OpenTelemetryModule for root application
 	 * @returns DynamicModule configured as global

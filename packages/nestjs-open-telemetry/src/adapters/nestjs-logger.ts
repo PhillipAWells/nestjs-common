@@ -34,16 +34,16 @@ export class OpenTelemetryLogger implements LoggerService {
 	}
 
 	/**
-   * Log a message (info level)
-   */
+	 * Log a message (info level).
+	 */
 	public log(message: any, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.info(this.formatMessage(message), metadata);
 	}
 
 	/**
-   * Log an error message
-   */
+	 * Log an error message.
+	 */
 	public error(message: any, stackTrace?: string, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		if (stackTrace) {
@@ -53,31 +53,31 @@ export class OpenTelemetryLogger implements LoggerService {
 	}
 
 	/**
-   * Log a warning message
-   */
+	 * Log a warning message.
+	 */
 	public warn(message: any, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.warn(this.formatMessage(message), metadata);
 	}
 
 	/**
-   * Log a debug message
-   */
+	 * Log a debug message.
+	 */
 	public debug(message: any, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.debug(this.formatMessage(message), metadata);
 	}
 
 	/**
-   * Log a verbose message (mapped to debug)
-   */
+	 * Log a verbose message (mapped to debug).
+	 */
 	public verbose(message: any, context?: string): void {
 		this.debug(message, context);
 	}
 
 	/**
-   * Build metadata with trace context and NestJS context
-   */
+	 * Build metadata with trace context and NestJS context.
+	 */
 	private buildMetadata(context?: string): Record<string, any> {
 		const metadata: Record<string, any> = {};
 
@@ -101,8 +101,8 @@ export class OpenTelemetryLogger implements LoggerService {
 	}
 
 	/**
-   * Format message to string
-   */
+	 * Format message to string.
+	 */
 	private formatMessage(message: any): string {
 		if (typeof message === 'string') {
 			return message;
