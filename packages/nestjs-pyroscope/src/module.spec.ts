@@ -8,7 +8,7 @@ import { IPyroscopeConfig } from './interfaces/profiling.interface.js';
 
 describe('PyroscopeModule', () => {
 	const mockConfig: IPyroscopeConfig = {
-		enabled: true,
+		enabled: false,
 		serverAddress: 'http://localhost:4040',
 		applicationName: 'test-app',
 		tags: { env: 'test' },

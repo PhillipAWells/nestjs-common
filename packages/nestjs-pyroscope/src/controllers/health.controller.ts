@@ -1,5 +1,4 @@
 import { Controller, Get, Inject, Header } from '@nestjs/common';
-import { HealthCheck } from '@nestjs/terminus';
 import { PyroscopeService } from '../service.js';
 import { MetricsService } from '../services/metrics.service.js';
 import type { MetricsResponse } from '../services/metrics.service.js';
@@ -46,7 +45,6 @@ export class HealthController {
 	 * @returns HealthResponse with comprehensive health information
 	 */
 	@Get('health')
-	@HealthCheck()
 	@Header('Cache-Control', 'no-store')
 	public getHealth(): HealthResponse {
 		const pyroscopeHealth = this.pyroscopeService.getHealth();

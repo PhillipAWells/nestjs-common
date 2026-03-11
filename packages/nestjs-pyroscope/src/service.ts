@@ -37,13 +37,23 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	/**
 	 * Initialize Pyroscope client on module initialization
+	 * Returns immediately without blocking, initialization happens in background
 	 */
-	public async onModuleInit(): Promise<void> {
+	public onModuleInit(): void {
 		if (!this.config.enabled) {
 			this.logger.log('Pyroscope profiling is disabled');
 			return;
 		}
 
+		// Fire-and-forget: defer initialization to next event loop iteration
+		setImmediate(() => void this.initializePyroscope());
+	}
+
+	/**
+	 * Initialize Pyroscope client asynchronously
+	 * @private
+	 */
+	private async initializePyroscope(): Promise<void> {
 		try {
 			// Dynamic import to avoid issues if package is not installed
 			const Pyroscope = await import('@pyroscope/nodejs');
