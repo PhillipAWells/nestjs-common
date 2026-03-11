@@ -45,6 +45,9 @@ export interface JWTPayload {
 	sub: string;
 	email: string;
 	role: string;
+	type?: 'access' | 'refresh'; // Token type for distinguishing access vs refresh tokens
+	iss?: string; // Issuer
+	aud?: string; // Audience
 	exp?: number; // Expiration timestamp
 	iat?: number; // Issued at timestamp
 }

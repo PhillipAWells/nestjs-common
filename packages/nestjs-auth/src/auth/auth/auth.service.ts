@@ -113,7 +113,7 @@ export class AuthService implements LazyModuleRefService {
 	async login(user: User): Promise<AuthResponse> {
 		this.logger.info(`User login initiated for ${user.email}`);
 
-		const payload: JWTPayload = {
+		const basePayload: JWTPayload = {
 			email: user.email,
 			sub: user.id,
 			role: user.role ?? 'user',
@@ -122,15 +122,31 @@ export class AuthService implements LazyModuleRefService {
 		const accessTokenExpiry = '15m';
 		const refreshTokenExpiry = '3d';
 
-		const accessToken = this.JwtService.sign(payload, {
-			expiresIn: accessTokenExpiry,
-			algorithm: 'HS256',
-		});
+		const accessToken = this.JwtService.sign(
+			{
+				...basePayload,
+				type: 'access',
+				iss: 'auth-service',
+				aud: 'clients',
+			},
+			{
+				expiresIn: accessTokenExpiry,
+				algorithm: 'HS256',
+			},
+		);
 
-		const refreshToken = this.JwtService.sign(payload, {
-			expiresIn: refreshTokenExpiry,
-			algorithm: 'HS256',
-		});
+		const refreshToken = this.JwtService.sign(
+			{
+				...basePayload,
+				type: 'refresh',
+				iss: 'auth-service',
+				aud: 'clients',
+			},
+			{
+				expiresIn: refreshTokenExpiry,
+				algorithm: 'HS256',
+			},
+		);
 
 		// Validate tokens have correct expiration
 		this.validateTokenExpiration(accessToken, accessTokenExpiry);
@@ -340,10 +356,18 @@ export class AuthService implements LazyModuleRefService {
 			};
 
 			const accessTokenExpiry = '15m';
-			const newAccessToken = this.JwtService.sign(newPayload, {
-				expiresIn: accessTokenExpiry,
-				algorithm: 'HS256',
-			});
+			const newAccessToken = this.JwtService.sign(
+				{
+					...newPayload,
+					type: 'access',
+					iss: 'auth-service',
+					aud: 'clients',
+				},
+				{
+					expiresIn: accessTokenExpiry,
+					algorithm: 'HS256',
+				},
+			);
 
 			// Blacklist the old refresh token
 			const refreshTokenDecoded = this.JwtService.decode(refreshToken) as JWTPayload;

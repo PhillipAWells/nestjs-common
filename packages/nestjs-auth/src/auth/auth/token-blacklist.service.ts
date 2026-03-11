@@ -65,9 +65,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async isTokenBlacklisted(token: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - throw to fail securely
-			this.logger.error('Cache provider not available - cannot check token blacklist');
-			throw new UnauthorizedException('Token validation service unavailable');
+			// Cache provider not available - return false (assume token is not blacklisted)
+			this.logger.warn('Cache provider not available - cannot check token blacklist, assuming token is valid');
+			return false;
 		}
 		try {
 			const isBlacklisted = await cacheProvider.exists(`blacklist:${token}`);
@@ -115,9 +115,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async hasUserRevokedTokens(userId: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - throw to fail securely
-			this.logger.error('Cache provider not available - cannot check user token revocation');
-			throw new UnauthorizedException('Token validation service unavailable');
+			// Cache provider not available - return false (assume tokens are not revoked)
+			this.logger.warn('Cache provider not available - cannot check user token revocation, assuming tokens are valid');
+			return false;
 		}
 		try {
 			const revoked = await cacheProvider.exists(`revoke:${userId}`);
