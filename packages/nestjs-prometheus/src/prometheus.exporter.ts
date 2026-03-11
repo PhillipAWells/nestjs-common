@@ -97,6 +97,17 @@ export class PrometheusExporter implements IMetricsExporter {
 	public onDescriptorRegistered(descriptor: MetricDescriptor): void {
 		const { name, type, help, labelNames, buckets } = descriptor;
 
+		// Validate required fields
+		if (!name) {
+			this.logger.warn('Metric descriptor registered with empty name');
+			return;
+		}
+
+		if (!help) {
+			this.logger.warn(`Metric descriptor "${name}" registered with empty help text`);
+			return;
+		}
+
 		let instrument: Counter<string> | Histogram<string> | Gauge<string>;
 
 		switch (type) {
@@ -181,6 +192,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * the complete metrics output in Prometheus text format (version 0.0.4).
 	 *
 	 * @returns Promise resolving to metrics in Prometheus text format
+	 * @throws Error if metrics generation fails
 	 *
 	 * @example
 	 * ```typescript
@@ -233,7 +245,13 @@ export class PrometheusExporter implements IMetricsExporter {
 		}
 
 		// Return metrics in Prometheus text format
-		return this.registry.metrics();
+		try {
+			return await this.registry.metrics();
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.logger.error(`Failed to generate Prometheus metrics: ${message}`);
+			throw error;
+		}
 	}
 
 	/**

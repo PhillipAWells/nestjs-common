@@ -1,4 +1,4 @@
-import { Global, Module, OnModuleInit, type DynamicModule } from '@nestjs/common';
+import { Global, Module, OnModuleInit, OnApplicationShutdown, type DynamicModule } from '@nestjs/common';
 import { InstrumentationRegistry } from '@pawells/nestjs-shared';
 import { PrometheusExporter } from './prometheus.exporter.js';
 import { MetricsController } from './controllers/metrics.controller.js';
@@ -35,7 +35,7 @@ import { MetricsController } from './controllers/metrics.controller.js';
 	exports: [PrometheusExporter],
 	controllers: [MetricsController],
 })
-export class PrometheusModule implements OnModuleInit {
+export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	/**
 	 * Create a global PrometheusModule with automatic registration
 	 *
@@ -79,6 +79,23 @@ export class PrometheusModule implements OnModuleInit {
 	 */
 	public onModuleInit(): void {
 		this.registry.registerExporter(this.exporter);
+	}
+
+	/**
+	 * Clean up resources on application shutdown
+	 *
+	 * Called by NestJS during application shutdown. Calls the PrometheusExporter's
+	 * shutdown method to clean up the registry and release resources.
+	 *
+	 * @example
+	 * ```typescript
+	 * // During application shutdown:
+	 * // onApplicationShutdown() is called
+	 * // PrometheusExporter clears registry and internal state
+	 * ```
+	 */
+	public async onApplicationShutdown(): Promise<void> {
+		await this.exporter.shutdown();
 	}
 
 	constructor(
