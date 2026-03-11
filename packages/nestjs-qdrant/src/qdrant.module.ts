@@ -162,8 +162,7 @@ export class QdrantModule {
 					throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
 				}
 			},
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			inject: [options.useExisting ?? options.useClass!],
+			inject: [options.useExisting ?? options.useClass] as InjectionToken[],
 		};
 	}
 }

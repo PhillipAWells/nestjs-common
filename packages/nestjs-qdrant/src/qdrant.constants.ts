@@ -24,3 +24,8 @@ export function getQdrantClientToken(name?: string): string {
 export function getQdrantModuleOptionsToken(name?: string): string {
 	return name ? `QDRANT_MODULE_OPTIONS:${name}` : QDRANT_MODULE_OPTIONS;
 }
+
+/**
+ * Maximum length for a Qdrant collection name
+ */
+export const MAX_COLLECTION_NAME_LENGTH = 255;

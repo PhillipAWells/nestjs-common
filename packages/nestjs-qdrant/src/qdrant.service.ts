@@ -5,13 +5,8 @@
 
 import { BadRequestException, Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { QDRANT_CLIENT_TOKEN } from './qdrant.constants.js';
+import { MAX_COLLECTION_NAME_LENGTH, QDRANT_CLIENT_TOKEN } from './qdrant.constants.js';
 import { QdrantCollectionService } from './qdrant-collection.service.js';
-
-/**
- * Maximum length for a Qdrant collection name
- */
-const MAX_COLLECTION_NAME_LENGTH = 255;
 
 /**
  * Injectable service that wraps the Qdrant client
@@ -36,7 +31,7 @@ export class QdrantService implements OnModuleDestroy {
 	 * @throws BadRequestException if collection name is invalid
 	 */
 	public collection(collectionName: string): QdrantCollectionService {
-		if (!collectionName || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/.test(collectionName) || collectionName.length > MAX_COLLECTION_NAME_LENGTH) {
+		if (!collectionName || !/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName) || collectionName.length > MAX_COLLECTION_NAME_LENGTH) {
 			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
 		}
 		return new QdrantCollectionService(this.client, collectionName);
