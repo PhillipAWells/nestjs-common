@@ -22,7 +22,28 @@ export class ConnectionManagerService {
 	// eslint-disable-next-line no-undef
 	private readonly connectionTimers = new Map<string, NodeJS.Timeout>();
 
+	private connectionIdMap = new WeakMap<any, string>();
+
+	private connectionCounter = 0;
+
 	constructor(@Inject('SUBSCRIPTION_CONFIG') private readonly config: SubscriptionConfig) {}
+
+	/**
+	 * Generate a unique key for a connection based on userId and the ws object
+	 * If ws has an id property, use it; otherwise use the object counter
+	 */
+	private getConnectionKey(ws: any, userId: string): string {
+		// If WebSocket has an id property, use it for stability across object instances
+		if (ws && typeof ws === 'object' && 'id' in ws) {
+			return `${userId}:${ws.id}`;
+		}
+		// Check if we've already assigned a key to this object
+		if (ws && typeof ws === 'object' && this.connectionIdMap.has(ws)) {
+			return this.connectionIdMap.get(ws)!;
+		}
+		// Generate a new key for this object
+		return `${userId}:${this.connectionCounter++}`;
+	}
 
 	/**
    * Adds a new WebSocket connection
@@ -35,12 +56,20 @@ export class ConnectionManagerService {
 		}
 		this.connections.get(userId)!.add(ws);
 
+		// Generate unique connection ID using helper method
+		const connectionId = this.getConnectionKey(ws, userId);
+
+		// Track the connectionId in WeakMap for later retrieval (only if object)
+		if (ws && typeof ws === 'object' && !('id' in ws)) {
+			this.connectionIdMap.set(ws, connectionId);
+		}
+
 		// Set connection timeout
 		const timer = setTimeout(() => {
 			this.removeConnection(ws, userId);
 		}, this.config.connection.timeout);
 
-		this.connectionTimers.set(`${userId}:${ws}`, timer);
+		this.connectionTimers.set(connectionId, timer);
 
 		this.logger.debug(`Added connection for user: ${userId}`);
 	}
@@ -53,18 +82,35 @@ export class ConnectionManagerService {
 	public removeConnection(ws: any, userId: string): void {
 		const userConnections = this.connections.get(userId);
 		if (userConnections) {
-			userConnections.delete(ws);
+			// If ws has an id property, match by id
+			if (ws && typeof ws === 'object' && 'id' in ws) {
+				for (const connection of userConnections) {
+					if (connection && typeof connection === 'object' && 'id' in connection && connection.id === ws.id) {
+						userConnections.delete(connection);
+						break;
+					}
+				}
+			} else {
+				// Otherwise match by object reference
+				userConnections.delete(ws);
+			}
+
 			if (userConnections.size === 0) {
 				this.connections.delete(userId);
 			}
 		}
 
-		// Clear timeout
-		const timerKey = `${userId}:${ws}`;
-		const timer = this.connectionTimers.get(timerKey);
+		// Clear timeout using the same key generation logic
+		const connectionId = this.getConnectionKey(ws, userId);
+		const timer = this.connectionTimers.get(connectionId);
 		if (timer) {
 			clearTimeout(timer);
-			this.connectionTimers.delete(timerKey);
+		}
+		this.connectionTimers.delete(connectionId);
+
+		// Clean up WeakMap if applicable
+		if (ws && typeof ws === 'object' && !('id' in ws)) {
+			this.connectionIdMap.delete(ws);
 		}
 
 		// Remove all subscriptions for this connection

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
@@ -9,7 +9,10 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
 export class SubscriptionService implements OnModuleDestroy {
 	private readonly logger: AppLogger;
 
-	constructor(appLogger: AppLogger) {
+	constructor(
+		appLogger: AppLogger,
+		@Optional() @Inject('GRAPHQL_PUBSUB') private readonly pubSub?: any,
+	) {
 		this.logger = appLogger.createContextualLogger(SubscriptionService.name);
 	}
 
@@ -22,7 +25,10 @@ export class SubscriptionService implements OnModuleDestroy {
 	public async publish(topic: string, data: any): Promise<void> {
 		try {
 			this.logger.debug(`Publishing to topic: ${topic}`);
-			await (this as any).pubSub.publish(topic, data);
+			if (!this.pubSub) {
+				throw new Error('PubSub instance not configured');
+			}
+			await this.pubSub.publish(topic, data);
 		} catch (error) {
 			this.logger.error(
 				`Failed to publish to topic ${topic}: ${(error as Error).message}`,
@@ -41,7 +47,10 @@ export class SubscriptionService implements OnModuleDestroy {
 	public subscribe(topic: string): AsyncIterator<any> {
 		try {
 			this.logger.debug(`Subscribing to topic: ${topic}`);
-			return (this as any).pubSub.asyncIterator(topic);
+			if (!this.pubSub) {
+				throw new Error('PubSub instance not configured');
+			}
+			return this.pubSub.asyncIterator(topic);
 		} catch (error) {
 			this.logger.error(
 				`Failed to subscribe to topic ${topic}: ${(error as Error).message}`,

@@ -211,13 +211,14 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 			};
 		}
 
-		const remaining = Math.max(0, config.maxRequests - entry.count - 1);
 		const allowed = entry.count < config.maxRequests;
 
 		if (allowed) {
 			entry.count++;
 			this.store.set(clientId, entry);
 		}
+
+		const remaining = Math.max(0, config.maxRequests - entry.count);
 
 		return {
 			allowed,
