@@ -245,7 +245,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
  * @returns Attributes cast to valid OTel types
  */
 function castAttributesToValidTypes(
-	attributes: Record<string, string | number | boolean>,
+	attributes: Record<string, unknown>,
 ): Record<string, string | number | boolean> {
 	const result: Record<string, string | number | boolean> = {};
 
