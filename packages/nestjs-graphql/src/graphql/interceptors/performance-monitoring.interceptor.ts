@@ -1,4 +1,4 @@
-import { Injectable, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -23,7 +23,7 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceMonitoringInterceptor {
+export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor {
 	private readonly logger: AppLogger;
 
 	constructor(

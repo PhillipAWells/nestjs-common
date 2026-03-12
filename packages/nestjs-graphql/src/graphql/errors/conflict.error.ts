@@ -23,27 +23,3 @@ export class ConflictError extends GraphqlError {
 		super(message, options);
 	}
 }
-
-/**
- * Rate Limit Error
- *
- * Represents a 429 Too Many Requests error in GraphQL operations.
- * Used when rate limiting is exceeded.
- *
- * @example
- * ```typescript
- * throw new RateLimitError('Rate limit exceeded', { retryAfter: 60 });
- * ```
- */
-export class RateLimitError extends GraphqlError {
-	constructor(message = 'Rate limit exceeded', context?: Record<string, any>) {
-		const options: any = {
-			code: 'RATE_LIMIT_EXCEEDED',
-			statusCode: 429,
-		};
-		if (context !== undefined) {
-			options.context = context;
-		}
-		super(message, options);
-	}
-}

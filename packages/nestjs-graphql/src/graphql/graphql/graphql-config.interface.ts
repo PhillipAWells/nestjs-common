@@ -89,5 +89,5 @@ export interface GraphQLAsyncConfig {
 	/**
    * Dependencies to inject into the factory function
    */
-	inject: any[] | undefined;
+	inject?: unknown[];
 }

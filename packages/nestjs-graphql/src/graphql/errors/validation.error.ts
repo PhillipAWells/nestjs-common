@@ -20,7 +20,7 @@ export class ValidationError extends GraphqlError {
 	 * @param message - The error message
 	 * @param context - Additional context with validation details
 	 */
-	constructor(message = 'Validation failed', context: Record<string, any> | undefined) {
+	constructor(message = 'Validation failed', context?: Record<string, any>) {
 		super(message, {
 			code: 'VALIDATION_ERROR',
 			statusCode: 400,

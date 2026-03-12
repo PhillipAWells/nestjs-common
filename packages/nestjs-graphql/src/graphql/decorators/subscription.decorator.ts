@@ -19,7 +19,7 @@ export interface SubscriptionOptions {
 	requiresAuth?: boolean;
 
 	/** Custom resolver function */
-	resolver?: Function;
+	resolver?: (...args: unknown[]) => unknown;
 }
 
 /**

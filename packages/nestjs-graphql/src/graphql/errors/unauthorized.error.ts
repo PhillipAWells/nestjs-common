@@ -12,7 +12,7 @@ import { GraphqlError } from './graphql-error.js';
  * ```
  */
 export class UnauthorizedError extends GraphqlError {
-	constructor(message = 'Authentication required', context: Record<string, any> | undefined) {
+	constructor(message = 'Authentication required', context?: Record<string, any>) {
 		super(message, {
 			code: 'AUTHENTICATION_REQUIRED',
 			statusCode: 401,

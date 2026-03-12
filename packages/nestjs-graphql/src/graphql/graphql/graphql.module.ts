@@ -1,8 +1,7 @@
 import Joi from 'joi';
-import { Module, DynamicModule, Global, MiddlewareConsumer, NestModule, OnModuleInit, Optional } from '@nestjs/common';
+import { Module, DynamicModule, Global, MiddlewareConsumer, NestModule, OnModuleInit, Optional, Provider, Type } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { HttpAdapterHost } from '@nestjs/core';
 import { CommonModule } from '@pawells/nestjs-shared/common';
 import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 // Note: AuthModule NOT imported here to avoid circular dependency
@@ -32,10 +31,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	/**
 	 * Store config for use in onModuleInit
 	 */
-	private static bsonConfig: any = null;
+	private static bsonConfig: GraphQLConfigOptions['bson'] = undefined;
 
 	constructor(
-		@Optional() private readonly httpAdapterHost?: HttpAdapterHost,
 		@Optional() private readonly bsonService?: BsonSerializationService,
 		@Optional() private readonly bsonMiddleware?: BsonSerializationMiddleware,
 	) {}
@@ -85,7 +83,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			...options,
 		};
 
-		const providers: any[] = [
+		const providers: Provider[] = [
 			GraphQLService,
 			RateLimitService,
 			GraphQLCacheService,
@@ -150,7 +148,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
    * @returns Dynamic module configuration
    */
 	public static forRootAsync(options: GraphQLAsyncConfig): DynamicModule {
-		const providers: any[] = [
+		const providers: Provider[] = [
 			GraphQLService,
 			RateLimitService,
 			GraphQLCacheService,
@@ -216,9 +214,10 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	public configure(consumer: MiddlewareConsumer): void {
 		// Only configure if BSON is enabled
 		if (GraphQLModule.bsonConfig?.enabled && this.bsonMiddleware) {
+			// apply() accepts Type<NestMiddleware> or functional middleware;
+			// passing the injected instance requires a cast.
 			consumer
-				 
-				.apply(this.bsonMiddleware as any)
+				.apply(this.bsonMiddleware as unknown as Type<BsonSerializationMiddleware>)
 				.forRoutes('graphql');
 		}
 	}
