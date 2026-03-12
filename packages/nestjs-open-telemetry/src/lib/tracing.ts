@@ -1,4 +1,4 @@
-import { trace, context, SpanStatusCode, type Tracer, type SpanOptions, type Context } from '@opentelemetry/api';
+import { trace, context, SpanStatusCode, type Span, type Tracer, type SpanOptions, type Context } from '@opentelemetry/api';
 import { OTEL_NAMESPACE } from './constants.js';
 
 /**
@@ -74,7 +74,7 @@ export function createSpan(
 	name: string,
 	options?: SpanOptions,
 	makeActive = true,
-): { span: any; ctx: Context } {
+): { span: Span; ctx: Context } {
 	const span = tracer.startSpan(name, options);
 	const ctx = makeActive ? trace.setSpan(context.active(), span) : context.active();
 	return { span, ctx };

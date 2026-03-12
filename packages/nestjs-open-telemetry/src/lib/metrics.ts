@@ -1,4 +1,4 @@
-import { metrics, type Attributes } from '@opentelemetry/api';
+import { metrics, type Attributes, type Counter, type Histogram, type Meter, type MetricOptions, type UpDownCounter } from '@opentelemetry/api';
 import {
 	ATTR_HTTP_REQUEST_METHOD,
 	ATTR_HTTP_RESPONSE_STATUS_CODE,
@@ -13,7 +13,7 @@ const MAX_METER_CACHE_SIZE = 100;
 /**
  * Global meter cache to ensure singleton meters per name
  */
-const meterCache = new Map<string, any>();
+const meterCache = new Map<string, Meter>();
 
 /**
  * Get a meter for creating metrics.
@@ -23,7 +23,7 @@ const meterCache = new Map<string, any>();
  * @param version - Meter version (optional)
  * @returns Meter instance
  */
-export function getMeter(name: string, version?: string): any {
+export function getMeter(name: string, version?: string): Meter {
 	const cacheKey = version ? `${name}@${version}` : name;
 	// Return cached meter if exists
 	const cached = meterCache.get(cacheKey);
@@ -51,7 +51,7 @@ export function getMeter(name: string, version?: string): any {
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Counter instance
  */
-export function createCounter(name: string, options?: any, meterName = '@pawells/nestjs-open-telemetry'): any {
+export function createCounter(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): Counter {
 	const meter = getMeter(meterName);
 	return meter.createCounter(name, options);
 }
@@ -64,7 +64,7 @@ export function createCounter(name: string, options?: any, meterName = '@pawells
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Histogram instance
  */
-export function createHistogram(name: string, options?: any, meterName = '@pawells/nestjs-open-telemetry'): any {
+export function createHistogram(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): Histogram {
 	const meter = getMeter(meterName);
 	return meter.createHistogram(name, options);
 }
@@ -77,7 +77,7 @@ export function createHistogram(name: string, options?: any, meterName = '@pawel
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns UpDownCounter instance
  */
-export function createUpDownCounter(name: string, options?: any, meterName = '@pawells/nestjs-open-telemetry'): any {
+export function createUpDownCounter(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): UpDownCounter {
 	const meter = getMeter(meterName);
 	return meter.createUpDownCounter(name, options);
 }
@@ -87,17 +87,23 @@ export function createUpDownCounter(name: string, options?: any, meterName = '@p
  * These metrics are created on first access, after SDK initialization.
  */
 let cachedHttpMetrics: {
-	requests: any;
-	duration: any;
-	activeRequests: any;
-	requestSize?: any;
-	responseSize?: any;
+	requests: Counter;
+	duration: Histogram;
+	activeRequests: UpDownCounter;
+	requestSize: Histogram;
+	responseSize: Histogram;
 } | null = null;
 
 /**
  * Get or initialize HTTP metrics
  */
-function getHttpMetrics() {
+function getHttpMetrics(): {
+	requests: Counter;
+	duration: Histogram;
+	activeRequests: UpDownCounter;
+	requestSize: Histogram;
+	responseSize: Histogram;
+} {
 	if (cachedHttpMetrics !== null) {
 		return cachedHttpMetrics;
 	}
@@ -161,9 +167,6 @@ export function recordHttpMetrics(
 	};
 
 	const httpMetrics = getHttpMetrics();
-	if (!httpMetrics) {
-		return;
-	}
 
 	// Record request count
 	httpMetrics.requests.add(1, attributes);
@@ -199,8 +202,5 @@ export function recordHttpMetrics(
  */
 export function trackActiveRequests(delta: number, attributes?: Attributes): void {
 	const httpMetrics = getHttpMetrics();
-	if (!httpMetrics) {
-		return;
-	}
 	httpMetrics.activeRequests.add(delta, attributes);
 }

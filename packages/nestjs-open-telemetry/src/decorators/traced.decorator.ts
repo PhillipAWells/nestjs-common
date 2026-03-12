@@ -97,16 +97,16 @@ export interface TracedOptions {
  */
 export function Traced(options: TracedOptions = {}): MethodDecorator {
 	return function(
-		target: any,
+		target: object,
 		propertyKey: string | symbol,
 		descriptor: PropertyDescriptor,
-	) {
+	): PropertyDescriptor {
 		// Guard against being used as a class decorator (descriptor will be undefined)
 		if (!descriptor) {
 			return descriptor;
 		}
-		const originalMethod = descriptor.value;
-		const className = target.constructor.name;
+		const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
+		const className = (target as { constructor: { name: string } }).constructor.name;
 		const methodName = String(propertyKey);
 
 		// Determine span name
@@ -116,7 +116,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 		const tracerName = `${OTEL_NAMESPACE}.${className}`;
 
 		// Replace method with traced version that preserves sync/async signatures
-		descriptor.value = function(...args: any[]) {
+		descriptor.value = function(...args: unknown[]): unknown {
 			const tracer = trace.getTracer(tracerName, '1.0.0');
 			const span = tracer.startSpan(spanName, {
 				kind: options.kind ?? SpanKind.INTERNAL,
@@ -387,7 +387,7 @@ function isValidCreditCard(num: string): boolean {
  * @param arg - Argument to sanitize
  * @returns Sanitized value or null
  */
-function sanitizeArgument(arg: any): string | number | boolean | null {
+function sanitizeArgument(arg: unknown): string | number | boolean | null {
 	// Handle primitives
 	if (typeof arg === 'string') {
 		// Detect and redact PII, then truncate
@@ -417,9 +417,9 @@ function sanitizeArgument(arg: any): string | number | boolean | null {
 		if (arg.length === 0) {
 			return '[]';
 		}
-		if (arg.length <= MAX_ARRAY_LENGTH_FOR_LOGGING && arg.every(item => typeof item === 'string' || typeof item === 'number')) {
+		if (arg.length <= MAX_ARRAY_LENGTH_FOR_LOGGING && (arg as unknown[]).every(item => typeof item === 'string' || typeof item === 'number')) {
 			// Sanitize array items for PII before serializing
-			const sanitizedArray = arg.map(item => {
+			const sanitizedArray = (arg as (string | number)[]).map(item => {
 				if (typeof item === 'string') {
 					return detectAndRedactPII(item);
 				}
@@ -427,12 +427,12 @@ function sanitizeArgument(arg: any): string | number | boolean | null {
 			});
 			return JSON.stringify(sanitizedArray);
 		}
-		return `Array(${arg.length})`;
+		return `Array(${(arg as unknown[]).length})`;
 	}
 
 	// Handle objects (omit for security)
 	if (typeof arg === 'object') {
-		return `Object(${Object.keys(arg).length} keys)`;
+		return `Object(${Object.keys(arg as object).length} keys)`;
 	}
 
 	// Skip functions, symbols, etc.

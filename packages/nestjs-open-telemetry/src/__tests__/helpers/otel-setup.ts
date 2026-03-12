@@ -72,8 +72,8 @@ export async function initializeOpenTelemetry(config: OpenTelemetryConfig): Prom
 		const resource = Resource.default().merge(
 			new Resource({
 				'service.name': config.serviceName,
-				'service.version': config.serviceVersion || '0.0.0',
-				'deployment.environment': config.environment || 'development',
+				'service.version': config.serviceVersion ?? '0.0.0',
+				'deployment.environment': config.environment ?? 'development',
 				...config.resourceAttributes,
 			}),
 		);

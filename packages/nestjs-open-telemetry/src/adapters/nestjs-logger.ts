@@ -101,7 +101,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Format message to string.
 	 */
-	private formatMessage(message: any): string {
+	private formatMessage(message: unknown): string {
 		if (typeof message === 'string') {
 			return message;
 		}
