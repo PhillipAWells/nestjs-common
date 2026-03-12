@@ -33,7 +33,7 @@ export interface HealthResponse {
 @Controller('profiling')
 export class HealthController {
 	constructor(
-		private readonly pyroscopeService: PyroscopeService,
+		@Inject(PyroscopeService) private readonly pyroscopeService: PyroscopeService,
 		@Inject(MetricsService) private readonly metricsService: MetricsService,
 		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
 	) {}
