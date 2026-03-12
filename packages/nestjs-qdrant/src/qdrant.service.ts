@@ -31,7 +31,7 @@ export class QdrantService implements OnModuleDestroy {
 	 * @throws BadRequestException if collection name is invalid
 	 */
 	public collection(collectionName: string): QdrantCollectionService {
-		if (!collectionName || !/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName) || collectionName.length > MAX_COLLECTION_NAME_LENGTH) {
+		if (!collectionName || collectionName.length > MAX_COLLECTION_NAME_LENGTH || !/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName)) {
 			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
 		}
 		return new QdrantCollectionService(this.client, collectionName);

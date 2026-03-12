@@ -22,9 +22,9 @@ export type QdrantModuleOptions = QdrantClientParams & {
  */
 export interface QdrantOptionsFactory {
 	/**
-   * Create and return Qdrant module options
-   * @returns Promise or synchronous Qdrant module options
-   */
+	 * Create and return Qdrant module options
+	 * @returns Promise or synchronous Qdrant module options
+	 */
 	createQdrantOptions(): Promise<QdrantModuleOptions> | QdrantModuleOptions;
 }
 

@@ -151,12 +151,14 @@ export class QdrantModule {
 						return opts;
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
-						throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
+						throw new Error(`QdrantModule async factory failed: ${errorMessage}`, { cause: error });
 					}
 				},
 				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
 			};
 		}
+		// At this point, useExisting or useClass is guaranteed to be set by createAsyncProviders
+		const factoryClass = options.useExisting ?? options.useClass;
 		return {
 			provide: token,
 			// The factory receives a QdrantOptionsFactory instance which may be async
@@ -166,10 +168,10 @@ export class QdrantModule {
 					return opts;
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
-					throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
+					throw new Error(`QdrantModule async factory failed: ${errorMessage}`, { cause: error });
 				}
 			},
-			inject: [options.useExisting ?? options.useClass] as InjectionToken[],
+			inject: factoryClass ? [factoryClass] : [],
 		};
 	}
 }
