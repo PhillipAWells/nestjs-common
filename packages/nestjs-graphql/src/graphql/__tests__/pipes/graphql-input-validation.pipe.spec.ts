@@ -240,16 +240,16 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 	});
 
 	describe('Edge cases', () => {
-		it('should handle empty objects', async () => {
+		it('should reject empty objects when required fields are missing', async () => {
 			const emptyInput = {};
 
-			const result = await pipe.transform(emptyInput, {
-				metatype: MockUserInput,
-				type: 'body',
-				data: undefined,
-			});
-
-			expect(result).toBeDefined();
+			await expect(
+				pipe.transform(emptyInput, {
+					metatype: MockUserInput,
+					type: 'body',
+					data: undefined,
+				}),
+			).rejects.toThrow(BadRequestException);
 		});
 
 		it('should handle Unicode characters in legitimate input', async () => {
