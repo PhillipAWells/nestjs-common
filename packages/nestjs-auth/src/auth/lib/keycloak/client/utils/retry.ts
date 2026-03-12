@@ -1,6 +1,14 @@
 import type { Logger } from '@pawells/logger';
 import { TimeoutError, RateLimitError, NetworkError } from '../errors/index.js';
 
+const HTTP_STATUS_TIMEOUT = 408;
+const HTTP_STATUS_RATE_LIMIT = 429;
+const HTTP_STATUS_INTERNAL_ERROR = 500;
+const HTTP_STATUS_BAD_GATEWAY = 502;
+const HTTP_STATUS_SERVICE_UNAVAILABLE = 503;
+const HTTP_STATUS_GATEWAY_TIMEOUT = 504;
+const JITTER_FACTOR = 0.2;
+
 /**
  * Retry configuration options
  */
@@ -49,7 +57,7 @@ const DEFAULT_RETRY_CONFIG: Required<Omit<RetryConfig, 'logger'>> = {
 	initialDelay: 1000,
 	maxDelay: 30000,
 	backoffMultiplier: 2,
-	retryableStatuses: [408, 429, 500, 502, 503, 504],
+	retryableStatuses: [HTTP_STATUS_TIMEOUT, HTTP_STATUS_RATE_LIMIT, HTTP_STATUS_INTERNAL_ERROR, HTTP_STATUS_BAD_GATEWAY, HTTP_STATUS_SERVICE_UNAVAILABLE, HTTP_STATUS_GATEWAY_TIMEOUT],
 };
 
 /**
@@ -81,7 +89,7 @@ function calculateDelay(
 	const delayWithCap = Math.min(exponentialDelay, maxDelay);
 
 	// Add jitter (±20%)
-	const jitter = delayWithCap * 0.2 * (Math.random() * 2 - 1);
+	const jitter = delayWithCap * JITTER_FACTOR * (Math.random() * 2 - 1);
 	return Math.floor(delayWithCap + jitter);
 }
 
@@ -132,5 +140,5 @@ export async function withRetry<T>(
 		}
 	}
 
-	throw lastError || new Error('Max retries exceeded');
+	throw lastError ?? new Error('Max retries exceeded');
 }

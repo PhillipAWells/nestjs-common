@@ -13,7 +13,7 @@ export class KeycloakHealthIndicator extends HealthIndicator {
 		super();
 	}
 
-	public async check(key: string): Promise<HealthIndicatorResult> {
+	public check(key: string): HealthIndicatorResult {
 		if (!this.config.enabled) {
 			return this.getStatus(key, true, { enabled: false });
 		}

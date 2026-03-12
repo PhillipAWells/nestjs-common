@@ -66,12 +66,12 @@ export { SessionEventType } from './session/session.types.js';
 export { SessionService } from './session/session.service.js';
 export { SessionResolver } from './session/session.resolver.js';
 export {
-	Session_Type,
-	Session_AuthPayload,
-	Session_Event,
-	Session_DeviceInfo,
-	Session_UserProfile,
-	Session_LoginRecord,
-	Session_PreferencesInput,
+	SessionType,
+	SessionAuthPayload,
+	SessionEvent,
+	SessionDeviceInfo,
+	SessionUserProfile,
+	SessionLoginRecord,
+	SessionPreferencesInput,
 } from './session/session.graphql.js';
 export type { ISessionEvent, ISessionConfig, IDeviceInfo, IUserProfile } from './session/session.types.js';

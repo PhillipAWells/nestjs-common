@@ -31,9 +31,10 @@ export class HeaderTokenExtractionStrategy implements TokenExtractionStrategy {
 	public extract(context: ExecutionContext): string | null {
 		const request = context.switchToHttp().getRequest();
 		const authHeader = request.headers?.authorization ?? request.headers?.Authorization;
+		const BEARER_PREFIX = 'Bearer ';
 
-		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-			return authHeader.substring(7); // Remove "Bearer " prefix
+		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith(BEARER_PREFIX)) {
+			return authHeader.substring(BEARER_PREFIX.length);
 		}
 
 		return null;
@@ -52,9 +53,10 @@ export class GraphQLTokenExtractionStrategy implements TokenExtractionStrategy {
 			if (gqlContext) {
 				const authHeader = gqlContext.req?.headers?.authorization ??
 					gqlContext.req?.headers?.Authorization;
+				const BEARER_PREFIX = 'Bearer ';
 
-				if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-					return authHeader.substring(7); // Remove "Bearer " prefix
+				if (authHeader && typeof authHeader === 'string' && authHeader.startsWith(BEARER_PREFIX)) {
+					return authHeader.substring(BEARER_PREFIX.length);
 				}
 
 				// Try alternative locations in GraphQL context
@@ -161,17 +163,18 @@ export class BaseAuthGuard implements CanActivate {
 			if (!token) {
 				this.logger.debug('No token found in request');
 				this.handleAuthError(new UnauthorizedException('No token provided'), context);
+				return false; // unreachable but satisfies consistent-return
 			}
 
 			// Validate token
-			const payload = await this.validateToken(token!, context);
+			const payload = await this.validateToken(token, context);
 
 			// Store user in request context
 			this.setUserInContext(context, payload);
 
 			// Check roles/permissions if specified
-			if (this.config.roles || this.config.permissions) {
-				await this.checkRolesAndPermissions(payload, context);
+			if (this.config.roles ?? this.config.permissions) {
+				this.checkRolesAndPermissions(payload);
 			}
 
 			// Run custom validation if provided
@@ -179,12 +182,14 @@ export class BaseAuthGuard implements CanActivate {
 				const isValid = await this.config.customValidator(payload, context);
 				if (!isValid) {
 					this.handleAuthError(new UnauthorizedException('Custom validation failed'), context);
+					return false; // unreachable but satisfies consistent-return
 				}
 			}
 
 			return true;
 		} catch (error) {
 			this.handleAuthError(error, context);
+			return false; // unreachable but satisfies consistent-return
 		}
 	}
 
@@ -215,7 +220,8 @@ export class BaseAuthGuard implements CanActivate {
 	 */
 	private async validateToken(token: string, context: ExecutionContext): Promise<any> {
 		const strategy = this.config.authValidationStrategy ?? new JWTTokenValidationStrategy(this.jwtService, this.logger);
-		return strategy.validate(token, context);
+		const result = await strategy.validate(token, context);
+		return result;
 	}
 
 	/**
@@ -252,7 +258,7 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Check roles and permissions
 	 */
-	private async checkRolesAndPermissions(payload: any, context: ExecutionContext): Promise<void> {
+	private checkRolesAndPermissions(payload: any): void {
 		const userRoles = payload.roles ?? [];
 		const userPermissions = payload.permissions ?? [];
 

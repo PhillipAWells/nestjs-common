@@ -57,7 +57,7 @@ export const PERMISSIONS_KEY = 'permissions';
  * }
  * ```
  */
-export const Public = () => createConditionalDecorator({
+export const Public = (): MethodDecorator => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
 	value: true,
 });
@@ -88,7 +88,7 @@ export const Public = () => createConditionalDecorator({
  * }
  * ```
  */
-export const Auth = () => createConditionalDecorator({
+export const Auth = (): MethodDecorator => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
 	value: false,
 });
@@ -121,7 +121,7 @@ export const Auth = () => createConditionalDecorator({
  * }
  * ```
  */
-export const Roles = (...roles: string[]) => createConditionalDecorator({
+export const Roles = (...roles: string[]): MethodDecorator => createConditionalDecorator({
 	key: ROLES_KEY,
 	value: roles,
 });
@@ -205,10 +205,10 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext } 
  * }
  * ```
  */
-export function CurrentUser(property?: string, options?: ContextOptions) {
+export function CurrentUser(property?: string, options?: ContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
-			const opts: any = { ...options };
+			const opts: ContextOptions & { property?: string } = { ...options };
 			if (property !== undefined) {
 				opts.property = property;
 			}
@@ -245,7 +245,7 @@ export function CurrentUser(property?: string, options?: ContextOptions) {
  * }
  * ```
  */
-export function AuthToken(options?: ContextOptions) {
+export function AuthToken(options?: ContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
 			return extractAuthTokenFromContext(ctx, options);

@@ -43,14 +43,14 @@ export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc'
 	}
 
 	@ProfileMethod({ tags: { operation: 'oidcValidate', strategy: 'oidc' } })
-	public async validate(
+	public validate(
 		_issuer: string,
 		profile: any,
 		accessToken: string,
 		refreshToken: string,
 		idToken: string,
 		_done: any,
-	): Promise<any> {
+	): any {
 		try {
 			// Validate required profile fields
 			if (!profile?.sub && !profile?.id) {

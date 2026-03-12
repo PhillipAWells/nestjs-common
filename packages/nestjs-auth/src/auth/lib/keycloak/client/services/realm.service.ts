@@ -8,9 +8,9 @@ export class RealmService extends BaseService {
 	/**
 	 * List all realms
 	 */
-	async list(): Promise<RealmRepresentation[]> {
+	public async list(): Promise<RealmRepresentation[]> {
 		try {
-			return (await this.withRetry(async () => this.adminClient.realms.find())) as any;
+			return (await this.withRetry(() => this.adminClient.realms.find())) as any;
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -19,9 +19,9 @@ export class RealmService extends BaseService {
 	/**
 	 * Get a realm by name
 	 */
-	async get(realm: string): Promise<RealmRepresentation> {
+	public async get(realm: string): Promise<RealmRepresentation> {
 		try {
-			return (await this.withRetry(async () =>
+			return (await this.withRetry(() =>
 				this.adminClient.realms.findOne({ realm }),
 			)) as any;
 		} catch (error) {
@@ -32,35 +32,35 @@ export class RealmService extends BaseService {
 	/**
 	 * Create a new realm
 	 */
-	async create(realm: RealmRepresentation): Promise<void> {
+	public async create(realm: RealmRepresentation): Promise<void> {
 		try {
-			await this.withRetry(async () => this.adminClient.realms.create(realm));
+			await this.withRetry(() => this.adminClient.realms.create(realm));
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Update a realm
 	 */
-	async update(realmName: string, realm: RealmRepresentation): Promise<void> {
+	public async update(realmName: string, realm: RealmRepresentation): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.realms.update({ realm: realmName }, realm),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Delete a realm
 	 */
-	async delete(realm: string): Promise<void> {
+	public async delete(realm: string): Promise<void> {
 		try {
-			await this.withRetry(async () => this.adminClient.realms.del({ realm }));
+			await this.withRetry(() => this.adminClient.realms.del({ realm }));
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 }

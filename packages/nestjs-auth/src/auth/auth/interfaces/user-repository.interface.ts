@@ -30,8 +30,3 @@ export interface IUserRepository {
 	 */
 	delete(id: string): Promise<boolean>;
 }
-
-/**
- * Injection token for user repository
- */
-export const USER_REPOSITORY = Symbol('USER_REPOSITORY');

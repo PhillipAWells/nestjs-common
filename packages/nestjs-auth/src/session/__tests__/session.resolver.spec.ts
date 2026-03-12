@@ -48,7 +48,7 @@ describe('SessionResolver', () => {
 		resolver = module.get<SessionResolver>(SessionResolver);
 	});
 
-	describe('Session_Current', () => {
+	describe('getCurrentSession', () => {
 		it('should return current session', async () => {
 			const sessionId = uuidv4();
 			const mockSession = {
@@ -63,18 +63,18 @@ describe('SessionResolver', () => {
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
-			const result = await resolver.Session_Current({ sessionId } as any);
+			const result = await resolver.getCurrentSession({ sessionId } as any);
 
 			expect(mockSessionService.GetSession).toHaveBeenCalledWith(sessionId);
 			expect(result).toEqual(mockSession);
 		});
 
 		it('should throw BadRequestException when sessionId is not provided', async () => {
-			await expect(resolver.Session_Current({} as any)).rejects.toThrow(BadRequestException);
+			await expect(resolver.getCurrentSession({} as any)).rejects.toThrow(BadRequestException);
 		});
 	});
 
-	describe('Session_UserSessions', () => {
+	describe('getUserSessions', () => {
 		it('should return user sessions', async () => {
 			const userId = 'user-123';
 			const mockSessions = [
@@ -92,30 +92,30 @@ describe('SessionResolver', () => {
 
 			mockSessionService.GetUserSessions.mockResolvedValue(mockSessions as any);
 
-			const result = await resolver.Session_UserSessions({} as any, userId);
+			const result = await resolver.getUserSessions({} as any, userId);
 
 			expect(mockSessionService.GetUserSessions).toHaveBeenCalledWith(userId);
 			expect(result).toEqual(mockSessions);
 		});
 	});
 
-	describe('Session_Logout', () => {
+	describe('logout', () => {
 		it('should logout and return true', async () => {
 			const sessionId = uuidv4();
 			mockSessionService.LogoutSession.mockResolvedValue(undefined);
 
-			const result = await resolver.Session_Logout({ sessionId } as any);
+			const result = await resolver.logout({ sessionId } as any);
 
 			expect(mockSessionService.LogoutSession).toHaveBeenCalledWith(sessionId);
 			expect(result).toBe(true);
 		});
 
 		it('should throw BadRequestException when sessionId is not provided', async () => {
-			await expect(resolver.Session_Logout({} as any)).rejects.toThrow(BadRequestException);
+			await expect(resolver.logout({} as any)).rejects.toThrow(BadRequestException);
 		});
 	});
 
-	describe('Session_RefreshToken', () => {
+	describe('refreshToken', () => {
 		it('should throw BadRequestException when not yet implemented', async () => {
 			const sessionId = uuidv4();
 			const mockSession = {
@@ -133,13 +133,13 @@ describe('SessionResolver', () => {
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
-			await expect(resolver.Session_RefreshToken({ sessionId } as any)).rejects.toThrow(
+			await expect(resolver.refreshToken({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
 			);
 		});
 
 		it('should throw BadRequestException when sessionId is not provided', async () => {
-			await expect(resolver.Session_RefreshToken({} as any)).rejects.toThrow(BadRequestException);
+			await expect(resolver.refreshToken({} as any)).rejects.toThrow(BadRequestException);
 		});
 
 		it('should throw BadRequestException when no refresh token available', async () => {
@@ -159,13 +159,13 @@ describe('SessionResolver', () => {
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
-			await expect(resolver.Session_RefreshToken({ sessionId } as any)).rejects.toThrow(
+			await expect(resolver.refreshToken({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
 			);
 		});
 	});
 
-	describe('Session_UpdatePreferences', () => {
+	describe('updatePreferences', () => {
 		it('should update session preferences', async () => {
 			const sessionId = uuidv4();
 			const preferences = { theme: 'dark', language: 'en' };
@@ -182,7 +182,7 @@ describe('SessionResolver', () => {
 
 			mockSessionService.UpdateSessionPreferences.mockResolvedValue(mockSession as any);
 
-			const result = await resolver.Session_UpdatePreferences(
+			const result = await resolver.updatePreferences(
 				{ sessionId } as any,
 				{ preferences },
 			);
@@ -193,12 +193,12 @@ describe('SessionResolver', () => {
 
 		it('should throw BadRequestException when sessionId is not provided', async () => {
 			await expect(
-				resolver.Session_UpdatePreferences({} as any, { preferences: {} }),
+				resolver.updatePreferences({} as any, { preferences: {} }),
 			).rejects.toThrow(BadRequestException);
 		});
 	});
 
-	describe('Session_InvalidateAllSessions', () => {
+	describe('invalidateAllSessions', () => {
 		it('should invalidate all user sessions', async () => {
 			const sessionId = uuidv4();
 			const userId = 'user-123';
@@ -216,7 +216,7 @@ describe('SessionResolver', () => {
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 			mockSessionService.InvalidateAllUserSessions.mockResolvedValue(undefined);
 
-			const result = await resolver.Session_InvalidateAllSessions({ sessionId } as any);
+			const result = await resolver.invalidateAllSessions({ sessionId } as any);
 
 			expect(mockSessionService.GetSession).toHaveBeenCalledWith(sessionId);
 			expect(mockSessionService.InvalidateAllUserSessions).toHaveBeenCalledWith(userId);
@@ -237,25 +237,25 @@ describe('SessionResolver', () => {
 
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 
-			await expect(resolver.Session_InvalidateAllSessions({ sessionId } as any)).rejects.toThrow(
+			await expect(resolver.invalidateAllSessions({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
 			);
 		});
 	});
 
-	describe('Session_RevokeSession', () => {
+	describe('revokeSession', () => {
 		it('should revoke session', async () => {
 			const sessionId = uuidv4();
 			mockSessionService.RevokeSession.mockResolvedValue(undefined);
 
-			const result = await resolver.Session_RevokeSession({} as any, sessionId);
+			const result = await resolver.revokeSession({} as any, sessionId);
 
 			expect(mockSessionService.RevokeSession).toHaveBeenCalledWith(sessionId);
 			expect(result).toBe(true);
 		});
 	});
 
-	describe('Session_SetMaxConcurrentSessions', () => {
+	describe('setMaxConcurrentSessions', () => {
 		it('should set max concurrent sessions', async () => {
 			const sessionId = uuidv4();
 			const userId = 'user-123';
@@ -275,7 +275,7 @@ describe('SessionResolver', () => {
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 			mockSessionService.SetMaxConcurrentSessions.mockResolvedValue(undefined);
 
-			const result = await resolver.Session_SetMaxConcurrentSessions(
+			const result = await resolver.setMaxConcurrentSessions(
 				{ sessionId } as any,
 				maxSessions,
 			);
@@ -302,7 +302,7 @@ describe('SessionResolver', () => {
 			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
 			mockSessionService.SetMaxConcurrentSessions.mockResolvedValue(undefined);
 
-			const result = await resolver.Session_SetMaxConcurrentSessions({ sessionId } as any, null);
+			const result = await resolver.setMaxConcurrentSessions({ sessionId } as any, null);
 
 			expect(mockSessionService.SetMaxConcurrentSessions).toHaveBeenCalledWith(userId, null);
 			expect(result).toBe(true);

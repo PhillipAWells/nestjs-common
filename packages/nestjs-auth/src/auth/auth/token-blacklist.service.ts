@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '@pawells/nestjs-shared/common/utils/lazy-getter.types';
 import { AppLogger, CACHE_PROVIDER, type ICacheProvider } from '@pawells/nestjs-shared/common';
-import { TOKEN_TTL_24_HOURS } from '../constants/auth-timeouts.constants.js';
+import { TOKEN_TTL_24_HOURS, TOKEN_LOG_PREFIX_LENGTH } from '../constants/auth-timeouts.constants.js';
 
 /**
  * Token blacklist service for managing revoked tokens
@@ -38,7 +38,7 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	 * @param expiresInSeconds Time until token expires (for cache TTL)
 	 */
 	public async blacklistToken(token: string, expiresInSeconds: number): Promise<void> {
-		this.logger.debug(`Blacklisting token: ${token.substring(0, 20)}...`);
+		this.logger.debug(`Blacklisting token: ${token.substring(0, TOKEN_LOG_PREFIX_LENGTH)}...`);
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
 			this.logger.warn('Cache provider not available - token blacklisting disabled');
@@ -72,7 +72,7 @@ export class TokenBlacklistService implements LazyModuleRefService {
 		try {
 			const isBlacklisted = await cacheProvider.exists(`blacklist:${token}`);
 			if (isBlacklisted) {
-				this.logger.debug(`Token is blacklisted: ${token.substring(0, 20)}...`);
+				this.logger.debug(`Token is blacklisted: ${token.substring(0, TOKEN_LOG_PREFIX_LENGTH)}...`);
 			}
 			return isBlacklisted;
 		} catch (error) {
@@ -137,17 +137,18 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	 * @returns Token string or null
 	 */
 	public extractTokenFromHeader(authHeader: string): string | null {
-		if (!authHeader?.startsWith('Bearer ')) {
+		const BEARER_PREFIX = 'Bearer ';
+		if (!authHeader?.startsWith(BEARER_PREFIX)) {
 			return null;
 		}
-		return authHeader.substring(7); // Remove 'Bearer ' prefix
+		return authHeader.substring(BEARER_PREFIX.length);
 	}
 
 	/**
 	 * Cleanup expired blacklist entries
 	 * @param _maxAgeSeconds Maximum age of entries to keep (default: 86400 = 24 hours)
 	 */
-	public async cleanupExpiredEntries(_maxAgeSeconds: number = TOKEN_TTL_24_HOURS): Promise<void> {
+	public cleanupExpiredEntries(_maxAgeSeconds: number = TOKEN_TTL_24_HOURS): void {
 		this.logger.debug('Cleanup of expired blacklist entries requested - cache TTL handles this automatically');
 		// Cache TTL automatically removes expired entries, so no manual cleanup needed
 		// This method is here for interface compliance and potential future enhancements

@@ -4,8 +4,8 @@ import { CacheService } from '@pawells/nestjs-graphql';
 import { AppLogger, AuditLoggerService } from '@pawells/nestjs-shared/common';
 import { AuthService } from '../auth.service.js';
 import { User, JWTPayload } from '../auth.types.js';
-import { USER_REPOSITORY } from '../interfaces/user-repository.interface.js';
 import type { IUserRepository } from '../interfaces/user-repository.interface.js';
+import { USER_REPOSITORY } from '../tokens.js';
 import { jest } from '@jest/globals';
 
 describe('AuthService', () => {

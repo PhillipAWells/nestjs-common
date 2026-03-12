@@ -8,9 +8,9 @@ export class GroupService extends BaseService {
 	/**
 	 * List all groups in a realm
 	 */
-	async list(realm: string): Promise<GroupRepresentation[]> {
+	public async list(realm: string): Promise<GroupRepresentation[]> {
 		try {
-			return (await this.withRetry(async () => this.adminClient.groups.find({ realm }))) as any;
+			return (await this.withRetry(() => this.adminClient.groups.find({ realm }))) as any;
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -19,9 +19,9 @@ export class GroupService extends BaseService {
 	/**
 	 * Get a group by ID
 	 */
-	async get(realm: string, groupId: string): Promise<GroupRepresentation> {
+	public async get(realm: string, groupId: string): Promise<GroupRepresentation> {
 		try {
-			return (await this.withRetry(async () =>
+			return (await this.withRetry(() =>
 				this.adminClient.groups.findOne({ realm, id: groupId }),
 			)) as any;
 		} catch (error) {
@@ -32,9 +32,9 @@ export class GroupService extends BaseService {
 	/**
 	 * Create a new group
 	 */
-	async create(realm: string, group: GroupRepresentation): Promise<{ id: string }> {
+	public async create(realm: string, group: GroupRepresentation): Promise<{ id: string }> {
 		try {
-			return await this.withRetry(async () =>
+			return await this.withRetry(() =>
 				this.adminClient.groups.create({ ...group, realm }),
 			);
 		} catch (error) {
@@ -45,52 +45,52 @@ export class GroupService extends BaseService {
 	/**
 	 * Update a group
 	 */
-	async update(realm: string, groupId: string, group: GroupRepresentation): Promise<void> {
+	public async update(realm: string, groupId: string, group: GroupRepresentation): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.groups.update({ realm, id: groupId }, group),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Delete a group
 	 */
-	async delete(realm: string, groupId: string): Promise<void> {
+	public async delete(realm: string, groupId: string): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.groups.del({ realm, id: groupId }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Add a user to a group
 	 */
-	async addMember(realm: string, groupId: string, userId: string): Promise<void> {
+	public async addMember(realm: string, groupId: string, userId: string): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.users.addToGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Remove a user from a group
 	 */
-	async removeMember(realm: string, groupId: string, userId: string): Promise<void> {
+	public async removeMember(realm: string, groupId: string, userId: string): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.users.delFromGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 }

@@ -9,7 +9,7 @@ import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import type { IUserRepository } from './interfaces/user-repository.interface.js';
 import { USER_REPOSITORY } from './tokens.js';
 import { TokenBlacklistService } from './token-blacklist.service.js';
-import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE } from '../constants/auth-timeouts.constants.js';
+import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE, MS_PER_SECOND, TOKEN_TTL_15_MINUTES, TOKEN_TTL_3_DAYS, TOKEN_TTL_MIN_POSITIVE, DEFAULT_MAX_CONCURRENT_SESSIONS, SESSION_TRACKING_TTL } from '../constants/auth-timeouts.constants.js';
 
 import type { User, AuthResponse, JWTPayload } from './auth.types.js';
 
@@ -65,7 +65,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	@Traced({ name: 'auth.validateUser' })
 	@ProfileMethod({ tags: { operation: 'validateUser' } })
-	async validateUser(user: User | null, password: string): Promise<User | null> {
+	public async validateUser(user: User | null, password: string): Promise<User | null> {
 		this.logger.debug(`Validating credentials for user: ${user?.email ?? 'unknown'}`);
 
 		if (!user?.isActive) {
@@ -109,7 +109,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	@Traced({ name: 'auth.login' })
 	@ProfileMethod({ tags: { operation: 'login' } })
-	async login(user: User): Promise<AuthResponse> {
+	public login(user: User): AuthResponse {
 		this.logger.info(`User login initiated for ${user.email}`);
 
 		const basePayload: JWTPayload = {
@@ -160,7 +160,7 @@ export class AuthService implements LazyModuleRefService {
 		return {
 			accessToken,
 			refreshToken,
-			expiresIn: 900, // 15 minutes
+			expiresIn: TOKEN_TTL_15_MINUTES,
 			tokenType: 'Bearer',
 			user: {
 				id: user.id,
@@ -181,7 +181,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	@Traced({ name: 'auth.validateOAuthUser' })
 	@ProfileMethod({ tags: { operation: 'validateOAuthUser' } })
-	async validateOAuthUser(profile: any, accessToken: string, refreshToken: string): Promise<User> {
+	public async validateOAuthUser(profile: any, accessToken: string, refreshToken: string): Promise<User> {
 		this.logger.debug(`Validating OAuth2 user: ${profile.id ?? profile.sub}`);
 
 		// Extract user info from profile
@@ -222,7 +222,8 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	private async findUserByEmail(email: string): Promise<User | null> {
 		this.logger.debug(`Looking up user by email: ${email}`);
-		return this.userRepository.findByEmail(email);
+		const user = await this.userRepository.findByEmail(email);
+		return user;
 	}
 
 	/**
@@ -308,7 +309,7 @@ export class AuthService implements LazyModuleRefService {
 			}
 			// For validation, we just check that the token has an expiration
 			// The actual expiry validation is handled by the JWT library
-			this.logger.debug(`Token expiration validated: ${new Date(decoded.exp * 1000).toISOString()}`);
+			this.logger.debug(`Token expiration validated: ${new Date(decoded.exp * MS_PER_SECOND).toISOString()}`);
 		} catch (error) {
 			this.logger.error(`Token expiration validation failed: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
@@ -322,7 +323,7 @@ export class AuthService implements LazyModuleRefService {
 	 * @returns New access token response
 	 */
 	@ProfileMethod({ tags: { operation: 'refreshToken' } })
-	async refreshToken(
+	public async refreshToken(
 		refreshToken: string,
 		userLookupFn: (userId: string) => Promise<User | null>,
 	): Promise<{ accessToken: string; expiresIn: number; tokenType: string }> {
@@ -371,10 +372,10 @@ export class AuthService implements LazyModuleRefService {
 			// Blacklist the old refresh token
 			const refreshTokenDecoded = this.JwtService.decode(refreshToken) as JWTPayload;
 			const calculatedTtl = refreshTokenDecoded?.exp
-				? Math.floor((refreshTokenDecoded.exp * 1000 - Date.now()) / 1000)
-				: 259200; // Default 3 days for refresh tokens
+				? Math.floor((refreshTokenDecoded.exp * MS_PER_SECOND - Date.now()) / MS_PER_SECOND)
+				: TOKEN_TTL_3_DAYS; // Default 3 days for refresh tokens
 			// Ensure TTL is positive; if token is already expired, use a short TTL for the blacklist entry
-			const expiresInSeconds = Math.max(calculatedTtl, 60);
+			const expiresInSeconds = Math.max(calculatedTtl, TOKEN_TTL_MIN_POSITIVE);
 
 			await tokenBlacklistService.blacklistToken(refreshToken, expiresInSeconds);
 
@@ -383,7 +384,7 @@ export class AuthService implements LazyModuleRefService {
 
 			return {
 				accessToken: newAccessToken,
-				expiresIn: 900, // 15 minutes
+				expiresIn: TOKEN_TTL_15_MINUTES,
 				tokenType: 'Bearer',
 			};
 		} catch (error) {
@@ -411,10 +412,10 @@ export class AuthService implements LazyModuleRefService {
 	 * @returns Success status
 	 */
 	@ProfileMethod({ tags: { operation: 'trackUserSession' } })
-	async trackUserSession(
+	public async trackUserSession(
 		userId: string,
 		sessionId: string,
-		maxConcurrentSessions: number = 5,
+		maxConcurrentSessions: number = DEFAULT_MAX_CONCURRENT_SESSIONS,
 	): Promise<{ allowed: boolean; activeSessions: string[] }> {
 		// Validate inputs for cache key generation
 		if (!userId || typeof userId !== 'string' || userId.length === 0) {
@@ -469,7 +470,7 @@ export class AuthService implements LazyModuleRefService {
 			}
 
 			// Save updated sessions
-			await cacheService.set(sessionKey, JSON.stringify(sessions), 86400); // 24 hours
+			await cacheService.set(sessionKey, JSON.stringify(sessions), SESSION_TRACKING_TTL);
 
 			const allowed = sessions.length <= maxConcurrentSessions;
 			this.logger.debug(`Session tracking result for user ${userId}: allowed=${allowed}, active=${sessions.length}`);

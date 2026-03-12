@@ -37,7 +37,7 @@ export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak
 	}
 
 	@ProfileMethod({ tags: { operation: 'keycloakValidate', strategy: 'keycloak' } })
-	public async validate(accessToken: string, refreshToken: string, profile: any, _done: any): Promise<any> {
+	public validate(accessToken: string, refreshToken: string, profile: any, _done: any): any {
 		try {
 			// Validate required profile fields
 			if (!profile?.sub && !profile?.id) {

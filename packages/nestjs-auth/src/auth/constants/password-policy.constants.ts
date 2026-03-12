@@ -27,6 +27,9 @@ export const PASSWORD_PENALTY_REPEATED_CHARS = 5; // -5 for too many repeated ch
 // Character validation thresholds
 export const PASSWORD_MAX_REPEATED_COUNT = 3; // No character should repeat more than 3 times
 
+/** Password length threshold for extra scoring bonus */
+export const PASSWORD_SCORE_THRESHOLD_EXTRA_LENGTH = 16;
+
 // Strength level thresholds (for determining strength classification)
 export const PASSWORD_STRENGTH_THRESHOLD_WEAK = 20;
 export const PASSWORD_STRENGTH_THRESHOLD_FAIR = 40;

@@ -4,7 +4,9 @@ import jwkToPem from 'jwk-to-pem';
 import * as jwt from 'jsonwebtoken';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { OAuthUser, OAuthToken } from './types/oauth-config.types.js';
-import { OAUTH_SERVICE_TIMEOUT, OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER } from '../../constants/auth-timeouts.constants.js';
+import { OAUTH_SERVICE_TIMEOUT, OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER, JWK_CACHE_TTL_MS } from '../../constants/auth-timeouts.constants.js';
+
+const OAUTH_DEFAULT_EXPIRES_IN = 3600;
 
 @Injectable()
 export class OAuthService {
@@ -71,8 +73,7 @@ export class OAuthService {
 			const pem = jwkToPem(jwk);
 			this.publicKeyCache.set(cacheKey, {
 				key: pem,
-
-				expires: Date.now() + (5 * 60 * 1000), // 5 minutes
+				expires: Date.now() + JWK_CACHE_TTL_MS,
 			});
 
 			this.logger.info(`Public key cached for provider ${provider}`);
@@ -88,17 +89,18 @@ export class OAuthService {
     */
 	public async validateToken(token: string, publicKey: string): Promise<any> {
 		this.logger.debug('JWT token validation initiated');
-		return new Promise((resolve, reject) => {
-			jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err: any, decoded: any) => {
+		const decoded = await new Promise((resolve, reject) => {
+			jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err: any, result: any) => {
 				if (err) {
 					this.logger.warn('JWT token validation failed', err.message);
 					reject(err);
 				} else {
 					this.logger.debug('JWT token validation successful');
-					resolve(decoded);
+					resolve(result);
 				}
 			});
 		});
+		return decoded;
 	}
 
 	/**
@@ -189,7 +191,7 @@ export class OAuthService {
 			const token: OAuthToken = {
 				accessToken: response.data.access_token,
 				refreshToken: response.data.refresh_token ?? refreshToken,
-				expiresIn: response.data.expires_in ?? 3600,
+				expiresIn: response.data.expires_in ?? OAUTH_DEFAULT_EXPIRES_IN,
 				tokenType: response.data.token_type ?? 'Bearer',
 			};
 

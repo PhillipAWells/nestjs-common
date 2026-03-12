@@ -3,6 +3,13 @@ import { KeycloakClient } from '../client/client.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';
 import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
+import type { UserService } from '../client/services/user.service.js';
+import type { RealmService } from '../client/services/realm.service.js';
+import type { ClientService } from '../client/services/client.service.js';
+import type { RoleService } from '../client/services/role.service.js';
+import type { GroupService } from '../client/services/group.service.js';
+import type { IdentityProviderService } from '../client/services/identity-provider.service.js';
+import type { AuthenticationService } from '../client/services/authentication.service.js';
 
 @Injectable()
 export class KeycloakAdminService implements OnModuleInit {
@@ -55,37 +62,37 @@ export class KeycloakAdminService implements OnModuleInit {
 	}
 
 	// Proxy methods to client services
-	public get users() {
+	public get users(): UserService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Users;
 	}
 
-	public get realms() {
+	public get realms(): RealmService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Realms;
 	}
 
-	public get clients() {
+	public get clients(): ClientService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Clients;
 	}
 
-	public get roles() {
+	public get roles(): RoleService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Roles;
 	}
 
-	public get groups() {
+	public get groups(): GroupService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Groups;
 	}
 
-	public get identityProviders() {
+	public get identityProviders(): IdentityProviderService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.IdentityProviders;
 	}
 
-	public get authentication() {
+	public get authentication(): AuthenticationService {
 		if (!this.client) throw new Error('Keycloak client not initialized');
 		return this.client.Authentication;
 	}

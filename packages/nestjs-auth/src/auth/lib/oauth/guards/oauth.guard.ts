@@ -41,10 +41,10 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) {
 
 	private extractTokenFromHeader(request: any): string | null {
 		const authHeader = request.headers.authorization;
-		if (authHeader?.startsWith('Bearer ')) {
+		const BEARER_PREFIX = 'Bearer ';
+		if (authHeader?.startsWith(BEARER_PREFIX)) {
 			this.logger.debug('Bearer token extracted from authorization header');
-
-			return authHeader.substring(7); // Remove "Bearer " prefix
+			return authHeader.substring(BEARER_PREFIX.length);
 		}
 		this.logger.debug('No Bearer token found in authorization header');
 		return null;

@@ -3,10 +3,10 @@ import { BadRequestException, Inject } from '@nestjs/common';
 import { SessionService } from './session.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import {
-	Session_Type,
-	Session_AuthPayload,
-	Session_Event,
-	Session_PreferencesInput,
+	SessionType,
+	SessionAuthPayload,
+	SessionEvent,
+	SessionPreferencesInput,
 } from './session.graphql.js';
 import { Redis } from 'ioredis';
 
@@ -14,7 +14,7 @@ import { Redis } from 'ioredis';
  * GraphQL resolver for Session operations
  * Provides queries, mutations, and subscriptions for session management
  */
-@Resolver(() => Session_Type)
+@Resolver(() => SessionType)
 export class SessionResolver {
 	constructor(
 		private readonly sessionService: SessionService,
@@ -26,36 +26,38 @@ export class SessionResolver {
 	 * Query to get the current session
 	 * Returns null if no session ID is provided (user not authenticated)
 	 */
-	@Query(() => Session_Type, { name: 'Session_Current', nullable: true })
-	public async Session_Current(@Context() context: any): Promise<Session_Type | null> {
+	@Query(() => SessionType, { name: 'Session_Current', nullable: true })
+	public async getCurrentSession(@Context() context: any): Promise<SessionType | null> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			return null; // Gracefully return null when not authenticated
 		}
-		return this.sessionService.GetSession(sessionId);
+		const session = await this.sessionService.GetSession(sessionId);
+		return session;
 	}
 
 	/**
 	 * Query to get all sessions for a user
 	 */
-	@Query(() => [Session_Type], { name: 'Session_UserSessions' })
-	public async Session_UserSessions(
+	@Query(() => [SessionType], { name: 'Session_UserSessions' })
+	public async getUserSessions(
 		@Context() _context: any,
 		@Args('userId', { type: () => ID }) userId: string,
-	): Promise<Session_Type[]> {
+	): Promise<SessionType[]> {
 		// Admin-only operation - verify in guard/decorator
-		return this.sessionService.GetUserSessions(userId);
+		const sessions = await this.sessionService.GetUserSessions(userId);
+		return sessions;
 	}
 
 	/**
 	 * Mutation to login (placeholder - actual implementation integrates with Keycloak)
 	 */
-	@Mutation(() => Session_AuthPayload, { name: 'Session_Login' })
-	public async Session_Login(
+	@Mutation(() => SessionAuthPayload, { name: 'Session_Login' })
+	public login(
 		_context: any,
 		@Args('email') _email: string,
 		@Args('password') _password: string,
-	): Promise<Session_AuthPayload> {
+	): never {
 		// This is a placeholder - actual implementation will integrate with Keycloak
 		// For now, just return structure that tests expect
 		throw new BadRequestException('Login not yet implemented - integrate with Keycloak');
@@ -65,7 +67,7 @@ export class SessionResolver {
 	 * Mutation to logout the current session
 	 */
 	@Mutation(() => Boolean, { name: 'Session_Logout' })
-	public async Session_Logout(@Context() context: any): Promise<boolean> {
+	public async logout(@Context() context: any): Promise<boolean> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			throw new BadRequestException('Session ID not provided');
@@ -77,8 +79,8 @@ export class SessionResolver {
 	/**
 	 * Mutation to refresh the access token
 	 */
-	@Mutation(() => Session_Type, { name: 'Session_RefreshToken' })
-	public async Session_RefreshToken(@Context() context: any): Promise<Session_Type> {
+	@Mutation(() => SessionType, { name: 'Session_RefreshToken' })
+	public async refreshToken(@Context() context: any): Promise<SessionType> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			throw new BadRequestException('Session ID not provided');
@@ -96,24 +98,25 @@ export class SessionResolver {
 	/**
 	 * Mutation to update session preferences
 	 */
-	@Mutation(() => Session_Type, { name: 'Session_UpdatePreferences' })
-	public async Session_UpdatePreferences(
+	@Mutation(() => SessionType, { name: 'Session_UpdatePreferences' })
+	public async updatePreferences(
 		@Context() context: any,
-		@Args('input') input: Session_PreferencesInput,
-	): Promise<Session_Type> {
+		@Args('input') input: SessionPreferencesInput,
+	): Promise<SessionType> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			throw new BadRequestException('Session ID not provided');
 		}
 
-		return this.sessionService.UpdateSessionPreferences(sessionId, input.preferences);
+		const updated = await this.sessionService.UpdateSessionPreferences(sessionId, input.preferences);
+		return updated;
 	}
 
 	/**
 	 * Mutation to invalidate all sessions for the current user
 	 */
 	@Mutation(() => Boolean, { name: 'Session_InvalidateAllSessions' })
-	public async Session_InvalidateAllSessions(@Context() context: any): Promise<boolean> {
+	public async invalidateAllSessions(@Context() context: any): Promise<boolean> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			throw new BadRequestException('Session ID not provided');
@@ -132,7 +135,7 @@ export class SessionResolver {
 	 * Mutation to revoke a specific session (admin-only)
 	 */
 	@Mutation(() => Boolean, { name: 'Session_RevokeSession' })
-	public async Session_RevokeSession(
+	public async revokeSession(
 		@Context() _context: any,
 		@Args('sessionId', { type: () => ID }) sessionId: string,
 	): Promise<boolean> {
@@ -145,7 +148,7 @@ export class SessionResolver {
 	 * Mutation to set maximum concurrent sessions for current user
 	 */
 	@Mutation(() => Boolean, { name: 'Session_SetMaxConcurrentSessions' })
-	public async Session_SetMaxConcurrentSessions(
+	public async setMaxConcurrentSessions(
 		@Context() context: any,
 		@Args('max', { type: () => Number, nullable: true }) max: number | null,
 	): Promise<boolean> {
@@ -167,11 +170,11 @@ export class SessionResolver {
 	 * Subscription to listen for session changes
 	 * Yields events from Redis pub/sub channel
 	 */
-	@Subscription(() => Session_Event, {
+	@Subscription(() => SessionEvent, {
 		name: 'Session_OnChange',
 		resolve: (payload) => payload,
 	})
-	public async *Session_OnChange(context: any) {
+	public async *onSessionChange(context: any): AsyncGenerator<SessionEvent> {
 		const sessionId = context?.sessionId;
 		if (!sessionId) {
 			throw new BadRequestException('Session ID not provided');
@@ -190,7 +193,7 @@ export class SessionResolver {
 
 		try {
 			// Create async generator that continuously yields messages from Redis subscriber
-			yield* this._ListenForMessages(subscriber, sessionId);
+			yield* this.listenForMessages(subscriber, sessionId);
 		} finally {
 			await subscriber.unsubscribe();
 			subscriber.disconnect();
@@ -200,14 +203,14 @@ export class SessionResolver {
 	/**
 	 * Helper to create async generator that yields messages from Redis subscriber
 	 */
-	private _ListenForMessages(subscriber: Redis, sessionId: string): AsyncGenerator<Session_Event> {
+	private listenForMessages(subscriber: Redis, sessionId: string): AsyncGenerator<SessionEvent> {
 		const { logger } = this;
-		return (async function* () {
+		return (async function* (): AsyncGenerator<SessionEvent> {
 			// Create a queue to buffer messages from the Redis event handler
 			const messageQueue: string[] = [];
 			let resolveWait: (() => void) | null = null;
 
-			const messageHandler = (_ch: string, message: string) => {
+			const messageHandler = (_ch: string, message: string): void => {
 				messageQueue.push(message);
 				if (resolveWait) {
 					resolveWait();
@@ -227,14 +230,17 @@ export class SessionResolver {
 						});
 					}
 
-					const message = messageQueue.shift()!;
+					const message = messageQueue.shift();
+					if (!message) {
+						continue;
+					}
 					try {
 						const eventData = JSON.parse(message);
 						yield {
 							...eventData,
 							sessionId,
 							timestamp: eventData.timestamp ? new Date(eventData.timestamp) : new Date(),
-						} as Session_Event;
+						} as SessionEvent;
 					} catch (error) {
 						// Log parsing error but continue listening
 						logger.warn('Failed to parse session event message', {

@@ -5,7 +5,7 @@ import { GraphQLJSON } from 'graphql-type-json';
  * GraphQL type for device information
  */
 @ObjectType('Session_DeviceInfo')
-export class Session_DeviceInfo {
+export class SessionDeviceInfo {
 	@Field()
 	public userAgent!: string;
 
@@ -20,7 +20,7 @@ export class Session_DeviceInfo {
  * GraphQL type for user profile information
  */
 @ObjectType('Session_UserProfile')
-export class Session_UserProfile {
+export class SessionUserProfile {
 	@Field(() => ID)
 	public id!: string;
 
@@ -44,12 +44,12 @@ export class Session_UserProfile {
  * GraphQL type for login records
  */
 @ObjectType('Session_LoginRecord')
-export class Session_LoginRecord {
+export class SessionLoginRecord {
 	@Field()
 	public timestamp!: Date;
 
-	@Field(() => Session_DeviceInfo)
-	public deviceInfo!: Session_DeviceInfo;
+	@Field(() => SessionDeviceInfo)
+	public deviceInfo!: SessionDeviceInfo;
 
 	@Field()
 	public success!: boolean;
@@ -63,7 +63,7 @@ export class Session_LoginRecord {
  * Represents a user's session with authentication and device information
  */
 @ObjectType('Session')
-export class Session_Type {
+export class SessionType {
 	@Field(() => ID)
 	public sessionId!: string;
 
@@ -73,11 +73,11 @@ export class Session_Type {
 	@Field()
 	public isAuthenticated!: boolean;
 
-	@Field(() => Session_UserProfile, { nullable: true })
-	public userProfile?: Session_UserProfile;
+	@Field(() => SessionUserProfile, { nullable: true })
+	public userProfile?: SessionUserProfile;
 
-	@Field(() => Session_DeviceInfo)
-	public deviceInfo!: Session_DeviceInfo;
+	@Field(() => SessionDeviceInfo)
+	public deviceInfo!: SessionDeviceInfo;
 
 	@Field()
 	public createdAt!: Date;
@@ -91,8 +91,8 @@ export class Session_Type {
 	@Field(() => GraphQLJSON, { nullable: true })
 	public preferences?: Record<string, any>;
 
-	@Field(() => [Session_LoginRecord])
-	public loginHistory!: Session_LoginRecord[];
+	@Field(() => [SessionLoginRecord])
+	public loginHistory!: SessionLoginRecord[];
 
 	@Field(() => Number, { nullable: true })
 	public maxConcurrentSessions?: number;
@@ -103,9 +103,9 @@ export class Session_Type {
  * Returned after successful login or token refresh
  */
 @ObjectType('Session_AuthPayload')
-export class Session_AuthPayload {
-	@Field(() => Session_Type)
-	public session!: Session_Type;
+export class SessionAuthPayload {
+	@Field(() => SessionType)
+	public session!: SessionType;
 
 	@Field()
 	public accessToken!: string;
@@ -119,7 +119,7 @@ export class Session_AuthPayload {
  * Published when session state changes
  */
 @ObjectType('Session_Event')
-export class Session_Event {
+export class SessionEvent {
 	@Field()
 	public eventType!: string;
 
@@ -140,7 +140,7 @@ export class Session_Event {
  * GraphQL input type for session preferences update
  */
 @InputType('Session_PreferencesInput')
-export class Session_PreferencesInput {
+export class SessionPreferencesInput {
 	@Field(() => GraphQLJSON)
 	public preferences!: Record<string, any>;
 }

@@ -12,6 +12,12 @@ import {
 	NetworkError,
 } from '../errors/index.js';
 
+const HTTP_STATUS_UNAUTHORIZED = 401;
+const HTTP_STATUS_FORBIDDEN = 403;
+const HTTP_STATUS_NOT_FOUND = 404;
+const HTTP_STATUS_BAD_REQUEST = 400;
+const HTTP_STATUS_REQUEST_TIMEOUT = 408;
+
 /**
  * Base service class for Keycloak client services
  */
@@ -35,7 +41,8 @@ export abstract class BaseService {
 			...(this.logger && { logger: this.logger }),
 		};
 
-		return withRetry(fn, config);
+		const result = await withRetry(fn, config);
+		return result;
 	}
 
 	/**
@@ -56,26 +63,26 @@ export abstract class BaseService {
 			};
 
 			const status = axiosError.response?.status;
-			const message = axiosError.message || 'Unknown error';
+			const message = axiosError.message ?? 'Unknown error';
 			const data = axiosError.response?.data;
 
-			if (status === 401) {
+			if (status === HTTP_STATUS_UNAUTHORIZED) {
 				throw new AuthenticationError(message, status, data);
 			}
 
-			if (status === 403) {
+			if (status === HTTP_STATUS_FORBIDDEN) {
 				throw new AuthorizationError(message, status, data);
 			}
 
-			if (status === 404) {
+			if (status === HTTP_STATUS_NOT_FOUND) {
 				throw new NotFoundError(message, data);
 			}
 
-			if (status === 400) {
+			if (status === HTTP_STATUS_BAD_REQUEST) {
 				throw new ValidationError(message, data);
 			}
 
-			if (status === 408) {
+			if (status === HTTP_STATUS_REQUEST_TIMEOUT) {
 				throw new TimeoutError(message);
 			}
 

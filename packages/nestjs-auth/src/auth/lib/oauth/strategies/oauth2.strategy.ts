@@ -27,6 +27,7 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
 
 	@ProfileMethod({ tags: { operation: 'oauthValidate', strategy: 'oauth2' } })
 	public async validate(accessToken: string, refreshToken: string, profile: any): Promise<any> {
-		return this.authService.validateOAuthUser(profile, accessToken, refreshToken);
+		const user = await this.authService.validateOAuthUser(profile, accessToken, refreshToken);
+		return user;
 	}
 }

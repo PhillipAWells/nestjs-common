@@ -7,6 +7,10 @@ import { SessionEventEmitter } from './session-event.emitter.js';
 import { Session } from './session.entity.js';
 import { IDeviceInfo, ISessionConfig, IUserProfile, SessionEventType } from './session.types.js';
 
+const SECONDS_PER_MINUTE = 60;
+const MS_PER_SECOND = 1000;
+const MINUTES_TO_MS = SECONDS_PER_MINUTE * MS_PER_SECOND;
+
 @Injectable()
 export class SessionService implements LazyModuleRefService {
 	constructor(public readonly moduleRef: ModuleRef) {}
@@ -27,7 +31,7 @@ export class SessionService implements LazyModuleRefService {
 	public async CreateOrGetSession(deviceInfo: IDeviceInfo): Promise<Session> {
 		const sessionId = uuidv4();
 		const now = new Date();
-		const expiresAt = new Date(now.getTime() + this.Config.sessionTtlMinutes * 60 * 1000);
+		const expiresAt = new Date(now.getTime() + this.Config.sessionTtlMinutes * MINUTES_TO_MS);
 
 		const session = await this.Repository.Create({
 			sessionId,
@@ -62,7 +66,7 @@ export class SessionService implements LazyModuleRefService {
 			const activeSessions = await this.Repository.FindActiveSessions(userProfile.id);
 			if (activeSessions.length >= this.Config.defaultMaxConcurrentSessions) {
 				// Delete oldest session
-				const oldestSession = activeSessions[0];
+				const [oldestSession] = activeSessions;
 				if (oldestSession) {
 					await this.Repository.DeleteSession(oldestSession.sessionId);
 					this.EventEmitter.EmitSessionEvent(
@@ -174,7 +178,8 @@ export class SessionService implements LazyModuleRefService {
 	}
 
 	public async GetUserSessions(userId: string): Promise<Session[]> {
-		return this.Repository.FindUserSessions(userId);
+		const sessions = await this.Repository.FindUserSessions(userId);
+		return sessions;
 	}
 
 	public async InvalidateAllUserSessions(userId: string): Promise<void> {

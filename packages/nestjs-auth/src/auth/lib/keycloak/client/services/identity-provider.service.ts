@@ -8,9 +8,9 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * List all identity providers in a realm
 	 */
-	async list(realm: string): Promise<IdentityProviderRepresentation[]> {
+	public async list(realm: string): Promise<IdentityProviderRepresentation[]> {
 		try {
-			return (await this.withRetry(async () =>
+			return (await this.withRetry(() =>
 				this.adminClient.identityProviders.find({ realm }),
 			)) as any;
 		} catch (error) {
@@ -21,9 +21,9 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * Get an identity provider by alias
 	 */
-	async get(realm: string, alias: string): Promise<IdentityProviderRepresentation> {
+	public async get(realm: string, alias: string): Promise<IdentityProviderRepresentation> {
 		try {
-			return (await this.withRetry(async () =>
+			return (await this.withRetry(() =>
 				this.adminClient.identityProviders.findOne({ realm, alias }),
 			)) as any;
 		} catch (error) {
@@ -34,43 +34,43 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * Create a new identity provider
 	 */
-	async create(realm: string, idp: IdentityProviderRepresentation): Promise<void> {
+	public async create(realm: string, idp: IdentityProviderRepresentation): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.identityProviders.create({ ...idp, realm }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Update an identity provider
 	 */
-	async update(
+	public async update(
 		realm: string,
 		alias: string,
 		idp: IdentityProviderRepresentation,
 	): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.identityProviders.update({ realm, alias }, idp),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 
 	/**
 	 * Delete an identity provider
 	 */
-	async delete(realm: string, alias: string): Promise<void> {
+	public async delete(realm: string, alias: string): Promise<void> {
 		try {
-			await this.withRetry(async () =>
+			await this.withRetry(() =>
 				this.adminClient.identityProviders.del({ realm, alias }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			this.handleError(error);
 		}
 	}
 }

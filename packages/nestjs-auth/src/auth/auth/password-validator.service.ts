@@ -19,6 +19,7 @@ import {
 	PASSWORD_STRENGTH_THRESHOLD_FAIR,
 	PASSWORD_STRENGTH_THRESHOLD_GOOD,
 	PASSWORD_STRENGTH_THRESHOLD_STRONG,
+	PASSWORD_SCORE_THRESHOLD_EXTRA_LENGTH,
 } from '../constants/password-policy.constants.js';
 
 export interface PasswordStrengthResult {
@@ -53,7 +54,7 @@ export class PasswordValidatorService implements LazyModuleRefService {
 		// Check maximum length
 		if (password.length > PASSWORD_MAX_LENGTH) {
 			result.feedback.push(`Password must not exceed ${PASSWORD_MAX_LENGTH} characters`);
-		} else if (password.length >= 16) {
+		} else if (password.length >= PASSWORD_SCORE_THRESHOLD_EXTRA_LENGTH) {
 			result.score += PASSWORD_SCORE_LENGTH_EXTRA;
 		}
 

@@ -19,7 +19,7 @@ export const ROLES_KEY = 'roles';
  * @Get('health')
  * checkHealth() {}
  */
-export const Public = () => createConditionalDecorator({
+export const Public = (): MethodDecorator => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
 	value: true,
 });
@@ -33,7 +33,7 @@ export const Public = () => createConditionalDecorator({
  * @Get('profile')
  * getProfile() {}
  */
-export const Auth = () => createConditionalDecorator({
+export const Auth = (): MethodDecorator => createConditionalDecorator({
 	key: IS_PUBLIC_KEY,
 	value: false,
 });
@@ -48,7 +48,7 @@ export const Auth = () => createConditionalDecorator({
  * @Post('admin-action')
  * adminAction() {}
  */
-export const Roles = (...roles: string[]) => createConditionalDecorator({
+export const Roles = (...roles: string[]): MethodDecorator => createConditionalDecorator({
 	key: ROLES_KEY,
 	value: roles,
 });

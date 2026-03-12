@@ -12,6 +12,7 @@ export class MockUserRepository implements IUserRepository {
 
 	private readonly emailIndex = new Map<string, string>(); // lowercase email -> userId
 
+	// eslint-disable-next-line require-await
 	public async findByEmail(email: string): Promise<User | null> {
 		const userId = this.emailIndex.get(email.toLowerCase());
 		if (!userId) {
@@ -21,12 +22,14 @@ export class MockUserRepository implements IUserRepository {
 		return user ?? null;
 	}
 
+	// eslint-disable-next-line require-await
 	public async findById(id: string): Promise<User | null> {
 		return this.users.get(id) ?? null;
 	}
 
+	// eslint-disable-next-line require-await
 	public async create(userData: Omit<User, 'id'>): Promise<User> {
-		const email = userData.email;
+		const { email } = userData;
 		const emailKey = email.toLowerCase();
 
 		// Check for duplicate email (case-insensitive)
@@ -47,6 +50,7 @@ export class MockUserRepository implements IUserRepository {
 		return user;
 	}
 
+	// eslint-disable-next-line require-await
 	public async update(id: string, updates: Partial<User>): Promise<User> {
 		const existing = this.users.get(id);
 		if (!existing) {
@@ -79,6 +83,7 @@ export class MockUserRepository implements IUserRepository {
 		return updated;
 	}
 
+	// eslint-disable-next-line require-await
 	public async delete(id: string): Promise<boolean> {
 		const user = this.users.get(id);
 		if (!user) {

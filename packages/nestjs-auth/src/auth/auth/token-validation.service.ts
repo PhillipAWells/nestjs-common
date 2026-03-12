@@ -2,7 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { TOKEN_TTL_24_HOURS } from '../constants/auth-timeouts.constants.js';
+import { TOKEN_TTL_24_HOURS, MS_PER_SECOND } from '../constants/auth-timeouts.constants.js';
+import type { JWTPayload } from './auth.types.js';
 
 @Injectable()
 export class TokenValidationService implements LazyModuleRefService {
@@ -15,10 +16,10 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Comprehensive token validation
    */
-	public validateToken(token: string, type: 'access' | 'refresh' = 'access'): any {
+	public validateToken(token: string, type: 'access' | 'refresh' = 'access'): JWTPayload {
 		try {
 			// Decode token
-			const decoded = this.JwtService.decode(token) as any;
+			const decoded = this.JwtService.decode(token) as JWTPayload | null;
 
 			if (!decoded) {
 				throw new UnauthorizedException('Invalid token format');
@@ -58,8 +59,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate required claims
    */
-	private validateRequiredClaims(payload: any): void {
-		const requiredClaims = ['sub', 'email', 'iat', 'exp'];
+	private validateRequiredClaims(payload: JWTPayload): void {
+		const requiredClaims: (keyof JWTPayload)[] = ['sub', 'email', 'iat', 'exp'];
 
 		for (const claim of requiredClaims) {
 			if (!payload[claim]) {
@@ -71,7 +72,7 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate claim values
    */
-	private validateClaimValues(payload: any): void {
+	private validateClaimValues(payload: JWTPayload): void {
 		// Validate subject (user ID)
 		if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
 			throw new UnauthorizedException('Invalid subject claim');
@@ -96,7 +97,7 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate token type
    */
-	private validateTokenType(payload: any, expectedType: 'access' | 'refresh'): void {
+	private validateTokenType(payload: JWTPayload, expectedType: 'access' | 'refresh'): void {
 		const tokenType = payload.type ?? 'access';
 
 		if (tokenType !== expectedType) {
@@ -109,8 +110,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate token age
    */
-	private validateTokenAge(payload: any): void {
-		const tokenAge = Math.floor(Date.now() / 1000) - payload.iat;
+	private validateTokenAge(payload: JWTPayload): void {
+		const tokenAge = Math.floor(Date.now() / MS_PER_SECOND) - (payload.iat ?? 0);
 		const maxAge = TOKEN_TTL_24_HOURS;
 
 		if (tokenAge > maxAge) {
@@ -121,7 +122,7 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate issuer
    */
-	private validateIssuer(payload: any): void {
+	private validateIssuer(payload: JWTPayload): void {
 		const expectedIssuer = process.env['JWT_ISSUER'] ?? 'nestjs-app';
 
 		if (payload.iss !== expectedIssuer) {
@@ -134,7 +135,7 @@ export class TokenValidationService implements LazyModuleRefService {
 	/**
    * Validate audience
    */
-	private validateAudience(payload: any): void {
+	private validateAudience(payload: JWTPayload): void {
 		const expectedAudience = process.env['JWT_AUDIENCE'] ?? 'nestjs-api';
 
 		if (payload.aud !== expectedAudience) {

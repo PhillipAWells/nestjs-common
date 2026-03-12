@@ -41,9 +41,9 @@ export abstract class BaseAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oauth
 	 */
 	protected extractTokenFromHeader(request: any): string | null {
 		const authHeader = request.headers?.authorization ?? request.headers?.Authorization;
-
-		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-			return authHeader.substring(7); // Remove "Bearer " prefix
+		const BEARER_PREFIX = 'Bearer ';
+		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith(BEARER_PREFIX)) {
+			return authHeader.substring(BEARER_PREFIX.length);
 		}
 
 		return null;

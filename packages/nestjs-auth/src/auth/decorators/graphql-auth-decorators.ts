@@ -94,7 +94,7 @@ export const GraphQLRoles = Roles;
  * }
  * ```
  */
-export function GraphQLCurrentUser(property?: string) {
+export function GraphQLCurrentUser(property?: string): ParameterDecorator {
 	return CurrentUser(property, { contextType: 'graphql' });
 }
 
@@ -114,7 +114,7 @@ export function GraphQLCurrentUser(property?: string) {
  * }
  * ```
  */
-export const GraphQLAuthToken = () => AuthToken({ contextType: 'graphql' });
+export const GraphQLAuthToken = (): ParameterDecorator => AuthToken({ contextType: 'graphql' });
 
 /**
  * GraphQL Context Parameter decorator
@@ -132,7 +132,7 @@ export const GraphQLAuthToken = () => AuthToken({ contextType: 'graphql' });
  * }
  * ```
  */
-export const GraphQLContextParam = () => CurrentUser(undefined, { contextType: 'graphql' });
+export const GraphQLContextParam = (): ParameterDecorator => CurrentUser(undefined, { contextType: 'graphql' });
 
 /**
  * GraphQL User alias for GraphQLCurrentUser

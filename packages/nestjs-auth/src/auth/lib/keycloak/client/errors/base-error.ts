@@ -1,3 +1,9 @@
+const HTTP_STATUS_BAD_REQUEST = 400;
+const HTTP_STATUS_NOT_FOUND = 404;
+const HTTP_STATUS_REQUEST_TIMEOUT = 408;
+const HTTP_STATUS_CONFLICT = 409;
+const HTTP_STATUS_RATE_LIMIT = 429;
+
 /**
  * Base error class for Keycloak client errors
  */
@@ -39,7 +45,7 @@ export class AuthorizationError extends KeycloakClientError {
  */
 export class NotFoundError extends KeycloakClientError {
 	constructor(message: string, response?: unknown) {
-		super(message, 404, response);
+		super(message, HTTP_STATUS_NOT_FOUND, response);
 		this.name = 'NotFoundError';
 	}
 }
@@ -49,7 +55,7 @@ export class NotFoundError extends KeycloakClientError {
  */
 export class ValidationError extends KeycloakClientError {
 	constructor(message: string, response?: unknown) {
-		super(message, 400, response);
+		super(message, HTTP_STATUS_BAD_REQUEST, response);
 		this.name = 'ValidationError';
 	}
 }
@@ -59,7 +65,7 @@ export class ValidationError extends KeycloakClientError {
  */
 export class RateLimitError extends KeycloakClientError {
 	constructor(message: string, response?: unknown) {
-		super(message, 429, response);
+		super(message, HTTP_STATUS_RATE_LIMIT, response);
 		this.name = 'RateLimitError';
 	}
 }
@@ -69,7 +75,7 @@ export class RateLimitError extends KeycloakClientError {
  */
 export class TimeoutError extends KeycloakClientError {
 	constructor(message: string) {
-		super(message, 408);
+		super(message, HTTP_STATUS_REQUEST_TIMEOUT);
 		this.name = 'TimeoutError';
 	}
 }
@@ -89,7 +95,7 @@ export class NetworkError extends KeycloakClientError {
  */
 export class ConflictError extends KeycloakClientError {
 	constructor(message: string, response?: unknown) {
-		super(message, 409, response);
+		super(message, HTTP_STATUS_CONFLICT, response);
 		this.name = 'ConflictError';
 	}
 }

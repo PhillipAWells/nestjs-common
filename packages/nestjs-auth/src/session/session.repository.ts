@@ -13,18 +13,21 @@ export class SessionRepository {
 	}
 
 	public async FindBySessionId(sessionId: string): Promise<Session | null> {
-		return this.sessionModel.findOne({ sessionId }).lean().exec();
+		const session = await this.sessionModel.findOne({ sessionId }).lean().exec();
+		return session;
 	}
 
 	public async FindUserSessions(userId: string): Promise<Session[]> {
-		return this.sessionModel.find({ userId }).lean().exec();
+		const sessions = await this.sessionModel.find({ userId }).lean().exec();
+		return sessions;
 	}
 
 	public async Update(sessionId: string, updateData: Partial<Session>): Promise<Session | null> {
-		return this.sessionModel
+		const session = await this.sessionModel
 			.findOneAndUpdate({ sessionId }, updateData, { new: true })
 			.lean()
 			.exec();
+		return session;
 	}
 
 	public async UpdateSessionActivity(sessionId: string): Promise<void> {
@@ -43,12 +46,13 @@ export class SessionRepository {
 	}
 
 	public async FindActiveSessions(userId: string): Promise<Session[]> {
-		return this.sessionModel
+		const sessions = await this.sessionModel
 			.find({
 				userId,
 				expiresAt: { $gt: new Date() },
 			})
 			.lean()
 			.exec();
+		return sessions;
 	}
 }

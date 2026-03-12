@@ -11,6 +11,7 @@ import {
 	IdentityProviderService,
 	AuthenticationService,
 } from './services/index.js';
+import { CLIENT_ID_SHORT_LENGTH } from '../../../constants/auth-timeouts.constants.js';
 
 /**
  * Keycloak Admin API client
@@ -83,7 +84,7 @@ export class KeycloakClient {
 
 		// Generate client identifiers
 		this.ClientUUID = uuidv4();
-		this.ClientID = this.ClientUUID.slice(-12);
+		this.ClientID = this.ClientUUID.slice(-CLIENT_ID_SHORT_LENGTH);
 
 		// Initialize admin client
 		this.adminClient = new KcAdminClient({
@@ -115,7 +116,7 @@ export class KeycloakClient {
 	 * Authenticate with Keycloak admin API
 	 * This must be called before making API requests
 	 */
-	async authenticate(): Promise<void> {
+	public async authenticate(): Promise<void> {
 		try {
 			if (isPasswordCredentials(this.config.credentials)) {
 				await this.adminClient.auth({
@@ -154,21 +155,21 @@ export class KeycloakClient {
 	/**
 	 * Check if the client is authenticated
 	 */
-	isAuthenticated(): boolean {
+	public isAuthenticated(): boolean {
 		return this.adminClient.accessToken !== undefined;
 	}
 
 	/**
 	 * Get the current access token
 	 */
-	getAccessToken(): string | undefined {
+	public getAccessToken(): string | undefined {
 		return this.adminClient.accessToken;
 	}
 
 	/**
 	 * Set the access token manually (for use with external auth)
 	 */
-	setAccessToken(token: string): void {
+	public setAccessToken(token: string): void {
 		this.adminClient.setAccessToken(token);
 	}
 }
