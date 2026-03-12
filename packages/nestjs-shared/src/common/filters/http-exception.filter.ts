@@ -11,9 +11,9 @@ import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
 import { ErrorCategorizerService } from '../services/error-categorizer.service.js';
 
 /**
-	 * HTTP Exception Filter
-	 * Handles all HTTP exceptions and formats error responses consistently
-	 */
+ * HTTP Exception Filter
+ * Handles all HTTP exceptions and formats error responses consistently
+ */
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
 	constructor(

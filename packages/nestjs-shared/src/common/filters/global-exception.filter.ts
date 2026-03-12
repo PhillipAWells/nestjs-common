@@ -118,7 +118,27 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		});
 
 		// Sanitize error response for production
-		const sanitizedError = this.errorSanitizer.sanitizeErrorResponse(errorResponse, isDevelopment);
+		// Pass the nested error object (which has .message, .stack, .context) to the sanitizer,
+		// then reconstruct the full response envelope with the sanitized inner object.
+		const sanitizedInner = this.errorSanitizer.sanitizeErrorResponse(
+			{
+				message: errorResponse.error.message,
+				statusCode: status,
+				stack: errorResponse.error.stack,
+				context: errorResponse.error.context,
+			},
+			isDevelopment,
+		);
+		const sanitizedError: ErrorResponseBody = {
+			success: false,
+			error: {
+				code: errorResponse.error.code,
+				message: sanitizedInner.message as string,
+				timestamp: errorResponse.error.timestamp,
+				...(isDevelopment && sanitizedInner.context ? { context: sanitizedInner.context as Record<string, any> } : {}),
+				...(isDevelopment && sanitizedInner.stack ? { stack: sanitizedInner.stack as string } : {}),
+			},
+		};
 
 		response.status(status).json(sanitizedError);
 	}

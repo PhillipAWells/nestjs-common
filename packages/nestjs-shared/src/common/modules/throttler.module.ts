@@ -66,6 +66,9 @@ export class SharedThrottlerModule {
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly DEFAULT_MAX_REQUESTS = 100;
 
+	// eslint-disable-next-line no-magic-numbers
+	private static readonly MS_PER_SECOND = 1000;
+
 	/**
 	 * Configure in-memory throttling (default)
 	 */
@@ -81,7 +84,7 @@ export class SharedThrottlerModule {
 			module: SharedThrottlerModule,
 			imports: [
 				ThrottlerModule.forRoot({
-					throttlers: [{ ttl: Math.round(ttl / 1000), limit }],
+					throttlers: [{ ttl: Math.round(ttl / SharedThrottlerModule.MS_PER_SECOND), limit }],
 				}),
 			],
 			providers: [ThrottlerGuard],
@@ -146,7 +149,7 @@ export class SharedThrottlerModule {
 						}
 
 						return {
-							throttlers: [{ ttl: Math.round(ttl / 1000), limit }],
+							throttlers: [{ ttl: Math.round(ttl / SharedThrottlerModule.MS_PER_SECOND), limit }],
 						};
 					},
 				}),

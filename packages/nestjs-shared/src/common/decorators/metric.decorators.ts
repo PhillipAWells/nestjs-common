@@ -33,7 +33,7 @@ export class MetricFactory {
 	 * Create a counter metric
 	 */
 	public static createCounter(name: string, help: string, labelNames?: string[]): Counter<string> {
-		const config: any = {
+		const config: { name: string; help: string; labelNames?: string[] } = {
 			name,
 			help,
 		};
@@ -47,7 +47,7 @@ export class MetricFactory {
 	 * Create a gauge metric
 	 */
 	public static createGauge(name: string, help: string, labelNames?: string[]): Gauge<string> {
-		const config: any = {
+		const config: { name: string; help: string; labelNames?: string[] } = {
 			name,
 			help,
 		};
@@ -66,7 +66,7 @@ export class MetricFactory {
 		labelNames?: string[],
 		buckets?: number[],
 	): Histogram<string> {
-		const config: any = {
+		const config: { name: string; help: string; labelNames?: string[]; buckets?: number[] } = {
 			name,
 			help,
 		};
@@ -88,7 +88,7 @@ export class MetricFactory {
 		labelNames?: string[],
 		percentiles?: number[],
 	): Summary<string> {
-		const config: any = {
+		const config: { name: string; help: string; labelNames?: string[]; percentiles?: number[] } = {
 			name,
 			help,
 		};

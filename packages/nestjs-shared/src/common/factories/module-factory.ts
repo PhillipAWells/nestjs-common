@@ -228,7 +228,6 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 		providers.push({
 			provide: APP_FILTER,
 			useClass: filter,
-			multi: filters.length > 1,
 		});
 	});
 
@@ -237,7 +236,6 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 		providers.push({
 			provide: APP_INTERCEPTOR,
 			useClass: interceptor,
-			multi: interceptors.length > 1,
 		});
 	});
 
@@ -246,7 +244,6 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 		providers.push({
 			provide: APP_PIPE,
 			useClass: pipe,
-			multi: pipes.length > 1,
 		});
 	});
 
@@ -255,7 +252,6 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 		providers.push({
 			provide: APP_GUARD,
 			useClass: guard,
-			multi: guards.length > 1,
 		});
 	});
 

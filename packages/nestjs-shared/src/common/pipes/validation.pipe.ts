@@ -26,12 +26,6 @@ export class ValidationPipe extends BaseValidationPipe {
 	 * @param errors - The validation errors
 	 * @returns string[] - Array of error messages
 	 */
-	/**
-	 * Formats validation errors as string array for HTTP responses
-	 *
-	 * @param errors - The validation errors
-	 * @returns string[] - Array of error messages
-	 */
 	protected formatValidationErrors(errors: ValidationError[]): string[] {
 		const result: string[] = [];
 

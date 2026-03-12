@@ -2,9 +2,6 @@ import { Injectable, Inject } from '@nestjs/common';
 import { AppLogger } from './logger.service.js';
 
 /**
- * Health check response interface
- */
-/**
  * Health status enumeration for standardized health check responses
  */
 export enum HealthStatus {

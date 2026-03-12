@@ -188,7 +188,7 @@ export class MetricsRegistryService {
 	 * Create and register a new histogram metric
 	 */
 	public createHistogram(name: string, help: string, labelNames: string[] = [], buckets?: number[]): Histogram<string> {
-		const config: any = {
+		const config: { name: string; help: string; labelNames: string[]; registers: Registry[]; buckets?: number[] } = {
 			name,
 			help,
 			labelNames,

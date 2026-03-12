@@ -47,7 +47,7 @@ export class HttpClientInterceptor implements NestInterceptor {
 		);
 	}
 
-	private sanitizeHeaders(headers: any): any {
+	private sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
 		const sanitized = { ...headers };
 		const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie', 'set-cookie'];
 
