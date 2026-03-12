@@ -8,6 +8,6 @@ export interface IPyroscopeModuleOptions {
 
 export interface IPyroscopeModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
 	isGlobal?: boolean;
-	useFactory: (...args: any[]) => IPyroscopeConfig;
+	useFactory: (...args: unknown[]) => IPyroscopeConfig;
 	inject?: any[];
 }

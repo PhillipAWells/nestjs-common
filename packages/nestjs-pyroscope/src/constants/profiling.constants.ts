@@ -1,6 +1,5 @@
 // Metrics status codes
 export const METRICS_STATUS_OK = 200;
-export const METRICS_STATUS_WARNING = 400;
 
 // Utility constants for profiling utilities
 export const PROFILING_UTILS_TIMEOUT = 1000;

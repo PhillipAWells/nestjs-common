@@ -34,7 +34,7 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 			});
 		}
 
-		if (health.details.activeProfiles > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
+		if ((health.details.activeProfiles ?? 0) > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
 			return this.getStatus(key, false, {
 				message: 'Too many active profiles, service may be degraded',
 				activeProfiles: health.details.activeProfiles,

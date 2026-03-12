@@ -171,9 +171,6 @@ export class ProfilingErrorHandler {
 	 * Create user-friendly error message
 	 */
 	public static formatError(error: Error): string {
-		// Log the real error internally for debugging
-		console.error('Profiling error details:', error.message, error.stack);
-
 		if (error.message.includes('ECONNREFUSED')) {
 			return 'Unable to connect to Pyroscope server. Please check server address and network connectivity.';
 		}
@@ -216,7 +213,7 @@ export class ProfilingErrorHandler {
  * Generate a unique profile ID
  */
 export function generateProfileId(prefix: string = 'profile'): string {
-	return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
 /**

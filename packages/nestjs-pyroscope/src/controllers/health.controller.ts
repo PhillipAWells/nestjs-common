@@ -55,7 +55,7 @@ export class HealthController {
 
 		if (!pyroscopeHealth.details.initialized && this.pyroscopeService.isEnabled()) {
 			status = 'unhealthy';
-		} else if (pyroscopeHealth.details.activeProfiles > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
+		} else if ((pyroscopeHealth.details.activeProfiles ?? 0) > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
 			// Consider degraded if too many active profiles
 			status = 'degraded';
 		}
@@ -65,15 +65,15 @@ export class HealthController {
 			timestamp: Date.now(),
 			uptime: process.uptime(),
 			pyroscope: {
-				connected: pyroscopeHealth.details.initialized,
+				connected: pyroscopeHealth.details.initialized ?? false,
 				serverAddress: pyroscopeHealth.details.serverAddress ?? '',
 				applicationName: pyroscopeHealth.details.applicationName ?? '',
 				lastUpdate: metrics.timestamp,
 			},
 			profiling: {
 				enabled: this.pyroscopeService.isEnabled(),
-				activeProfiles: pyroscopeHealth.details.activeProfiles,
-				totalProfiles: pyroscopeHealth.details.totalMetrics,
+				activeProfiles: pyroscopeHealth.details.activeProfiles ?? 0,
+				totalProfiles: pyroscopeHealth.details.totalMetrics ?? 0,
 			},
 		};
 	}
