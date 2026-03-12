@@ -23,14 +23,14 @@ export class KeycloakAdminService implements OnModuleInit {
 
 		try {
 			this.logger.log('Initializing Keycloak admin client...');
+			const { type: _type, ...credentialsWithoutType } = this.config.credentials as { type: string; [key: string]: string };
 			this.client = new KeycloakClient({
 				baseUrl: this.config.baseUrl,
 				realmName: this.config.realmName,
-				credentials: this.config.credentials as any,
+				credentials: credentialsWithoutType as any,
 				timeout: this.config.timeout,
 				retry: this.config.retry,
-				logger: this.appLogger as any,
-			} as any);
+			});
 
 			await this.client.authenticate();
 			this.logger.log('Keycloak admin client initialized successfully');

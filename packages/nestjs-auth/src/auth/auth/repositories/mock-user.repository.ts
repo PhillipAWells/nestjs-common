@@ -26,7 +26,7 @@ export class MockUserRepository implements IUserRepository {
 	}
 
 	public async create(userData: Omit<User, 'id'>): Promise<User> {
-		const email = userData['email'];
+		const email = userData.email;
 		const emailKey = email.toLowerCase();
 
 		// Check for duplicate email (case-insensitive)
@@ -54,8 +54,8 @@ export class MockUserRepository implements IUserRepository {
 		}
 
 		// Handle email change - update index
-		const updatesEmail = updates['email'];
-		if (updatesEmail && updatesEmail !== existing['email']) {
+		const updatesEmail = updates.email;
+		if (updatesEmail && updatesEmail !== existing.email) {
 			const newEmailKey = updatesEmail.toLowerCase();
 
 			// Check for duplicate (case-insensitive)
@@ -63,7 +63,7 @@ export class MockUserRepository implements IUserRepository {
 				throw new Error(`User with email ${updatesEmail} already exists`);
 			}
 
-			const existingEmail = existing['email'];
+			const existingEmail = existing.email;
 			this.emailIndex.delete(existingEmail.toLowerCase());
 			this.emailIndex.set(newEmailKey, id);
 		}

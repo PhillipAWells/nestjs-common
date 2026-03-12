@@ -13,9 +13,6 @@ export class OAuthModule {
 	/**
    * Create dynamic module with OAuth configuration
    */
-	/**
-   * Create dynamic module with OAuth configuration
-   */
 	public static forRoot(options: OAuthModuleOptions): DynamicModule {
 		return {
 			module: OAuthModule,
@@ -34,9 +31,6 @@ export class OAuthModule {
 		};
 	}
 
-	/**
-    * Create dynamic module with async OAuth configuration
-    */
 	/**
     * Create dynamic module with async OAuth configuration
     */
