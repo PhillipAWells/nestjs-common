@@ -21,10 +21,10 @@ import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/n
 @Injectable()
 export class PrometheusExporter implements IMetricsExporter {
 	/**
-	 * This exporter does not support event-based metric recording
-	 * Metrics are buffered and flushed on pull (getMetrics)
+	 * This exporter buffers metric values as they are recorded and flushes
+	 * them into prom-client instruments on each pull (getMetrics)
 	 */
-	public readonly supportsEventBased = false;
+	public readonly supportsEventBased = true;
 
 	/**
 	 * This exporter supports pull-based metric retrieval
@@ -57,7 +57,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * @private
 	 */
 	// eslint-disable-next-line no-magic-numbers
-	private readonly MAX_PENDING_PER_METRIC = 1000;
+	private static readonly MAX_PENDING_PER_METRIC = 1000;
 
 	/**
 	 * Logger instance for warnings and errors
@@ -152,9 +152,8 @@ export class PrometheusExporter implements IMetricsExporter {
 	/**
 	 * Buffer a metric value to be flushed on next getMetrics() call
 	 *
-	 * This method is called when supportsEventBased = false. Values are buffered
-	 * and not immediately recorded into prom-client; instead, they are recorded
-	 * during the next pull (getMetrics) call.
+	 * Values are buffered rather than immediately recorded into prom-client.
+	 * They are applied to the appropriate instrument during the next pull (getMetrics) call.
 	 *
 	 * @param value - The metric value to buffer
 	 *
@@ -176,7 +175,7 @@ export class PrometheusExporter implements IMetricsExporter {
 			pendingArray.push(value);
 
 			// Cap pending array to prevent unbounded memory growth
-			if (pendingArray.length > this.MAX_PENDING_PER_METRIC) {
+			if (pendingArray.length > PrometheusExporter.MAX_PENDING_PER_METRIC) {
 				pendingArray.shift();
 			}
 		} else {
@@ -207,9 +206,8 @@ export class PrometheusExporter implements IMetricsExporter {
 		// Flush all pending values into prom-client instruments
 		// Use atomic swap pattern: capture current values and replace with empty array
 		// to prevent loss of metrics recorded concurrently during flush
-		for (const [metricName] of this.pending.entries()) {
+		for (const [metricName, pendingValues] of this.pending.entries()) {
 			// Atomically swap pending array with a fresh one
-			const pendingValues = this.pending.get(metricName) ?? [];
 			this.pending.set(metricName, []);
 
 			if (pendingValues.length === 0) {
@@ -222,26 +220,14 @@ export class PrometheusExporter implements IMetricsExporter {
 				continue;
 			}
 
-			const descriptor = pendingValues[0]?.descriptor;
-			if (!descriptor) {
-				continue;
-			}
-
 			// Record all pending values into the appropriate instrument
 			for (const metricValue of pendingValues) {
-				switch (descriptor.type) {
-					case 'counter':
-						(instrument as Counter<string>).inc(metricValue.labels, metricValue.value);
-						break;
-
-					case 'histogram':
-						(instrument as Histogram<string>).observe(metricValue.labels, metricValue.value);
-						break;
-
-					case 'gauge':
-					case 'updown_counter':
-						(instrument as Gauge<string>).set(metricValue.labels, metricValue.value);
-						break;
+				if (instrument instanceof Counter) {
+					instrument.inc(metricValue.labels, metricValue.value);
+				} else if (instrument instanceof Histogram) {
+					instrument.observe(metricValue.labels, metricValue.value);
+				} else if (instrument instanceof Gauge) {
+					instrument.set(metricValue.labels, metricValue.value);
 				}
 			}
 		}

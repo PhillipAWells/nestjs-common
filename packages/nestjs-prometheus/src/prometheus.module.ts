@@ -59,15 +59,17 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 		};
 	}
 
+	constructor(
+		private readonly exporter: PrometheusExporter,
+		private readonly registry: InstrumentationRegistry,
+	) {}
+
 	/**
 	 * Initialize the module and register the Prometheus exporter
 	 *
 	 * Called by NestJS during module initialization. Registers the PrometheusExporter
 	 * with the InstrumentationRegistry so that it receives descriptor registration
 	 * events and metric values.
-	 *
-	 * @param exporter - The PrometheusExporter instance
-	 * @param registry - The InstrumentationRegistry instance
 	 *
 	 * @example
 	 * ```typescript
@@ -97,9 +99,4 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	public async onApplicationShutdown(): Promise<void> {
 		await this.exporter.shutdown();
 	}
-
-	constructor(
-		private readonly exporter: PrometheusExporter,
-		private readonly registry: InstrumentationRegistry,
-	) {}
 }
