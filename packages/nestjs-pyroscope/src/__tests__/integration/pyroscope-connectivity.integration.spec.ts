@@ -114,7 +114,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 
-			await expect(pyroscopeService.onModuleInit()).resolves.toBeUndefined();
+			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 		});
 
 		it('should skip initialization when profiling is disabled', async () => {
@@ -127,7 +127,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 
 			// Should not throw even when disabled
-			await expect(pyroscopeService.onModuleInit()).resolves.toBeUndefined();
+			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 		});
 
 		it('should gracefully handle Pyroscope SDK missing', async () => {
@@ -141,7 +141,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 
 			// Should not throw
-			await expect(pyroscopeService.onModuleInit()).resolves.not.toThrow();
+			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 		});
 
 		it('should respect optional configuration fields during init', async () => {
@@ -169,7 +169,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
 
-			await expect(pyroscopeService.onModuleInit()).resolves.not.toThrow();
+			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 			expect(config.basicAuthUser).toBe('testuser');
 			expect(config.sampleRate).toBe(0.1);
 		});

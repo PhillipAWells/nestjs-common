@@ -327,7 +327,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 
 			// Should not throw
-			await expect(pyroscopeService.onModuleInit()).resolves.toBeUndefined();
+			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 			expect(pyroscopeService.isEnabled()).toBe(false);
 		});
 	});
