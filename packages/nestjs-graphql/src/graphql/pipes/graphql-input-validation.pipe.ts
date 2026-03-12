@@ -24,15 +24,12 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	 
 	private readonly MAX_INPUT_SIZE = 100_000;
 
-	private readonly INJECTION_PATTERNS = [
-		/['";\\-]{3,}/,  // Multiple special characters in a row
-		/--\s*$/,         // SQL comment
-		/[*;`]/,         // SQL wildcards or backticks
-		/\/\*/,           // SQL comment start
-		/xp_\w+/i,        // SQL Server extended procedures
-		/<script/i,       // Script injection
-		/javascript:/i,   // JavaScript protocol
-		/onerror\s*=/i,    // Event handler injection
+	// XSS-specific patterns only — SQL/NoSQL injection protection is handled by
+	// parameterized queries at the database layer, not by input string matching.
+	private readonly XSS_PATTERNS = [
+		/<script\b[^>]*>/i,       // Script tag injection
+		/javascript\s*:/i,        // JavaScript protocol in URLs
+		/on(?:error|load|click|mouse\w+|focus|blur)\s*=/i, // Event handler injection
 	];
 
 	/**
@@ -96,26 +93,23 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			});
 		}
 
-		// Recursively check string fields for injection patterns
-		this.checkForInjectionPatterns(value);
+		// Recursively check string fields for XSS patterns
+		this.checkForXssPatterns(value);
 	}
 
 	/**
-	 * Recursively checks object properties for injection patterns
-	 *
-	 * @param obj - The object to check
-	 * @param path - The current path for logging
-	 * @throws BadRequestException if injection pattern detected
+	 * Recursively checks object properties for XSS patterns.
+	 * SQL/NoSQL injection is prevented at the database layer via parameterized queries.
 	 */
-	private checkForInjectionPatterns(obj: any, path = ''): void {
+	private checkForXssPatterns(obj: any, path = ''): void {
 		if (typeof obj !== 'object' || obj === null) {
 			if (typeof obj === 'string') {
-				for (const pattern of this.INJECTION_PATTERNS) {
+				for (const pattern of this.XSS_PATTERNS) {
 					if (pattern.test(obj)) {
-						this.logger.warn(`Potential injection attack detected at ${path}`);
+						this.logger.warn(`Potential XSS attack detected at ${path}`);
 						throw new BadRequestException({
 							message: 'Invalid characters or patterns detected in input',
-							code: 'INJECTION_DETECTED',
+							code: 'XSS_DETECTED',
 						});
 					}
 				}
@@ -129,17 +123,17 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 				const currentPath = path ? `${path}.${key}` : key;
 
 				if (typeof value === 'string') {
-					for (const pattern of this.INJECTION_PATTERNS) {
+					for (const pattern of this.XSS_PATTERNS) {
 						if (pattern.test(value)) {
-							this.logger.warn(`Potential injection attack detected at ${currentPath}`);
+							this.logger.warn(`Potential XSS attack detected at ${currentPath}`);
 							throw new BadRequestException({
 								message: 'Invalid characters or patterns detected in input',
-								code: 'INJECTION_DETECTED',
+								code: 'XSS_DETECTED',
 							});
 						}
 					}
 				} else if (typeof value === 'object' && value !== null) {
-					this.checkForInjectionPatterns(value, currentPath);
+					this.checkForXssPatterns(value, currentPath);
 				}
 			}
 		}

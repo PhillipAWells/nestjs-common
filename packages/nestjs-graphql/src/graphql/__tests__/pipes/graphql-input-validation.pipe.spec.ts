@@ -60,71 +60,6 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 		});
 	});
 
-	describe('SQL injection detection', () => {
-		it('should reject input with SQL comment pattern', async () => {
-			const injectionInput = {
-				email: 'test@example.com',
-				password: 'admin\' --',
-			};
-
-			await expect(
-				pipe.transform(injectionInput, {
-					metatype: MockLoginInput,
-					type: 'body',
-					data: undefined,
-				}),
-			).rejects.toThrow(BadRequestException);
-		});
-
-		it('should reject input with multiple consecutive special characters', async () => {
-			const injectionInput = {
-				email: 'test@example.com',
-				password: 'pass"""word',
-			};
-
-			await expect(
-				pipe.transform(injectionInput, {
-					metatype: MockLoginInput,
-					type: 'body',
-					data: undefined,
-				}),
-			).rejects.toThrow(BadRequestException);
-		});
-
-		it('should reject input with SQL wildcard characters', async () => {
-			const injectionInputs = [
-				{ email: 'test%@example.com', password: 'password123' },
-				{ email: 'test*@example.com', password: 'password123' },
-				{ email: 'test`@example.com', password: 'password123' },
-			];
-
-			for (const input of injectionInputs) {
-				await expect(
-					pipe.transform(input, {
-						metatype: MockLoginInput,
-						type: 'body',
-						data: undefined,
-					}),
-				).rejects.toThrow(BadRequestException);
-			}
-		});
-
-		it('should reject input with SQL Server procedures', async () => {
-			const injectionInput = {
-				email: 'test@example.com',
-				password: 'xp_cmdshell',
-			};
-
-			await expect(
-				pipe.transform(injectionInput, {
-					metatype: MockLoginInput,
-					type: 'body',
-					data: undefined,
-				}),
-			).rejects.toThrow(BadRequestException);
-		});
-	});
-
 	describe('XSS/script injection detection', () => {
 		it('should reject input with script tags', async () => {
 			const xssInput = {
@@ -183,10 +118,8 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 				}),
 			).rejects.toThrow(BadRequestException);
 		});
-	});
 
-	describe('Nested object validation', () => {
-		it('should check injection patterns in nested objects', async () => {
+		it('should reject input with nested XSS in objects', async () => {
 			class NestedInput {
 				@IsString()
 				public name!: string;
@@ -194,37 +127,16 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 				public profile!: { bio: string };
 			}
 
-			const nestedInjectionInput = {
+			const nestedXssInput = {
 				name: 'John',
 				profile: {
-					bio: '\'; DROP TABLE users--',
+					bio: '<script src="evil.js"></script>',
 				},
 			};
 
 			await expect(
-				pipe.transform(nestedInjectionInput, {
+				pipe.transform(nestedXssInput, {
 					metatype: NestedInput,
-					type: 'body',
-					data: undefined,
-				}),
-			).rejects.toThrow(BadRequestException);
-		});
-
-		it('should check injection patterns in array elements', async () => {
-			const arrayInjectionInput = {
-				emails: [
-					'valid@example.com',
-					'invalid/*@example.com',
-				],
-			};
-
-			class ArrayInput {
-				public emails!: string[];
-			}
-
-			await expect(
-				pipe.transform(arrayInjectionInput, {
-					metatype: ArrayInput,
 					type: 'body',
 					data: undefined,
 				}),
@@ -237,6 +149,21 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 			const validInput = {
 				email: 'user+test@example.co.uk',
 				password: 'P@ssw0rd!Secure',
+			};
+
+			const result = await pipe.transform(validInput, {
+				metatype: MockLoginInput,
+				type: 'body',
+				data: undefined,
+			});
+
+			expect(result).toBeDefined();
+		});
+
+		it('should allow SQL-like strings since injection is handled at DB layer', async () => {
+			const validInput = {
+				email: 'test@example.com',
+				password: 'pass\'word; SELECT * FROM users--',
 			};
 
 			const result = await pipe.transform(validInput, {
@@ -274,14 +201,14 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 	});
 
 	describe('Error handling and logging', () => {
-		it('should provide detailed injection error information', async () => {
-			const injectionInput = {
+		it('should provide detailed XSS error information', async () => {
+			const xssInput = {
+				name: '<script>alert(1)</script>',
 				email: 'test@example.com',
-				password: '\'; --',
 			};
 
-			const error = await pipe.transform(injectionInput, {
-				metatype: MockLoginInput,
+			const error = await pipe.transform(xssInput, {
+				metatype: MockUserInput,
 				type: 'body',
 				data: undefined,
 			}).catch(e => e);
@@ -289,7 +216,7 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 			expect(error).toBeInstanceOf(BadRequestException);
 			expect(error.getResponse()).toMatchObject({
 				message: expect.stringContaining('Invalid characters or patterns'),
-				code: 'INJECTION_DETECTED',
+				code: 'XSS_DETECTED',
 			});
 		});
 
@@ -338,36 +265,6 @@ describe('GraphQLInputValidationPipe - Security Validation', () => {
 			});
 
 			expect(result).toBeDefined();
-		});
-
-		it('should handle deeply nested objects with injection attempts', async () => {
-			class DeepInput {
-				public level1!: {
-					level2: {
-						level3: {
-							value: string;
-						};
-					};
-				};
-			}
-
-			const deepInjectionInput = {
-				level1: {
-					level2: {
-						level3: {
-							value: '\'; DROP TABLE--',
-						},
-					},
-				},
-			};
-
-			await expect(
-				pipe.transform(deepInjectionInput, {
-					metatype: DeepInput,
-					type: 'body',
-					data: undefined,
-				}),
-			).rejects.toThrow(BadRequestException);
 		});
 	});
 });

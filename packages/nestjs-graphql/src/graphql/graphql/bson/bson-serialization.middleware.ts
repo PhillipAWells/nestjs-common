@@ -2,6 +2,9 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
+// Status code for client errors
+const HTTP_STATUS_BAD_REQUEST = 400;
+
 /**
  * Middleware for handling BSON request bodies
  * Deserializes incoming BSON data to JSON before GraphQL processing
@@ -23,78 +26,66 @@ export class BsonSerializationMiddleware implements NestMiddleware {
 			return;
 		}
 
-		// Handle BSON request asynchronously
-		// eslint-disable-next-line require-await
-		(async (): Promise<void> => {
-			// Collect raw body chunks
-			const chunks: Buffer[] = [];
-			// Status code for client errors
-			const HTTP_STATUS_BAD_REQUEST = 400;
+		// Collect raw body chunks
+		const chunks: Buffer[] = [];
 
-			return new Promise<void>((resolve) => {
-				// Handle data events
-				const onData = (chunk: Buffer): void => {
-					chunks.push(chunk);
-				};
+		// Handle data events
+		const onData = (chunk: Buffer): void => {
+			chunks.push(chunk);
+		};
 
-				// Handle end event
-				const onEnd = (): void => {
-					(async () => {
-						try {
-							// Combine all chunks into single buffer
-							const buffer = Buffer.concat(chunks);
+		const removeListeners = (): void => {
+			req.removeListener('data', onData);
+			req.removeListener('end', onEnd);
+			req.removeListener('error', onError);
+		};
 
-							// Deserialize BSON to object
-							const body = await this.bsonService.deserialize(buffer);
-
-							// Set req.body to deserialized object
-							req.body = body;
-
-							// Mark that this was a BSON request for response interceptor
-							(req as any)._bsonRequest = true;
-
-							// Continue to next middleware
-							next();
-							resolve();
-						} catch (error) {
-							// Handle parsing error
-							res.status(HTTP_STATUS_BAD_REQUEST).json({
-								errors: [
-									{
-										message: 'Failed to parse BSON body',
-										extensions: {
-											code: 'BAD_REQUEST',
-											details: error instanceof Error ? error.message : String(error),
-										},
-									},
-								],
-							});
-							resolve();
-						}
-					})();
-				};
-
-				// Handle error event
-				const onError = (err: Error): void => {
+		// Handle end event — async with proper error handling and listener cleanup
+		const onEnd = (): void => {
+			const buffer = Buffer.concat(chunks);
+			this.bsonService.deserialize(buffer).then(
+				(body) => {
+					removeListeners();
+					req.body = body;
+					(req as any)._bsonRequest = true;
+					next();
+				},
+				(error: unknown) => {
+					removeListeners();
 					res.status(HTTP_STATUS_BAD_REQUEST).json({
 						errors: [
 							{
-								message: 'Request body read error',
+								message: 'Failed to parse BSON body',
 								extensions: {
 									code: 'BAD_REQUEST',
-									details: err.message,
+									details: error instanceof Error ? error.message : String(error),
 								},
 							},
 						],
 					});
-					resolve();
-				};
+				},
+			);
+		};
 
-				// Attach listeners
-				req.on('data', onData);
-				req.on('end', onEnd);
-				req.on('error', onError);
+		// Handle error event
+		const onError = (err: Error): void => {
+			removeListeners();
+			res.status(HTTP_STATUS_BAD_REQUEST).json({
+				errors: [
+					{
+						message: 'Request body read error',
+						extensions: {
+							code: 'BAD_REQUEST',
+							details: err.message,
+						},
+					},
+				],
 			});
-		})();
+		};
+
+		// Attach listeners
+		req.on('data', onData);
+		req.on('end', onEnd);
+		req.on('error', onError);
 	}
 }

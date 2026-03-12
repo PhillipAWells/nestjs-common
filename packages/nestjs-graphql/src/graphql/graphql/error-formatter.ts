@@ -105,7 +105,6 @@ export class GraphQLErrorFormatter {
 				code: originalError.code ?? GraphQLErrorCode.INTERNAL_ERROR,
 				timestamp: new Date().toISOString(),
 				...(originalError.details && { details: originalError.details }),
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -123,7 +122,6 @@ export class GraphQLErrorFormatter {
 				code: GraphQLErrorCode.BAD_USER_INPUT,
 				timestamp: new Date().toISOString(),
 				validationErrors,
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -138,7 +136,6 @@ export class GraphQLErrorFormatter {
 			extensions: {
 				code: GraphQLErrorCode.UNAUTHENTICATED,
 				timestamp: new Date().toISOString(),
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -153,7 +150,6 @@ export class GraphQLErrorFormatter {
 			extensions: {
 				code: GraphQLErrorCode.FORBIDDEN,
 				timestamp: new Date().toISOString(),
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -168,7 +164,6 @@ export class GraphQLErrorFormatter {
 			extensions: {
 				code: GraphQLErrorCode.RATE_LIMIT_EXCEEDED,
 				timestamp: new Date().toISOString(),
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -187,7 +182,6 @@ export class GraphQLErrorFormatter {
 			extensions: {
 				code: GraphQLErrorCode.INTERNAL_ERROR,
 				timestamp: new Date().toISOString(),
-				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};

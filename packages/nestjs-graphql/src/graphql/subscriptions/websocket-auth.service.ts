@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 /**
  * Service for WebSocket connection authentication
@@ -7,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 export class WebSocketAuthService {
 	private readonly logger = new Logger(WebSocketAuthService.name);
 
-	constructor() {}
+	constructor(@Inject(JwtService) @Optional() private readonly jwtService?: JwtService) {}
 
 	/**
    * Authenticates a WebSocket connection
@@ -57,22 +58,21 @@ export class WebSocketAuthService {
 	}
 
 	/**
-   * Validates JWT token and extracts user ID
+   * Validates JWT token with cryptographic signature verification and extracts user ID
    * @param token JWT token
    * @returns User ID or null if invalid
    */
 	private async validateToken(token: string): Promise<string | null> {
 		try {
-			// This is a simplified JWT validation
-			// In a real implementation, you would use @nestjs/jwt or similar
-			const payload = this.decodeToken(token);
-
-			if (!payload?.sub) {
+			if (!this.jwtService) {
+				this.logger.error('JwtService not available — WebSocket authentication cannot verify token signatures');
 				return null;
 			}
 
-			// Check token expiration
-			if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+			// Verify token with cryptographic signature validation
+			const payload = await this.jwtService.verifyAsync(token);
+
+			if (!payload?.sub) {
 				return null;
 			}
 
@@ -97,24 +97,5 @@ export class WebSocketAuthService {
       connectionParams.authToken ?? 
       null
 		);
-	}
-
-	/**
-   * Decodes JWT token (simplified implementation)
-   * @param token JWT token
-   * @returns Decoded payload or null
-   */
-	private decodeToken(token: string): any {
-		try {
-			const parts = token.split('.');
-			if (parts.length !== 3) {
-				return null;
-			}
-
-			const payload = Buffer.from(parts[1] ?? '', 'base64url').toString();
-			return JSON.parse(payload);
-		} catch {
-			return null;
-		}
 	}
 }

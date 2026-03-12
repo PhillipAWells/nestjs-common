@@ -28,7 +28,7 @@ export class GraphQLAuthGuard implements CanActivate {
 	 * @param context - The execution context
 	 * @returns Promise<boolean> - True if authenticated, throws exception otherwise
 	 */
-	public async canActivate(context: ExecutionContext): Promise<boolean> {
+	public canActivate(context: ExecutionContext): boolean {
 		// Extract GraphQL context
 		const gqlContext = GqlExecutionContext.create(context);
 		const request = gqlContext.getContext().req;
@@ -42,25 +42,16 @@ export class GraphQLAuthGuard implements CanActivate {
 			throw new UnauthorizedException('Authentication required');
 		}
 
-		try {
-			// Store token in request for passport strategies
-			request.headers.authorization = `Bearer ${token}`;
-
-			// TODO: Use passport strategies for validation (requires BaseAuthGuard)
-			// await super.canActivate(context);
-
-			// Store user in GraphQL context for resolvers
-			const { user } = request;
-			gqlContext.getContext().user = user;
-			// TODO: Re-enable logging after re-adding BaseAuthGuard
-			// this.logger.debug(`User authenticated: ${user?.id ?? user?.sub ?? 'unknown'}`);
-
-			return true;
-		} catch (error) {
-			// TODO: Re-enable logging after re-adding BaseAuthGuard
-			// this.logger.error(`Authentication failed: ${error instanceof Error ? error.message : String(error)}`);
+		// Verify request.user is populated (set by a Passport strategy upstream)
+		const { user } = request;
+		if (!user) {
 			throw new UnauthorizedException('Invalid authentication token');
 		}
+
+		// Propagate user into GraphQL context for resolvers
+		gqlContext.getContext().user = user;
+
+		return true;
 	}
 
 	/**
@@ -70,12 +61,13 @@ export class GraphQLAuthGuard implements CanActivate {
 	 * @returns string | null - The extracted token or null
 	 */
 	protected extractTokenFromHeader(request: any): string | null {
-		const authHeader = request.headers?.authorization ?? request.headers?.Authorization;
-		const BEARER_PREFIX_LENGTH = 7; // "Bearer " is 7 characters
-		// TODO: Use DAYS_IN_WEEK constant after breaking circular dependency
+		const authHeader: unknown = request.headers?.authorization;
 
-		if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-			return authHeader.substring(BEARER_PREFIX_LENGTH);
+		if (authHeader && typeof authHeader === 'string') {
+			const parts = authHeader.split(/\s+/);
+			if (parts[0]?.toLowerCase() === 'bearer' && parts[1]) {
+				return parts[1];
+			}
 		}
 
 		return null;

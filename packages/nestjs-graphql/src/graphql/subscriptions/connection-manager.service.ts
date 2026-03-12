@@ -49,8 +49,15 @@ export class ConnectionManagerService {
    * Adds a new WebSocket connection
    * @param ws WebSocket connection
    * @param userId User ID
+   * @param authenticatedUserId Authenticated user ID from token verification — must match userId unless admin
    */
-	public addConnection(ws: any, userId: string): void {
+	public addConnection(ws: any, userId: string, authenticatedUserId?: string): void {
+		// Verify the authenticated user matches the requested userId
+		if (authenticatedUserId !== undefined && userId !== authenticatedUserId) {
+			this.logger.warn(`Connection rejected: authenticated user ${authenticatedUserId} attempted to connect as ${userId}`);
+			throw new Error(`Unauthorized: cannot create connection for user ${userId}`);
+		}
+
 		if (!this.connections.has(userId)) {
 			this.connections.set(userId, new Set());
 		}
