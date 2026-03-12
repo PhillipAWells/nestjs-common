@@ -6,8 +6,9 @@
 
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { Injectable } from '@nestjs/common';
-import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized, SpanKind } from '@pawells/open-telemetry-client';
-import type { OpenTelemetryConfig } from '@pawells/open-telemetry-client';
+import { SpanKind } from '@opentelemetry/api';
+import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized } from '../helpers/otel-setup.js';
+import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
 import { Traced } from '../../decorators/traced.decorator.js';
 
 // Test service with both sync and async methods

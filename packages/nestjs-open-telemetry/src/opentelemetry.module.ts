@@ -68,7 +68,6 @@ export class OpenTelemetryModule implements OnModuleInit {
 	public static forRoot(): DynamicModule {
 		return {
 			module: OpenTelemetryModule,
-			global: true,
 		};
 	}
 }

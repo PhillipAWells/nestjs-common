@@ -20,12 +20,14 @@ export type { TracedOptions } from './decorators/traced.decorator.js';
 export type { ILoggerConfig, LogLevel } from '@pawells/logger';
 export type { Span, SpanContext, Attributes } from '@opentelemetry/api';
 
-// Re-export commonly used helpers from core package
+// Re-export commonly used helpers from lib
 export {
-	recordHttpMetrics,
-	trackActiveRequests,
 	getTracer,
 	createSpan,
 	withSpan,
 	addAttributes,
-} from '@pawells/open-telemetry-client';
+} from './lib/tracing.js';
+export {
+	recordHttpMetrics,
+	trackActiveRequests,
+} from './lib/metrics.js';

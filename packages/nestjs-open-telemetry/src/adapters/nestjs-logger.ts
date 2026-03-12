@@ -78,8 +78,8 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Build metadata with trace context and NestJS context.
 	 */
-	private buildMetadata(context?: string): Record<string, any> {
-		const metadata: Record<string, any> = {};
+	private buildMetadata(context?: string): Record<string, string | number> {
+		const metadata: Record<string, string | number> = {};
 
 		// Add NestJS context if provided
 		if (context) {
@@ -90,11 +90,9 @@ export class OpenTelemetryLogger implements LoggerService {
 		const span = trace.getSpan(otelContext.active());
 		if (span) {
 			const spanContext = span.spanContext();
-			if (spanContext) {
-				metadata['trace_id'] = spanContext.traceId;
-				metadata['span_id'] = spanContext.spanId;
-				metadata['trace_flags'] = spanContext.traceFlags;
-			}
+			metadata['trace_id'] = spanContext.traceId;
+			metadata['span_id'] = spanContext.spanId;
+			metadata['trace_flags'] = spanContext.traceFlags;
 		}
 
 		return metadata;
