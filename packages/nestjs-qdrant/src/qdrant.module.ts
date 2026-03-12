@@ -3,7 +3,8 @@
  * Integrates Qdrant vector database client with NestJS dependency injection
  */
 
-import { DynamicModule, InjectionToken, Module, OptionalFactoryDependency, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
+import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { getQdrantClientToken, getQdrantModuleOptionsToken } from './qdrant.constants.js';
 import type { QdrantModuleAsyncOptions, QdrantModuleOptions, QdrantOptionsFactory } from './qdrant.interfaces.js';
@@ -71,23 +72,36 @@ export class QdrantModule {
 	 * @returns DynamicModule with Qdrant client and service
 	 */
 	public static forRootAsync(options: QdrantModuleAsyncOptions, isGlobal = true): DynamicModule {
-		const asyncProviders = QdrantModule.createAsyncProviders(options);
 		const clientToken = getQdrantClientToken(options.name);
 		const optionsToken = getQdrantModuleOptionsToken(options.name);
+		// Internal token for raw (unsanitized) options — includes apiKey for client creation
+		const rawOptionsToken = Symbol('QDRANT_RAW_OPTIONS');
+
+		const rawProviders = QdrantModule.createAsyncProviders(options, rawOptionsToken);
 
 		return {
 			module: QdrantModule,
 			global: isGlobal,
 			imports: options.imports ?? [],
 			providers: [
-				...asyncProviders,
+				...rawProviders,
+				// Store sanitized options (without apiKey) under the public token
+				{
+					provide: optionsToken,
+					useFactory: (opts: QdrantModuleOptions) => {
+						const { apiKey: _apiKey, name: _name, ...sanitized } = opts;
+						return sanitized;
+					},
+					inject: [rawOptionsToken],
+				},
+				// Create client with full options (including apiKey)
 				{
 					provide: clientToken,
 					useFactory: (opts: QdrantModuleOptions) => {
 						const { name: _name, ...clientOptions } = opts;
 						return new QdrantClient(clientOptions);
 					},
-					inject: [optionsToken],
+					inject: [rawOptionsToken],
 				},
 				{
 					provide: QdrantService,
@@ -102,16 +116,17 @@ export class QdrantModule {
 	/**
 	 * Create providers for async configuration
 	 * @param options Async configuration options
+	 * @param token Token to provide the options under
 	 * @returns Array of providers for async setup
 	 * @private
 	 */
-	private static createAsyncProviders(options: QdrantModuleAsyncOptions): Provider[] {
+	private static createAsyncProviders(options: QdrantModuleAsyncOptions, token: symbol): Provider[] {
 		if (options.useExisting || options.useFactory) {
-			return [QdrantModule.createAsyncOptionsProvider(options)];
+			return [QdrantModule.createAsyncOptionsProvider(options, token)];
 		}
 		if (options.useClass) {
 			return [
-				QdrantModule.createAsyncOptionsProvider(options),
+				QdrantModule.createAsyncOptionsProvider(options, token),
 				{ provide: options.useClass, useClass: options.useClass },
 			];
 		}
@@ -121,26 +136,19 @@ export class QdrantModule {
 	/**
 	 * Create the async options provider
 	 * @param options Async configuration options
+	 * @param token Token to provide the options under
 	 * @returns Provider for module options
 	 * @private
 	 */
-	private static createAsyncOptionsProvider(options: QdrantModuleAsyncOptions): Provider {
-		const optionsToken = getQdrantModuleOptionsToken(options.name);
-
+	private static createAsyncOptionsProvider(options: QdrantModuleAsyncOptions, token: symbol): Provider {
 		if (options.useFactory) {
+			const factory = options.useFactory;
 			return {
-				provide: optionsToken,
+				provide: token,
 				useFactory: async (...args: unknown[]) => {
 					try {
-						const result = options.useFactory?.(...args);
-						// Handle both sync and async results
-						if (result instanceof Promise) {
-							const opts = await result;
-							const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
-							return cleanOptions;
-						}
-						const { name: _name, apiKey: _apiKey, ...cleanOptions } = result as QdrantModuleOptions;
-						return cleanOptions;
+						const opts = await factory(...args);
+						return opts;
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
 						throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
@@ -150,13 +158,12 @@ export class QdrantModule {
 			};
 		}
 		return {
-			provide: optionsToken,
+			provide: token,
 			// The factory receives a QdrantOptionsFactory instance which may be async
 			useFactory: async (factory: QdrantOptionsFactory) => {
 				try {
 					const opts = await factory.createQdrantOptions();
-					const { name: _name, apiKey: _apiKey, ...cleanOptions } = opts;
-					return cleanOptions;
+					return opts;
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					throw new Error(`QdrantModule async factory failed: ${errorMessage}`);
