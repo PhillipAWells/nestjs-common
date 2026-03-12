@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
+	METRICS_STATUS_REDIRECT_MIN,
+	PROFILING_RESPONSE_TIME_PRECISION,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -93,7 +95,7 @@ export class MetricsService {
 		this.totalRequests++;
 		this.totalResponseTime += duration;
 
-		if (statusCode >= METRICS_STATUS_OK && statusCode < 300) {
+		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_REDIRECT_MIN) {
 			this.successfulRequests++;
 		} else {
 			this.failedRequests++;
@@ -124,7 +126,7 @@ export class MetricsService {
 				successful: this.successfulRequests,
 				failed: this.failedRequests,
 
-				averageResponseTime: Math.round(averageResponseTime * 100) / 100, // Round to 2 decimal places
+				averageResponseTime: Math.round(averageResponseTime * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION, // Round to 2 decimal places
 			},
 		};
 	}

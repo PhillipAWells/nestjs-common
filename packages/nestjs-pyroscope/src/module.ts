@@ -99,12 +99,13 @@ export class PyroscopeModule {
 		];
 
 		const exports = [PyroscopeService, ProfilingHealthIndicator];
+		const controllers = options.enableHealthChecks !== false ? [HealthController] : [];
 
 		const dynamicModule: DynamicModule = {
 			module: PyroscopeModule,
 			global: options.isGlobal ?? true,
 			imports: options.imports ?? [],
-			controllers: [HealthController],
+			controllers,
 			providers,
 			exports,
 		};

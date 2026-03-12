@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Inject } from '@nestjs/common';
+import type { PyroscopeConfig } from '@pyroscope/nodejs';
 import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
 import { MetricsService } from './services/metrics.service.js';
@@ -9,7 +10,18 @@ import {
 	PROFILING_RETRY_MAX_DELAY_MS,
 	PROFILING_RETRY_JITTER_MS,
 	PROFILING_TAG_MAX_LENGTH,
+	PROFILING_MAX_METRICS_HISTORY,
+	PROFILING_MAX_ACTIVE_PROFILES,
+	PROFILING_RESPONSE_TIME_PRECISION,
+	PROFILING_ID_RADIX,
+	PROFILING_ID_SUBSTR_END,
 } from './constants/profiling.constants.js';
+
+interface IPyroscopeClient {
+	init: (config: PyroscopeConfig) => void;
+	start: () => void;
+	stop: () => Promise<void>;
+}
 
 /**
  * Service for managing Pyroscope profiling integration
@@ -17,7 +29,7 @@ import {
  */
 @Injectable()
 export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
-	private pyroscopeClient: any;
+	private pyroscopeClient: IPyroscopeClient | undefined;
 
 	private isInitialized = false;
 
@@ -28,12 +40,12 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	/**
 	 * Maximum number of metrics to keep in memory to prevent unbounded growth
 	 */
-	private readonly MAX_METRICS_HISTORY = 1000;
+	private readonly MAX_METRICS_HISTORY = PROFILING_MAX_METRICS_HISTORY;
 
 	/**
 	 * Maximum number of active profiles before evicting stale entries
 	 */
-	private readonly MAX_ACTIVE_PROFILES = 10000;
+	private readonly MAX_ACTIVE_PROFILES = PROFILING_MAX_ACTIVE_PROFILES;
 
 	/**
 	 * Maximum age (ms) for an active profile before it is considered stale and evicted
@@ -70,8 +82,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			// Dynamic import to avoid issues if package is not installed
 			const Pyroscope = await import('@pyroscope/nodejs');
 
-			// Configure Pyroscope client
-			const pyroscopeConfig: any = {
+			// Configure Pyroscope client using the typed PyroscopeConfig interface
+			const pyroscopeConfig: PyroscopeConfig = {
 				serverAddress: this.config.serverAddress,
 				appName: this.config.applicationName,
 				tags: this.config.tags ?? {},
@@ -81,14 +93,6 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			if (this.config.basicAuthUser && this.config.basicAuthPassword) {
 				pyroscopeConfig.basicAuthUser = this.config.basicAuthUser;
 				pyroscopeConfig.basicAuthPassword = this.config.basicAuthPassword;
-			}
-
-			if (this.config.sampleRate) {
-				pyroscopeConfig.sampleRate = this.config.sampleRate;
-			}
-
-			if (this.config.logLevel) {
-				pyroscopeConfig.logLevel = this.config.logLevel;
 			}
 
 			// Initialize and start profiling
@@ -292,7 +296,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 				total: totalMetrics,
 				successful: totalMetrics, // Assume all are successful for now
 				failed: 0,
-				averageResponseTime: Math.round(averageDuration * 100) / 100,
+				averageResponseTime: Math.round(averageDuration * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION,
 			},
 		};
 	}
@@ -363,7 +367,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Generate unique profile ID for tracking
 	 */
 	private generateProfileId(context: IProfileContext): string {
-		return `${context.functionName}_${context.startTime}_${Math.random().toString(36).substring(2, 11)}`;
+		return `${context.functionName}_${context.startTime}_${Math.random().toString(PROFILING_ID_RADIX).substring(2, PROFILING_ID_SUBSTR_END)}`;
 	}
 
 	/**

@@ -4,6 +4,10 @@ import {
 	PROFILING_RETRY_BASE_DELAY_MS,
 	PROFILING_RETRY_MAX_DELAY_MS,
 	PROFILING_RETRY_JITTER_MS,
+	PROFILING_PERCENTILE_DIVISOR,
+	PROFILING_ID_RADIX,
+	PROFILING_ID_SUBSTR_END,
+	PROFILING_DURATION_SECONDS_THRESHOLD,
 } from '../constants/profiling.constants.js';
 
 /**
@@ -118,7 +122,7 @@ export class MetricAggregator {
 
 		const sorted = metrics.map(m => m.duration).sort((a, b) => a - b);
 
-		const index = Math.ceil((p / 100) * sorted.length) - 1;
+		const index = Math.ceil((p / PROFILING_PERCENTILE_DIVISOR) * sorted.length) - 1;
 		return sorted[Math.min(sorted.length - 1, Math.max(0, index))] ?? 0;
 	}
 
@@ -213,18 +217,18 @@ export class ProfilingErrorHandler {
  * Generate a unique profile ID
  */
 export function generateProfileId(prefix: string = 'profile'): string {
-	return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+	return `${prefix}_${Date.now()}_${Math.random().toString(PROFILING_ID_RADIX).substring(2, PROFILING_ID_SUBSTR_END)}`;
 }
 
 /**
  * Format duration in milliseconds to human readable string
  */
 export function formatDuration(ms: number): string {
-	if (ms < 1000) {
+	if (ms < PROFILING_DURATION_SECONDS_THRESHOLD) {
 		return `${ms.toFixed(2)}ms`;
 	}
 
-	return `${(ms / 1000).toFixed(2)}s`;
+	return `${(ms / PROFILING_DURATION_SECONDS_THRESHOLD).toFixed(2)}s`;
 }
 
 /**
