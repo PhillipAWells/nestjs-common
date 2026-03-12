@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Inject } from '@nest
 import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
 import { MetricsService } from './services/metrics.service.js';
+import type { MetricsResponse } from './services/metrics.service.js';
 import {
 	PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
 	PROFILING_RETRY_BASE_DELAY_MS,
@@ -28,6 +29,17 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Maximum number of metrics to keep in memory to prevent unbounded growth
 	 */
 	private readonly MAX_METRICS_HISTORY = 1000;
+
+	/**
+	 * Maximum number of active profiles before evicting stale entries
+	 */
+	private readonly MAX_ACTIVE_PROFILES = 10000;
+
+	/**
+	 * Maximum age (ms) for an active profile before it is considered stale and evicted
+	 */
+	// eslint-disable-next-line no-magic-numbers
+	private readonly STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 	constructor(
 		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
@@ -104,6 +116,9 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Cleanup on module destruction
 	 */
 	public onModuleDestroy(): void {
+		// Clear active profiles to release memory
+		this.activeProfiles.clear();
+
 		if (this.pyroscopeClient && this.isInitialized) {
 			try {
 				this.pyroscopeClient.stop();
@@ -130,6 +145,11 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		this.activeProfiles.set(profileId, context);
+
+		// Evict stale profiles to prevent memory leaks from profiles that are started but never stopped
+		if (this.activeProfiles.size > this.MAX_ACTIVE_PROFILES) {
+			this.evictStaleProfiles();
+		}
 
 		// Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs
 		// Tags must be set during initialization. Context tags are tracked for metrics only.
@@ -235,9 +255,6 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Get collected metrics
-	 */
-	/**
 	 * Get collected profile metrics
 	 */
 	public getProfileMetrics(): IProfileMetrics[] {
@@ -248,7 +265,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Get aggregated metrics summary
 	 * @returns MetricsResponse with aggregated profiling data
 	 */
-	public getMetrics(): { timestamp: number; cpu: any; memory: any; requests: any } {
+	public getMetrics(): MetricsResponse {
 		if (this.metricsService) {
 			return this.metricsService.getMetrics();
 		}
@@ -283,7 +300,17 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	/**
 	 * Get health status of profiling service
 	 */
-	public getHealth(): { status: 'healthy' | 'unhealthy'; details: any } {
+	public getHealth(): {
+		status: 'healthy' | 'unhealthy';
+		details: {
+			enabled?: boolean;
+			initialized?: boolean;
+			activeProfiles?: number;
+			totalMetrics?: number;
+			serverAddress?: string;
+			applicationName?: string;
+		};
+	} {
 		if (!this.config.enabled) {
 			return { status: 'healthy', details: { enabled: false } };
 		}
@@ -312,10 +339,31 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
+	 * Evict stale profiles that have exceeded the timeout threshold.
+	 * Prevents unbounded memory growth from profiles that are started but never stopped.
+	 */
+	private evictStaleProfiles(): void {
+		const now = Date.now();
+		let evictedCount = 0;
+
+		for (const [profileId, profileContext] of this.activeProfiles.entries()) {
+			const age = now - (profileContext.startTime ?? now);
+			if (age > this.STALE_PROFILE_TIMEOUT_MS) {
+				this.activeProfiles.delete(profileId);
+				evictedCount++;
+			}
+		}
+
+		if (evictedCount > 0) {
+			this.logger.warn(`Evicted ${evictedCount} stale active profiles (exceeded ${this.STALE_PROFILE_TIMEOUT_MS}ms timeout)`);
+		}
+	}
+
+	/**
 	 * Generate unique profile ID for tracking
 	 */
 	private generateProfileId(context: IProfileContext): string {
-		return `${context.functionName}_${context.startTime}_${Math.random().toString(36).substr(2, 9)}`;
+		return `${context.functionName}_${context.startTime}_${Math.random().toString(36).substring(2, 11)}`;
 	}
 
 	/**
