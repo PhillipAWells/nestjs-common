@@ -61,6 +61,14 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	>;
 
 	/**
+	 * Tracks the last recorded absolute value for gauge metrics, keyed by
+	 * a composite of metric name and serialized labels.
+	 * Used to compute the delta for UpDownCounter when emulating gauge semantics.
+	 * @private
+	 */
+	private readonly gaugeValues: Map<string, number>;
+
+	/**
 	 * NestJS Logger instance for diagnostics and error reporting.
 	 * @private
 	 */
@@ -71,6 +79,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 */
 	constructor() {
 		this.instruments = new Map();
+		this.gaugeValues = new Map();
 	}
 
 	/**
@@ -154,12 +163,21 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 			case 'histogram':
 				(instrument as Histogram).record(value.value, attributes);
 				break;
-			case 'gauge':
-				// Gauge is implemented as UpDownCounter
-				// Set the value by first reading what's stored, then adjusting
-				// Since we don't have current value tracking, just record as-is
-				(instrument as UpDownCounter).add(value.value, attributes);
+			case 'gauge': {
+				// Gauge is implemented as UpDownCounter.
+				// UpDownCounter.add() accepts a delta, so we compute the difference
+				// between the new absolute value and the last known value to emulate
+				// gauge (set) semantics.
+				const sortedLabels = value.labels
+					? Object.keys(value.labels).sort().map(k => `${k}=${(value.labels as Record<string, unknown>)[k]}`).join(',')
+					: '';
+				const gaugeKey = `${value.descriptor.name}:${sortedLabels}`;
+				const previous = this.gaugeValues.get(gaugeKey) ?? 0;
+				const delta = value.value - previous;
+				this.gaugeValues.set(gaugeKey, value.value);
+				(instrument as UpDownCounter).add(delta, attributes);
 				break;
+			}
 			case 'updown_counter':
 				(instrument as UpDownCounter).add(value.value, attributes);
 				break;
@@ -179,5 +197,6 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 */
 	public shutdown(): void {
 		this.instruments.clear();
+		this.gaugeValues.clear();
 	}
 }

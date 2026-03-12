@@ -1,5 +1,5 @@
 import { trace, SpanStatusCode, context, SpanKind } from '@opentelemetry/api';
-import { OTEL_NAMESPACE } from '@pawells/open-telemetry-client';
+import { OTEL_NAMESPACE } from '../lib/constants.js';
 
 /**
  * Options for @Traced decorator.
@@ -156,77 +156,87 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 					// Async path: Chain promise handlers
 					return result.then(
 						(value) => {
-							// Capture return value if enabled (default: false)
-							if (options.captureReturn === true) {
-								const returnValue = sanitizeArgument(value);
-								if (returnValue !== null) {
-									span.setAttribute('method.return', returnValue);
-								} else {
-									span.setAttribute('method.return_type', typeof value);
+							try {
+								// Capture return value if enabled (default: false)
+								if (options.captureReturn === true) {
+									const returnValue = sanitizeArgument(value);
+									if (returnValue !== null) {
+										span.setAttribute('method.return', returnValue);
+									} else {
+										span.setAttribute('method.return_type', typeof value);
+									}
 								}
-							}
 
-							// Set success status
-							span.setStatus({ code: SpanStatusCode.OK });
-							span.end();
+								// Set success status
+								span.setStatus({ code: SpanStatusCode.OK });
+							} finally {
+								span.end();
+							}
 
 							return value;
 						},
 						(error) => {
-							// Record exception and set error status
-							const errorInstance = error instanceof Error ? error : new Error(String(error));
-							span.recordException(errorInstance);
-							const message = error instanceof Error ? error.message : String(error);
-							span.setStatus({ code: SpanStatusCode.ERROR, message });
+							try {
+								// Record exception and set error status
+								const errorInstance = error instanceof Error ? error : new Error(String(error));
+								span.recordException(errorInstance);
+								const message = error instanceof Error ? error.message : String(error);
+								span.setStatus({ code: SpanStatusCode.ERROR, message });
 
-							// Add error attributes
-							if (error instanceof Error) {
-								span.setAttribute('error.type', error.name);
-								span.setAttribute('error.message', error.message);
-								if (error.stack) {
-									span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+								// Add error attributes
+								if (error instanceof Error) {
+									span.setAttribute('error.type', error.name);
+									span.setAttribute('error.message', error.message);
+									if (error.stack) {
+										span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+									}
 								}
+							} finally {
+								span.end();
 							}
-
-							span.end();
 							throw error;
 						},
 					);
 				} else {
-					// Sync path: Handle span immediately
-					// Capture return value if enabled (default: false)
-					if (options.captureReturn === true) {
-						const returnValue = sanitizeArgument(result);
-						if (returnValue !== null) {
-							span.setAttribute('method.return', returnValue);
-						} else {
-							span.setAttribute('method.return_type', typeof result);
+					// Sync path: Handle span immediately with try-finally to guarantee span.end()
+					try {
+						// Capture return value if enabled (default: false)
+						if (options.captureReturn === true) {
+							const returnValue = sanitizeArgument(result);
+							if (returnValue !== null) {
+								span.setAttribute('method.return', returnValue);
+							} else {
+								span.setAttribute('method.return_type', typeof result);
+							}
 						}
-					}
 
-					// Set success status
-					span.setStatus({ code: SpanStatusCode.OK });
-					span.end();
+						// Set success status
+						span.setStatus({ code: SpanStatusCode.OK });
+					} finally {
+						span.end();
+					}
 
 					return result;
 				}
 			} catch (error) {
 				// Record exception and set error status (for sync errors only)
-				const errorInstance = error instanceof Error ? error : new Error(String(error));
-				span.recordException(errorInstance);
-				const message = error instanceof Error ? error.message : String(error);
-				span.setStatus({ code: SpanStatusCode.ERROR, message });
+				try {
+					const errorInstance = error instanceof Error ? error : new Error(String(error));
+					span.recordException(errorInstance);
+					const message = error instanceof Error ? error.message : String(error);
+					span.setStatus({ code: SpanStatusCode.ERROR, message });
 
-				// Add error attributes
-				if (error instanceof Error) {
-					span.setAttribute('error.type', error.name);
-					span.setAttribute('error.message', error.message);
-					if (error.stack) {
-						span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+					// Add error attributes
+					if (error instanceof Error) {
+						span.setAttribute('error.type', error.name);
+						span.setAttribute('error.message', error.message);
+						if (error.stack) {
+							span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+						}
 					}
+				} finally {
+					span.end();
 				}
-
-				span.end();
 				throw error;
 			}
 		};
