@@ -203,10 +203,15 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * // http_request_duration_seconds_bucket{...} ...
 	 * ```
 	 */
-	// eslint-disable-next-line require-await
 	public async getMetrics(): Promise<string> {
 		// Flush all pending values into prom-client instruments
-		for (const [metricName, pendingValues] of this.pending.entries()) {
+		// Use atomic swap pattern: capture current values and replace with empty array
+		// to prevent loss of metrics recorded concurrently during flush
+		for (const [metricName] of this.pending.entries()) {
+			// Atomically swap pending array with a fresh one
+			const pendingValues = this.pending.get(metricName) ?? [];
+			this.pending.set(metricName, []);
+
 			if (pendingValues.length === 0) {
 				continue;
 			}
@@ -239,9 +244,6 @@ export class PrometheusExporter implements IMetricsExporter {
 						break;
 				}
 			}
-
-			// Clear pending values after flush
-			pendingValues.length = 0;
 		}
 
 		// Return metrics in Prometheus text format
