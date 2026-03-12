@@ -184,7 +184,7 @@ export class ResilienceService implements OnModuleDestroy {
 		const baseDelay = this.config.resilience.reconnection.delay;
 
 		if (this.config.resilience.reconnection.backoff === 'exponential') {
-			return Math.min(baseDelay * Math.pow(2, attempt - 1), REDIS_PUBSUB_CLEANUP_INTERVAL ?? 30000); // Max 30 seconds
+			return Math.min(baseDelay * Math.pow(2, attempt - 1), REDIS_PUBSUB_CLEANUP_INTERVAL); // Max 30 seconds
 		} else {
 			return baseDelay;
 		}
@@ -209,7 +209,7 @@ export class ResilienceService implements OnModuleDestroy {
 	/**
    * Cleanup method called when module is destroyed
    */
-	public async onModuleDestroy(): Promise<void> {
+	public onModuleDestroy(): void {
 		this.logger.log('Destroying resilience service');
 
 		// Clear all timers

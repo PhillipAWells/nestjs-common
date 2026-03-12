@@ -2,6 +2,8 @@ import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, L
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { RateLimitService } from '../services/rate-limit.service.js';
 
+const MS_PER_SECOND = 1000;
+
 /**
  * GraphQL Rate Limit Guard
  *
@@ -50,7 +52,7 @@ export class GraphQLRateLimitGuard implements CanActivate {
 					{
 						message: 'Rate limit exceeded',
 						resetTime: new Date(result.resetTime),
-						retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
+						retryAfter: Math.ceil((result.resetTime - Date.now()) / MS_PER_SECOND),
 					},
 					HttpStatus.TOO_MANY_REQUESTS,
 				);
@@ -98,10 +100,10 @@ export class GraphQLRateLimitGuard implements CanActivate {
 		}
 
 		// Fall back to IP address
-		const ip = request.ip ||
-				   request.connection?.remoteAddress ||
-				   request.socket?.remoteAddress ||
-				   request.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+		const ip: string = request.ip ??
+				   request.connection?.remoteAddress ??
+				   request.socket?.remoteAddress ??
+				   request.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ??
 				   'unknown';
 
 		return `ip:${ip}`;

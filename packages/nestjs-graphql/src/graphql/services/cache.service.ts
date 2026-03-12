@@ -191,7 +191,7 @@ export class GraphQLCacheService {
 	 * @param pattern - Pattern to match (e.g., 'graphql:user|id:*')
 	 * @returns Promise<void>
 	 */
-	public async invalidatePattern(pattern: string): Promise<void> {
+	public invalidatePattern(pattern: string): void {
 		// Note: This is a simplified implementation
 		// In a real Redis setup, you would use SCAN or KEYS
 		// For now, we'll log the intent

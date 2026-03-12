@@ -22,7 +22,7 @@ export class ConnectionManagerService {
 	// eslint-disable-next-line no-undef
 	private readonly connectionTimers = new Map<string, NodeJS.Timeout>();
 
-	private connectionIdMap = new WeakMap<any, string>();
+	private readonly connectionIdMap = new WeakMap<any, string>();
 
 	private connectionCounter = 0;
 
@@ -39,7 +39,10 @@ export class ConnectionManagerService {
 		}
 		// Check if we've already assigned a key to this object
 		if (ws && typeof ws === 'object' && this.connectionIdMap.has(ws)) {
-			return this.connectionIdMap.get(ws)!;
+			const existing = this.connectionIdMap.get(ws);
+			if (existing !== undefined) {
+				return existing;
+			}
 		}
 		// Generate a new key for this object
 		return `${userId}:${this.connectionCounter++}`;
@@ -61,7 +64,7 @@ export class ConnectionManagerService {
 		if (!this.connections.has(userId)) {
 			this.connections.set(userId, new Set());
 		}
-		this.connections.get(userId)!.add(ws);
+		this.connections.get(userId)?.add(ws);
 
 		// Generate unique connection ID using helper method
 		const connectionId = this.getConnectionKey(ws, userId);
@@ -146,7 +149,7 @@ export class ConnectionManagerService {
 		if (!this.subscriptions.has(userId)) {
 			this.subscriptions.set(userId, new Set());
 		}
-		this.subscriptions.get(userId)!.add(subscriptionId);
+		this.subscriptions.get(userId)?.add(subscriptionId);
 
 		this.logger.debug(`Added subscription ${subscriptionId} for user: ${userId}`);
 	}
@@ -243,7 +246,7 @@ export class ConnectionManagerService {
 	/**
    * Cleanup method called when module is destroyed
    */
-	public async onModuleDestroy(): Promise<void> {
+	public onModuleDestroy(): void {
 		this.logger.log('Destroying connection manager');
 
 		// Clear all timers

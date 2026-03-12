@@ -7,6 +7,12 @@ declare global {
 import { Injectable, OnModuleInit, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
+const MS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const DEFAULT_RATE_LIMIT_WINDOW_MINUTES = 15;
+const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 100;
+const CLEANUP_INTERVAL_MS = 60_000;
+
 /**
  * Rate limit result interface
  */
@@ -51,6 +57,7 @@ interface RateLimitEntry {
 export class MemoryRateLimitStorage implements RateLimitStorage {
 	private readonly storage = new Map<string, { count: number; resetTime: number }>();
 
+	// eslint-disable-next-line require-await
 	public async increment(key: string, windowMs: number): Promise<number> {
 		const now = Date.now();
 		const entry = this.storage.get(key);
@@ -68,6 +75,7 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
 		}
 	}
 
+	// eslint-disable-next-line require-await
 	public async get(key: string): Promise<number> {
 		const entry = this.storage.get(key);
 		const now = Date.now();
@@ -79,10 +87,12 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
 		return entry.count;
 	}
 
+	// eslint-disable-next-line require-await
 	public async reset(key: string): Promise<void> {
 		this.storage.delete(key);
 	}
 
+	// eslint-disable-next-line require-await
 	public async cleanup(): Promise<void> {
 		const now = Date.now();
 		for (const [key, entry] of this.storage.entries()) {
@@ -129,8 +139,8 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 * 100 requests per 15 minutes
 	 */
 	private readonly defaultConfig: RateLimitConfig = {
-		windowMs: 15 * 60 * 1000, // 15 minutes
-		maxRequests: 100,
+		windowMs: DEFAULT_RATE_LIMIT_WINDOW_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND, // 15 minutes
+		maxRequests: DEFAULT_RATE_LIMIT_MAX_REQUESTS,
 	};
 
 	/**
@@ -142,7 +152,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 		// Start cleanup interval to remove expired entries
 		this.cleanupInterval = setInterval(async () => {
 			await this.cleanup();
-		}, 60000); // Clean up every minute
+		}, CLEANUP_INTERVAL_MS); // Clean up every minute
 
 		this.logger.info('Rate limit service initialized');
 	}
@@ -161,6 +171,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 * @param operation - Optional operation name for custom limits
 	 * @returns Promise<RateLimitResult> - Rate limit check result
 	 */
+	// eslint-disable-next-line require-await
 	public async checkLimit(clientId: string, operation?: string): Promise<RateLimitResult> {
 		const config = operation ? this.getConfigForOperation(operation) : this.defaultConfig;
 
@@ -176,8 +187,12 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 * Check rate limit using storage backend
 	 */
 	private async checkLimitWithStorage(clientId: string, config: RateLimitConfig): Promise<RateLimitResult> {
+		if (!this.storage) {
+			return this.checkLimitInMemory(clientId, config);
+		}
+
 		try {
-			const current = await this.storage!.increment(clientId, config.windowMs);
+			const current = await this.storage.increment(clientId, config.windowMs);
 			const remaining = Math.max(0, config.maxRequests - current);
 			const allowed = current <= config.maxRequests;
 

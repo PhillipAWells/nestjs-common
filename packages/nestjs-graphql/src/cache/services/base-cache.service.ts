@@ -17,6 +17,19 @@ import {
 	CACHE_OPERATION_TIMING_MAX_AGE_MS,
 	CACHE_CLEANUP_INTERVAL_MS,
 	CACHE_MAX_KEY_LENGTH,
+	CACHE_STATS_LOG_INTERVAL_MS,
+	CACHE_PERCENTILE_P50,
+	CACHE_PERCENTILE_P95,
+	CACHE_PERCENTILE_P99,
+	CACHE_MEMORY_SNAPSHOT_MAX,
+	CACHE_MEMORY_TREND_WINDOW,
+	CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC,
+	BYTES_PER_KILOBYTE,
+	BYTES_PER_MEGABYTE,
+	MS_PER_SECOND,
+	PERCENTAGE_FACTOR,
+	CACHE_MAX_TIMINGS_PER_OPERATION,
+	CACHE_TIMING_CLEANUP_TRIGGER_SIZE,
 } from '../constants/cache-config.constants.js';
 
 /**
@@ -79,7 +92,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 	protected lastStatsLog: Date = new Date();
 
-	protected readonly STATS_LOG_INTERVAL = 5 * 60 * 1_000; // 5 minutes
+	protected readonly STATS_LOG_INTERVAL = CACHE_STATS_LOG_INTERVAL_MS;
 
 	// Memory leak prevention constants
 	private static readonly MAX_OPERATION_TIMINGS = CACHE_MAX_OPERATION_TIMINGS;
@@ -175,7 +188,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				// Remove oldest entries
 
 				for (let i = 0; i < toRemove && i < entries.length; i++) {
-					this.operationTimings.delete(entries[i]![0]);
+					this.operationTimings.delete(entries[i]?.[0] ?? '');
 					removedCount++;
 				}
 			}
@@ -541,19 +554,20 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.operationTimings.set(operation, []);
 		}
 
-		const timings = this.operationTimings.get(operation)!;
+		const timings = this.operationTimings.get(operation);
+		if (!timings) return;
 		timings.push(duration);
 
-		// Keep only last 1000 timings to prevent memory growth per operation type
-		if (timings.length > 1_000) {
+		// Keep only last CACHE_MAX_TIMINGS_PER_OPERATION timings to prevent memory growth per operation type
+		if (timings.length > CACHE_MAX_TIMINGS_PER_OPERATION) {
 			timings.shift();
 		}
 
 		// Update stats operation timings
 		this.stats.operationTimings[operation as keyof typeof this.stats.operationTimings] = [...timings];
 
-		// Trigger cleanup if approaching size limit (every 5000 operations)
-		if (this.operationTimings.size % 5_000 === 0 && this.operationTimings.size > 0) {
+		// Trigger cleanup if approaching size limit (every CACHE_TIMING_CLEANUP_TRIGGER_SIZE operations)
+		if (this.operationTimings.size % CACHE_TIMING_CLEANUP_TRIGGER_SIZE === 0 && this.operationTimings.size > 0) {
 			this.cleanupTimings();
 		}
 	}
@@ -564,8 +578,8 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	private calculatePercentile(timings: number[], percentile: number): number {
 		if (timings.length === 0) return 0;
 		const sorted = [...timings].sort((a, b) => a - b);
-		const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-		return sorted[Math.min(sorted.length - 1, Math.max(0, index))]!;
+		const index = Math.ceil((percentile / PERCENTAGE_FACTOR) * sorted.length) - 1;
+		return sorted[Math.min(sorted.length - 1, Math.max(0, index))] ?? 0;
 	}
 
 	/**
@@ -583,28 +597,28 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 		// Calculate percentiles
 
-		const getP50 = this.calculatePercentile(this.stats.operationTimings.get, 50);
+		const getP50 = this.calculatePercentile(this.stats.operationTimings.get, CACHE_PERCENTILE_P50);
 
-		const getP95 = this.calculatePercentile(this.stats.operationTimings.get, 95);
+		const getP95 = this.calculatePercentile(this.stats.operationTimings.get, CACHE_PERCENTILE_P95);
 
-		const getP99 = this.calculatePercentile(this.stats.operationTimings.get, 99);
+		const getP99 = this.calculatePercentile(this.stats.operationTimings.get, CACHE_PERCENTILE_P99);
 
-		const setP50 = this.calculatePercentile(this.stats.operationTimings.set, 50);
+		const setP50 = this.calculatePercentile(this.stats.operationTimings.set, CACHE_PERCENTILE_P50);
 
-		const setP95 = this.calculatePercentile(this.stats.operationTimings.set, 95);
+		const setP95 = this.calculatePercentile(this.stats.operationTimings.set, CACHE_PERCENTILE_P95);
 
-		const setP99 = this.calculatePercentile(this.stats.operationTimings.set, 99);
+		const setP99 = this.calculatePercentile(this.stats.operationTimings.set, CACHE_PERCENTILE_P99);
 
 		// Log comprehensive statistics
 
 		this.logger.info('Cache statistics', JSON.stringify({
 			totalKeys: stats.totalKeys ?? 0,
 
-			memoryUsage: stats.memoryUsage ? `${(stats.memoryUsage / 1_024 / 1_024).toFixed(2)}MB` : 'unknown',
+			memoryUsage: stats.memoryUsage ? `${(stats.memoryUsage / BYTES_PER_MEGABYTE).toFixed(2)}MB` : 'unknown',
 
-			hitRate: `${(stats.hitRate * 100).toFixed(1)}%`,
+			hitRate: `${(stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
 
-			missRate: `${((stats.misses / (stats.hits + stats.misses || 1)) * 100).toFixed(1)}%`,
+			missRate: `${((stats.misses / (stats.hits + stats.misses || 1)) * PERCENTAGE_FACTOR).toFixed(1)}%`,
 			totalOperations: totalOps,
 			evictions: stats.evictions,
 			errors: stats.errors,
@@ -654,7 +668,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		this.logger.info('Cache eviction', JSON.stringify({
 			reason,
 			keysRemoved,
-			memoryFreed: memoryFreed ? `${(memoryFreed / 1024).toFixed(0)}KB` : 'unknown',
+			memoryFreed: memoryFreed ? `${(memoryFreed / BYTES_PER_KILOBYTE).toFixed(0)}KB` : 'unknown',
 			totalEvictions: this.stats.evictions,
 		}));
 	}
@@ -665,8 +679,8 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	protected recordCacheWarming(keysLoaded: number, durationMs: number): void {
 		this.logger.info('Cache warming completed', JSON.stringify({
 			keysLoaded,
-			duration: `${(durationMs / 1000).toFixed(2)}s`,
-			rate: `${(keysLoaded / (durationMs / 1000)).toFixed(0)} keys/s`,
+			duration: `${(durationMs / MS_PER_SECOND).toFixed(2)}s`,
+			rate: `${(keysLoaded / (durationMs / MS_PER_SECOND)).toFixed(0)} keys/s`,
 		}));
 	}
 
@@ -677,8 +691,8 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		this.logger.info('Cache synchronization completed', JSON.stringify({
 			source,
 			keysSynced,
-			duration: `${(durationMs / 1000).toFixed(2)}s`,
-			rate: `${(keysSynced / (durationMs / 1000)).toFixed(0)} keys/s`,
+			duration: `${(durationMs / MS_PER_SECOND).toFixed(2)}s`,
+			rate: `${(keysSynced / (durationMs / MS_PER_SECOND)).toFixed(0)} keys/s`,
 		}));
 	}
 
@@ -692,8 +706,8 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			usage,
 		});
 
-		// Keep only last 100 snapshots
-		if (this.memorySnapshots.length > 100) {
+		// Keep only last CACHE_MEMORY_SNAPSHOT_MAX snapshots
+		if (this.memorySnapshots.length > CACHE_MEMORY_SNAPSHOT_MAX) {
 			this.memorySnapshots.shift();
 		}
 	}
@@ -706,17 +720,22 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			return { trend: 'stable', rate: 0 };
 		}
 
-		const recent = this.memorySnapshots.slice(-10);
-		const first = recent[0]!.usage;
-		const last = recent[recent.length - 1]!.usage;
-		const timeDiff = recent[recent.length - 1]!.timestamp.getTime() - recent[0]!.timestamp.getTime();
+		const recent = this.memorySnapshots.slice(-CACHE_MEMORY_TREND_WINDOW);
+		const [first] = recent;
+		const last = recent[recent.length - 1];
 
-		const rate = (last - first) / (timeDiff / 1_000); // bytes per second
+		if (!first || !last) {
+			return { trend: 'stable', rate: 0 };
+		}
+
+		const timeDiff = last.timestamp.getTime() - first.timestamp.getTime();
+
+		const rate = (last.usage - first.usage) / (timeDiff / MS_PER_SECOND); // bytes per second
 
 		let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
-		if (rate > 1_024) { // > 1KB/s increase
+		if (rate > CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s increase
 			trend = 'increasing';
-		} else if (rate < -1_024) { // > 1KB/s decrease
+		} else if (rate < -CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s decrease
 			trend = 'decreasing';
 		}
 
@@ -741,7 +760,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.logger.info('Cache service shutdown', JSON.stringify({
 				finalStats: stats,
 				totalOperations: stats.hits + stats.misses + stats.sets + stats.deletes + stats.clears,
-				hitRatePercent: (stats.hitRate * 100).toFixed(2),
+				hitRatePercent: (stats.hitRate * PERCENTAGE_FACTOR).toFixed(2),
 				operationTimingsSize: this.operationTimings.size,
 			}));
 
@@ -750,7 +769,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			if (memoryTrend.trend !== 'stable') {
 				this.logger.info('Final memory trend', JSON.stringify({
 					trend: memoryTrend.trend,
-					rate: `${(memoryTrend.rate / 1024).toFixed(2)} KB/s`,
+					rate: `${(memoryTrend.rate / BYTES_PER_KILOBYTE).toFixed(2)} KB/s`,
 				}));
 			}
 

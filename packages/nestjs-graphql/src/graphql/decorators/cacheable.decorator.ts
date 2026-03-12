@@ -81,7 +81,7 @@ export interface CacheableOptions extends BaseCacheableOptions {
  * }
  * ```
  */
-export const Cacheable = (options: CacheableOptions = {}) => SetMetadata(CACHE_METADATA_KEYS.CACHEABLE, options);
+export const Cacheable = (options: CacheableOptions = {}): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHEABLE, options);
 
 /**
  * Metadata key for cacheable configuration

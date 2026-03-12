@@ -46,6 +46,7 @@ export class UserLoader {
    * @param userIds Array of user IDs to load
    * @returns Promise resolving to array of users or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
 	): Promise<(User | Error)[]> {

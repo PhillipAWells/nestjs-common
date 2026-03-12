@@ -84,7 +84,7 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
  * }
  * ```
  */
-export const CacheInvalidate = (options: CacheInvalidateOptions) => SetMetadata(CACHE_METADATA_KEYS.CACHE_INVALIDATE, options);
+export const CacheInvalidate = (options: CacheInvalidateOptions): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHE_INVALIDATE, options);
 
 /**
  * Metadata key for cache invalidation configuration

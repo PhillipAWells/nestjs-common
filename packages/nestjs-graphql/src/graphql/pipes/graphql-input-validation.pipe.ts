@@ -22,6 +22,8 @@ import { plainToClass } from 'class-transformer';
 export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	private readonly logger = new Logger(GraphQLInputValidationPipe.name);
 	 
+	// Maximum allowed JSON-serialized input size in characters (approx. 100KB)
+	// eslint-disable-next-line no-magic-numbers
 	private readonly MAX_INPUT_SIZE = 100_000;
 
 	// XSS-specific patterns only — SQL/NoSQL injection protection is handled by

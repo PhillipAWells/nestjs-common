@@ -97,7 +97,7 @@ export function calculateQueryDepth(
 	maxDepth: number = QUERY_DEPTH_LIMIT,
 ): number {
 	let depth = 0;
-	let current = info.fieldNodes[0];
+	let [current] = info.fieldNodes;
 
 	while (current && depth < maxDepth) {
 		depth++;

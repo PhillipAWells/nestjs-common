@@ -35,6 +35,7 @@ export class OrdersByUserLoader {
    * @param userIds Array of user IDs to load orders for
    * @returns Promise resolving to arrays of orders or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
 	): Promise<(Order[] | Error)[]> {

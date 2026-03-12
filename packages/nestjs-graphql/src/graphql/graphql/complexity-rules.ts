@@ -1,6 +1,11 @@
 import { ComplexityConfig, DEFAULT_COMPLEXITY_CONFIG } from './query-complexity.js';
 import { QUERY_COMPLEXITY_THRESHOLD, QUERY_DEPTH_LIMIT, QUERY_COMPLEXITY_SCALAR_WEIGHT, QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } from '../constants/complexity.constants.js';
 
+/** Custom scalar complexity is lighter than list items by this offset */
+const CUSTOM_SCALAR_WEIGHT_OFFSET = 8;
+/** Default estimated item count for list/connection complexity calculations */
+const DEFAULT_ESTIMATED_ITEMS = 10;
+
 /**
  * Complexity weights for different field types
  */
@@ -24,7 +29,7 @@ export const COMPLEXITY_WEIGHTS = {
 	UNION_FIELD: 3,
 
 	// Custom scalar operations
-	CUSTOM_SCALAR: QUERY_COMPLEXITY_SCALAR_WEIGHT - 8,
+	CUSTOM_SCALAR: QUERY_COMPLEXITY_SCALAR_WEIGHT - CUSTOM_SCALAR_WEIGHT_OFFSET,
 } as const;
 
 /**
@@ -107,7 +112,7 @@ export function getFieldComplexityWeight(
  */
 export function calculateListComplexity(
 	baseComplexity: number,
-	estimatedItems: number = 10,
+	estimatedItems: number = DEFAULT_ESTIMATED_ITEMS,
 	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	const { list = COMPLEXITY_WEIGHTS.LIST_ITEM } = config.multipliers ?? {};
@@ -139,7 +144,7 @@ export function calculateNestedComplexity(
  */
 export function calculateConnectionComplexity(
 	baseComplexity: number,
-	first: number = 10,
+	first: number = DEFAULT_ESTIMATED_ITEMS,
 	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	return COMPLEXITY_WEIGHTS.CONNECTION + calculateListComplexity(baseComplexity, first, config);

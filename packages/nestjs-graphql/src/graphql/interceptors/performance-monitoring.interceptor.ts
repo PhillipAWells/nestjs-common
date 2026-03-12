@@ -52,7 +52,7 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor 
 				const duration = Date.now() - startTime;
 
 				// Record successful operation
-				await this.performanceService.measure(operation, async () => result, {
+				await this.performanceService.measure(operation, () => result, {
 					fieldName: info.fieldName,
 					operationType: info.operation.operation,
 					args: gqlContext.getArgs(),
@@ -73,7 +73,7 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor 
 				// Record failed operation
 				await this.performanceService.measure(
 					operation,
-					async () => {
+					() => {
 						throw error;
 					},
 					{

@@ -1,4 +1,6 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
+
+const RESULT_SUMMARY_MAX_KEYS = 3;
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import { AppLogger } from '@pawells/nestjs-shared/common';
@@ -126,7 +128,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor {
 
 		if (typeof result === 'object') {
 			const keys = Object.keys(result);
-			return `Object{${keys.slice(0, 3).join(', ')}${keys.length > 3 ? '...' : ''}}`;
+			return `Object{${keys.slice(0, RESULT_SUMMARY_MAX_KEYS).join(', ')}${keys.length > RESULT_SUMMARY_MAX_KEYS ? '...' : ''}}`;
 		}
 
 		return String(result);

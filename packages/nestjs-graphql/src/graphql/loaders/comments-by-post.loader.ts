@@ -35,6 +35,7 @@ export class CommentsByPostLoader {
    * @param postIds Array of post IDs to load comments for
    * @returns Promise resolving to arrays of comments or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		postIds: readonly string[],
 	): Promise<(Comment[] | Error)[]> {

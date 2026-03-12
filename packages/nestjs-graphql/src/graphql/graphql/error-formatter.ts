@@ -62,8 +62,8 @@ export class GraphQLErrorFormatter {
 	 */
 	private static isValidationError(error: any): boolean {
 		return error.name === 'ValidationError' ||
-			   error.message?.includes('validation') ||
-			   error.errors;
+			   Boolean(error.message?.includes('validation')) ||
+			   Boolean(error.errors);
 	}
 
 	/**
@@ -71,8 +71,8 @@ export class GraphQLErrorFormatter {
 	 */
 	private static isAuthenticationError(error: any): boolean {
 		return error.name === 'UnauthorizedException' ||
-			   error.message?.includes('authentication') ||
-			   error.message?.includes('token');
+			   Boolean(error.message?.includes('authentication')) ||
+			   Boolean(error.message?.includes('token'));
 	}
 
 	/**
@@ -80,8 +80,8 @@ export class GraphQLErrorFormatter {
 	 */
 	private static isAuthorizationError(error: any): boolean {
 		return error.name === 'ForbiddenException' ||
-			   error.message?.includes('permission') ||
-			   error.message?.includes('forbidden');
+			   Boolean(error.message?.includes('permission')) ||
+			   Boolean(error.message?.includes('forbidden'));
 	}
 
 	/**
@@ -89,8 +89,8 @@ export class GraphQLErrorFormatter {
 	 */
 	private static isRateLimitError(error: any): boolean {
 		return error.name === 'RateLimitException' ||
-			   error.message?.includes('rate limit') ||
-			   error.message?.includes('too many requests');
+			   Boolean(error.message?.includes('rate limit')) ||
+			   Boolean(error.message?.includes('too many requests'));
 	}
 
 	/**

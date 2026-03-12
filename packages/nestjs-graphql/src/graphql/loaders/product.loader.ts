@@ -42,6 +42,7 @@ export class ProductLoader {
    * @param productIds Array of product IDs to load
    * @returns Promise resolving to array of products or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		productIds: readonly string[],
 	): Promise<(Product | Error)[]> {

@@ -106,7 +106,7 @@ describe('QueryComplexityGuard', () => {
 			let didThrow = false;
 			try {
 				await guard.canActivate(mockExecutionContext);
-			} catch (_error) {
+			} catch {
 				// Expected: should throw, not return true
 				didThrow = true;
 			}

@@ -274,7 +274,7 @@ describe('GraphQLService - Type Safety', () => {
 			const result = service.paginateItems(items, 1);
 
 			// Type-safe access
-			const firstEdge = result.edges[0];
+			const [firstEdge] = result.edges;
 
 			expect(firstEdge).toBeDefined();
 			expect(firstEdge.node.id).toBe('test-1');

@@ -171,8 +171,8 @@ export class GraphQLService {
 				hasNextPage: endIndex < items.length,
 				hasPreviousPage: startIndex > 0,
 				...(edges.length > 0 ? {
-					startCursor: edges[0]!.cursor,
-					endCursor: edges[edges.length - 1]!.cursor,
+					startCursor: edges[0]?.cursor,
+					endCursor: edges[edges.length - 1]?.cursor,
 				} : {}),
 			},
 		};

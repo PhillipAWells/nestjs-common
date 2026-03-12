@@ -42,6 +42,7 @@ export class TagLoader {
    * @param tagIds Array of tag IDs to load
    * @returns Promise resolving to array of tags or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		tagIds: readonly string[],
 	): Promise<(Tag | Error)[]> {

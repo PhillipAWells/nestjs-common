@@ -124,7 +124,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 	 * @param context Execution context
 	 * @returns True if query is allowed
 	 */
-	public async canActivate(context: ExecutionContext): Promise<boolean> {
+	public canActivate(context: ExecutionContext): boolean {
 		const gqlContext = GqlExecutionContext.create(context);
 		const { req } = gqlContext.getContext();
 		const { schema, document, variables, operationName } = gqlContext.getArgs();

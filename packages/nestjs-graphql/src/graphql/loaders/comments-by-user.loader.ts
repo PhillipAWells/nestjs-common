@@ -35,6 +35,7 @@ export class CommentsByUserLoader {
    * @param userIds Array of user IDs to load comments for
    * @returns Promise resolving to arrays of comments or errors
    */
+	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
 	): Promise<(Comment[] | Error)[]> {

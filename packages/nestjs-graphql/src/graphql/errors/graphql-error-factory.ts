@@ -24,6 +24,27 @@ export interface GraphQLErrorConfig extends ErrorConfig {
 }
 
 /**
+ * Interface describing a generated GraphQL error instance
+ */
+export interface GeneratedGraphQLErrorInstance extends GraphQLError {
+	readonly statusCode: number;
+	readonly code: string;
+	readonly context: Record<string, unknown>;
+	readonly timestamp: Date;
+	toPlainObject(): Record<string, unknown>;
+	withContext(additionalContext: Record<string, unknown>): this;
+	withMessage(newMessage: string): this;
+}
+
+/**
+ * Type describing the constructor returned by createGraphQLError
+ */
+export type GeneratedGraphQLErrorConstructor = new (
+	message?: string,
+	context?: Record<string, unknown>,
+) => GeneratedGraphQLErrorInstance;
+
+/**
  * Factory function to create GraphQL error classes
  *
  * This factory extends the base createError factory to provide GraphQL-specific
@@ -42,7 +63,7 @@ export interface GraphQLErrorConfig extends ErrorConfig {
  * });
  * ```
  */
-export function createGraphQLError(config: GraphQLErrorConfig) {
+export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQLErrorConstructor {
 	const { code, statusCode, defaultMessage, name = `${code}Error`, graphqlCode } = config;
 
 	/**

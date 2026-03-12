@@ -22,14 +22,6 @@ export class GraphQLContextFactory {
 	 * @param options - Factory options
 	 * @returns Promise<GraphQLContext> - Configured context
 	 */
-	/**
-	 * Creates GraphQL context for HTTP requests
-	 *
-	 * @param req - HTTP request object
-	 * @param res - HTTP response object
-	 * @param options - Factory options
-	 * @returns Promise<GraphQLContext> - Configured context
-	 */
 	public async createHttpContext(
 		req: Request,
 		res: Response,
@@ -58,13 +50,6 @@ export class GraphQLContextFactory {
 		return context;
 	}
 
-	/**
-	 * Creates GraphQL context for WebSocket connections
-	 *
-	 * @param connection - WebSocket connection context
-	 * @param options - Factory options
-	 * @returns Promise<WebSocketContext> - Configured WebSocket context
-	 */
 	/**
 	 * Creates GraphQL context for WebSocket connections
 	 *
@@ -148,12 +133,6 @@ export class GraphQLContextFactory {
 	 * @param options - Default factory options
 	 * @returns Configured factory functions
 	 */
-	/**
-	 * Creates a context factory with pre-configured options
-	 *
-	 * @param options - Default factory options
-	 * @returns Configured factory functions
-	 */
 	public static createFactory(options: ContextFactoryOptions = {}): {
 		createHttpContext: (req: Request, res: Response) => Promise<GraphQLContext>;
 		createWebSocketContext: (connection: IWebSocketConnection) => Promise<GraphQLContext>;
@@ -161,10 +140,10 @@ export class GraphQLContextFactory {
 		const factory = new GraphQLContextFactory();
 
 		return {
-			createHttpContext: async (req: Request, res: Response) =>
+			createHttpContext: (req: Request, res: Response): Promise<GraphQLContext> =>
 				factory.createHttpContext(req, res, options),
 
-			createWebSocketContext: async (connection: IWebSocketConnection) =>
+			createWebSocketContext: (connection: IWebSocketConnection): Promise<GraphQLContext> =>
 				factory.createWebSocketContext(connection, options),
 		};
 	}

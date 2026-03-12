@@ -108,18 +108,20 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 	private startHealthChecks(config: RedisConfig): void {
 		if (!config.healthCheck) return;
 
-		this.healthCheckInterval = setInterval(async () => {
-			try {
-				if (this.publisherClient) {
-					this.checkClientHealth(this.publisherClient, 'publisher');
-				}
-				if (this.subscriberClient) {
-					this.checkClientHealth(this.subscriberClient, 'subscriber');
-				}
-			} catch (error) {
+		this.healthCheckInterval = setInterval(() => {
+			const checks: Promise<void>[] = [];
+
+			if (this.publisherClient) {
+				checks.push(this.checkClientHealth(this.publisherClient, 'publisher'));
+			}
+			if (this.subscriberClient) {
+				checks.push(this.checkClientHealth(this.subscriberClient, 'subscriber'));
+			}
+
+			Promise.all(checks).catch((error: unknown) => {
 				const err = error as Error;
 				this.logger.error(`Health check failed: ${err.message}`, err.stack);
-			}
+			});
 		}, config.healthCheck.interval ?? REDIS_PUBSUB_CLEANUP_INTERVAL);
 	}
 
@@ -128,6 +130,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
    * @param client Redis client
    * @param type Client type (publisher/subscriber)
    */
+	// eslint-disable-next-line require-await
 	private async checkClientHealth(client: any, type: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const timeout = setTimeout(() => {
