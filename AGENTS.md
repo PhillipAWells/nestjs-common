@@ -21,7 +21,6 @@ yarn typecheck
 yarn lint
 yarn lint:fix
 yarn test
-yarn test:coverage
 yarn build
 
 # Single package (cd into package first)
@@ -30,6 +29,8 @@ yarn pipeline
 yarn test
 yarn test:coverage
 ```
+
+`yarn test:coverage` is available per-package only, not at the workspace root.
 
 NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cache` to bypass caching.
 
@@ -42,30 +43,38 @@ NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cach
 | `nestjs-graphql` | GraphQL module with Redis cache, DataLoaders, subscriptions; depends on `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope` |
 | `nestjs-open-telemetry` | OTel tracing and metrics integration; depends on `nestjs-shared` |
 | `nestjs-prometheus` | Prometheus `/metrics` endpoint; depends on `nestjs-shared` |
-| `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors |
-| `nestjs-qdrant` | Qdrant vector database module |
+| `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors (standalone, no cross-package deps) |
+| `nestjs-qdrant` | Qdrant vector database module (standalone, no cross-package deps) |
 
-`nestjs-shared` is the foundation — all other packages depend on it directly or transitively.
+`nestjs-shared` is the foundation — most packages depend on it directly or transitively. `nestjs-pyroscope` and `nestjs-qdrant` are standalone.
 
 ## Architecture Patterns
 
 ### Module Design
-All modules use `Module.forRoot(options)` dynamic module pattern with typed options interfaces.
+All configurable modules use `Module.forRoot(options)` dynamic module pattern with typed options interfaces. Most also provide `forRootAsync` for deferred configuration.
 
 ### Exports
 Each package has a single barrel `index.ts` entry point. `nestjs-shared` additionally exposes conditional exports for `./common` and `./common/utils/lazy-getter.types`.
 
 ### Lazy Loading
-`LazyGetter` / `OptionalLazyGetter` utilities in `nestjs-shared` defer dependency initialization to avoid circular dependencies. Used when a service needs a dependency that may not always be present.
+`LazyGetter<T>` / `OptionalLazyGetter<T>` type aliases and `CreateMemoizedLazyGetter` / `CreateOptionalLazyGetter` factory functions in `nestjs-shared` defer dependency resolution via `ModuleRef` to avoid circular dependencies. Classes implement the `LazyModuleRefService` interface to use this pattern.
 
 ### Error Handling
 `BaseApplicationError` (in `nestjs-shared`) is the base for all custom errors. `ErrorCategorizerService` classifies errors; `ErrorSanitizerService` redacts sensitive data before logging. `GlobalExceptionFilter` maps errors to HTTP responses.
 
 ### Auth Decorators
-`nestjs-auth` provides `@Auth`, `@Public`, `@Roles`, `@Permissions`, `@CurrentUser`, `@AuthToken` plus GraphQL-specific variants (`@GraphQLAuth`, `@GraphQLRoles`, `@GraphQLCurrentUser`).
+`nestjs-auth` provides `@Auth`, `@Public`, `@Roles`, `@Permissions`, `@CurrentUser`, `@AuthToken` plus GraphQL-specific variants (`@GraphQLAuth`, `@GraphQLPublic`, `@GraphQLRoles`, `@GraphQLCurrentUser`, `@GraphQLUser`, `@GraphQLAuthToken`, `@GraphQLContextParam`).
 
 ### Configuration
-All modules use Joi-validated config with service-specific interfaces. Environment variables are the source of truth.
+Most modules use Joi-validated config with service-specific interfaces. Environment variables are the source of truth. `nestjs-pyroscope` and `nestjs-qdrant` use plain typed interfaces without Joi.
+
+### Security Defaults
+- **Token blacklist** (`nestjs-auth`): Fails closed — tokens are treated as blacklisted when the cache is unavailable.
+- **WebSocket auth** (`nestjs-graphql`): Requires `JwtService` for cryptographic token signature verification. Without it, all WebSocket authentications fail.
+- **CSRF** (`nestjs-shared`): Per-IP token generation is serialized with a 30-second timeout (HTTP 503 on timeout). Maps are cleared on module destroy.
+- **CORS** (`nestjs-shared`): Localhost origin matching uses strict regex (`/^http:\/\/localhost(?::\d+)?$/`) to prevent subdomain bypass (e.g., `localhost.evil.com`).
+- **HTTP metrics** (`nestjs-shared`): Dynamic path segments (UUIDs, ObjectIDs, numeric IDs) are normalized to `:id` to prevent unbounded metric cardinality.
+- **Qdrant API key** (`nestjs-qdrant`): `forRootAsync` uses an internal raw options token so `apiKey` is available for client creation but stripped from the publicly injectable options token.
 
 ## Code Style
 
@@ -75,14 +84,14 @@ Enforced via ESLint v9 flat config (`eslint.config.mjs`):
 - **Semicolons**: Required
 - **Trailing commas**: Always (multiline)
 - **Access modifiers**: Required on all class members except constructors
-- **Return types**: Explicit on all functions
-- **Naming**: PascalCase for classes/interfaces/types/enums; camelCase for variables/functions; UPPER_CASE allowed for constants
+- **Return types**: Explicit on all functions (warn level)
+- **Naming**: PascalCase for classes/interfaces/types/enums; camelCase for variables/functions; UPPER_CASE allowed for constants. Class properties and enum members also allow UPPER_CASE and PascalCase.
 
 Test files have relaxed rules (no type annotations required, naming conventions disabled).
 
 ## Versioning & Publishing
 
-All packages share a single version defined in the root `package.json`. The `yarn version:sync` command (via `scripts/sync-version.mjs`) propagates it to every package before build. Publishing is triggered by a `v*` tag push and handled by `.github/workflows/publish.yml`.
+All packages share a single version defined in the root `package.json`. The `yarn version:sync` inline script propagates it to every package. NX also runs `scripts/sync-version.mjs` as a build dependency per-package to ensure sync before each build. Publishing is triggered by a `v*` tag push and handled by `.github/workflows/publish.yml`.
 
 ## Build Output
 

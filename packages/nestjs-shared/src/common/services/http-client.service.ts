@@ -63,6 +63,10 @@ export class HttpClientService implements LazyModuleRefService {
 		return this._contextualLogger;
 	}
 
+	/**
+	 * Makes an HTTP request. URLs with embedded credentials and sensitive headers
+	 * are sanitized before logging.
+	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public request<T = Record<string, unknown>>(options: HttpRequestOptions): Promise<HttpResponse<T>> {
 		const { method, url: requestUrl, headers, data, timeout = getHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
@@ -274,6 +278,10 @@ export class HttpClientService implements LazyModuleRefService {
 		}
 	}
 
+	/**
+	 * Redacts sensitive headers (authorization, cookies, API keys, CSRF tokens)
+	 * before logging.
+	 */
 	private sanitizeHeaders(headers?: Record<string, string>): Record<string, string> | undefined {
 		if (!headers) return undefined;
 

@@ -32,8 +32,7 @@ export const DEFAULT_CONTEXT_OPTIONS: ContextOptions = {
  * Detects the execution context type from the current ExecutionContext
  *
  * @param ctx - The NestJS execution context
- * @returns The detected context type ('http', 'graphql', or 'websocket')
- * @throws Error if context type cannot be determined
+ * @returns The detected context type ('http', 'graphql', or 'websocket'); defaults to 'http' if undetermined
  *
  * @example
  * ```typescript

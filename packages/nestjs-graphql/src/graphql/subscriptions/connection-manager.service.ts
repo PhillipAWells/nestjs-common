@@ -49,7 +49,7 @@ export class ConnectionManagerService {
    * Adds a new WebSocket connection
    * @param ws WebSocket connection
    * @param userId User ID
-   * @param authenticatedUserId Authenticated user ID from token verification — must match userId unless admin
+   * @param authenticatedUserId Authenticated user ID from token verification — must match userId
    */
 	public addConnection(ws: any, userId: string, authenticatedUserId?: string): void {
 		// Verify the authenticated user matches the requested userId
@@ -171,7 +171,6 @@ export class ConnectionManagerService {
 	/**
    * Checks if a user can accept a new subscription
    * @param userId User ID
-   * @param subscriptionId Subscription ID
    * @returns True if subscription can be accepted
    */
 	public canAcceptSubscription(userId: string): boolean {

@@ -7,7 +7,7 @@ import { plainToClass } from 'class-transformer';
  *
  * Specialized validation pipe for GraphQL input objects.
  * Validates nested objects, provides detailed field-level error messages,
- * and performs security checks for injection attempts.
+ * and performs XSS security checks on string fields.
  *
  * @example
  * ```typescript
@@ -77,7 +77,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	}
 
 	/**
-	 * Performs security checks on input data to detect injection attempts
+	 * Performs security checks on input data to detect XSS patterns
 	 *
 	 * @param value - The input value to check
 	 * @throws BadRequestException if suspicious patterns detected

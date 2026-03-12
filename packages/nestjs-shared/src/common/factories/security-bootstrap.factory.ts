@@ -48,12 +48,13 @@ export interface SecurityBootstrapOptions {
  * Applies comprehensive security middleware and configurations to a NestJS application
  *
  * Configured middleware stack (in order):
- * 0. Compression - Reduces response size for APIs larger than 1KB
- * 1. MongoDB Injection Prevention - Sanitizes request body and params
- * 2. XSS Protection - Sanitizes user input to prevent XSS attacks
- * 3. Helmet.js - Sets security-related HTTP headers (CSP, HSTS, X-Frame-Options, etc)
- * 4. Global Validation Pipe - Validates and transforms incoming data
- * 5. CORS - Enables cross-origin resource sharing with configurable origins
+ * 0. Body Size Limits - Enforces maximum request body size
+ * 1. Compression - Reduces response size for APIs larger than 1KB
+ * 2. MongoDB Injection Prevention - Sanitizes request body and params
+ * 3. XSS Protection - Sanitizes user input to prevent XSS attacks
+ * 4. Helmet.js - Sets security-related HTTP headers (CSP, HSTS, X-Frame-Options, etc)
+ * 5. Global Validation Pipe - Validates and transforms incoming data
+ * 6. CORS - Enables cross-origin resource sharing with configurable origins
  *
  * @param app The NestJS application instance
  * @param options Configuration options for security bootstrap
