@@ -1,6 +1,7 @@
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Logger as PawellsLogger, LogLevel as PawellsLogLevel } from '@pawells/logger';
+import { CreateJsonCircularReplacer } from '@pawells/typescript-common';
 import { trace, context } from '@opentelemetry/api';
 import { LogLevel, LogMetadata, LOG_LEVEL_FROM_STRING } from '../interfaces/log-entry.interface.js';
 import { IContextualLogger } from '../interfaces/logger.interface.js';
@@ -99,6 +100,7 @@ export class AppLogger implements IContextualLogger {
 			[LogLevel.WARN]: PawellsLogLevel.WARN,
 			[LogLevel.ERROR]: PawellsLogLevel.ERROR,
 			[LogLevel.FATAL]: PawellsLogLevel.FATAL,
+			[LogLevel.SILENT]: PawellsLogLevel.SILENT,
 		};
 		return mapping[level] ?? PawellsLogLevel.INFO;
 	}
@@ -163,16 +165,7 @@ export class AppLogger implements IContextualLogger {
 		};
 
 		try {
-			// Use JSON.stringify with a replacer function to handle any remaining circular references
-			// This is a safety net in case sanitize() missed any circular references
-			const seen = new WeakSet();
-			const stringified = JSON.stringify(sanitize(sanitized), (key, val) => {
-				if (typeof val === 'object' && val !== null) {
-					if (seen.has(val)) return '[CIRCULAR_REF]';
-					seen.add(val);
-				}
-				return val;
-			});
+			const stringified = JSON.stringify(sanitize(sanitized), CreateJsonCircularReplacer('[CIRCULAR_REF]'));
 			return JSON.parse(stringified);
 		} catch {
 			// If JSON.stringify fails, return the sanitized object as-is

@@ -207,7 +207,7 @@ export class MetricsRegistryService {
 	/**
 	 * Register a custom metric
 	 */
-	public registerMetric<T extends any>(metric: T): T {
+	public registerMetric<T>(metric: T): T {
 		if (metric && typeof metric === 'object' && 'register' in metric && typeof metric.register === 'function') {
 			metric.register(this.registry);
 		}

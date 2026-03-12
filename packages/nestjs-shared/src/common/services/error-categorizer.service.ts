@@ -48,7 +48,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Check if an error is retryable
 	 */
-	public isRetryable(error: Error | any): boolean {
+	public isRetryable(error: any): boolean {
 		const category = this.categorizeError(error);
 		return category.retryable;
 	}
@@ -56,7 +56,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Categorize an error and determine recovery strategy
 	 */
-	public categorizeError(error: Error | any): ErrorCategory {
+	public categorizeError(error: any): ErrorCategory {
 		const errorMessage = error?.message ?? String(error);
 		const errorCode = error?.code ?? error?.status;
 
@@ -224,7 +224,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log error recovery attempt
 	 */
-	public logRecoveryAttempt(error: Error | any, attempt: number, maxAttempts: number): void {
+	public logRecoveryAttempt(error: any, attempt: number, maxAttempts: number): void {
 		const category = this.categorizeError(error);
 		this.Logger.info('Error recovery attempt', {
 			attempt,
@@ -239,7 +239,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log successful recovery
 	 */
-	public logRecoverySuccess(error: Error | any, attempts: number): void {
+	public logRecoverySuccess(error: any, attempts: number): void {
 		this.Logger.info('Error recovery successful', {
 			attempts,
 			error: error?.message ?? String(error),
@@ -249,7 +249,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log failed recovery
 	 */
-	public logRecoveryFailed(error: Error | any, attempts: number): void {
+	public logRecoveryFailed(error: any, attempts: number): void {
 		const category = this.categorizeError(error);
 		this.Logger.error('Error recovery failed', undefined, undefined, {
 			attempts,
@@ -261,7 +261,6 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 
 	private isNetworkError(error: any): boolean {
 		const networkCodes = ['ECONNREFUSED', 'ENOTFOUND', 'ECONNRESET', 'EPIPE'];
-		 
 		return networkCodes.includes(error?.code) || /\bnetwork\b/i.test(error?.message) || /\bconnection\b/i.test(error?.message);
 	}
 

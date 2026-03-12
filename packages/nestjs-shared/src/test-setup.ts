@@ -4,13 +4,18 @@ import { Logger } from '@nestjs/common';
 /**
  * Global test setup: suppress all console and NestJS Logger output.
  *
- * Two output paths are silenced:
- * 1. console.* — used by AppLogger → Logger → ConsoleTransport
- * 2. Logger (NestJS) — uses process.stdout.write directly, bypassing console.*
- *    Affected sources: ApplySecurityMiddleware, BaseMetricsCollector, etc.
+ * Three output paths are silenced:
+ * 1. process.stdout/stderr — used by AppLogger → @pawells/logger → ConsoleTransport (1.2.2+
+ *    writes directly to process.stdout.write, no longer routes through console.log)
+ * 2. console.* — used by some NestJS internals and legacy paths
+ * 3. Logger (NestJS) — instance/static methods that write [Nest] lines to stdout
  */
 beforeEach(() => {
-	// Suppress console.* (covers Logger / ConsoleTransport)
+	// Suppress @pawells/logger ConsoleTransport (1.2.2+: writes to process.stdout.write directly)
+	vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+	vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+	// Suppress console.* for any remaining console-based output paths
 	vi.spyOn(console, 'log').mockImplementation(() => {});
 	vi.spyOn(console, 'info').mockImplementation(() => {});
 	vi.spyOn(console, 'warn').mockImplementation(() => {});

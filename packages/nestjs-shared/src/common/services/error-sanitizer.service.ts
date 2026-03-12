@@ -103,8 +103,9 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	];
 
 	private readonly additionalSensitiveKeys: string[] = [];
-	 
-	constructor(public readonly moduleRef: ModuleRef,
+
+	constructor(
+		public readonly moduleRef: ModuleRef,
 		@Optional() @Inject(ERROR_SANITIZER_OPTIONS) private readonly options?: ErrorSanitizerOptions,
 	) {
 		// Merge additional sensitive keys from options

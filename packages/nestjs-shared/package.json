@@ -47,8 +47,8 @@
 		"xss": ">=1.0.0"
 	},
 	"dependencies": {
-		"@pawells/logger": "*",
-		"@pawells/typescript-common": "*"
+		"@pawells/logger": "^1.2.2",
+		"@pawells/typescript-common": "^1.3.1"
 	},
 	"engines": {
 		"node": ">=24.0.0"

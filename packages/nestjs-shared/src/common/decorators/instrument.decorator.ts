@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks';
 import type { InstrumentationRegistry } from '../registry/instrumentation-registry.js';
 
 /**
