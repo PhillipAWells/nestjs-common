@@ -59,9 +59,9 @@ export abstract class BaseAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oauth
 	 * @returns {*} The user object or throws exception
 	 */
 	protected handleAuthError(err: any, user: any, info: any): any {
-		if (err ?? !user) {
+		if (err || !user) {
 			this.logger.warn(`Authentication failed: ${err?.message ?? info?.message ?? 'Unknown error'}`);
-			throw err ?? new UnauthorizedException('Authentication failed');
+			throw new UnauthorizedException('Authentication failed');
 		}
 
 		return user;

@@ -7,8 +7,9 @@ import { AppLogger, AuditLoggerService, CACHE_PROVIDER, type ICacheProvider } fr
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import type { IUserRepository } from './interfaces/user-repository.interface.js';
-import { USER_REPOSITORY } from './interfaces/user-repository.interface.js';
+import { USER_REPOSITORY } from './tokens.js';
 import { TokenBlacklistService } from './token-blacklist.service.js';
+import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE } from '../constants/auth-timeouts.constants.js';
 
 import type { User, AuthResponse, JWTPayload } from './auth.types.js';
 
@@ -52,9 +53,7 @@ export class AuthService implements LazyModuleRefService {
 	}
 
 	private get logger(): AppLogger {
-		if (!this._contextualLogger) {
-			this._contextualLogger ??= this.AppLogger.createContextualLogger(AuthService.name);
-		}
+		this._contextualLogger ??= this.AppLogger.createContextualLogger(AuthService.name);
 		return this._contextualLogger;
 	}
 
@@ -126,8 +125,8 @@ export class AuthService implements LazyModuleRefService {
 			{
 				...basePayload,
 				type: 'access',
-				iss: 'auth-service',
-				aud: 'clients',
+				iss: DEFAULT_JWT_ISSUER,
+				aud: DEFAULT_JWT_AUDIENCE,
 			},
 			{
 				expiresIn: accessTokenExpiry,
@@ -139,8 +138,8 @@ export class AuthService implements LazyModuleRefService {
 			{
 				...basePayload,
 				type: 'refresh',
-				iss: 'auth-service',
-				aud: 'clients',
+				iss: DEFAULT_JWT_ISSUER,
+				aud: DEFAULT_JWT_AUDIENCE,
 			},
 			{
 				expiresIn: refreshTokenExpiry,
@@ -231,7 +230,7 @@ export class AuthService implements LazyModuleRefService {
 	 * @param userData User data
 	 * @returns Created user
 	 */
-	private async createOAuthUser(userData: any): Promise<User> {
+	private async createOAuthUser(userData: { email: string; displayName: string; profile: unknown; accessToken: string; refreshToken: string }): Promise<User> {
 		try {
 			const user = await this.userRepository.create({
 				email: userData.email,
@@ -287,7 +286,7 @@ export class AuthService implements LazyModuleRefService {
 	 * @param token JWT token
 	 * @returns Decoded payload or null
 	 */
-	decodeToken(token: string): JWTPayload | null {
+	public decodeToken(token: string): JWTPayload | null {
 		try {
 			return this.JwtService.decode(token) as JWTPayload;
 		} catch (error) {
@@ -360,8 +359,8 @@ export class AuthService implements LazyModuleRefService {
 				{
 					...newPayload,
 					type: 'access',
-					iss: 'auth-service',
-					aud: 'clients',
+					iss: DEFAULT_JWT_ISSUER,
+					aud: DEFAULT_JWT_AUDIENCE,
 				},
 				{
 					expiresIn: accessTokenExpiry,
@@ -371,9 +370,11 @@ export class AuthService implements LazyModuleRefService {
 
 			// Blacklist the old refresh token
 			const refreshTokenDecoded = this.JwtService.decode(refreshToken) as JWTPayload;
-			const expiresInSeconds = refreshTokenDecoded?.exp
+			const calculatedTtl = refreshTokenDecoded?.exp
 				? Math.floor((refreshTokenDecoded.exp * 1000 - Date.now()) / 1000)
 				: 259200; // Default 3 days for refresh tokens
+			// Ensure TTL is positive; if token is already expired, use a short TTL for the blacklist entry
+			const expiresInSeconds = Math.max(calculatedTtl, 60);
 
 			await tokenBlacklistService.blacklistToken(refreshToken, expiresInSeconds);
 
@@ -479,10 +480,10 @@ export class AuthService implements LazyModuleRefService {
 			};
 		} catch (error) {
 			this.logger.error(`Session tracking failed for user ${userId}: ${(error as Error).message}`);
-			// Fail open - allow session
+			// Fail closed - deny session when tracking is unavailable
 			return {
-				allowed: true,
-				activeSessions: [sessionId],
+				allowed: false,
+				activeSessions: [],
 			};
 		}
 	}

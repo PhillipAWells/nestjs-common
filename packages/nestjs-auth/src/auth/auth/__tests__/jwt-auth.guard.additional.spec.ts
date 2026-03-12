@@ -201,7 +201,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			try {
 				guard['handleAuthError'](error, null, null);
 			} catch (e) {
-				expect((e as any).message).toContain('Invalid signature');
+				expect((e as any).message).toContain('Authentication failed');
 			}
 		});
 

@@ -65,9 +65,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async isTokenBlacklisted(token: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - return false (assume token is not blacklisted)
-			this.logger.warn('Cache provider not available - cannot check token blacklist, assuming token is valid');
-			return false;
+			// Fail closed: treat token as blacklisted when cache is unavailable
+			this.logger.warn('Cache provider not available - cannot check token blacklist, rejecting token for safety');
+			return true;
 		}
 		try {
 			const isBlacklisted = await cacheProvider.exists(`blacklist:${token}`);
@@ -115,9 +115,9 @@ export class TokenBlacklistService implements LazyModuleRefService {
 	public async hasUserRevokedTokens(userId: string): Promise<boolean> {
 		const cacheProvider = this.CacheProvider;
 		if (!cacheProvider) {
-			// Cache provider not available - return false (assume tokens are not revoked)
-			this.logger.warn('Cache provider not available - cannot check user token revocation, assuming tokens are valid');
-			return false;
+			// Fail closed: treat tokens as revoked when cache is unavailable
+			this.logger.warn('Cache provider not available - cannot check user token revocation, rejecting tokens for safety');
+			return true;
 		}
 		try {
 			const revoked = await cacheProvider.exists(`revoke:${userId}`);
@@ -143,10 +143,6 @@ export class TokenBlacklistService implements LazyModuleRefService {
 		return authHeader.substring(7); // Remove 'Bearer ' prefix
 	}
 
-	/**
-	 * Cleanup expired blacklist entries
-	 * @param maxAgeSeconds Maximum age of entries to keep (default: 86400 = 24 hours)
-	 */
 	/**
 	 * Cleanup expired blacklist entries
 	 * @param _maxAgeSeconds Maximum age of entries to keep (default: 86400 = 24 hours)

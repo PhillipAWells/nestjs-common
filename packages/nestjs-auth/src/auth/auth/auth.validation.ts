@@ -3,7 +3,6 @@ import {
 	IsString,
 	MinLength,
 	MaxLength,
-	Matches,
 	ValidateIf,
 } from 'class-validator';
 
@@ -26,7 +25,7 @@ export class LoginValidationInput {
 	 */
 	@IsEmail({}, { message: 'Email must be a valid email address' })
 	@MaxLength(MAX_EMAIL_LENGTH, { message: 'Email must not exceed 254 characters' })
-	 
+
 	public email!: string;
 
 	/**
@@ -36,14 +35,9 @@ export class LoginValidationInput {
 	@IsString({ message: 'Password must be a string' })
 	@MinLength(MIN_LOGIN_PASSWORD_LENGTH, { message: 'Password must be at least 8 characters long' })
 	@MaxLength(MAX_PASSWORD_LENGTH, { message: 'Password must not exceed 128 characters' })
-	// Reject common SQL injection patterns while allowing legitimate special characters
-	@Matches(
-		/^(?!.*['";\\-]{2,})[^'";\\]*$/,
-		{
-			message: 'Password contains invalid characters or patterns',
-		},
-	)
-	 
+	// No character restrictions - SQL injection is prevented by parameterized queries
+	// and passwords are hashed before storage, so special characters are safe
+
 	public password!: string;
 }
 
@@ -58,7 +52,7 @@ export class RegisterValidationInput {
 	 */
 	@IsEmail({}, { message: 'Email must be a valid email address' })
 	@MaxLength(MAX_EMAIL_LENGTH, { message: 'Email must not exceed 254 characters' })
-	 
+
 	public email!: string;
 
 	/**
@@ -68,7 +62,7 @@ export class RegisterValidationInput {
 	@IsString({ message: 'Password must be a string' })
 	@MinLength(MIN_REGISTER_PASSWORD_LENGTH, { message: 'Password must be at least 12 characters long (enforce strong passwords)' })
 	@MaxLength(MAX_PASSWORD_LENGTH, { message: 'Password must not exceed 128 characters' })
-	 
+
 	public password!: string;
 
 	/**
@@ -100,6 +94,6 @@ export class RefreshTokenValidationInput {
 	@IsString({ message: 'Refresh token must be a string' })
 	@MinLength(MIN_TOKEN_LENGTH, { message: 'Refresh token is invalid' })
 	@MaxLength(MAX_TOKEN_LENGTH, { message: 'Refresh token exceeds maximum length' })
-	 
+
 	public refreshToken!: string;
 }

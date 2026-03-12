@@ -126,9 +126,9 @@ describe('TokenBlacklistService - Additional Tests', () => {
 			const token = 'test-token';
 			await service.blacklistToken(token, 3600);
 
-			// Should not throw, but cache won't be used
+			// Fail closed: token treated as blacklisted when cache is unavailable
 			const isBlacklisted = await service.isTokenBlacklisted(token);
-			expect(isBlacklisted).toBe(false);
+			expect(isBlacklisted).toBe(true);
 		});
 
 		it('should handle token with special characters', async () => {
@@ -177,8 +177,9 @@ describe('TokenBlacklistService - Additional Tests', () => {
 			};
 			service = new TokenBlacklistService(mockModuleRef);
 
+			// Fail closed: token treated as blacklisted when cache is unavailable
 			const isBlacklisted = await service.isTokenBlacklisted('any-token');
-			expect(isBlacklisted).toBe(false);
+			expect(isBlacklisted).toBe(true);
 		});
 	});
 
@@ -240,8 +241,9 @@ describe('TokenBlacklistService - Additional Tests', () => {
 			const userId = 'user-id';
 			await service.revokeUserTokens(userId);
 
+			// Fail closed: tokens treated as revoked when cache is unavailable
 			const hasRevoked = await service.hasUserRevokedTokens(userId);
-			expect(hasRevoked).toBe(false);
+			expect(hasRevoked).toBe(true);
 		});
 	});
 

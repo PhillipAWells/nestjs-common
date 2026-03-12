@@ -44,25 +44,37 @@ export const DEFAULT_CONTEXT_OPTIONS: ContextOptions = {
  * ```
  */
 export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | 'websocket' {
-	try {
-		// Try GraphQL context first
-		GqlExecutionContext.create(ctx);
+	// Use the context type reported by NestJS rather than try/catch,
+	// because GqlExecutionContext.create() never throws - it always wraps the context.
+	const contextType = ctx.getType<string>();
+
+	if (contextType === 'graphql') {
 		return 'graphql';
-	} catch {
-		// Check for WebSocket context
-		try {
-			ctx.switchToWs();
-			return 'websocket';
-		} catch {
-			// Fall back to HTTP context
-			try {
-				ctx.switchToHttp();
-				return 'http';
-			} catch {
-				throw new Error('Unable to determine execution context type');
-			}
-		}
 	}
+
+	if (contextType === 'ws') {
+		return 'websocket';
+	}
+
+	if (contextType === 'http') {
+		return 'http';
+	}
+
+	// For GraphQL contexts using @nestjs/graphql, the type is 'graphql'
+	// but some setups may use 'http' with a GraphQL layer on top.
+	// Fall back to checking if GqlExecutionContext can extract GraphQL args.
+	try {
+		const gqlCtx = GqlExecutionContext.create(ctx);
+		const info = gqlCtx.getInfo();
+		if (info?.fieldName) {
+			return 'graphql';
+		}
+	} catch {
+		// Not a GraphQL context
+	}
+
+	// Default to http if we can't determine the type
+	return 'http';
 }
 
 /**
@@ -159,14 +171,6 @@ export function ExtractUserFromContext(
 }
 
 /**
- * Backwards compatibility aliases - exported functions use PascalCase per project conventions
- */
-export const detectContextType = DetectContextType;
-export const extractAuthTokenFromContext = ExtractAuthTokenFromContext;
-export const extractRequestFromContext = ExtractRequestFromContext;
-export const extractUserFromContext = ExtractUserFromContext;
-
-/**
  * Extracts the authorization token from any supported execution context
  *
  * @param ctx - The NestJS execution context
@@ -205,3 +209,11 @@ export function ExtractAuthTokenFromContext(
 
 	return undefined;
 }
+
+/**
+ * Backwards compatibility aliases - exported functions use PascalCase per project conventions
+ */
+export const detectContextType = DetectContextType;
+export const extractAuthTokenFromContext = ExtractAuthTokenFromContext;
+export const extractRequestFromContext = ExtractRequestFromContext;
+export const extractUserFromContext = ExtractUserFromContext;

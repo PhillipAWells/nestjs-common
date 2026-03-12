@@ -78,7 +78,7 @@ export class JWTTokenValidationStrategy implements AuthValidationStrategy {
 		private readonly logger: AppLogger,
 	) {}
 
-	public async validate(token: string, context: ExecutionContext): Promise<any> {
+	public async validate(token: string, _context: ExecutionContext): Promise<any> {
 		try {
 			const payload = await this.jwtService.verifyAsync(token);
 			this.logger.debug('JWT token validated successfully');
@@ -95,7 +95,7 @@ export class JWTTokenValidationStrategy implements AuthValidationStrategy {
  */
 @Injectable()
 export class DefaultAuthErrorHandlingStrategy implements AuthErrorHandlingStrategy {
-	public handleError(error: any, context: ExecutionContext): void {
+	public handleError(error: any, _context: ExecutionContext): void {
 		if (error instanceof UnauthorizedException) {
 			throw error;
 		}
@@ -260,7 +260,8 @@ export class BaseAuthGuard implements CanActivate {
 		if (this.config.roles) {
 			const hasRequiredRole = this.config.roles.some(role => userRoles.includes(role));
 			if (!hasRequiredRole) {
-				throw new UnauthorizedException(`Required roles: ${this.config.roles.join(', ')}`);
+				this.logger.warn(`User missing required roles: ${this.config.roles.join(', ')}`);
+				throw new UnauthorizedException('Insufficient permissions');
 			}
 		}
 
@@ -270,7 +271,8 @@ export class BaseAuthGuard implements CanActivate {
 				userPermissions.includes(permission),
 			);
 			if (!hasRequiredPermission) {
-				throw new UnauthorizedException(`Required permissions: ${this.config.permissions.join(', ')}`);
+				this.logger.warn(`User missing required permissions: ${this.config.permissions.join(', ')}`);
+				throw new UnauthorizedException('Insufficient permissions');
 			}
 		}
 	}

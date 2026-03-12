@@ -30,6 +30,12 @@ export const OAUTH_SERVICE_RETRY_COUNT = 5;
 /** OAuth service backoff delay in milliseconds */
 export const OAUTH_SERVICE_BACKOFF_MS = 60;
 
+/** Default JWT issuer */
+export const DEFAULT_JWT_ISSUER = 'nestjs-app';
+
+/** Default JWT audience */
+export const DEFAULT_JWT_AUDIENCE = 'nestjs-api';
+
 /** Auth middleware token validation timeout in milliseconds */
 export const AUTH_MIDDLEWARE_TIMEOUT = 7; // days used in token calculation context
 

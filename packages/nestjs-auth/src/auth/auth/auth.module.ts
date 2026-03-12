@@ -11,6 +11,7 @@ import { User } from './auth.types.js';
 import { OAuthModule } from '../lib/oauth/oauth.module.js';
 import { OAuthModuleOptions } from '../lib/oauth/types/oauth-config.types.js';
 import { AppLogger, CommonModule } from '@pawells/nestjs-shared/common';
+import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE } from '../constants/auth-timeouts.constants.js';
 import { JWTAuthGuard } from './jwt-auth.guard.js';
 import { MockUserRepository } from './repositories/mock-user.repository.js';
 import { USER_REPOSITORY, USER_LOOKUP_FN } from './tokens.js';
@@ -45,9 +46,9 @@ export class AuthModule {
 			JwtModule.register({
 				secret: options.jwtSecret,
 				signOptions: {
-					expiresIn: (options.jwtExpiresIn ?? '15m') as string,
-					issuer: 'auth-service',
-					audience: 'clients',
+					expiresIn: options.jwtExpiresIn ?? '15m',
+					issuer: DEFAULT_JWT_ISSUER,
+					audience: DEFAULT_JWT_AUDIENCE,
 				},
 			}),
 
@@ -85,7 +86,7 @@ export class AuthModule {
 				},
 				{
 					provide: JWTStrategy,
-					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: any, tokenValidationService: TokenValidationService, tokenBlacklistService: TokenBlacklistService) => {
+					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: AppLogger, tokenValidationService: TokenValidationService, tokenBlacklistService: TokenBlacklistService) => {
 						return new JWTStrategy(userLookupFn, appLogger, tokenValidationService, tokenBlacklistService);
 					},
 					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService, TokenBlacklistService],
