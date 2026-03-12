@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import * as https from 'https';
 import * as http from 'http';
-import * as url from 'url';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
 import { getHttpClientTimeout } from '../constants/timeout.constants.js';
@@ -70,9 +69,11 @@ export class HttpClientService implements LazyModuleRefService {
 		const startTime = Date.now();
 		const MAX_PAYLOAD_SIZE = 10_485_760; // 10MB in bytes
 
+		const safeUrl = this.sanitizeUrl(requestUrl);
+
 		this.Logger.debug('Making HTTP request', JSON.stringify({
 			method,
-			url: requestUrl,
+			url: safeUrl,
 			headers: this.sanitizeHeaders(headers),
 			hasData: !!data,
 			timeout,
@@ -80,14 +81,14 @@ export class HttpClientService implements LazyModuleRefService {
 		}));
 
 		return new Promise((resolve, reject) => {
-			const parsedUrl = url.parse(requestUrl);
+			const parsedUrl = new URL(requestUrl); // Use raw URL for actual request
 			const isHttps = parsedUrl.protocol === 'https:';
 			const client = isHttps ? https : http;
 
 			const requestOptions: any = {
 				hostname: parsedUrl.hostname,
-				port: parsedUrl.port,
-				path: parsedUrl.path,
+				port: parsedUrl.port || undefined,
+				path: parsedUrl.pathname + parsedUrl.search,
 				method,
 				headers: headers ?? {},
 				timeout,
@@ -113,7 +114,7 @@ export class HttpClientService implements LazyModuleRefService {
 						const error = new Error('Payload too large');
 						this.Logger.error('HTTP response payload exceeded size limit', JSON.stringify({
 							method,
-							url: requestUrl,
+							url: safeUrl,
 							maxSize: MAX_PAYLOAD_SIZE,
 							actualSize: totalSize,
 							durationMs: duration,
@@ -129,7 +130,7 @@ export class HttpClientService implements LazyModuleRefService {
 					const duration = Date.now() - startTime;
 					this.Logger.error('HTTP response error', JSON.stringify({
 						method,
-						url: requestUrl,
+						url: safeUrl,
 						error: error.message,
 						durationMs: duration,
 						correlationId: correlationId ?? 'unknown',
@@ -147,7 +148,7 @@ export class HttpClientService implements LazyModuleRefService {
 						if (body.length > MAX_PAYLOAD_SIZE) {
 							this.Logger.error('HTTP response payload exceeded size limit', JSON.stringify({
 								method,
-								url: requestUrl,
+								url: safeUrl,
 								maxSize: MAX_PAYLOAD_SIZE,
 								actualSize: body.length,
 								durationMs: duration,
@@ -174,7 +175,7 @@ export class HttpClientService implements LazyModuleRefService {
 
 						this.Logger.info('HTTP request successful', JSON.stringify({
 							method,
-							url: requestUrl,
+							url: safeUrl,
 							statusCode: res.statusCode,
 							durationMs: duration,
 							responseSize: body.length,
@@ -191,7 +192,7 @@ export class HttpClientService implements LazyModuleRefService {
 					} catch (error) {
 						this.Logger.error('HTTP response parsing failed', JSON.stringify({
 							method,
-							url: requestUrl,
+							url: safeUrl,
 							statusCode: res.statusCode,
 							error: (error as Error).message,
 							durationMs: duration,
@@ -206,7 +207,7 @@ export class HttpClientService implements LazyModuleRefService {
 				const duration = Date.now() - startTime;
 				this.Logger.error('HTTP request failed', JSON.stringify({
 					method,
-					url: requestUrl,
+					url: safeUrl,
 					error: error.message,
 					durationMs: duration,
 					correlationId: correlationId ?? 'unknown',
@@ -219,7 +220,7 @@ export class HttpClientService implements LazyModuleRefService {
 				req.destroy();
 				this.Logger.warn('HTTP request timeout', JSON.stringify({
 					method,
-					url: requestUrl,
+					url: safeUrl,
 					timeout,
 					durationMs: duration,
 					correlationId: correlationId ?? 'unknown',
@@ -257,36 +258,34 @@ export class HttpClientService implements LazyModuleRefService {
 	}
 
 	/**
-	 * Extract and validate Content-Length header value
-	 * Ensures malicious upstream servers cannot send huge values that corrupt metrics
-	 * @param contentLengthHeader - The Content-Length header value
-	 * @returns Parsed content length or undefined if invalid or exceeds limits
+	 * Sanitize a URL to remove embedded credentials (e.g., https://user:pass@host/)
 	 */
-	private getContentLength(contentLengthHeader?: string): number | undefined {
-		if (!contentLengthHeader) {
-			return undefined;
+	private sanitizeUrl(url: string): string {
+		try {
+			const parsed = new URL(url);
+			if (parsed.username || parsed.password) {
+				parsed.username = '[REDACTED]';
+				parsed.password = '[REDACTED]';
+				return parsed.toString();
+			}
+			return url;
+		} catch {
+			return url;
 		}
-
-		const MAX_PAYLOAD_SIZE = 10_485_760; // 10MB in bytes
-		const length = parseInt(contentLengthHeader, 10);
-
-		// Check for NaN or negative values
-		if (Number.isNaN(length) || length < 0) {
-			return undefined;
-		}
-
-		// Enforce upper bound to prevent metrics corruption
-		if (length > MAX_PAYLOAD_SIZE) {
-			return undefined;
-		}
-
-		return length;
 	}
 
 	private sanitizeHeaders(headers?: Record<string, string>): Record<string, string> | undefined {
 		if (!headers) return undefined;
 
-		const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie'];
+		const sensitiveHeaders = [
+			'authorization',
+			'x-api-key',
+			'cookie',
+			'set-cookie',
+			'x-auth-token',
+			'proxy-authorization',
+			'x-csrf-token',
+		];
 		const sanitized = { ...headers };
 
 		// Replace sensitive headers with redacted value (case-insensitive)

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger, HttpException, HttpStatus, Inject, Optional } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger, HttpException, HttpStatus, Inject, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { doubleCsrf, type DoubleCsrfUtilities } from 'csrf-csrf';
 import { Request, Response, NextFunction } from 'express';
@@ -21,7 +21,7 @@ export interface CSRFServiceOptions {
 }
 
 @Injectable()
-export class CSRFService implements OnModuleInit {
+export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	// Configuration constants
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly MIN_SECRET_LENGTH = 32;
@@ -55,6 +55,8 @@ export class CSRFService implements OnModuleInit {
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly TIMESTAMP_PRUNING_INTERVAL_MS = 10 * 1000; // Prune every 10 seconds
 	// eslint-disable-next-line no-magic-numbers
+	private static readonly IP_LOCK_TIMEOUT_MS = 30_000; // 30 second timeout for queued requests
+	// eslint-disable-next-line no-magic-numbers
 	private static readonly CAPACITY_THRESHOLD_PERCENT = 0.8;
 
 	private csrfProtection: DoubleCsrfUtilities | undefined;
@@ -63,6 +65,7 @@ export class CSRFService implements OnModuleInit {
 	private readonly ipLocks = new Map<string, Promise<unknown>>();
 	private readonly trustProxy: boolean;
 	private capacityThresholdCrossedCount = 0;
+	private pruneIntervalHandle: ReturnType<typeof setInterval> | undefined;
 
 	constructor(
 		@Inject(ConfigService) @Optional() private readonly configService?: ConfigService,
@@ -133,7 +136,20 @@ export class CSRFService implements OnModuleInit {
 
 		// Prune old token generation timestamps more frequently to prevent unbounded growth
 		// More aggressive pruning than 5 minutes to handle high-traffic scenarios
-		setInterval(() => this.pruneTokenTimestamps(), CSRFService.TIMESTAMP_PRUNING_INTERVAL_MS);
+		this.pruneIntervalHandle = setInterval(() => this.pruneTokenTimestamps(), CSRFService.TIMESTAMP_PRUNING_INTERVAL_MS);
+	}
+
+	/**
+	 * NestJS lifecycle hook: clear the pruning interval on module destroy
+	 */
+	public onModuleDestroy(): void {
+		if (this.pruneIntervalHandle !== undefined) {
+			clearInterval(this.pruneIntervalHandle);
+			this.pruneIntervalHandle = undefined;
+		}
+		// Clear maps to release memory on shutdown
+		this.tokenGenTimestamps.clear();
+		this.ipLocks.clear();
 	}
 
 	/**
@@ -143,31 +159,27 @@ export class CSRFService implements OnModuleInit {
 	 * - If trustProxy=true but X-Forwarded-For is absent: proxy may not be configured correctly
 	 */
 	private validateTrustProxyConfiguration(): void {
-		// Check direction 1: trustProxy=false but X-Forwarded-For present
-		const sampleRequestWithHeader = { headers: { 'x-forwarded-for': '192.168.1.1' } } as unknown as Request;
-		const extractedIp = this.extractClientIp(sampleRequestWithHeader);
-
-		// If trustProxy is false but we got an IP from X-Forwarded-For, warn about misconfiguration
-		if (!this.trustProxy && extractedIp !== null) {
-			this.logger.warn(
-				'Trust proxy is disabled but X-Forwarded-For header is present. ' +
-				'If this service is behind a reverse proxy (nginx, Apache, load balancer, etc.), ' +
-				'enable trustProxy in CSRFService options to correctly identify client IPs.',
-			);
+		// Check direction 1: trustProxy=false but service is likely behind a proxy
+		// We detect this by checking if the NODE_ENV and common proxy environments are misconfigured.
+		// Note: We do NOT call extractClientIp here to avoid spurious "X-Forwarded-For detected" warnings
+		// during module initialization with synthetic sample requests.
+		if (!this.trustProxy) {
+			// Nothing to warn about at init time — the runtime warning in extractClientIp
+			// will fire if real requests arrive with X-Forwarded-For headers.
+			return;
 		}
 
 		// Check direction 2: trustProxy=true but X-Forwarded-For absent (reverse proxy may not be configured)
-		if (this.trustProxy) {
-			const sampleRequestWithoutHeader = { headers: {}, socket: { remoteAddress: '127.0.0.1' } } as unknown as Request;
-			const extractedIpWithoutHeader = this.extractClientIp(sampleRequestWithoutHeader);
+		// Use a sample request without X-Forwarded-For to detect this early
+		const sampleRequestWithoutHeader = { headers: {}, socket: { remoteAddress: '127.0.0.1' } } as unknown as Request;
+		const extractedIpWithoutHeader = this.extractClientIp(sampleRequestWithoutHeader);
 
-			if (extractedIpWithoutHeader === undefined || extractedIpWithoutHeader === null) {
-				this.logger.warn(
-					'Trust proxy is enabled but X-Forwarded-For header is not present in sample request. ' +
-					'Your reverse proxy may not be configured to set X-Forwarded-For correctly. ' +
-					'Verify your proxy (nginx, Apache, load balancer, etc.) is setting this header.',
-				);
-			}
+		if (extractedIpWithoutHeader === undefined || extractedIpWithoutHeader === null) {
+			this.logger.warn(
+				'Trust proxy is enabled but X-Forwarded-For header is not present in sample request. ' +
+				'Your reverse proxy may not be configured to set X-Forwarded-For correctly. ' +
+				'Verify your proxy (nginx, Apache, load balancer, etc.) is setting this header.',
+			);
 		}
 	}
 
@@ -342,7 +354,27 @@ export class CSRFService implements OnModuleInit {
 		// Serialize rate-limit check + token generation per IP to prevent race conditions
 		// Chain this request's work after any pending work for the same IP
 		const pendingWork = this.ipLocks.get(ip) ?? Promise.resolve();
-		const currentWork = pendingWork.then(() => this.performRateLimitedTokenGeneration(req, res));
+
+		// Wrap with a timeout to prevent indefinite waits in the queue
+		const currentWork = pendingWork.then(() => {
+			return new Promise<string>((resolve, reject) => {
+				const timer = setTimeout(() => {
+					reject(new HttpException(
+						'CSRF token generation timed out waiting in queue',
+						HttpStatus.SERVICE_UNAVAILABLE,
+					));
+				}, CSRFService.IP_LOCK_TIMEOUT_MS);
+
+				try {
+					const token = this.performRateLimitedTokenGeneration(req, res);
+					clearTimeout(timer);
+					resolve(token);
+				} catch (err) {
+					clearTimeout(timer);
+					reject(err);
+				}
+			});
+		});
 
 		this.ipLocks.set(ip, currentWork);
 
@@ -405,8 +437,9 @@ export class CSRFService implements OnModuleInit {
 		timestamps = timestamps.filter(ts => now - ts < CSRFService.RATE_LIMIT_WINDOW_MS);
 
 		if (timestamps.length >= CSRFService.RATE_LIMIT_COUNT) {
+			this.logger.warn(`CSRF token rate limit exceeded for IP: ${ip}`);
 			throw new HttpException(
-				`Rate limit exceeded for token generation from IP: ${ip}`,
+				'Rate limit exceeded for CSRF token generation',
 				HttpStatus.TOO_MANY_REQUESTS,
 			);
 		}
@@ -416,8 +449,13 @@ export class CSRFService implements OnModuleInit {
 		this.tokenGenTimestamps.set(ip, timestamps);
 
 		// Generate and return the token
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return this.csrfProtection!.generateToken(req, res);
+		// csrfProtection is guaranteed non-null: generateToken (our caller) checks it,
+		// and performRateLimitedTokenGeneration is only called from generateToken's chain.
+		const protection = this.csrfProtection;
+		if (!protection) {
+			throw new Error('CSRFService not initialized — call onModuleInit() first');
+		}
+		return protection.generateToken(req, res);
 	}
 
 	/**

@@ -102,14 +102,13 @@ export function ApplySecurityMiddleware(
 	// Named constants for configuration
 	const DEFAULT_COMPRESSION_LEVEL = 6;
 	const DEFAULT_COMPRESSION_THRESHOLD = 1024;
-	const DEFAULT_BODY_SIZE_LIMIT = maxBodySize;
 
 	// Step 0: Apply request body size limits
 	// Get express from the adapter
 	try {
 		const express = require('express') as any;
-		app.use(express.json({ limit: DEFAULT_BODY_SIZE_LIMIT }));
-		app.use(express.urlencoded({ extended: true, limit: DEFAULT_BODY_SIZE_LIMIT }));
+		app.use(express.json({ limit: maxBodySize }));
+		app.use(express.urlencoded({ extended: true, limit: maxBodySize }));
 		logger.log('Request body size limits applied');
 	} catch {
 		// express not available; body size limits will use default
@@ -260,8 +259,8 @@ export function ApplySecurityMiddleware(
 					return;
 				}
 
-				// In development, allow all localhost origins
-				if (environment === 'development' && origin.startsWith('http://localhost')) {
+				// In development, allow all localhost origins (strict match: must be http://localhost or http://localhost:PORT)
+				if (environment === 'development' && /^http:\/\/localhost(?::\d+)?$/.test(origin)) {
 					callback(null, true);
 					return;
 				}
