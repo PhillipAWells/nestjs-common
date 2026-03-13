@@ -2,6 +2,7 @@ import { AuthService } from '../auth.service.js';
 import { JwtService } from '@nestjs/jwt';
 import { AppLogger, AuditLoggerService, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
 import { TokenBlacklistService } from '../token-blacklist.service.js';
+import { USER_REPOSITORY } from '../tokens.js';
 
 describe('AuthService - Additional Tests', () => {
 	let service: AuthService;
@@ -124,12 +125,13 @@ describe('AuthService - Additional Tests', () => {
 				if (token === AuditLoggerService) return mockAuditLogger;
 				if (token === TokenBlacklistService) return mockTokenBlacklistService;
 				if (token === CACHE_PROVIDER) return null;
+				if (token === USER_REPOSITORY) return mockUserRepository;
 				return defaultValue ?? null;
 			},
 		};
 
-		// Create service directly with mocked dependencies
-		service = new AuthService(mockModuleRef, mockUserRepository);
+		// Create service with mocked ModuleRef
+		service = new AuthService(mockModuleRef);
 	});
 
 	describe('Password validation', () => {
@@ -438,8 +440,8 @@ describe('AuthService - Additional Tests', () => {
 		});
 
 		it('should have ModuleRef available', () => {
-			expect(service.moduleRef).toBeDefined();
-			expect(service.moduleRef === mockModuleRef).toBe(true);
+			expect(service.Module).toBeDefined();
+			expect(service.Module === mockModuleRef).toBe(true);
 		});
 
 		it('should accept user repository via constructor', () => {

@@ -1,14 +1,17 @@
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { JWTStrategy } from '../jwt.strategy.js';
-import type { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenValidationService } from '../token-validation.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import { USER_LOOKUP_FN } from '../tokens.js';
 
 describe('JWT Strategy - Token Validation & User Lookup', () => {
 	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
 	let mockTokenBlacklistService: TokenBlacklistService;
+	let mockModuleRef: any;
 	let logCalls: any[];
 
 	beforeEach(() => {
@@ -58,6 +61,16 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			isTokenBlacklisted: vi.fn().mockResolvedValue(false),
 			hasUserRevokedTokens: vi.fn().mockResolvedValue(false),
 		} as unknown as TokenBlacklistService;
+
+		mockModuleRef = {
+			get(token: any) {
+				if (token === USER_LOOKUP_FN) return mockUserLookupFn;
+				if (token === AppLogger) return mockAppLogger;
+				if (token === TokenValidationService) return mockTokenValidationService;
+				if (token === TokenBlacklistService) return mockTokenBlacklistService;
+				return null;
+			},
+		};
 
 		process.env['JWT_SECRET'] = 'MySecretKeyWith32CharactersMin!@#$%';
 		process.env['JWT_EXPIRES_IN'] = '15m';
@@ -135,7 +148,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 
 	describe('JWT Strategy Initialization', () => {
 		it('should create strategy with valid configuration', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 		});
@@ -145,7 +158,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -154,7 +167,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -162,7 +175,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32);
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 		});
@@ -171,7 +184,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			delete process.env['JWT_EXPIRES_IN'];
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 		});
@@ -181,7 +194,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_EXPIRES_IN'] = 'invalid-format';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -192,7 +205,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 
 			validFormats.forEach(format => {
 				process.env['JWT_EXPIRES_IN'] = format;
-				const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				const strategy = new JWTStrategy(mockModuleRef);
 				expect(strategy).toBeDefined();
 			});
 		});
@@ -200,7 +213,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 
 	describe('Contextual Logger', () => {
 		it('should create contextual logger from appLogger', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 			expect(mockAppLogger.createContextualLogger).toBeDefined();
@@ -217,7 +230,16 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 				createContextualLogger: mockLoggerFactory,
 			};
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockLoggerApp as unknown as AppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return mockUserLookupFn;
+					if (token === AppLogger) return mockLoggerApp;
+					if (token === TokenValidationService) return mockTokenValidationService;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const strategy = new JWTStrategy(localModuleRef);
 
 			expect(strategy).toBeDefined();
 		});
@@ -225,14 +247,14 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 
 	describe('Passport Strategy Base', () => {
 		it('should extend PassportStrategy with JWT strategy', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 			expect(typeof strategy.validate).toBe('function');
 		});
 
 		it('should have validate method', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy.validate).toBeDefined();
 			expect(typeof strategy.validate).toBe('function');
@@ -244,7 +266,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%^&*()_+-=[]{}|;:,.<>?`~';
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 
 			expect(strategy).toBeDefined();
 		});
@@ -254,7 +276,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -263,16 +285,16 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
 		it('should handle consecutive calls with different configuration', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#';
-			const strategy1 = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy1 = new JWTStrategy(mockModuleRef);
 
 			process.env['JWT_SECRET'] = 'b'.repeat(32) + '$%^';
-			const strategy2 = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy2 = new JWTStrategy(mockModuleRef);
 
 			expect(strategy1).toBeDefined();
 			expect(strategy2).toBeDefined();

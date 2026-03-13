@@ -1,11 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { OAuthService } from './oauth.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('OAuthService', () => {
 	let service: OAuthService;
-	let _appLogger: AppLogger;
 
 	beforeEach(async () => {
 		const mockAppLogger = {
@@ -17,18 +15,16 @@ describe('OAuthService', () => {
 			}),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				OAuthService,
-				{
-					provide: AppLogger,
-					useValue: mockAppLogger,
-				},
-			],
-		}).compile();
+		const mockModuleRef: any = {
+			get(token: any) {
+				if (token === AppLogger) return mockAppLogger;
+				return undefined;
+			},
+		};
 
-		service = module.get<OAuthService>(OAuthService);
-		_appLogger = module.get<AppLogger>(AppLogger);
+		service = new OAuthService(mockModuleRef);
+		// Initialize httpClient (normally called by NestJS lifecycle)
+		service.onModuleInit();
 	});
 
 	describe('JWK to PEM conversion', () => {

@@ -12,16 +12,16 @@ import { TOKEN_TTL_24_HOURS, TOKEN_LOG_PREFIX_LENGTH } from '../constants/auth-t
 export class TokenBlacklistService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	public get AppLogger(): AppLogger {
-		return this.moduleRef.get(AppLogger);
+		return this.Module.get(AppLogger);
 	}
 
 	public get CacheProvider(): ICacheProvider | null {
 		// Optional cache provider - applications may not have cache configured
 		try {
-			return this.moduleRef.get<ICacheProvider>(CACHE_PROVIDER);
+			return this.Module.get<ICacheProvider>(CACHE_PROVIDER);
 		} catch {
 			return null;
 		}

@@ -1,6 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 /**
  * Token extraction strategy interface
@@ -74,15 +76,27 @@ export class GraphQLTokenExtractionStrategy implements TokenExtractionStrategy {
  * JWT token validation strategy
  */
 @Injectable()
-export class JWTTokenValidationStrategy implements AuthValidationStrategy {
-	constructor(
-		private readonly jwtService: JwtService,
-		private readonly logger: AppLogger,
-	) {}
+export class JWTTokenValidationStrategy implements AuthValidationStrategy, LazyModuleRefService {
+	private _logger: AppLogger | undefined;
+
+	public get JwtService(): JwtService {
+		return this.Module.get(JwtService);
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get logger(): AppLogger {
+		this._logger ??= this.AppLogger.createContextualLogger(JWTTokenValidationStrategy.name);
+		return this._logger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	public async validate(token: string, _context: ExecutionContext): Promise<any> {
 		try {
-			const payload = await this.jwtService.verifyAsync(token);
+			const payload = await this.JwtService.verifyAsync(token);
 			this.logger.debug('JWT token validated successfully');
 			return payload;
 		} catch (error) {
@@ -139,56 +153,69 @@ export interface AuthMiddlewareConfig {
  * token extraction, validation, and error handling strategies.
  */
 @Injectable()
-export class BaseAuthGuard implements CanActivate {
-	private readonly logger: AppLogger;
+export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
+	private _logger: AppLogger | undefined;
+	private _config: AuthMiddlewareConfig | undefined;
 
-	constructor(
-		private readonly jwtService: JwtService,
-		@Inject(AppLogger) appLogger: AppLogger,
-		private readonly config: AuthMiddlewareConfig,
-	) {
-		this.logger = appLogger.createContextualLogger(BaseAuthGuard.name);
+	public get JwtService(): JwtService {
+		return this.Module.get(JwtService);
 	}
 
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	public get Config(): AuthMiddlewareConfig {
+		return this.Module.get('AUTH_MIDDLEWARE_CONFIG', { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		this._logger ??= this.AppLogger.createContextualLogger(BaseAuthGuard.name);
+		return this._logger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
+
 	public async canActivate(context: ExecutionContext): Promise<boolean> {
+		const config = this.Config;
 		try {
 			// Check if authentication is required for this route/resolver
-			const isAuthRequired = this.config.required ?? true;
+			const isAuthRequired = config.required ?? true;
 			if (!isAuthRequired) {
 				return true;
 			}
 
 			// Extract token
-			const token = this.extractToken(context);
+			const token = this.extractToken(context, config);
 			if (!token) {
 				this.logger.debug('No token found in request');
-				this.handleAuthError(new UnauthorizedException('No token provided'), context);
+				this.handleAuthError(new UnauthorizedException('No token provided'), context, config);
 				return false; // unreachable but satisfies consistent-return
 			}
 
 			// Validate token
-			const payload = await this.validateToken(token, context);
+			const payload = await this.validateToken(token, context, config);
 
 			// Store user in request context
 			this.setUserInContext(context, payload);
 
 			// Check roles/permissions if specified
-			if (this.config.roles ?? this.config.permissions) {
-				this.checkRolesAndPermissions(payload);
+			if (config.roles ?? config.permissions) {
+				this.checkRolesAndPermissions(payload, config);
 			}
 
 			// Run custom validation if provided
-			if (this.config.customValidator) {
-				const isValid = await this.config.customValidator(payload, context);
+			if (config.customValidator) {
+				const isValid = await config.customValidator(payload, context);
 				if (!isValid) {
-					this.handleAuthError(new UnauthorizedException('Custom validation failed'), context);
+					this.handleAuthError(new UnauthorizedException('Custom validation failed'), context, config);
 					return false; // unreachable but satisfies consistent-return
 				}
 			}
 
 			return true;
 		} catch (error) {
-			this.handleAuthError(error, context);
+			this.handleAuthError(error, context, config);
 			return false; // unreachable but satisfies consistent-return
 		}
 	}
@@ -196,8 +223,8 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Extract token using configured strategy
 	 */
-	private extractToken(context: ExecutionContext): string | null {
-		const strategy = this.config.tokenExtractionStrategy ?? this.getDefaultTokenExtractionStrategy(context);
+	private extractToken(context: ExecutionContext, config: AuthMiddlewareConfig): string | null {
+		const strategy = config.tokenExtractionStrategy ?? this.getDefaultTokenExtractionStrategy(context);
 		return strategy.extract(context);
 	}
 
@@ -218,8 +245,8 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Validate token using configured strategy
 	 */
-	private async validateToken(token: string, context: ExecutionContext): Promise<any> {
-		const strategy = this.config.authValidationStrategy ?? new JWTTokenValidationStrategy(this.jwtService, this.logger);
+	private async validateToken(token: string, context: ExecutionContext, config: AuthMiddlewareConfig): Promise<any> {
+		const strategy = config.authValidationStrategy ?? new JWTTokenValidationStrategy(this.Module);
 		const result = await strategy.validate(token, context);
 		return result;
 	}
@@ -227,8 +254,8 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Handle authentication errors using configured strategy
 	 */
-	private handleAuthError(error: any, context: ExecutionContext): never {
-		const strategy = this.config.errorHandlingStrategy ?? new DefaultAuthErrorHandlingStrategy();
+	private handleAuthError(error: any, context: ExecutionContext, config: AuthMiddlewareConfig): never {
+		const strategy = config.errorHandlingStrategy ?? new DefaultAuthErrorHandlingStrategy();
 		strategy.handleError(error, context);
 		// This should never be reached as handleError throws
 		throw error;
@@ -258,26 +285,26 @@ export class BaseAuthGuard implements CanActivate {
 	/**
 	 * Check roles and permissions
 	 */
-	private checkRolesAndPermissions(payload: any): void {
+	private checkRolesAndPermissions(payload: any, config: AuthMiddlewareConfig): void {
 		const userRoles = payload.roles ?? [];
 		const userPermissions = payload.permissions ?? [];
 
 		// Check roles
-		if (this.config.roles) {
-			const hasRequiredRole = this.config.roles.some(role => userRoles.includes(role));
+		if (config.roles) {
+			const hasRequiredRole = config.roles.some(role => userRoles.includes(role));
 			if (!hasRequiredRole) {
-				this.logger.warn(`User missing required roles: ${this.config.roles.join(', ')}`);
+				this.logger.warn(`User missing required roles: ${config.roles.join(', ')}`);
 				throw new UnauthorizedException('Insufficient permissions');
 			}
 		}
 
 		// Check permissions
-		if (this.config.permissions) {
-			const hasRequiredPermission = this.config.permissions.some(permission =>
+		if (config.permissions) {
+			const hasRequiredPermission = config.permissions.some(permission =>
 				userPermissions.includes(permission),
 			);
 			if (!hasRequiredPermission) {
-				this.logger.warn(`User missing required permissions: ${this.config.permissions.join(', ')}`);
+				this.logger.warn(`User missing required permissions: ${config.permissions.join(', ')}`);
 				throw new UnauthorizedException('Insufficient permissions');
 			}
 		}

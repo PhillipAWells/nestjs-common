@@ -1,30 +1,49 @@
 import Joi from 'joi';
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request as ExpressRequest } from 'express';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { User } from './auth.types.js';
 import type { JWTPayload } from './auth.types.js';
 import { TokenValidationService } from './token-validation.service.js';
 import { TokenBlacklistService } from './token-blacklist.service.js';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import { AUTH_JWT_KEY_SIZE } from '../constants/auth-timeouts.constants.js';
+import { USER_LOOKUP_FN } from './tokens.js';
 
 /**
  * JWT authentication strategy
  * Validates JWT tokens and extracts user information
  */
 @Injectable()
-export class JWTStrategy extends PassportStrategy(Strategy) {
-	private readonly logger: AppLogger;
+export class JWTStrategy extends PassportStrategy(Strategy) implements LazyModuleRefService {
+	private _contextualLogger: AppLogger | undefined;
 
-	constructor(
-		private readonly userLookupFn: (userId: string) => Promise<User | null>,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-		private readonly tokenValidationService: TokenValidationService,
-		private readonly tokenBlacklistService: TokenBlacklistService,
-	) {
+	public get UserLookupFn(): (userId: string) => Promise<User | null> {
+		return this.Module.get(USER_LOOKUP_FN, { strict: false });
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	public get TokenValidationService(): TokenValidationService {
+		return this.Module.get(TokenValidationService);
+	}
+
+	public get TokenBlacklistService(): TokenBlacklistService {
+		return this.Module.get(TokenBlacklistService);
+	}
+
+	private get logger(): AppLogger {
+		this._contextualLogger ??= this.AppLogger.createContextualLogger(JWTStrategy.name);
+		return this._contextualLogger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		// Validate JWT configuration
 		const jwtConfigSchema = Joi.object({
 			JWT_SECRET: Joi.string().min(AUTH_JWT_KEY_SIZE).pattern(/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};'":\\|,.<>?`~]+$/).required()
@@ -48,8 +67,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
 			ignoreExpiration: false,
 			secretOrKey: value.JWT_SECRET,
 		});
-
-		this.logger = this.appLogger.createContextualLogger(JWTStrategy.name);
 	}
 
 	/**
@@ -72,14 +89,14 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
 
 		// Comprehensive token validation
 		try {
-			this.tokenValidationService.validateToken(token, 'access');
+			this.TokenValidationService.validateToken(token, 'access');
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			this.logger.warn(`Token validation failed: ${errorMessage}`);
 			throw error;
 		}
 
-		const user = await this.userLookupFn(payload.sub);
+		const user = await this.UserLookupFn(payload.sub);
 
 		if (!user?.isActive) {
 			this.logger.warn(`JWT validation failed: user ${payload.sub} not found or inactive`);
@@ -87,7 +104,7 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
 		}
 
 		// Check if user has revoked all tokens
-		const userTokensRevoked = await this.tokenBlacklistService.hasUserRevokedTokens(payload.sub);
+		const userTokensRevoked = await this.TokenBlacklistService.hasUserRevokedTokens(payload.sub);
 		if (userTokensRevoked) {
 			this.logger.warn(`JWT validation failed: all tokens revoked for user ${payload.sub}`);
 			throw new UnauthorizedException('User tokens have been revoked');

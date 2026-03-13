@@ -1,4 +1,5 @@
 import { Module, DynamicModule } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service.js';
@@ -10,7 +11,7 @@ import { AuthController } from './auth.controller.js';
 import { User } from './auth.types.js';
 import { OAuthModule } from '../lib/oauth/oauth.module.js';
 import { OAuthModuleOptions } from '../lib/oauth/types/oauth-config.types.js';
-import { AppLogger, CommonModule } from '@pawells/nestjs-shared/common';
+import { CommonModule } from '@pawells/nestjs-shared/common';
 import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE } from '../constants/auth-timeouts.constants.js';
 import { JWTAuthGuard } from './jwt-auth.guard.js';
 import { MockUserRepository } from './repositories/mock-user.repository.js';
@@ -86,10 +87,10 @@ export class AuthModule {
 				},
 				{
 					provide: JWTStrategy,
-					useFactory: (userLookupFn: (userId: string) => Promise<User | null>, appLogger: AppLogger, tokenValidationService: TokenValidationService, tokenBlacklistService: TokenBlacklistService) => {
-						return new JWTStrategy(userLookupFn, appLogger, tokenValidationService, tokenBlacklistService);
+					useFactory: (moduleRef: ModuleRef) => {
+						return new JWTStrategy(moduleRef);
 					},
-					inject: [USER_LOOKUP_FN, AppLogger, TokenValidationService, TokenBlacklistService],
+					inject: [ModuleRef],
 				},
 			],
 			controllers: [AuthController],

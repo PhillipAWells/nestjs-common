@@ -1,23 +1,35 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import axios, { AxiosInstance } from 'axios';
 import jwkToPem from 'jwk-to-pem';
 import * as jwt from 'jsonwebtoken';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { OAuthUser, OAuthToken } from './types/oauth-config.types.js';
 import { OAUTH_SERVICE_TIMEOUT, OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER, JWK_CACHE_TTL_MS } from '../../constants/auth-timeouts.constants.js';
 
 const OAUTH_DEFAULT_EXPIRES_IN = 3600;
 
 @Injectable()
-export class OAuthService {
-	private readonly logger: AppLogger;
+export class OAuthService implements LazyModuleRefService, OnModuleInit {
+	private _logger: AppLogger | undefined;
 
-	private readonly httpClient: AxiosInstance;
+	private httpClient!: AxiosInstance;
 
 	private readonly publicKeyCache = new Map<string, { key: string; expires: number }>();
 
-	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
-		this.logger = this.appLogger.createContextualLogger(OAuthService.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get logger(): AppLogger {
+		this._logger ??= this.AppLogger.createContextualLogger(OAuthService.name);
+		return this._logger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
+
+	public onModuleInit(): void {
 		this.httpClient = axios.create({
 			timeout: OAUTH_SERVICE_TIMEOUT * OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER, // 10 seconds
 		});
@@ -249,10 +261,9 @@ export class OAuthService {
 	/**
    * Get JWKS URL for provider
    */
-	private getJwksUrl(_provider: string): string | null {
-		// This would be configured based on provider config
-		// For now, return null - should be passed in config
-		return null;
+	private getJwksUrl(provider: string): string | null {
+		const envKey = `${provider.toUpperCase()}_JWKS_URI`;
+		return process.env[envKey] ?? null;
 	}
 
 	/**

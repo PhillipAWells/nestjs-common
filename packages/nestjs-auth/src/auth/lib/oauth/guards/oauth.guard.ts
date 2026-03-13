@@ -1,18 +1,29 @@
-import { Injectable, ExecutionContext, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { OAuthService } from '../oauth.service.js';
 
 @Injectable()
-export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) {
-	private readonly logger: AppLogger;
+export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) implements LazyModuleRefService {
+	private _contextualLogger: AppLogger | undefined;
 
-	constructor(
-		private readonly oauthService: OAuthService,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {
+	public get OAuthService(): OAuthService {
+		return this.Module.get(OAuthService);
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get logger(): AppLogger {
+		this._contextualLogger ??= this.AppLogger.createContextualLogger(OAuthGuard.name);
+		return this._contextualLogger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		super();
-		this.logger = this.appLogger.createContextualLogger(OAuthGuard.name);
 	}
 
 	public override async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -28,7 +39,10 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) {
 
 		try {
 			// Try to verify with OAuth service
-			const user = await this.oauthService.verifyToken(token, 'keycloak'); // Default to keycloak
+			const provider = (request.headers['x-oauth-provider'] as string | undefined)
+				?? process.env['OAUTH_DEFAULT_PROVIDER']
+				?? 'keycloak';
+			const user = await this.OAuthService.verifyToken(token, provider);
 			request.user = user;
 			this.logger.info(`OAuth guard successful for user ${user.email} accessing ${request.path}`);
 			return true;

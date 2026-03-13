@@ -1,14 +1,25 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
-export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak') {
+export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak') implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(private readonly appLogger: AppLogger) {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get logger(): AppLogger {
+		this._contextualLogger ??= this.AppLogger.createContextualLogger(KeycloakStrategy.name);
+		return this._contextualLogger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		const authorizationURL = process.env['KEYCLOAK_AUTH_URL'];
 		const tokenURL = process.env['KEYCLOAK_TOKEN_URL'];
 		const clientID = process.env['KEYCLOAK_CLIENT_ID'];
@@ -29,11 +40,6 @@ export class KeycloakStrategy extends PassportStrategy(OAuth2Strategy, 'keycloak
 			callbackURL,
 			scope: ['openid', 'profile', 'email'],
 		});
-	}
-
-	private get logger(): AppLogger {
-		this._contextualLogger ??= this.appLogger.createContextualLogger(KeycloakStrategy.name);
-		return this._contextualLogger;
 	}
 
 	@ProfileMethod({ tags: { operation: 'keycloakValidate', strategy: 'keycloak' } })

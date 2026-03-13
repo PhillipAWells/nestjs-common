@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-oauth2';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AuthService } from '../../../auth/auth.service.js';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
-export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
-	constructor(private readonly authService: AuthService) {
+export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') implements LazyModuleRefService {
+	public get AuthService(): AuthService {
+		return this.Module.get(AuthService);
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		const callbackURL = process.env['OAUTH2_CALLBACK_URL'] ?? '';
 
 		// Enforce HTTPS for callback URLs in production
@@ -27,7 +33,7 @@ export class OAuth2Strategy extends PassportStrategy(Strategy, 'oauth2') {
 
 	@ProfileMethod({ tags: { operation: 'oauthValidate', strategy: 'oauth2' } })
 	public async validate(accessToken: string, refreshToken: string, profile: any): Promise<any> {
-		const user = await this.authService.validateOAuthUser(profile, accessToken, refreshToken);
+		const user = await this.AuthService.validateOAuthUser(profile, accessToken, refreshToken);
 		return user;
 	}
 }

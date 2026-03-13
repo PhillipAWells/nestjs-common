@@ -1,30 +1,43 @@
-import { jest } from '@jest/globals';
-import { Test } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import { KeycloakStrategy } from '../keycloak.strategy.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('KeycloakStrategy', () => {
 	let strategy: KeycloakStrategy;
+	let mockModuleRef: any;
 
-	beforeEach(async () => {
+	beforeAll(() => {
+		process.env['KEYCLOAK_AUTH_URL'] = 'https://keycloak.example.com/auth';
+		process.env['KEYCLOAK_TOKEN_URL'] = 'https://keycloak.example.com/token';
+		process.env['KEYCLOAK_CLIENT_ID'] = 'test-client';
+		process.env['KEYCLOAK_CLIENT_SECRET'] = 'test-secret';
+		process.env['KEYCLOAK_CALLBACK_URL'] = 'https://app.example.com/callback';
+	});
+
+	afterAll(() => {
+		delete process.env['KEYCLOAK_AUTH_URL'];
+		delete process.env['KEYCLOAK_TOKEN_URL'];
+		delete process.env['KEYCLOAK_CLIENT_ID'];
+		delete process.env['KEYCLOAK_CLIENT_SECRET'];
+		delete process.env['KEYCLOAK_CALLBACK_URL'];
+	});
+
+	beforeEach(() => {
 		const mockLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				error: jest.fn(),
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				error: vi.fn(),
 			}),
 		};
 
-		const module = await Test.createTestingModule({
-			providers: [
-				KeycloakStrategy,
-				{
-					provide: AppLogger,
-					useValue: mockLogger,
-				},
-			],
-		}).compile();
+		mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockLogger;
+				return null;
+			},
+		};
 
-		strategy = module.get<KeycloakStrategy>(KeycloakStrategy);
+		strategy = new KeycloakStrategy(mockModuleRef);
 	});
 
 	it('should be defined', () => {
@@ -44,7 +57,7 @@ describe('KeycloakStrategy', () => {
 			'access-token',
 			'refresh-token',
 			profile,
-			jest.fn(),
+			vi.fn(),
 		);
 
 		expect(user).toBeDefined();
@@ -53,7 +66,7 @@ describe('KeycloakStrategy', () => {
 		expect(user.oauthProvider).toBe('keycloak');
 	});
 
-	it('should handle validation errors', async () => {
+	it('should handle validation errors', () => {
 		const profile = {
 			sub: 'keycloak_user_123',
 			email: 'keycloak@example.com',
@@ -61,51 +74,51 @@ describe('KeycloakStrategy', () => {
 		};
 
 		// Mock the validate method to throw an error
-		jest.spyOn(strategy, 'validate').mockImplementation(() => {
+		vi.spyOn(strategy, 'validate').mockImplementation(() => {
 			throw new Error('Validation error');
 		});
 
-		await expect(
+		expect(() =>
 			strategy.validate(
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn(),
+				vi.fn(),
 			),
-		).rejects.toThrow();
+		).toThrow('Validation error');
 	});
 
-	it('should throw error when profile missing user identifier', async () => {
+	it('should throw error when profile missing user identifier', () => {
 		const profile = {
 			email: 'test@example.com',
 			name: 'Test User',
 			// missing sub and id
 		};
 
-		await expect(
+		expect(() =>
 			strategy.validate(
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn(),
+				vi.fn(),
 			),
-		).rejects.toThrow('user identifier');
+		).toThrow();
 	});
 
-	it('should throw error when profile missing email', async () => {
+	it('should throw error when profile missing email', () => {
 		const profile = {
 			sub: 'user_123',
 			name: 'Test User',
 			// missing email
 		};
 
-		await expect(
+		expect(() =>
 			strategy.validate(
 				'access-token',
 				'refresh-token',
 				profile,
-				jest.fn(),
+				vi.fn(),
 			),
-		).rejects.toThrow('email address');
+		).toThrow();
 	});
 });

@@ -5,6 +5,7 @@ import { TokenBlacklistService } from '../token-blacklist.service.js';
 import { AppLogger, AuditLoggerService, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { USER_REPOSITORY } from '../tokens.js';
 
 describe('Auth Service - User Validation & Token Management', () => {
 	let service: AuthService;
@@ -73,11 +74,12 @@ describe('Auth Service - User Validation & Token Management', () => {
 				if (token === AuditLoggerService) return mockAuditLogger;
 				if (token === TokenBlacklistService) return { isTokenBlacklisted: async () => false };
 				if (token === CACHE_PROVIDER) return defaultValue ?? null;
+				if (token === USER_REPOSITORY) return mockRepository;
 				return null;
 			},
 		};
 
-		service = new AuthService(mockModuleRef, mockRepository);
+		service = new AuthService(mockModuleRef);
 	});
 
 	describe('validateUser() - Normal Operation', () => {

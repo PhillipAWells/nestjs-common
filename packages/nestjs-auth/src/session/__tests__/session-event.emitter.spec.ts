@@ -1,5 +1,4 @@
-import { describe, it, beforeEach, expect, jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, beforeEach, expect } from 'vitest';
 import { SessionEventEmitter } from '../session-event.emitter.js';
 import { SessionEventType } from '../session.types.js';
 import type { Redis } from 'ioredis';
@@ -7,27 +6,27 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('SessionEventEmitter', () => {
 	let emitter: SessionEventEmitter;
-	let mockRedis: jest.Mocked<Redis>;
-	let mockLogger: jest.Mocked<AppLogger>;
+	let mockRedis: any;
+	let mockLogger: any;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockRedis = {
-			publish: jest.fn<(channel: string, message: string) => Promise<number>>().mockResolvedValue(1),
-		} as any;
+			publish: vi.fn<(channel: string, message: string) => Promise<number>>().mockResolvedValue(1),
+		} as unknown as Redis;
 
 		mockLogger = {
-			error: jest.fn(),
-		} as any;
+			error: vi.fn(),
+		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				SessionEventEmitter,
-				{ provide: 'REDIS_CLIENT', useValue: mockRedis },
-				{ provide: AppLogger, useValue: mockLogger },
-			],
-		}).compile();
+		const mockModuleRef = {
+			get: (token: any, _opts?: any) => {
+				if (token === 'REDIS_CLIENT') return mockRedis;
+				if (token === AppLogger) return mockLogger;
+				return null;
+			},
+		};
 
-		emitter = module.get<SessionEventEmitter>(SessionEventEmitter);
+		emitter = new SessionEventEmitter(mockModuleRef as any);
 	});
 
 	describe('EmitSessionEvent', () => {

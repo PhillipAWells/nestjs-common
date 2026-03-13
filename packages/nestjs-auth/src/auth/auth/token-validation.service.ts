@@ -7,10 +7,10 @@ import type { JWTPayload } from './auth.types.js';
 
 @Injectable()
 export class TokenValidationService implements LazyModuleRefService {
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	public get JwtService(): JwtService {
-		return this.moduleRef.get(JwtService);
+		return this.Module.get(JwtService);
 	}
 
 	/**
@@ -18,35 +18,32 @@ export class TokenValidationService implements LazyModuleRefService {
    */
 	public validateToken(token: string, type: 'access' | 'refresh' = 'access'): JWTPayload {
 		try {
-			// Decode token
-			const decoded = this.JwtService.decode(token) as JWTPayload | null;
+			// Verify signature first — throws if signature is invalid or token is expired
+			const verified = this.JwtService.verify(token) as JWTPayload | null;
 
-			if (!decoded) {
+			if (!verified) {
 				throw new UnauthorizedException('Invalid token format');
 			}
 
 			// Validate required claims
-			this.validateRequiredClaims(decoded);
+			this.validateRequiredClaims(verified);
 
 			// Validate claim values
-			this.validateClaimValues(decoded);
+			this.validateClaimValues(verified);
 
 			// Validate token type
-			this.validateTokenType(decoded, type);
+			this.validateTokenType(verified, type);
 
 			// Validate token age
-			this.validateTokenAge(decoded);
+			this.validateTokenAge(verified);
 
 			// Validate issuer
-			this.validateIssuer(decoded);
+			this.validateIssuer(verified);
 
 			// Validate audience
-			this.validateAudience(decoded);
+			this.validateAudience(verified);
 
-			// Verify signature (done by JWT strategy, but can be done here too)
-			this.JwtService.verify(token);
-
-			return decoded;
+			return verified;
 		} catch (error) {
 			if (error instanceof UnauthorizedException) {
 				throw error;

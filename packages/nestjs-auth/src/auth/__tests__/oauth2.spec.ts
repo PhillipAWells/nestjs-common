@@ -1,5 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { OAuth2Strategy } from '../lib/oauth/strategies/oauth2.strategy.js';
 import { AuthService } from '../auth/auth.service.js';
 import { OAuthService } from '../lib/oauth/oauth.service.js';
@@ -7,7 +6,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('OAuth2 Integration Tests', () => {
 	let strategy: OAuth2Strategy;
-	let authService: AuthService;
+	let authService: any;
 	let oauthService: OAuthService;
 
 	beforeEach(async () => {
@@ -24,24 +23,42 @@ describe('OAuth2 Integration Tests', () => {
 			}),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				OAuth2Strategy,
-				OAuthService,
-				{
-					provide: AuthService,
-					useValue: mockAuthService,
-				},
-				{
-					provide: AppLogger,
-					useValue: mockAppLogger,
-				},
-			],
-		}).compile();
+		// Set OAuth2 environment variables required for OAuth2Strategy constructor
+		process.env['OAUTH2_AUTHORIZATION_URL'] = 'https://oauth.example.com/authorize';
+		process.env['OAUTH2_TOKEN_URL'] = 'https://oauth.example.com/token';
+		process.env['OAUTH2_CLIENT_ID'] = 'test-client-id';
+		process.env['OAUTH2_CLIENT_SECRET'] = 'test-client-secret';
+		process.env['OAUTH2_CALLBACK_URL'] = 'http://localhost:3000/auth/callback';
 
-		strategy = module.get<OAuth2Strategy>(OAuth2Strategy);
-		authService = module.get(AuthService);
-		oauthService = module.get<OAuthService>(OAuthService);
+		const oauthModuleRef: any = {
+			get(token: any) {
+				if (token === AppLogger) return mockAppLogger;
+				return undefined;
+			},
+		};
+
+		const strategyModuleRef: any = {
+			get(token: any) {
+				if (token === AuthService) return mockAuthService;
+				return undefined;
+			},
+		};
+
+		oauthService = new OAuthService(oauthModuleRef);
+		// Initialize httpClient (normally called by NestJS lifecycle)
+		oauthService.onModuleInit();
+
+		strategy = new OAuth2Strategy(strategyModuleRef);
+		authService = mockAuthService;
+	});
+
+	afterEach(() => {
+		delete process.env['OAUTH2_AUTHORIZATION_URL'];
+		delete process.env['OAUTH2_TOKEN_URL'];
+		delete process.env['OAUTH2_CLIENT_ID'];
+		delete process.env['OAUTH2_CLIENT_SECRET'];
+		delete process.env['OAUTH2_CALLBACK_URL'];
+		vi.restoreAllMocks();
 	});
 
 	describe('OAuth2 Flow Integration', () => {
@@ -69,7 +86,7 @@ describe('OAuth2 Integration Tests', () => {
 				isActive: true,
 			};
 
-			(authService as any).validateOAuthUser.mockResolvedValue(mockUser);
+			authService.validateOAuthUser.mockResolvedValue(mockUser);
 
 			// Execute OAuth2 validation
 			const result = await strategy.validate(accessToken, refreshToken, profile);
@@ -129,6 +146,11 @@ describe('OAuth2 Integration Tests', () => {
 		});
 
 		it('should handle invalid OAuth2 tokens', async () => {
+			vi.spyOn(oauthService as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
+			vi.spyOn((oauthService as any).httpClient, 'get').mockResolvedValue({
+				data: { keys: [{ kty: 'RSA', n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG', e: 'AQAB' }] },
+			});
+
 			const jwt = require('jsonwebtoken');
 			vi.spyOn(jwt, 'verify').mockImplementation((token: any, key: any, options: any, callback: any) => {
 				callback(new Error('Invalid token'), null);

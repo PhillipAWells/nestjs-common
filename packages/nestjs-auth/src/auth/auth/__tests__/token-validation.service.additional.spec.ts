@@ -25,7 +25,7 @@ describe('TokenValidationService - Additional Tests', () => {
 			},
 			verify(token: string) {
 				jwtCalls.push({ action: 'verify', token });
-				return true;
+				return this.decode(token);
 			},
 			getJwtCalls() {
 				return jwtCalls;

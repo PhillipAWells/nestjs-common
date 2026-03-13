@@ -1,6 +1,6 @@
 
 import { OAuth2Strategy } from '../strategies/oauth2.strategy.js';
-import type { AuthService } from '../../../auth/auth.service.js';
+import { AuthService } from '../../../auth/auth.service.js';
 
 describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 	let strategy: OAuth2Strategy;
@@ -31,7 +31,13 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 		process.env['OAUTH2_CLIENT_SECRET'] = 'test-client-secret';
 		process.env['OAUTH2_CALLBACK_URL'] = 'http://localhost:3000/auth/callback';
 
-		strategy = new OAuth2Strategy(mockAuthService);
+		const mockModuleRef: any = {
+			get(token: any) {
+				if (token === AuthService) return mockAuthService;
+				return null;
+			},
+		};
+		strategy = new OAuth2Strategy(mockModuleRef);
 	});
 
 	afterEach(() => {
@@ -212,7 +218,13 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 					throw new Error('OAuth validation failed');
 				},
 			} as unknown as AuthService;
-			const errorStrategy = new OAuth2Strategy(errorService);
+			const errorModuleRef: any = {
+				get(token: any) {
+					if (token === AuthService) return errorService;
+					return null;
+				},
+			};
+			const errorStrategy = new OAuth2Strategy(errorModuleRef);
 
 			const profile = { id: 'user-id', displayName: 'User', email: 'user@example.com' };
 

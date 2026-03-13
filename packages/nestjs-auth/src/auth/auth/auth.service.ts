@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -21,32 +21,33 @@ import type { User, AuthResponse, JWTPayload } from './auth.types.js';
 export class AuthService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(
-		public readonly moduleRef: ModuleRef,
-		@Inject(USER_REPOSITORY) private readonly userRepository: IUserRepository,
-	) {}
+	constructor(public readonly Module: ModuleRef) {}
+
+	public get UserRepository(): IUserRepository {
+		return this.Module.get(USER_REPOSITORY, { strict: false });
+	}
 
 	public get JwtService(): JwtService {
-		return this.moduleRef.get(JwtService);
+		return this.Module.get(JwtService);
 	}
 
 	public get AppLogger(): AppLogger {
-		return this.moduleRef.get(AppLogger);
+		return this.Module.get(AppLogger);
 	}
 
 	public get AuditLogger(): AuditLoggerService {
-		return this.moduleRef.get(AuditLoggerService);
+		return this.Module.get(AuditLoggerService);
 	}
 
 	public get TokenBlacklistServiceInstance(): TokenBlacklistService {
-		return this.moduleRef.get(TokenBlacklistService);
+		return this.Module.get(TokenBlacklistService);
 	}
 
 	public get CacheProvider(): ICacheProvider | null {
 		// Optional cache provider - applications may not have cache configured
 		// This allows auth to work without cache, but token blacklisting will be disabled
 		try {
-			return this.moduleRef.get<ICacheProvider>(CACHE_PROVIDER);
+			return this.Module.get<ICacheProvider>(CACHE_PROVIDER);
 		} catch {
 			return null;
 		}
@@ -222,7 +223,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	private async findUserByEmail(email: string): Promise<User | null> {
 		this.logger.debug(`Looking up user by email: ${email}`);
-		const user = await this.userRepository.findByEmail(email);
+		const user = await this.UserRepository.findByEmail(email);
 		return user;
 	}
 
@@ -233,7 +234,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	private async createOAuthUser(userData: { email: string; displayName: string; profile: unknown; accessToken: string; refreshToken: string }): Promise<User> {
 		try {
-			const user = await this.userRepository.create({
+			const user = await this.UserRepository.create({
 				email: userData.email,
 				displayName: userData.displayName,
 				isActive: true,
@@ -264,7 +265,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	private async updateOAuthUser(user: User, profile: any, accessToken: string, refreshToken: string): Promise<User> {
 		try {
-			const updated = await this.userRepository.update(user.id, {
+			const updated = await this.UserRepository.update(user.id, {
 				oauthProfile: profile,
 				oauthTokens: {
 					accessToken,
@@ -450,12 +451,6 @@ export class AuthService implements LazyModuleRefService {
 			} catch {
 				sessions = [];
 			}
-
-			// Remove expired sessions (simplified - in production use proper TTL)
-			sessions = sessions.filter(_session => {
-				// This is a placeholder - real implementation would check session expiry
-				return true; // For now, keep all sessions
-			});
 
 			// Check if session already exists
 			const existingIndex = sessions.indexOf(sessionId);

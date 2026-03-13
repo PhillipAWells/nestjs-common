@@ -1,6 +1,8 @@
-import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { KeycloakClient } from '../client/client.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';
 import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
 import type { UserService } from '../client/services/user.service.js';
@@ -12,31 +14,36 @@ import type { IdentityProviderService } from '../client/services/identity-provid
 import type { AuthenticationService } from '../client/services/authentication.service.js';
 
 @Injectable()
-export class KeycloakAdminService implements OnModuleInit {
+export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService {
 	private readonly logger = new Logger(KeycloakAdminService.name);
 
 	private client: KeycloakClient | null = null;
 
-	constructor(
-		@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) private readonly config: KeycloakAdminConfig,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {}
+	public get Config(): KeycloakAdminConfig {
+		return this.Module.get(KEYCLOAK_ADMIN_CONFIG_TOKEN, { strict: false });
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	public async onModuleInit(): Promise<void> {
-		if (!this.config.enabled) {
+		if (!this.Config.enabled) {
 			this.logger.log('Keycloak admin client is disabled, skipping initialization');
 			return;
 		}
 
 		try {
 			this.logger.log('Initializing Keycloak admin client...');
-			const { type: _type, ...credentialsWithoutType } = this.config.credentials as { type: string; [key: string]: string };
+			const { type: _type, ...credentialsWithoutType } = this.Config.credentials as { type: string; [key: string]: string };
 			this.client = new KeycloakClient({
-				baseUrl: this.config.baseUrl,
-				realmName: this.config.realmName,
+				baseUrl: this.Config.baseUrl,
+				realmName: this.Config.realmName,
 				credentials: credentialsWithoutType as any,
-				timeout: this.config.timeout,
-				retry: this.config.retry,
+				timeout: this.Config.timeout,
+				retry: this.Config.retry,
 			});
 
 			await this.client.authenticate();
@@ -54,7 +61,7 @@ export class KeycloakAdminService implements OnModuleInit {
 	}
 
 	public isEnabled(): boolean {
-		return this.config.enabled;
+		return this.Config.enabled;
 	}
 
 	public isAuthenticated(): boolean {

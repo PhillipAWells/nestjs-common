@@ -1,4 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { getModelToken } from '@nestjs/mongoose';
+import { Session } from '../session.entity.js';
 import { SessionRepository } from '../session.repository.js';
 
 describe('SessionRepository', () => {
@@ -16,7 +18,14 @@ describe('SessionRepository', () => {
 			deleteMany: vi.fn(),
 		};
 
-		repository = new SessionRepository(mockSessionModel);
+		const mockModuleRef = {
+			get: (token: any, _opts?: any) => {
+				if (token === getModelToken(Session.name)) return mockSessionModel;
+				return null;
+			},
+		};
+
+		repository = new SessionRepository(mockModuleRef as any);
 	});
 
 	describe('Create', () => {

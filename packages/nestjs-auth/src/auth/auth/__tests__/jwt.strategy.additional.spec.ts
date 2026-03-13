@@ -2,15 +2,17 @@
 import { JWTStrategy } from '../jwt.strategy.js';
 import { UnauthorizedException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import type { TokenBlacklistService } from '../token-blacklist.service.js';
-import type { TokenValidationService } from '../token-validation.service.js';
+import { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenValidationService } from '../token-validation.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import { USER_LOOKUP_FN } from '../tokens.js';
 
 describe('JWTStrategy - Additional Validation Tests', () => {
 	let userLookupFn: (userId: string) => Promise<any>;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
 	let mockTokenBlacklistService: TokenBlacklistService;
+	let mockModuleRef: any;
 
 	beforeEach(() => {
 		// Manual mocking - no vi.fn() at module scope
@@ -89,6 +91,16 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 			hasUserRevokedTokens: vi.fn().mockResolvedValue(false),
 		} as unknown as TokenBlacklistService;
 
+		mockModuleRef = {
+			get(token: any) {
+				if (token === USER_LOOKUP_FN) return userLookupFn;
+				if (token === AppLogger) return mockAppLogger;
+				if (token === TokenValidationService) return mockTokenValidationService;
+				if (token === TokenBlacklistService) return mockTokenBlacklistService;
+				return null;
+			},
+		};
+
 		// Clear environment
 		delete process.env['JWT_SECRET'];
 		delete process.env['JWT_EXPIRES_IN'];
@@ -99,70 +111,70 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 			process.env['JWT_SECRET'] = 'MySuperSecretKeyWith32Characters!';
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should accept tokens with standard JWT sub claim', () => {
 			process.env['JWT_SECRET'] = 'MySuperSecretKeyWith32Characters!';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle numeric user IDs in JWT payload', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle UUID format user IDs', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should support additional custom claims in JWT payload', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should require sub claim in JWT payload', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle Bearer token extraction', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle empty token gracefully', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should validate token expiration through token validation service', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should reject malformed JWT tokens', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 	});
@@ -171,35 +183,35 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 		it('should look up user by ID from JWT payload', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should reject when user not found', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should reject when user is inactive', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should return active user with all fields populated', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle users without email field', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
@@ -210,21 +222,30 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				throw new Error('Database connection failed');
 			};
 
-			const strategy = new JWTStrategy(failingUserLookup, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return failingUserLookup;
+					if (token === AppLogger) return mockAppLogger;
+					if (token === TokenValidationService) return mockTokenValidationService;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const strategy = new JWTStrategy(localModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should support concurrent user lookups', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should cache user lookup results within single request', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 	});
@@ -233,14 +254,14 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 		it('should call token validation service with correct arguments', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should propagate token validation errors to caller', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
@@ -253,7 +274,16 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, errorTokenValidation as unknown as TokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return userLookupFn;
+					if (token === AppLogger) return mockAppLogger;
+					if (token === TokenValidationService) return errorTokenValidation;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const strategy = new JWTStrategy(localModuleRef);
 			expect(strategy).toBeDefined();
 		});
 		it('should handle timeout in token validation', () => {
@@ -265,34 +295,43 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, slowValidation as unknown as TokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return userLookupFn;
+					if (token === AppLogger) return mockAppLogger;
+					if (token === TokenValidationService) return slowValidation;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const strategy = new JWTStrategy(localModuleRef);
 			expect(strategy).toBeDefined();
 		});
 		it('should validate access tokens specifically', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should reject refresh tokens for access validation', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should handle null token validation results', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should track validation success/failure in audit logs', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 	});
@@ -301,63 +340,63 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 		it('should log debug message on validation initiation', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should log warning on missing token', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should log warning on user not found', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should log info on successful validation', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should provide detailed error messages on validation failure', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should not log sensitive information like tokens', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should not log user passwords in error scenarios', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should include request metadata in logs', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
 		it('should support contextual logging per request', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%';
 
-			const strategy = new JWTStrategy(userLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 
@@ -383,7 +422,16 @@ describe('JWTStrategy - Additional Validation Tests', () => {
 				},
 			};
 
-			const strategy = new JWTStrategy(userLookupFn, errorLogger as unknown as AppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return userLookupFn;
+					if (token === AppLogger) return errorLogger;
+					if (token === TokenValidationService) return mockTokenValidationService;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const strategy = new JWTStrategy(localModuleRef);
 			expect(strategy).toBeDefined();
 		});
 	});

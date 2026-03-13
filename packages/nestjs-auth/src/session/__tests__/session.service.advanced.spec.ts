@@ -1,6 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SessionService } from '../session.service.js';
+import { SessionRepository } from '../session.repository.js';
+import { SessionEventEmitter } from '../session-event.emitter.js';
 import type { IDeviceInfo } from '../session.types.js';
 describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 	let service: SessionService;
@@ -89,8 +91,8 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 						defaultMaxConcurrentSessions: 5,
 					};
 				}
-				if (token === 'SessionRepository') return mockRepository;
-				if (token === 'SessionEventEmitter') return mockEventEmitter;
+				if (token === SessionRepository) return mockRepository;
+				if (token === SessionEventEmitter) return mockEventEmitter;
 				return defaultValue ?? null;
 			},
 		};
@@ -215,8 +217,8 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 						defaultMaxConcurrentSessions: 2, // Max 2 sessions per user
 					};
 				}
-				if (token === 'SessionRepository') return mockRepository;
-				if (token === 'SessionEventEmitter') return mockEventEmitter;
+				if (token === SessionRepository) return mockRepository;
+				if (token === SessionEventEmitter) return mockEventEmitter;
 				return null;
 			};
 			service = new SessionService(mockModuleRef);
@@ -271,8 +273,8 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 						defaultMaxConcurrentSessions: 1,
 					};
 				}
-				if (token === 'SessionRepository') return mockRepository;
-				if (token === 'SessionEventEmitter') return mockEventEmitter;
+				if (token === SessionRepository) return mockRepository;
+				if (token === SessionEventEmitter) return mockEventEmitter;
 				return defaultValue ?? null;
 			};
 			service = new SessionService(mockModuleRef);
@@ -388,7 +390,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 								defaultMaxConcurrentSessions: 5,
 							};
 						}
-						if (token === 'SessionRepository') {
+						if (token === SessionRepository) {
 							return {
 								FindBySessionId: async () => ({
 									sessionId: 'valid-session-id',
@@ -400,7 +402,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 								Update: async () => null, // Simulate update failure
 							};
 						}
-						if (token === 'SessionEventEmitter') return mockEventEmitter;
+						if (token === SessionEventEmitter) return mockEventEmitter;
 						return defaultValue ?? null;
 					},
 				} as any);

@@ -1,6 +1,4 @@
-
-import { jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { SessionService } from '../session.service.js';
 import { SessionRepository } from '../session.repository.js';
 import { SessionEventEmitter } from '../session-event.emitter.js';
@@ -12,102 +10,98 @@ import { IDeviceInfo, IUserProfile, SessionEventType } from '../session.types.js
  *
  * These tests verify the integration of SessionService with SessionRepository
  * and SessionEventEmitter using mocked implementations.
- *
- * Note: For full end-to-end testing with MongoDB and Redis, you can:
- * 1. Add `mongodb-memory-server` to devDependencies
- * 2. Start a MongoDB container: docker run -d -p 27017:27017 mongo:latest
- * 3. Start a Redis container: docker run -d -p 6379:6379 redis:latest
  */
+
+function createService(
+	sessionRepository: any,
+	sessionEventEmitter: any,
+	config: any,
+): SessionService {
+	const mockModuleRef = {
+		get: (token: any, _opts?: any) => {
+			if (token === SessionRepository) return sessionRepository;
+			if (token === SessionEventEmitter) return sessionEventEmitter;
+			if (token === 'SESSION_CONFIG') return config;
+			return null;
+		},
+	};
+	return new SessionService(mockModuleRef as any);
+}
+
 describe('Session Module Integration Tests', () => {
-	let app: TestingModule;
 	let sessionService: SessionService;
-	let sessionRepository: jest.Mocked<SessionRepository>;
-	let sessionEventEmitter: jest.Mocked<SessionEventEmitter>;
+	let sessionRepository: any;
+	let sessionEventEmitter: any;
 
 	// Mock data storage for repository simulation
 	const sessions: Map<string, Session> = new Map();
 
-	beforeAll(async () => {
+	beforeAll(() => {
 		// Create mock repository with in-memory storage
 		sessionRepository = {
-			Create: jest.fn(async (sessionData: Partial<Session>): Promise<Session> => {
+			Create: vi.fn(async (sessionData: Partial<Session>): Promise<Session> => {
 				const session = { ...sessionData } as Session;
 				sessions.set(session.sessionId, session);
 				return session;
 			}),
-			FindBySessionId: jest.fn(async (sessionId: string): Promise<Session | null> => {
+			FindBySessionId: vi.fn(async (sessionId: string): Promise<Session | null> => {
 				return sessions.get(sessionId) ?? null;
 			}),
-			FindUserSessions: jest.fn(async (userId: string): Promise<Session[]> => {
+			FindUserSessions: vi.fn(async (userId: string): Promise<Session[]> => {
 				return Array.from(sessions.values()).filter((s) => s.userId === userId);
 			}),
-			Update: jest.fn(async (sessionId: string, updateData: Partial<Session>): Promise<Session | null> => {
+			Update: vi.fn(async (sessionId: string, updateData: Partial<Session>): Promise<Session | null> => {
 				const session = sessions.get(sessionId);
 				if (!session) return null;
 				const updated = { ...session, ...updateData };
 				sessions.set(sessionId, updated);
 				return updated;
 			}),
-			UpdateSessionActivity: jest.fn(async (sessionId: string): Promise<void> => {
+			UpdateSessionActivity: vi.fn(async (sessionId: string): Promise<void> => {
 				const session = sessions.get(sessionId);
 				if (session) {
 					session.lastActivityAt = new Date();
 					sessions.set(sessionId, session);
 				}
 			}),
-			DeleteSession: jest.fn(async (sessionId: string): Promise<void> => {
+			DeleteSession: vi.fn(async (sessionId: string): Promise<void> => {
 				sessions.delete(sessionId);
 			}),
-			DeleteUserSessions: jest.fn(async (userId: string): Promise<void> => {
+			DeleteUserSessions: vi.fn(async (userId: string): Promise<void> => {
 				for (const [key, session] of sessions.entries()) {
 					if (session.userId === userId) {
 						sessions.delete(key);
 					}
 				}
 			}),
-			FindActiveSessions: jest.fn(async (userId: string): Promise<Session[]> => {
+			FindActiveSessions: vi.fn(async (userId: string): Promise<Session[]> => {
 				return Array.from(sessions.values()).filter(
 					(s) => s.userId === userId && s.expiresAt > new Date(),
 				);
 			}),
-		} as any;
+		};
 
 		// Create mock event emitter
 		sessionEventEmitter = {
-			EmitSessionEvent: jest.fn(),
-		} as any;
+			EmitSessionEvent: vi.fn(),
+		};
 
-		// Create test module with mocks
-		app = await Test.createTestingModule({
-			providers: [
-				SessionService,
-				{ provide: SessionRepository, useValue: sessionRepository },
-				{ provide: SessionEventEmitter, useValue: sessionEventEmitter },
-				{
-					provide: 'SESSION_CONFIG',
-					useValue: {
-						sessionTtlMinutes: 1440,
-						inactivityTimeoutMinutes: 60,
-						defaultMaxConcurrentSessions: null,
-						enforceSessionLimit: false,
-					},
-				},
-			],
-		}).compile();
-
-		sessionService = app.get<SessionService>(SessionService);
-
-		await app.init();
+		sessionService = createService(sessionRepository, sessionEventEmitter, {
+			sessionTtlMinutes: 1440,
+			inactivityTimeoutMinutes: 60,
+			defaultMaxConcurrentSessions: null,
+			enforceSessionLimit: false,
+		});
 	});
 
-	afterAll(async () => {
-		await app.close();
+	afterAll(() => {
+		sessions.clear();
 	});
 
 	beforeEach(() => {
 		// Clear mock data before each test
 		sessions.clear();
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('Full Session Lifecycle', () => {
@@ -422,7 +416,7 @@ describe('Session Module Integration Tests', () => {
 
 	describe('Session Event Emission', () => {
 		it('should emit AUTHENTICATED event on session authentication', async () => {
-			const emitSpy = jest.spyOn(sessionEventEmitter, 'EmitSessionEvent');
+			const emitSpy = vi.spyOn(sessionEventEmitter, 'EmitSessionEvent');
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
@@ -461,7 +455,7 @@ describe('Session Module Integration Tests', () => {
 		});
 
 		it('should emit LOGGED_OUT event on logout', async () => {
-			const emitSpy = jest.spyOn(sessionEventEmitter, 'EmitSessionEvent');
+			const emitSpy = vi.spyOn(sessionEventEmitter, 'EmitSessionEvent');
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
@@ -503,7 +497,7 @@ describe('Session Module Integration Tests', () => {
 		});
 
 		it('should emit TOKEN_REFRESHED event on token refresh', async () => {
-			const emitSpy = jest.spyOn(sessionEventEmitter, 'EmitSessionEvent');
+			const emitSpy = vi.spyOn(sessionEventEmitter, 'EmitSessionEvent');
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
@@ -549,7 +543,7 @@ describe('Session Module Integration Tests', () => {
 		});
 
 		it('should emit SESSION_REVOKED event on revocation', async () => {
-			const emitSpy = jest.spyOn(sessionEventEmitter, 'EmitSessionEvent');
+			const emitSpy = vi.spyOn(sessionEventEmitter, 'EmitSessionEvent');
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
@@ -594,74 +588,58 @@ describe('Session Module Integration Tests', () => {
 
 	describe('Concurrent Session Limits (when enforced)', () => {
 		it('should enforce max concurrent sessions when enabled', async () => {
-			// Clear sessions for this test
-			sessions.clear();
-
 			// Create new mock repository for limited sessions test
 			const limitedSessions: Map<string, Session> = new Map();
 
 			const limitedRepository = {
-				Create: jest.fn(async (sessionData: Partial<Session>): Promise<Session> => {
+				Create: vi.fn(async (sessionData: Partial<Session>): Promise<Session> => {
 					const session = { ...sessionData } as Session;
 					limitedSessions.set(session.sessionId, session);
 					return session;
 				}),
-				FindBySessionId: jest.fn(async (sessionId: string): Promise<Session | null> => {
+				FindBySessionId: vi.fn(async (sessionId: string): Promise<Session | null> => {
 					return limitedSessions.get(sessionId) ?? null;
 				}),
-				FindUserSessions: jest.fn(async (userId: string): Promise<Session[]> => {
+				FindUserSessions: vi.fn(async (userId: string): Promise<Session[]> => {
 					return Array.from(limitedSessions.values()).filter((s) => s.userId === userId);
 				}),
-				Update: jest.fn(async (sessionId: string, updateData: Partial<Session>): Promise<Session | null> => {
+				Update: vi.fn(async (sessionId: string, updateData: Partial<Session>): Promise<Session | null> => {
 					const session = limitedSessions.get(sessionId);
 					if (!session) return null;
 					const updated = { ...session, ...updateData };
 					limitedSessions.set(sessionId, updated);
 					return updated;
 				}),
-				UpdateSessionActivity: jest.fn(async (sessionId: string): Promise<void> => {
+				UpdateSessionActivity: vi.fn(async (sessionId: string): Promise<void> => {
 					const session = limitedSessions.get(sessionId);
 					if (session) {
 						session.lastActivityAt = new Date();
 						limitedSessions.set(sessionId, session);
 					}
 				}),
-				DeleteSession: jest.fn(async (sessionId: string): Promise<void> => {
+				DeleteSession: vi.fn(async (sessionId: string): Promise<void> => {
 					limitedSessions.delete(sessionId);
 				}),
-				DeleteUserSessions: jest.fn(async (userId: string): Promise<void> => {
+				DeleteUserSessions: vi.fn(async (userId: string): Promise<void> => {
 					for (const [key, session] of limitedSessions.entries()) {
 						if (session.userId === userId) {
 							limitedSessions.delete(key);
 						}
 					}
 				}),
-				FindActiveSessions: jest.fn(async (userId: string): Promise<Session[]> => {
+				FindActiveSessions: vi.fn(async (userId: string): Promise<Session[]> => {
 					return Array.from(limitedSessions.values()).filter(
 						(s) => s.userId === userId && s.expiresAt > new Date(),
 					);
 				}),
-			} as any;
+			};
 
-			// Create test module with enforced session limit
-			const limitedApp = await Test.createTestingModule({
-				providers: [
-					SessionService,
-					{ provide: SessionRepository, useValue: limitedRepository },
-					{ provide: SessionEventEmitter, useValue: sessionEventEmitter },
-					{
-						provide: 'SESSION_CONFIG',
-						useValue: {
-							sessionTtlMinutes: 1440,
-							inactivityTimeoutMinutes: 60,
-							defaultMaxConcurrentSessions: 2,
-							enforceSessionLimit: true,
-						},
-					},
-				],
-			}).compile();
-
-			const limitedSessionService = limitedApp.get<SessionService>(SessionService);
+			const limitedSessionService = createService(limitedRepository, sessionEventEmitter, {
+				sessionTtlMinutes: 1440,
+				inactivityTimeoutMinutes: 60,
+				defaultMaxConcurrentSessions: 2,
+				enforceSessionLimit: true,
+			});
 
 			const deviceInfo: IDeviceInfo = {
 				userAgent: 'Mozilla/5.0',
@@ -715,8 +693,6 @@ describe('Session Module Integration Tests', () => {
 			// Check that max 2 active sessions exist
 			const activeSessions = await limitedSessionService.GetUserSessions('user-limit');
 			expect(activeSessions.length).toBeLessThanOrEqual(2);
-
-			await limitedApp.close();
 		});
 	});
 

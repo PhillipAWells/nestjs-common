@@ -1,9 +1,9 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import { CurrentUser, AuthToken, IS_PUBLIC_KEY, ROLES_KEY } from '../auth-decorators.js';
 
 describe('Auth Decorators', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('Metadata Keys', () => {

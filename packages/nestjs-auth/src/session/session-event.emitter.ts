@@ -1,18 +1,23 @@
-import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { Redis } from 'ioredis';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ISessionEvent, SessionEventType } from './session.types.js';
 
 @Injectable()
-export class SessionEventEmitter implements OnModuleDestroy {
+export class SessionEventEmitter implements OnModuleDestroy, LazyModuleRefService {
 	private readonly CHANNEL_PREFIX = 'session:';
 
-	constructor(
-		@Inject('REDIS_CLIENT')
-		private readonly redisClient: Redis,
-		@Inject(AppLogger)
-		private readonly logger: AppLogger,
-	) {}
+	public get RedisClient(): Redis {
+		return this.Module.get('REDIS_CLIENT', { strict: false });
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	public EmitSessionEvent(
 		sessionId: string,
@@ -30,8 +35,8 @@ export class SessionEventEmitter implements OnModuleDestroy {
 		const message = JSON.stringify(event);
 
 		// Fire and forget - don't block on this
-		this.redisClient.publish(channel, message).catch((error) => {
-			this.logger.error('Failed to emit session event', error, {
+		this.RedisClient.publish(channel, message).catch((error) => {
+			this.AppLogger.error('Failed to emit session event', error, {
 				channel,
 				sessionId,
 				eventType,

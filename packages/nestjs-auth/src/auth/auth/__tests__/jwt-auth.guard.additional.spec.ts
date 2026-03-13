@@ -1,5 +1,6 @@
 import { JWTAuthGuard } from '../jwt-auth.guard.js';
 import { UnauthorizedException } from '@nestjs/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('JWTAuthGuard - Additional Tests', () => {
 	let guard: JWTAuthGuard;
@@ -30,7 +31,13 @@ describe('JWTAuthGuard - Additional Tests', () => {
 			},
 		};
 
-		guard = new JWTAuthGuard(mockAppLogger);
+		const mockModuleRef: any = {
+			get(token: any) {
+				if (token === AppLogger) return mockAppLogger;
+				return undefined;
+			},
+		};
+		guard = new JWTAuthGuard(mockModuleRef);
 
 		mockExecutionContext = {
 			switchToHttp() {
@@ -275,13 +282,24 @@ describe('JWTAuthGuard - Additional Tests', () => {
 
 	describe('Guard initialization', () => {
 		it('should initialize with AppLogger', () => {
-			const newGuard = new JWTAuthGuard(mockAppLogger);
+			const newModuleRef: any = {
+				get(token: any) {
+					if (token === AppLogger) return mockAppLogger;
+					return undefined;
+				},
+			};
+			const newGuard = new JWTAuthGuard(newModuleRef);
 			expect(newGuard).toBeDefined();
 			expect(newGuard instanceof JWTAuthGuard).toBe(true);
 		});
 
-		it('should initialize without AppLogger', () => {
-			const newGuard = new JWTAuthGuard();
+		it('should initialize without AppLogger (using ModuleRef that returns undefined)', () => {
+			const emptyModuleRef: any = {
+				get(_token: any) {
+					return undefined;
+				},
+			};
+			const newGuard = new JWTAuthGuard(emptyModuleRef);
 			expect(newGuard).toBeDefined();
 		});
 

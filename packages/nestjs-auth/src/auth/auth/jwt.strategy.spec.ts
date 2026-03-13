@@ -1,17 +1,23 @@
 
 import { JWTStrategy } from './jwt.strategy.js';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { TokenBlacklistService } from './token-blacklist.service.js';
+import { TokenBlacklistService } from './token-blacklist.service.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
+import { TokenValidationService } from './token-validation.service.js';
+import { USER_LOOKUP_FN } from './tokens.js';
 
 describe('JWT Strategy Configuration Validation', () => {
 	let mockUserLookupFn: any;
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
 	let mockTokenBlacklistService: TokenBlacklistService;
+	let mockModuleRef: any; // typed as any to avoid ModuleRef strict type requirements in tests
 
 	beforeEach(() => {
 		mockUserLookupFn = vi.fn(async () => null);
-		mockTokenValidationService = {};
+		mockTokenValidationService = {
+			validateToken: vi.fn(),
+		};
 		mockTokenBlacklistService = {
 			isTokenBlacklisted: vi.fn().mockResolvedValue(false),
 			hasUserRevokedTokens: vi.fn().mockResolvedValue(false),
@@ -23,6 +29,15 @@ describe('JWT Strategy Configuration Validation', () => {
 				warn: vi.fn(),
 				error: vi.fn(),
 			}),
+		};
+		mockModuleRef = {
+			get(token: any) {
+				if (token === USER_LOOKUP_FN) return mockUserLookupFn;
+				if (token === AppLogger) return mockAppLogger;
+				if (token === TokenValidationService) return mockTokenValidationService;
+				if (token === TokenBlacklistService) return mockTokenBlacklistService;
+				return null;
+			},
 		};
 		// Clear environment variables
 		delete process.env['JWT_SECRET'];
@@ -39,37 +54,37 @@ describe('JWT Strategy Configuration Validation', () => {
 	describe('JWT_SECRET validation', () => {
 		it('should require JWT_SECRET', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 
 		it('should require minimum 32 characters', () => {
 			process.env['JWT_SECRET'] = 'short';
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 
 		it('should accept valid secrets with minimum length', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%^&*()_+-=[]{}|;:,.<>?`~';
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 		});
 
 		it('should accept valid secrets with special characters', () => {
 			process.env['JWT_SECRET'] = 'MySuperSecretKeyWith32Characters!';
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 		});
 
 		it('should reject secrets with invalid characters', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + ' '; // space is not allowed
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 
 		it('should reject secrets with newline characters', () => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '\n';
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 	});
 
@@ -79,43 +94,43 @@ describe('JWT Strategy Configuration Validation', () => {
 		});
 
 		it('should use default value when JWT_EXPIRES_IN is not provided', () => {
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 		});
 
 		it('should accept valid duration strings', () => {
 			const validDurations = ['15m', '1h', '7d', '30s'];
 			validDurations.forEach(duration => {
 				process.env['JWT_EXPIRES_IN'] = duration;
-				expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+				expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 			});
 		});
 
 		it('should accept default value when not provided', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 		});
 
 		it('should reject invalid duration strings', () => {
 			const invalidDurations = ['invalid', '15x', '1y', 'abc'];
 			invalidDurations.forEach(duration => {
 				process.env['JWT_EXPIRES_IN'] = duration;
-				expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+				expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 			});
 		});
 
 		it('should reject empty duration strings', () => {
 			process.env['JWT_EXPIRES_IN'] = '';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 
 		it('should reject duration strings without numbers', () => {
 			process.env['JWT_EXPIRES_IN'] = 'm';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 
 		it('should reject duration strings without units', () => {
 			process.env['JWT_EXPIRES_IN'] = '15';
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).toThrow('JWT configuration validation failed');
+			expect(() => new JWTStrategy(mockModuleRef)).toThrow('JWT configuration validation failed');
 		});
 	});
 
@@ -126,17 +141,17 @@ describe('JWT Strategy Configuration Validation', () => {
 		});
 
 		it('should initialize successfully with valid configuration', () => {
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 		});
 
 		it('should create a Passport strategy instance', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeInstanceOf(JWTStrategy);
 			expect(strategy).toHaveProperty('validate');
 		});
 
 		it('should configure JWT extraction from bearer token', () => {
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			// The strategy should be configured with the correct options
 			expect(strategy).toBeDefined();
 		});
@@ -148,8 +163,16 @@ describe('JWT Strategy Configuration Validation', () => {
 		beforeEach(() => {
 			process.env['JWT_SECRET'] = 'a'.repeat(32) + '!@#$%^&*()_+-=[]{}|;:,.<>?`~';
 			process.env['JWT_EXPIRES_IN'] = '15m';
-			strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			strategy = new JWTStrategy(mockModuleRef);
 		});
+
+		// Helper to create a mock request with a Bearer token
+		function mockRequest(token = 'valid-token'): any {
+			return {
+				headers: { authorization: `Bearer ${token}` },
+				get: (name: string) => ({ authorization: `Bearer ${token}` })[name.toLowerCase()],
+			};
+		}
 
 		it('should validate and return user for active user', async () => {
 			const mockUser = { id: '123', isActive: true, email: 'test@example.com' };
@@ -157,7 +180,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(mockUser);
 
-			const result = await strategy.validate(mockPayload, {} as any);
+			const result = await strategy.validate(mockPayload, mockRequest());
 			expect(result).toEqual(mockUser);
 			expect(mockUserLookupFn).toHaveBeenCalledWith('123');
 		});
@@ -168,7 +191,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(mockUser);
 
-			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('User not found or inactive');
+			await expect(strategy.validate(mockPayload, mockRequest())).rejects.toThrow('User not found or inactive');
 		});
 
 		it('should throw UnauthorizedException for non-existent user', async () => {
@@ -176,7 +199,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockResolvedValue(null);
 
-			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('User not found or inactive');
+			await expect(strategy.validate(mockPayload, mockRequest())).rejects.toThrow('User not found or inactive');
 		});
 
 		it('should handle user lookup errors', async () => {
@@ -184,7 +207,7 @@ describe('JWT Strategy Configuration Validation', () => {
 
 			mockUserLookupFn.mockRejectedValue(new Error('Database error'));
 
-			await expect(strategy.validate(mockPayload, {} as any)).rejects.toThrow('Database error');
+			await expect(strategy.validate(mockPayload, mockRequest())).rejects.toThrow('Database error');
 		});
 	});
 
@@ -193,9 +216,9 @@ describe('JWT Strategy Configuration Validation', () => {
 			process.env['JWT_SECRET'] = 'MySuperSecretKeyWith32Characters!';
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
-			expect(() => new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService)).not.toThrow();
+			expect(() => new JWTStrategy(mockModuleRef)).not.toThrow();
 
-			const strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const strategy = new JWTStrategy(mockModuleRef);
 			expect(strategy).toBeDefined();
 		});
 	});

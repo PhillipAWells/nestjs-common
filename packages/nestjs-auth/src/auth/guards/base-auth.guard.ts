@@ -1,6 +1,8 @@
-import { ExecutionContext, UnauthorizedException, Inject, Injectable, Optional } from '@nestjs/common';
+import { ExecutionContext, UnauthorizedException, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 
 /**
@@ -14,12 +16,20 @@ import { ProfileMethod } from '@pawells/nestjs-pyroscope';
  * @extends {AuthGuard}
  */
 @Injectable()
-export abstract class BaseAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oauth']) {
+export abstract class BaseAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oauth']) implements LazyModuleRefService {
 	protected logger: AppLogger;
 
-	constructor(@Optional() @Inject(AppLogger) protected readonly appLogger?: AppLogger) {
+	private get OptionalAppLogger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		super(['jwt', 'keycloak', 'oauth']);
-		this.logger = this.appLogger?.createContextualLogger(BaseAuthGuard.name) ?? new AppLogger(undefined, BaseAuthGuard.name);
+		this.logger = this.OptionalAppLogger?.createContextualLogger(BaseAuthGuard.name) ?? new AppLogger(undefined, BaseAuthGuard.name);
 	}
 
 	/**

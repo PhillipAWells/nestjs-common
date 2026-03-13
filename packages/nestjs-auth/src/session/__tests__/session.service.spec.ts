@@ -1,6 +1,4 @@
-
-import { jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { SessionService } from '../session.service.js';
 import { SessionRepository } from '../session.repository.js';
 import { SessionEventEmitter } from '../session-event.emitter.js';
@@ -31,45 +29,45 @@ const ONE_HOUR_MS = SECONDS_PER_MINUTE * MINUTES_PER_HOUR * MILLISECONDS_PER_SEC
 // Tolerance constant for time assertions (milliseconds)
 const TIME_ASSERTION_TOLERANCE_MS = 100;
 
+function createService(mockRepository: any, mockEventEmitter: any, config: any): SessionService {
+	const mockModuleRef = {
+		get: (token: any, _opts?: any) => {
+			if (token === SessionRepository) return mockRepository;
+			if (token === SessionEventEmitter) return mockEventEmitter;
+			if (token === 'SESSION_CONFIG') return config;
+			return null;
+		},
+	};
+	return new SessionService(mockModuleRef as any);
+}
+
 describe('SessionService', () => {
 	let service: SessionService;
-	let mockRepository: jest.Mocked<SessionRepository>;
-	let mockEventEmitter: jest.Mocked<SessionEventEmitter>;
+	let mockRepository: any;
+	let mockEventEmitter: any;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockRepository = {
-			Create: jest.fn(),
-			FindBySessionId: jest.fn(),
-			FindUserSessions: jest.fn(),
-			Update: jest.fn(),
-			UpdateSessionActivity: jest.fn(),
-			DeleteSession: jest.fn(),
-			DeleteUserSessions: jest.fn(),
-			FindActiveSessions: jest.fn(),
-		} as any;
+			Create: vi.fn(),
+			FindBySessionId: vi.fn(),
+			FindUserSessions: vi.fn(),
+			Update: vi.fn(),
+			UpdateSessionActivity: vi.fn(),
+			DeleteSession: vi.fn(),
+			DeleteUserSessions: vi.fn(),
+			FindActiveSessions: vi.fn(),
+		};
 
 		mockEventEmitter = {
-			EmitSessionEvent: jest.fn(),
-		} as any;
+			EmitSessionEvent: vi.fn(),
+		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				SessionService,
-				{ provide: SessionRepository, useValue: mockRepository },
-				{ provide: SessionEventEmitter, useValue: mockEventEmitter },
-				{
-					provide: 'SESSION_CONFIG',
-					useValue: {
-						sessionTtlMinutes: SESSION_TTL_MINUTES,
-						inactivityTimeoutMinutes: INACTIVITY_TIMEOUT_MINUTES,
-						defaultMaxConcurrentSessions: null,
-						enforceSessionLimit: false,
-					},
-				},
-			],
-		}).compile();
-
-		service = module.get<SessionService>(SessionService);
+		service = createService(mockRepository, mockEventEmitter, {
+			sessionTtlMinutes: SESSION_TTL_MINUTES,
+			inactivityTimeoutMinutes: INACTIVITY_TIMEOUT_MINUTES,
+			defaultMaxConcurrentSessions: null,
+			enforceSessionLimit: false,
+		});
 	});
 
 	describe('CreateOrGetSession', () => {
@@ -90,7 +88,7 @@ describe('SessionService', () => {
 				loginHistory: [],
 			};
 
-			mockRepository.Create.mockResolvedValue(mockSession as any);
+			mockRepository.Create.mockResolvedValue(mockSession);
 
 			const result = await service.CreateOrGetSession(deviceInfo);
 
@@ -134,8 +132,8 @@ describe('SessionService', () => {
 				],
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] } as any);
-			mockRepository.Update.mockResolvedValue(updatedSession as any);
+			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] });
+			mockRepository.Update.mockResolvedValue(updatedSession);
 
 			const result = await service.AuthenticateSession(
 				sessionId,
@@ -170,14 +168,14 @@ describe('SessionService', () => {
 				expiresAt: new Date(),
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 			mockRepository.Update.mockResolvedValue({
 				...session,
 				userId: undefined,
 				isAuthenticated: false,
 				accessToken: undefined,
 				refreshToken: undefined,
-			} as any);
+			});
 
 			await service.LogoutSession(sessionId);
 
@@ -198,7 +196,7 @@ describe('SessionService', () => {
 			const sessionId = uuidv4();
 			const session = { sessionId, isAuthenticated: false };
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 
 			const result = await service.GetSession(sessionId);
 
@@ -245,8 +243,8 @@ describe('SessionService', () => {
 				lastActivityAt: expect.any(Date),
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
-			mockRepository.Update.mockResolvedValue(updatedSession as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
+			mockRepository.Update.mockResolvedValue(updatedSession);
 
 			const result = await service.RefreshSessionToken(
 				sessionId,
@@ -293,8 +291,8 @@ describe('SessionService', () => {
 				lastActivityAt: expect.any(Date),
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
-			mockRepository.Update.mockResolvedValue(updatedSession as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
+			mockRepository.Update.mockResolvedValue(updatedSession);
 
 			const result = await service.RefreshSessionToken(
 				sessionId,
@@ -334,7 +332,7 @@ describe('SessionService', () => {
 				isAuthenticated: true,
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 			mockRepository.Update.mockResolvedValue(null);
 
 			await expect(
@@ -356,8 +354,8 @@ describe('SessionService', () => {
 			};
 
 			const beforeRefresh = Date.now();
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
-			mockRepository.Update.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
+			mockRepository.Update.mockResolvedValue(session);
 
 			await service.RefreshSessionToken(
 				sessionId,
@@ -382,7 +380,7 @@ describe('SessionService', () => {
 				{ sessionId: uuidv4(), userId, isAuthenticated: true },
 			];
 
-			mockRepository.FindUserSessions.mockResolvedValue(sessions as any);
+			mockRepository.FindUserSessions.mockResolvedValue(sessions);
 
 			const result = await service.GetUserSessions(userId);
 
@@ -409,7 +407,7 @@ describe('SessionService', () => {
 				{ sessionId: uuidv4(), userId, isAuthenticated: true },
 			];
 
-			mockRepository.FindUserSessions.mockResolvedValue(sessions as any);
+			mockRepository.FindUserSessions.mockResolvedValue(sessions);
 			mockRepository.DeleteSession.mockResolvedValue(undefined);
 
 			await service.InvalidateAllUserSessions(userId);
@@ -429,7 +427,7 @@ describe('SessionService', () => {
 				isAuthenticated: true,
 			}));
 
-			mockRepository.FindUserSessions.mockResolvedValue(sessions as any);
+			mockRepository.FindUserSessions.mockResolvedValue(sessions);
 			mockRepository.DeleteSession.mockResolvedValue(undefined);
 
 			await service.InvalidateAllUserSessions(userId);
@@ -463,7 +461,7 @@ describe('SessionService', () => {
 				isAuthenticated: true,
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 			mockRepository.DeleteSession.mockResolvedValue(undefined);
 
 			await service.RevokeSession(sessionId);
@@ -491,7 +489,7 @@ describe('SessionService', () => {
 				isAuthenticated: true,
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 			mockRepository.DeleteSession.mockResolvedValue(undefined);
 
 			await service.RevokeSession(sessionId);
@@ -520,15 +518,15 @@ describe('SessionService', () => {
 				lastActivityAt: expect.any(Date),
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
-			mockRepository.Update.mockResolvedValue(updatedSession as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
+			mockRepository.Update.mockResolvedValue(updatedSession);
 
 			const result = await service.UpdateSessionPreferences(sessionId, preferences);
 
 			expect(mockRepository.Update).toHaveBeenCalledWith(
 				sessionId,
 				expect.objectContaining({
-					preferences: expect.any(Map),
+					preferences: expect.any(Object),
 				}),
 			);
 			expect(result.preferences).toEqual(new Map(Object.entries(preferences)));
@@ -546,7 +544,7 @@ describe('SessionService', () => {
 			const sessionId = uuidv4();
 			const session = { sessionId, userId: 'user-123' };
 
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
 			mockRepository.Update.mockResolvedValue(null);
 
 			await expect(
@@ -559,8 +557,8 @@ describe('SessionService', () => {
 			const session = { sessionId };
 
 			const beforeUpdate = Date.now();
-			mockRepository.FindBySessionId.mockResolvedValue(session as any);
-			mockRepository.Update.mockResolvedValue(session as any);
+			mockRepository.FindBySessionId.mockResolvedValue(session);
+			mockRepository.Update.mockResolvedValue(session);
 
 			await service.UpdateSessionPreferences(sessionId, { theme: 'dark' });
 
@@ -581,8 +579,8 @@ describe('SessionService', () => {
 				{ sessionId: uuidv4(), userId },
 			];
 
-			mockRepository.FindUserSessions.mockResolvedValue(sessions as any);
-			mockRepository.Update.mockResolvedValue({} as any);
+			mockRepository.FindUserSessions.mockResolvedValue(sessions);
+			mockRepository.Update.mockResolvedValue({});
 
 			await service.SetMaxConcurrentSessions(userId, MAX_CONCURRENT_SESSIONS_TEST_VALUE);
 
@@ -599,8 +597,8 @@ describe('SessionService', () => {
 			const userId = 'user-123';
 			const sessions = [{ sessionId: uuidv4(), userId }];
 
-			mockRepository.FindUserSessions.mockResolvedValue(sessions as any);
-			mockRepository.Update.mockResolvedValue({} as any);
+			mockRepository.FindUserSessions.mockResolvedValue(sessions);
+			mockRepository.Update.mockResolvedValue({});
 
 			await service.SetMaxConcurrentSessions(userId, null);
 
@@ -636,28 +634,17 @@ describe('SessionService', () => {
 				{ sessionId: uuidv4(), userId, createdAt: new Date(Date.now() - FIVE_SECONDS_AGO_MS) },
 			];
 
-			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] } as any);
-			mockRepository.FindActiveSessions.mockResolvedValue(existingSessions as any);
+			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] });
+			mockRepository.FindActiveSessions.mockResolvedValue(existingSessions);
 			mockRepository.DeleteSession.mockResolvedValue(undefined);
-			mockRepository.Update.mockResolvedValue({ isAuthenticated: true } as any);
+			mockRepository.Update.mockResolvedValue({ isAuthenticated: true });
 
-			const config = {
+			const testService = createService(mockRepository, mockEventEmitter, {
 				sessionTtlMinutes: SESSION_TTL_MINUTES,
 				inactivityTimeoutMinutes: INACTIVITY_TIMEOUT_MINUTES,
 				defaultMaxConcurrentSessions: DEFAULT_MAX_CONCURRENT_SESSIONS,
 				enforceSessionLimit: true,
-			};
-
-			const testModule = await Test.createTestingModule({
-				providers: [
-					SessionService,
-					{ provide: SessionRepository, useValue: mockRepository },
-					{ provide: SessionEventEmitter, useValue: mockEventEmitter },
-					{ provide: 'SESSION_CONFIG', useValue: config },
-				],
-			}).compile();
-
-			const testService = testModule.get<SessionService>(SessionService);
+			});
 
 			await testService.AuthenticateSession(
 				sessionId,
@@ -683,26 +670,15 @@ describe('SessionService', () => {
 				permissions: [],
 			};
 
-			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] } as any);
-			mockRepository.Update.mockResolvedValue({ isAuthenticated: true } as any);
+			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] });
+			mockRepository.Update.mockResolvedValue({ isAuthenticated: true });
 
-			const config = {
+			const testService = createService(mockRepository, mockEventEmitter, {
 				sessionTtlMinutes: SESSION_TTL_MINUTES,
 				inactivityTimeoutMinutes: INACTIVITY_TIMEOUT_MINUTES,
 				defaultMaxConcurrentSessions: DEFAULT_MAX_CONCURRENT_SESSIONS,
 				enforceSessionLimit: false,
-			};
-
-			const testModule = await Test.createTestingModule({
-				providers: [
-					SessionService,
-					{ provide: SessionRepository, useValue: mockRepository },
-					{ provide: SessionEventEmitter, useValue: mockEventEmitter },
-					{ provide: 'SESSION_CONFIG', useValue: config },
-				],
-			}).compile();
-
-			const testService = testModule.get<SessionService>(SessionService);
+			});
 
 			await testService.AuthenticateSession(
 				sessionId,
@@ -738,7 +714,7 @@ describe('SessionService', () => {
 
 		it('should throw error if update fails', async () => {
 			const sessionId = uuidv4();
-			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] } as any);
+			mockRepository.FindBySessionId.mockResolvedValue({ loginHistory: [] });
 			mockRepository.Update.mockResolvedValue(null);
 
 			await expect(
@@ -762,22 +738,11 @@ describe('SessionService', () => {
 				ipAddress: '127.0.0.1',
 			};
 
-			const config = {
+			const testService = createService(mockRepository, mockEventEmitter, {
 				sessionTtlMinutes: SHORT_SESSION_TTL_MINUTES,
 				inactivityTimeoutMinutes: REFRESH_TIMEOUT_MINUTES,
 				enforceSessionLimit: false,
-			};
-
-			const testModule = await Test.createTestingModule({
-				providers: [
-					SessionService,
-					{ provide: SessionRepository, useValue: mockRepository },
-					{ provide: SessionEventEmitter, useValue: mockEventEmitter },
-					{ provide: 'SESSION_CONFIG', useValue: config },
-				],
-			}).compile();
-
-			const testService = testModule.get<SessionService>(SessionService);
+			});
 
 			const beforeCreate = Date.now();
 			mockRepository.Create.mockResolvedValue({
@@ -785,7 +750,7 @@ describe('SessionService', () => {
 				createdAt: new Date(),
 				expiresAt: expect.any(Date),
 				deviceInfo,
-			} as any);
+			});
 
 			await testService.CreateOrGetSession(deviceInfo);
 

@@ -1,14 +1,25 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as OpenIDConnectStrategy } from 'passport-openidconnect';
+import type { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
-export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc') {
+export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc') implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(private readonly appLogger: AppLogger) {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get logger(): AppLogger {
+		this._contextualLogger ??= this.AppLogger.createContextualLogger(OIDCStrategy.name);
+		return this._contextualLogger;
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		const issuer = process.env['OIDC_ISSUER'];
 		const authorizationURL = process.env['OIDC_AUTHORIZATION_URL'];
 		const tokenURL = process.env['OIDC_TOKEN_URL'];
@@ -35,11 +46,6 @@ export class OIDCStrategy extends PassportStrategy(OpenIDConnectStrategy, 'oidc'
 			callbackURL,
 			scope: ['openid', 'profile', 'email'],
 		});
-	}
-
-	private get logger(): AppLogger {
-		this._contextualLogger ??= this.appLogger.createContextualLogger(OIDCStrategy.name);
-		return this._contextualLogger;
 	}
 
 	@ProfileMethod({ tags: { operation: 'oidcValidate', strategy: 'oidc' } })

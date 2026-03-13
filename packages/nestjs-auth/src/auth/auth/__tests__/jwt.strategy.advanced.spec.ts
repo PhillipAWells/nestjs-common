@@ -2,7 +2,10 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { JWTStrategy } from '../jwt.strategy.js';
-import type { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenValidationService } from '../token-validation.service.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
+import { USER_LOOKUP_FN } from '../tokens.js';
 
 // Helper to create a mock Express request object
 function createMockRequest(authHeader?: string) {
@@ -23,6 +26,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 	let mockAppLogger: any;
 	let mockTokenValidationService: any;
 	let mockTokenBlacklistService: TokenBlacklistService;
+	let mockModuleRef: any;
 	let logCalls: any[];
 	let validateTokenCalls: any[];
 
@@ -76,11 +80,21 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			}),
 		};
 
+		mockModuleRef = {
+			get(token: any) {
+				if (token === USER_LOOKUP_FN) return mockUserLookupFn;
+				if (token === AppLogger) return mockAppLogger;
+				if (token === TokenValidationService) return mockTokenValidationService;
+				if (token === TokenBlacklistService) return mockTokenBlacklistService;
+				return null;
+			},
+		};
+
 		// Set valid JWT configuration
 		process.env['JWT_SECRET'] = 'MySecretKeyWith32CharactersMin!@#$%';
 		process.env['JWT_EXPIRES_IN'] = '15m';
 
-		strategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+		strategy = new JWTStrategy(mockModuleRef);
 	});
 
 	afterEach(() => {
@@ -204,7 +218,16 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 				role: 'user',
 			});
 
-			const inactiveStrategy = new JWTStrategy(inactiveUserLookup, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const localModuleRef: any = {
+				get(token: any) {
+					if (token === USER_LOOKUP_FN) return inactiveUserLookup;
+					if (token === AppLogger) return mockAppLogger;
+					if (token === TokenValidationService) return mockTokenValidationService;
+					if (token === TokenBlacklistService) return mockTokenBlacklistService;
+					return null;
+				},
+			};
+			const inactiveStrategy = new JWTStrategy(localModuleRef);
 
 			const payload = { sub: 'inactive-user-id', email: 'inactive@example.com', role: 'user' };
 			const request = createMockRequest('Bearer valid-token');
@@ -248,7 +271,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_SECRET'] = 'AnotherSecretKeyWith32Characters!@';
 			process.env['JWT_EXPIRES_IN'] = '1h';
 
-			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const newStrategy = new JWTStrategy(mockModuleRef);
 			expect(newStrategy).toBeDefined();
 		});
 
@@ -256,7 +279,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			delete process.env['JWT_EXPIRES_IN'];
 			process.env['JWT_SECRET'] = 'SecretKeyWith32CharactersRequired!@';
 
-			const newStrategy = new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+			const newStrategy = new JWTStrategy(mockModuleRef);
 			expect(newStrategy).toBeDefined();
 		});
 
@@ -265,7 +288,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 
@@ -274,7 +297,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 			process.env['JWT_EXPIRES_IN'] = '15m';
 
 			expect(() => {
-				new JWTStrategy(mockUserLookupFn, mockAppLogger, mockTokenValidationService, mockTokenBlacklistService);
+				new JWTStrategy(mockModuleRef);
 			}).toThrow('JWT configuration validation failed');
 		});
 	});

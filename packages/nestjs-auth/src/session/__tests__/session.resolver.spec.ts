@@ -1,51 +1,41 @@
-import { jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { SessionResolver } from '../session.resolver.js';
 import { SessionService } from '../session.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { v4 as uuidv4 } from 'uuid';
 import { BadRequestException } from '@nestjs/common';
-import { Redis } from 'ioredis';
+import type { Redis } from 'ioredis';
 
 describe('SessionResolver', () => {
 	let resolver: SessionResolver;
-	let mockSessionService: jest.Mocked<SessionService>;
-	let mockRedisClient: jest.Mocked<Redis>;
-	let mockLogger: jest.Mocked<AppLogger>;
+	let mockSessionService: any;
+	let mockRedisClient: any;
+	let mockLogger: any;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockSessionService = {
-			CreateOrGetSession: jest.fn(),
-			GetSession: jest.fn(),
-			AuthenticateSession: jest.fn(),
-			LogoutSession: jest.fn(),
-			RefreshSessionToken: jest.fn(),
-			UpdateSessionPreferences: jest.fn(),
-			InvalidateAllUserSessions: jest.fn(),
-			RevokeSession: jest.fn(),
-			GetUserSessions: jest.fn(),
-			UpdateLastActivity: jest.fn(),
-			SetMaxConcurrentSessions: jest.fn(),
-		} as any;
+			CreateOrGetSession: vi.fn(),
+			GetSession: vi.fn(),
+			AuthenticateSession: vi.fn(),
+			LogoutSession: vi.fn(),
+			RefreshSessionToken: vi.fn(),
+			UpdateSessionPreferences: vi.fn(),
+			InvalidateAllUserSessions: vi.fn(),
+			RevokeSession: vi.fn(),
+			GetUserSessions: vi.fn(),
+			UpdateLastActivity: vi.fn(),
+			SetMaxConcurrentSessions: vi.fn(),
+		} as unknown as SessionService;
 
 		mockRedisClient = {
-			duplicate: jest.fn(),
-		} as any;
+			duplicate: vi.fn(),
+		} as unknown as Redis;
 
 		mockLogger = {
-			warn: jest.fn(),
-		} as any;
+			warn: vi.fn(),
+		} as unknown as AppLogger;
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				SessionResolver,
-				{ provide: SessionService, useValue: mockSessionService },
-				{ provide: 'REDIS_CLIENT', useValue: mockRedisClient },
-				{ provide: AppLogger, useValue: mockLogger },
-			],
-		}).compile();
-
-		resolver = module.get<SessionResolver>(SessionResolver);
+		resolver = new SessionResolver(mockSessionService, mockRedisClient, mockLogger);
 	});
 
 	describe('getCurrentSession', () => {
@@ -61,7 +51,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 
 			const result = await resolver.getCurrentSession({ sessionId } as any);
 
@@ -69,8 +59,9 @@ describe('SessionResolver', () => {
 			expect(result).toEqual(mockSession);
 		});
 
-		it('should throw BadRequestException when sessionId is not provided', async () => {
-			await expect(resolver.getCurrentSession({} as any)).rejects.toThrow(BadRequestException);
+		it('should return null when sessionId is not provided', async () => {
+			const result = await resolver.getCurrentSession({} as any);
+			expect(result).toBeNull();
 		});
 	});
 
@@ -90,7 +81,7 @@ describe('SessionResolver', () => {
 				},
 			];
 
-			mockSessionService.GetUserSessions.mockResolvedValue(mockSessions as any);
+			mockSessionService.GetUserSessions.mockResolvedValue(mockSessions);
 
 			const result = await resolver.getUserSessions({} as any, userId);
 
@@ -131,7 +122,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 
 			await expect(resolver.refreshToken({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
@@ -157,7 +148,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 
 			await expect(resolver.refreshToken({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
@@ -180,7 +171,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.UpdateSessionPreferences.mockResolvedValue(mockSession as any);
+			mockSessionService.UpdateSessionPreferences.mockResolvedValue(mockSession);
 
 			const result = await resolver.updatePreferences(
 				{ sessionId } as any,
@@ -213,7 +204,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 			mockSessionService.InvalidateAllUserSessions.mockResolvedValue(undefined);
 
 			const result = await resolver.invalidateAllSessions({ sessionId } as any);
@@ -235,7 +226,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 
 			await expect(resolver.invalidateAllSessions({ sessionId } as any)).rejects.toThrow(
 				BadRequestException,
@@ -272,7 +263,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 			mockSessionService.SetMaxConcurrentSessions.mockResolvedValue(undefined);
 
 			const result = await resolver.setMaxConcurrentSessions(
@@ -299,7 +290,7 @@ describe('SessionResolver', () => {
 				loginHistory: [],
 			};
 
-			mockSessionService.GetSession.mockResolvedValue(mockSession as any);
+			mockSessionService.GetSession.mockResolvedValue(mockSession);
 			mockSessionService.SetMaxConcurrentSessions.mockResolvedValue(undefined);
 
 			const result = await resolver.setMaxConcurrentSessions({ sessionId } as any, null);

@@ -57,14 +57,16 @@ describe('Auth Validation DTOs', () => {
 			});
 		});
 
-		it('should reject password with suspicious SQL injection patterns', async () => {
-			const suspiciousPasswords = [
+		it('should accept passwords with special characters (SQL injection prevention is via parameterized queries)', async () => {
+			// Special characters are intentionally allowed in passwords:
+			// SQL injection is prevented by parameterized queries, passwords are hashed before storage.
+			const specialCharPasswords = [
 				'\'; DROP TABLE users--',
 				'password""""""',
 				'pass\\\\\\word',
 			];
 
-			for (const password of suspiciousPasswords) {
+			for (const password of specialCharPasswords) {
 				const input = plainToClass(LoginValidationInput, {
 					email: 'user@example.com',
 					password,
@@ -72,7 +74,7 @@ describe('Auth Validation DTOs', () => {
 
 				const errors = await validate(input);
 				const hasPasswordError = errors.some(e => e.property === 'password');
-				expect(hasPasswordError).toBe(true);
+				expect(hasPasswordError).toBe(false);
 			}
 		});
 

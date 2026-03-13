@@ -1,17 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { JwtService } from '@nestjs/jwt';
-import { CacheService } from '@pawells/nestjs-graphql';
-import { AppLogger, AuditLoggerService } from '@pawells/nestjs-shared/common';
+import { AppLogger, AuditLoggerService, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
 import { AuthService } from '../auth.service.js';
 import { User, JWTPayload } from '../auth.types.js';
 import type { IUserRepository } from '../interfaces/user-repository.interface.js';
 import { USER_REPOSITORY } from '../tokens.js';
-import { jest } from '@jest/globals';
+import { TokenBlacklistService } from '../token-blacklist.service.js';
 
 describe('AuthService', () => {
 	let service: AuthService;
-	let jwtService: jest.Mocked<JwtService>;
-	let cacheService: jest.Mocked<CacheService>;
+	let mockJwtService: any;
+	let mockCacheService: any;
+	let mockRepository: any;
+	let mockAuditLogger: any;
+	let mockModuleRef: any;
 
 	const mockUser: User = {
 		id: 'user_123',
@@ -22,73 +24,64 @@ describe('AuthService', () => {
 		isActive: true,
 	};
 
-	beforeEach(async () => {
-		const mockJwtService = {
-			sign: jest.fn(),
-			verify: jest.fn(),
-			decode: jest.fn(),
+	beforeEach(() => {
+		mockJwtService = {
+			sign: vi.fn(),
+			verify: vi.fn(),
+			decode: vi.fn(),
 		};
 
-		const mockCacheService = {
-			exists: jest.fn(),
-			set: jest.fn(),
+		mockCacheService = {
+			exists: vi.fn(),
+			set: vi.fn(),
 		};
 
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn(),
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			}),
 		};
 
-		// Create a mock repository
-		const mockRepository = {
-			findByEmail: jest.fn(),
-			findById: jest.fn(),
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
+		mockRepository = {
+			findByEmail: vi.fn(),
+			findById: vi.fn(),
+			create: vi.fn(),
+			update: vi.fn(),
+			delete: vi.fn(),
 		};
 
-		const mockAuditLogger = {
-			logAuthenticationAttempt: jest.fn(),
-			logTokenGeneration: jest.fn(),
-			logTokenRevocation: jest.fn(),
-			logSessionCreated: jest.fn(),
-			logSessionTerminated: jest.fn(),
+		mockAuditLogger = {
+			logAuthenticationAttempt: vi.fn(),
+			logTokenGeneration: vi.fn(),
+			logTokenRevocation: vi.fn(),
+			logSessionCreated: vi.fn(),
+			logSessionTerminated: vi.fn(),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				AuthService,
-				{
-					provide: USER_REPOSITORY,
-					useValue: mockRepository,
-				},
-				{
-					provide: JwtService,
-					useValue: mockJwtService,
-				},
-				{
-					provide: CacheService,
-					useValue: mockCacheService,
-				},
-				{
-					provide: AppLogger,
-					useValue: mockAppLogger,
-				},
-				{
-					provide: AuditLoggerService,
-					useValue: mockAuditLogger,
-				},
-			],
-		}).compile();
+		const mockTokenBlacklistService = new TokenBlacklistService({
+			get: (token: any) => {
+				if (token === AppLogger) return mockAppLogger;
+				if (token === CACHE_PROVIDER) return mockCacheService;
+				return null;
+			},
+		} as any);
 
-		service = module.get<AuthService>(AuthService);
-		jwtService = module.get(JwtService);
-		cacheService = module.get(CacheService);
+		mockModuleRef = {
+			get: (token: any, _opts?: any) => {
+				if (token === USER_REPOSITORY) return mockRepository;
+				if (token === JwtService) return mockJwtService;
+				if (token === AppLogger) return mockAppLogger;
+				if (token === AuditLoggerService) return mockAuditLogger;
+				if (token === TokenBlacklistService) return mockTokenBlacklistService;
+				if (token === CACHE_PROVIDER) return mockCacheService;
+				return null;
+			},
+		};
+
+		service = new AuthService(mockModuleRef);
 	});
 
 	it('should be defined', () => {
@@ -104,15 +97,15 @@ describe('AuthService', () => {
 				exp: Math.floor(Date.now() / 1000) + 900,
 			};
 
-			jwtService.decode.mockReturnValue(mockPayload);
+			mockJwtService.decode.mockReturnValue(mockPayload);
 
 			const result = service.decodeToken('valid.token');
 			expect(result).toEqual(mockPayload);
-			expect(jwtService.decode).toHaveBeenCalledWith('valid.token');
+			expect(mockJwtService.decode).toHaveBeenCalledWith('valid.token');
 		});
 
 		it('should return null for invalid token', () => {
-			jwtService.decode.mockImplementation(() => {
+			mockJwtService.decode.mockImplementation(() => {
 				throw new Error('Invalid token');
 			});
 
@@ -130,12 +123,12 @@ describe('AuthService', () => {
 			exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
 		};
 
-		const userLookupFn = jest.fn<(userId: string) => Promise<User | null>>();
+		const userLookupFn = vi.fn<(userId: string) => Promise<User | null>>();
 
 		beforeEach(() => {
-			jwtService.verify.mockReturnValue(mockPayload);
-			jwtService.sign.mockReturnValue('new.access.token');
-			cacheService.exists.mockResolvedValue(false);
+			mockJwtService.verify.mockReturnValue(mockPayload);
+			mockJwtService.sign.mockReturnValue('new.access.token');
+			mockCacheService.exists.mockResolvedValue(false);
 			userLookupFn.mockResolvedValue(mockUser);
 		});
 
@@ -148,18 +141,21 @@ describe('AuthService', () => {
 				tokenType: 'Bearer',
 			});
 
-			expect(jwtService.verify).toHaveBeenCalledWith(mockRefreshToken);
+			expect(mockJwtService.verify).toHaveBeenCalledWith(mockRefreshToken);
 			expect(userLookupFn).toHaveBeenCalledWith('user_123');
-			expect(cacheService.exists).toHaveBeenCalledWith(`blacklist:${mockRefreshToken}`);
-			expect(cacheService.set).toHaveBeenCalledWith(
+			expect(mockCacheService.exists).toHaveBeenCalledWith(`blacklist:${mockRefreshToken}`);
+			expect(mockCacheService.set).toHaveBeenCalledWith(
 				`blacklist:${mockRefreshToken}`,
 				true,
 				expect.any(Number),
 			);
-			expect(jwtService.sign).toHaveBeenCalledWith({
+			expect(mockJwtService.sign).toHaveBeenCalledWith({
 				email: 'test@example.com',
 				sub: 'user_123',
 				role: 'user',
+				type: 'access',
+				iss: 'nestjs-app',
+				aud: 'nestjs-api',
 			}, {
 				expiresIn: '15m',
 				algorithm: 'HS256',
@@ -167,7 +163,7 @@ describe('AuthService', () => {
 		});
 
 		it('should reject expired refresh token', async () => {
-			jwtService.verify.mockImplementation(() => {
+			mockJwtService.verify.mockImplementation(() => {
 				throw new Error('Token expired');
 			});
 
@@ -176,7 +172,7 @@ describe('AuthService', () => {
 		});
 
 		it('should reject blacklisted refresh token', async () => {
-			cacheService.exists.mockResolvedValue(true);
+			mockCacheService.exists.mockResolvedValue(true);
 
 			await expect(service.refreshToken(mockRefreshToken, userLookupFn))
 				.rejects.toThrow('Refresh token has been revoked');
@@ -269,10 +265,10 @@ describe('AuthService', () => {
 			const mockAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 			const mockRefreshToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
-			jwtService.sign
+			mockJwtService.sign
 				.mockReturnValueOnce(mockAccessToken)
 				.mockReturnValueOnce(mockRefreshToken);
-			jwtService.decode
+			mockJwtService.decode
 				.mockReturnValueOnce({ exp: Math.floor(Date.now() / 1000) + 900, iat: Math.floor(Date.now() / 1000) })
 				.mockReturnValueOnce({ exp: Math.floor(Date.now() / 1000) + 259200, iat: Math.floor(Date.now() / 1000) });
 
@@ -292,19 +288,25 @@ describe('AuthService', () => {
 				},
 			});
 
-			expect(jwtService.sign).toHaveBeenCalledWith({
+			expect(mockJwtService.sign).toHaveBeenCalledWith({
 				email: 'test@example.com',
 				sub: 'user_123',
 				role: 'user',
+				type: 'access',
+				iss: 'nestjs-app',
+				aud: 'nestjs-api',
 			}, {
 				expiresIn: '15m',
 				algorithm: 'HS256',
 			});
-			expect(jwtService.sign).toHaveBeenCalledWith(
+			expect(mockJwtService.sign).toHaveBeenCalledWith(
 				{
 					email: 'test@example.com',
 					sub: 'user_123',
 					role: 'user',
+					type: 'refresh',
+					iss: 'nestjs-app',
+					aud: 'nestjs-api',
 				},
 				{
 					expiresIn: '3d',
@@ -315,71 +317,69 @@ describe('AuthService', () => {
 	});
 
 	describe('AuthService with UserRepository', () => {
-		let mockRepository: jest.Mocked<IUserRepository>;
-		let mockAuditLogger: jest.Mocked<AuditLoggerService>;
+		let localRepository: IUserRepository;
+		let localAuditLogger: any;
 
-		beforeEach(async () => {
-			mockRepository = {
-				findByEmail: jest.fn(),
-				findById: jest.fn(),
-				create: jest.fn(),
-				update: jest.fn(),
-				delete: jest.fn(),
+		beforeEach(() => {
+			localRepository = {
+				findByEmail: vi.fn(),
+				findById: vi.fn(),
+				create: vi.fn(),
+				update: vi.fn(),
+				delete: vi.fn(),
 			};
 
-			mockAuditLogger = {
-				logAuthenticationAttempt: jest.fn(),
-				logTokenGeneration: jest.fn(),
-				logTokenRevocation: jest.fn(),
-				logSessionCreated: jest.fn(),
-				logSessionTerminated: jest.fn(),
-			} as any;
+			localAuditLogger = {
+				logAuthenticationAttempt: vi.fn(),
+				logTokenGeneration: vi.fn(),
+				logTokenRevocation: vi.fn(),
+				logSessionCreated: vi.fn(),
+				logSessionTerminated: vi.fn(),
+			};
 
-			const mockJwtService = {
-				sign: jest.fn(),
-				verify: jest.fn(),
-				decode: jest.fn(),
+			const localJwtService = {
+				sign: vi.fn(),
+				verify: vi.fn(),
+				decode: vi.fn(),
 			};
 
 			const mockAppLogger = {
-				createContextualLogger: jest.fn().mockReturnValue({
-					debug: jest.fn(),
-					info: jest.fn(),
-					warn: jest.fn(),
-					error: jest.fn(),
+				createContextualLogger: vi.fn().mockReturnValue({
+					debug: vi.fn(),
+					info: vi.fn(),
+					warn: vi.fn(),
+					error: vi.fn(),
 				}),
 			};
 
-			const module: TestingModule = await Test.createTestingModule({
-				providers: [
-					AuthService,
-					{
-						provide: USER_REPOSITORY,
-						useValue: mockRepository,
-					},
-					{
-						provide: JwtService,
-						useValue: mockJwtService,
-					},
-					{
-						provide: AppLogger,
-						useValue: mockAppLogger,
-					},
-					{
-						provide: AuditLoggerService,
-						useValue: mockAuditLogger,
-					},
-				],
-			}).compile();
+			const localTokenBlacklistService = new TokenBlacklistService({
+				get: (token: any) => {
+					if (token === AppLogger) return mockAppLogger;
+					if (token === CACHE_PROVIDER) return null;
+					return null;
+				},
+			} as any);
 
-			service = module.get<AuthService>(AuthService);
-			jwtService = module.get(JwtService);
+			const localModuleRef = {
+				get: (token: any, _opts?: any) => {
+					if (token === USER_REPOSITORY) return localRepository;
+					if (token === JwtService) return localJwtService;
+					if (token === AppLogger) return mockAppLogger;
+					if (token === AuditLoggerService) return localAuditLogger;
+					if (token === TokenBlacklistService) return localTokenBlacklistService;
+					if (token === CACHE_PROVIDER) return null;
+					return null;
+				},
+			};
+
+			service = new AuthService(localModuleRef as any);
+			mockJwtService = localJwtService;
 		});
 
 		describe('validateOAuthUser', () => {
 			it('should create new user when not found', async () => {
-				mockRepository.findByEmail.mockResolvedValue(null);
-				mockRepository.create.mockResolvedValue({
+				(localRepository.findByEmail as any).mockResolvedValue(null);
+				(localRepository.create as any).mockResolvedValue({
 					id: 'new_user_123',
 					email: 'new@example.com',
 					isActive: true,
@@ -394,8 +394,8 @@ describe('AuthService', () => {
 
 				const result = await service.validateOAuthUser(profile, 'access', 'refresh');
 
-				expect(mockRepository.findByEmail).toHaveBeenCalledWith('new@example.com');
-				expect(mockRepository.create).toHaveBeenCalled();
+				expect(localRepository.findByEmail).toHaveBeenCalledWith('new@example.com');
+				expect(localRepository.create).toHaveBeenCalled();
 				expect(result.id).toBe('new_user_123');
 				expect(result.email).toBe('new@example.com');
 			});
@@ -408,8 +408,8 @@ describe('AuthService', () => {
 					role: 'user',
 				};
 
-				mockRepository.findByEmail.mockResolvedValue(existingUser);
-				mockRepository.update.mockResolvedValue({
+				(localRepository.findByEmail as any).mockResolvedValue(existingUser);
+				(localRepository.update as any).mockResolvedValue({
 					...existingUser,
 					oauthProfile: { id: 'oauth_123' },
 					updatedAt: new Date(),
@@ -423,8 +423,8 @@ describe('AuthService', () => {
 
 				const result = await service.validateOAuthUser(profile, 'access', 'refresh');
 
-				expect(mockRepository.findByEmail).toHaveBeenCalledWith('existing@example.com');
-				expect(mockRepository.update).toHaveBeenCalledWith(
+				expect(localRepository.findByEmail).toHaveBeenCalledWith('existing@example.com');
+				expect(localRepository.update).toHaveBeenCalledWith(
 					'existing_123',
 					expect.objectContaining({
 						oauthProfile: profile,

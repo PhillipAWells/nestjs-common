@@ -31,7 +31,7 @@ export interface PasswordStrengthResult {
 
 @Injectable()
 export class PasswordValidatorService implements LazyModuleRefService {
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Validate password strength

@@ -13,19 +13,19 @@ const MINUTES_TO_MS = SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 @Injectable()
 export class SessionService implements LazyModuleRefService {
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	public get Repository(): SessionRepository {
-		return this.moduleRef.get(SessionRepository);
+		return this.Module.get(SessionRepository);
 	}
 
 	public get EventEmitter(): SessionEventEmitter {
-		return this.moduleRef.get(SessionEventEmitter);
+		return this.Module.get(SessionEventEmitter);
 	}
 
 	public get Config(): ISessionConfig {
 		// String token for session configuration
-		return this.moduleRef.get('SESSION_CONFIG');
+		return this.Module.get('SESSION_CONFIG');
 	}
 
 	public async CreateOrGetSession(deviceInfo: IDeviceInfo): Promise<Session> {

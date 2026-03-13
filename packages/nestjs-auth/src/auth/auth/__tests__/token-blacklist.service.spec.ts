@@ -1,46 +1,36 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CacheService } from '@pawells/nestjs-graphql';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { AppLogger, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
 import { TokenBlacklistService } from '../token-blacklist.service.js';
-import { jest } from '@jest/globals';
 
 describe('TokenBlacklistService', () => {
 	let service: TokenBlacklistService;
-	let cacheService: jest.Mocked<CacheService>;
-	let _appLogger: jest.Mocked<AppLogger>;
+	let mockCacheProvider: any;
+	let mockModuleRef: any;
 
-	beforeEach(async () => {
-		const mockCacheService = {
-			exists: jest.fn(),
-			set: jest.fn(),
+	beforeEach(() => {
+		mockCacheProvider = {
+			exists: vi.fn(),
+			set: vi.fn(),
 		};
 
 		const mockAppLogger = {
-			createContextualLogger: jest.fn().mockReturnValue({
-				debug: jest.fn(),
-				info: jest.fn(),
-				warn: jest.fn(),
-				error: jest.fn(),
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
 			}),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				TokenBlacklistService,
-				{
-					provide: CacheService,
-					useValue: mockCacheService,
-				},
-				{
-					provide: AppLogger,
-					useValue: mockAppLogger,
-				},
-			],
-		}).compile();
+		mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockAppLogger;
+				if (token === CACHE_PROVIDER) return mockCacheProvider;
+				return null;
+			},
+		};
 
-		service = module.get<TokenBlacklistService>(TokenBlacklistService);
-		cacheService = module.get(CacheService);
-		_appLogger = module.get(AppLogger);
+		service = new TokenBlacklistService(mockModuleRef);
 	});
 
 	it('should be defined', () => {
@@ -49,11 +39,11 @@ describe('TokenBlacklistService', () => {
 
 	describe('blacklistToken', () => {
 		it('should blacklist token successfully', async () => {
-			cacheService.set.mockResolvedValue(undefined);
+			mockCacheProvider.set.mockResolvedValue(undefined);
 
 			await service.blacklistToken('test.token', 900);
 
-			expect(cacheService.set).toHaveBeenCalledWith(
+			expect(mockCacheProvider.set).toHaveBeenCalledWith(
 				'blacklist:test.token',
 				true,
 				900,
@@ -61,7 +51,7 @@ describe('TokenBlacklistService', () => {
 		});
 
 		it('should handle cache errors gracefully', async () => {
-			cacheService.set.mockRejectedValue(new Error('Cache error'));
+			mockCacheProvider.set.mockRejectedValue(new Error('Cache error'));
 
 			await expect(service.blacklistToken('test.token', 900))
 				.rejects.toThrow('Cache error');
@@ -70,38 +60,36 @@ describe('TokenBlacklistService', () => {
 
 	describe('isTokenBlacklisted', () => {
 		it('should return true for blacklisted token', async () => {
-			cacheService.exists.mockResolvedValue(true);
+			mockCacheProvider.exists.mockResolvedValue(true);
 
 			const result = await service.isTokenBlacklisted('test.token');
 
 			expect(result).toBe(true);
-			expect(cacheService.exists).toHaveBeenCalledWith('blacklist:test.token');
+			expect(mockCacheProvider.exists).toHaveBeenCalledWith('blacklist:test.token');
 		});
 
 		it('should return false for non-blacklisted token', async () => {
-			cacheService.exists.mockResolvedValue(false);
+			mockCacheProvider.exists.mockResolvedValue(false);
 
 			const result = await service.isTokenBlacklisted('test.token');
 
 			expect(result).toBe(false);
 		});
 
-		it('should return false on cache error', async () => {
-			cacheService.exists.mockRejectedValue(new Error('Cache error'));
+		it('should throw on cache error (fail closed)', async () => {
+			mockCacheProvider.exists.mockRejectedValue(new Error('Cache error'));
 
-			const result = await service.isTokenBlacklisted('test.token');
-
-			expect(result).toBe(false);
+			await expect(service.isTokenBlacklisted('test.token')).rejects.toThrow();
 		});
 	});
 
 	describe('revokeUserTokens', () => {
 		it('should revoke user tokens successfully', async () => {
-			cacheService.set.mockResolvedValue(undefined);
+			mockCacheProvider.set.mockResolvedValue(undefined);
 
 			await service.revokeUserTokens('user_123');
 
-			expect(cacheService.set).toHaveBeenCalledWith(
+			expect(mockCacheProvider.set).toHaveBeenCalledWith(
 				'revoke:user_123',
 				expect.any(Number),
 				86400,
@@ -109,7 +97,7 @@ describe('TokenBlacklistService', () => {
 		});
 
 		it('should handle cache errors', async () => {
-			cacheService.set.mockRejectedValue(new Error('Cache error'));
+			mockCacheProvider.set.mockRejectedValue(new Error('Cache error'));
 
 			await expect(service.revokeUserTokens('user_123'))
 				.rejects.toThrow('Cache error');
@@ -118,28 +106,26 @@ describe('TokenBlacklistService', () => {
 
 	describe('hasUserRevokedTokens', () => {
 		it('should return true for revoked user tokens', async () => {
-			cacheService.exists.mockResolvedValue(true);
+			mockCacheProvider.exists.mockResolvedValue(true);
 
 			const result = await service.hasUserRevokedTokens('user_123');
 
 			expect(result).toBe(true);
-			expect(cacheService.exists).toHaveBeenCalledWith('revoke:user_123');
+			expect(mockCacheProvider.exists).toHaveBeenCalledWith('revoke:user_123');
 		});
 
 		it('should return false for non-revoked user tokens', async () => {
-			cacheService.exists.mockResolvedValue(false);
+			mockCacheProvider.exists.mockResolvedValue(false);
 
 			const result = await service.hasUserRevokedTokens('user_123');
 
 			expect(result).toBe(false);
 		});
 
-		it('should return false on cache error', async () => {
-			cacheService.exists.mockRejectedValue(new Error('Cache error'));
+		it('should throw on cache error (fail closed)', async () => {
+			mockCacheProvider.exists.mockRejectedValue(new Error('Cache error'));
 
-			const result = await service.hasUserRevokedTokens('user_123');
-
-			expect(result).toBe(false);
+			await expect(service.hasUserRevokedTokens('user_123')).rejects.toThrow();
 		});
 	});
 

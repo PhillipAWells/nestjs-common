@@ -5,25 +5,25 @@ export type SessionDocument = Session & Document;
 
 @Schema()
 export class Session {
-	@Prop({ required: true, unique: true })
+	@Prop({ type: String, required: true, unique: true })
 	public sessionId!: string;
 
-	@Prop()
+	@Prop({ type: String })
 	public userId?: string;
 
-	@Prop({ required: true, default: false })
+	@Prop({ type: Boolean, required: true, default: false })
 	public isAuthenticated!: boolean;
 
-	@Prop()
+	@Prop({ type: String })
 	public accessToken?: string;
 
-	@Prop()
+	@Prop({ type: String })
 	public refreshToken?: string;
 
-	@Prop()
+	@Prop({ type: Date })
 	public accessTokenExpiresAt?: Date;
 
-	@Prop()
+	@Prop({ type: Date })
 	public refreshTokenExpiresAt?: Date;
 
 	@Prop({
@@ -59,13 +59,13 @@ export class Session {
 		permissions: string[];
 	};
 
-	@Prop({ required: true })
+	@Prop({ type: Date, required: true })
 	public createdAt!: Date;
 
-	@Prop({ required: true })
+	@Prop({ type: Date, required: true })
 	public lastActivityAt!: Date;
 
-	@Prop({ required: true, index: { expireAfterSeconds: 0 } })
+	@Prop({ type: Date, required: true, index: { expireAfterSeconds: 0 } })
 	public expiresAt!: Date;
 
 	@Prop({ type: Map, of: String })
@@ -95,7 +95,7 @@ export class Session {
 		provider?: string;
 	}>;
 
-	@Prop()
+	@Prop({ type: Number })
 	public maxConcurrentSessions?: number;
 }
 
