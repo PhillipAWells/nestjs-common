@@ -43,7 +43,7 @@ describe('AuditLoggerService', () => {
 	});
 
 	it('should implement LazyModuleRefService', () => {
-		expect(service.moduleRef).toBeDefined();
+		expect(service.Module).toBeDefined();
 		expect(service.Logger).toBeDefined();
 	});
 

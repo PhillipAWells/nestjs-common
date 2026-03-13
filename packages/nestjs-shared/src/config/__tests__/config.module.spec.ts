@@ -27,7 +27,7 @@ describe('ConfigModule', () => {
 				return mockNestConfigService;
 			}),
 		};
-		const configService = new ConfigService(mockModuleRef as any, mockNestConfigService);
+		const configService = new ConfigService(mockModuleRef as any);
 		expect(configService).toBeDefined();
 		expect(configService).toBeInstanceOf(ConfigService);
 	});
@@ -41,7 +41,8 @@ describe('ConfigModule', () => {
 				info: vi.fn(),
 			}),
 		} as any;
-		const validationService = new ValidationService(mockAppLogger);
+		const mockModuleRef = { get: vi.fn().mockReturnValue(mockAppLogger) } as any;
+		const validationService = new ValidationService(mockModuleRef);
 		expect(validationService).toBeDefined();
 		expect(validationService).toBeInstanceOf(ValidationService);
 	});
@@ -68,7 +69,7 @@ describe('ConfigModule', () => {
 				return mockNestConfigService;
 			}),
 		};
-		const configService = new ConfigService(mockModuleRef as any, mockNestConfigService);
+		const configService = new ConfigService(mockModuleRef as any);
 		expect(configService).toBeDefined();
 	});
 
@@ -81,7 +82,8 @@ describe('ConfigModule', () => {
 				info: vi.fn(),
 			}),
 		} as any;
-		const validationService = new ValidationService(mockAppLogger);
+		const mockModuleRef = { get: vi.fn().mockReturnValue(mockAppLogger) } as any;
+		const validationService = new ValidationService(mockModuleRef);
 		expect(validationService).toBeDefined();
 	});
 });

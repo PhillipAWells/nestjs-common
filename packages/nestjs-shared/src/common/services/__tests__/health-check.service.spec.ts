@@ -17,7 +17,13 @@ describe('HealthCheckService', () => {
 				info: vi.fn(),
 			}),
 		} as any;
-		service = new HealthCheckService(mockLogger);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockLogger;
+				throw new Error('not found');
+			},
+		} as any;
+		service = new HealthCheckService(mockModuleRef);
 	});
 
 	it('should be defined', () => {

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { performance } from 'node:perf_hooks';
 import { AppLogger } from '../services/logger.service.js';
 import type { IContextualLogger } from '../interfaces/logger.interface.js';
 import type { IMetricsExporter, MetricDescriptor, MetricValue } from '../interfaces/metrics-exporter.interface.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Central registry for metrics collection and export
@@ -38,7 +40,7 @@ import type { IMetricsExporter, MetricDescriptor, MetricValue } from '../interfa
  * ```
  */
 @Injectable()
-export class InstrumentationRegistry {
+export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefService {
 	/**
 	 * Map of metric descriptors by name
 	 * @private
@@ -74,15 +76,17 @@ export class InstrumentationRegistry {
 	 * @private
 	 */
 	private get logger(): IContextualLogger {
-		this._logger ??= this.appLogger.createContextualLogger(InstrumentationRegistry.name);
+		this._logger ??= this.AppLogger.createContextualLogger(InstrumentationRegistry.name);
 		return this._logger;
 	}
 
-	/**
-	 * Create a new InstrumentationRegistry instance
-	 * @param appLogger - The application logger service
-	 */
-	constructor(private readonly appLogger: AppLogger) {
+	constructor(public readonly Module: ModuleRef) {}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	public onModuleInit(): void {
 		this.registerHttpMetrics();
 	}
 

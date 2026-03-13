@@ -18,7 +18,7 @@ import { ModuleRef } from '@nestjs/core';
  * @example
  * ```typescript
  * public get Logger(): AppLogger {
- *     return this.moduleRef.get(AppLogger);
+ *     return this.Module.get(AppLogger);
  * }
  * ```
  */
@@ -33,7 +33,7 @@ export type LazyGetter<T> = () => T;
  * ```typescript
  * public get OptionalConfig(): ConfigService | undefined {
  *     try {
- *         return this.moduleRef.get(ConfigService, { strict: false });
+ *         return this.Module.get(ConfigService, { strict: false });
  *     } catch {
  *         return undefined;
  *     }
@@ -50,7 +50,7 @@ export type OptionalLazyGetter<T> = () => T | undefined;
  * @example
  * ```typescript
  * public get PubSub(): PubSub {
- *     return this.moduleRef.get('PUB_SUB');
+ *     return this.Module.get('PUB_SUB');
  * }
  * ```
  */
@@ -66,10 +66,10 @@ export type TokenLazyGetter<T> = (token: string) => T;
  * ```typescript
  * @Injectable()
  * export class ExampleService implements LazyModuleRefService {
- *     constructor(public readonly moduleRef: ModuleRef) {}
+ *     constructor(public readonly Module: ModuleRef) {}
  *
  *     public get SomeService(): SomeServiceType {
- *         return this.moduleRef.get(SomeServiceType);
+ *         return this.Module.get(SomeServiceType);
  *     }
  * }
  * ```
@@ -79,7 +79,7 @@ export interface LazyModuleRefService {
 	 * The ModuleRef instance for lazy dependency resolution
 	 * This should be the ONLY injected dependency
 	 */
-	moduleRef: ModuleRef;
+	Module: ModuleRef;
 }
 
 /**
@@ -127,7 +127,7 @@ export interface OptionalGetterConfig {
  *
  * public get Service(): ServiceType {
  *     if (!this._cachedService) {
- *         this._cachedService = this.moduleRef.get(ServiceType);
+ *         this._cachedService = this.Module.get(ServiceType);
  *     }
  *     return this._cachedService;
  * }
@@ -160,7 +160,7 @@ export function CreateMemoizedLazyGetter<T>(
  * @example
  * ```typescript
  * public get OptionalService(): ServiceType | undefined {
- *     return createOptionalLazyGetter(this.moduleRef, ServiceType);
+ *     return createOptionalLazyGetter(this.Module, ServiceType);
  * }
  * ```
  */
@@ -185,12 +185,12 @@ export function CreateOptionalLazyGetter<T>(
  * @example
  * ```typescript
  * if (isLazyModuleRefService(service)) {
- *     // service.moduleRef is available
+ *     // service.Module is available
  * }
  * ```
  */
 export function IsLazyModuleRefService(value: any): value is LazyModuleRefService {
-	return !!(value && typeof value === 'object' && 'moduleRef' in value && value.moduleRef instanceof ModuleRef);
+	return !!(value && typeof value === 'object' && 'Module' in value && value.Module instanceof ModuleRef);
 }
 
 /**

@@ -1,8 +1,10 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * HTTP Metrics Interceptor
@@ -15,8 +17,12 @@ import { MetricsRegistryService } from '../services/metrics-registry.service.js'
 const DEFAULT_ERROR_STATUS_CODE = 500;
 
 @Injectable()
-export class HTTPMetricsInterceptor implements NestInterceptor {
-	constructor(private readonly metricsService: MetricsRegistryService) {}
+export class HTTPMetricsInterceptor implements NestInterceptor, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get MetricsService(): MetricsRegistryService {
+		return this.Module.get(MetricsRegistryService);
+	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		// Skip metrics for non-HTTP contexts (GraphQL, WebSocket, RPC, etc.)
@@ -42,10 +48,10 @@ export class HTTPMetricsInterceptor implements NestInterceptor {
 			tap(() => {
 				const duration = Date.now() - startTime;
 				const contentLength = this.getContentLength(request);
-				const { statusCode } = response;
+				const statusCode = response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
 
 				// Record metrics
-				this.metricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
+				this.MetricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
 			}),
 			catchError((error: unknown) => {
 				const duration = Date.now() - startTime;
@@ -53,7 +59,7 @@ export class HTTPMetricsInterceptor implements NestInterceptor {
 				const statusCode = response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
 
 				// Record metrics even on error (use captured statusCode or default)
-				this.metricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
+				this.MetricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
 				return throwError(() => error);
 			}),
 		);

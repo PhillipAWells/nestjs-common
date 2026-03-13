@@ -1,5 +1,6 @@
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { HTTPMetricsInterceptor } from '../http-metrics.interceptor.js';
+import { MetricsRegistryService } from '../../services/metrics-registry.service.js';
 import { of, Observable } from 'rxjs';
 
 describe('HTTPMetricsInterceptor', () => {
@@ -24,7 +25,14 @@ describe('HTTPMetricsInterceptor', () => {
 			_metrics: recordedMetrics,
 		};
 
-		interceptor = new HTTPMetricsInterceptor(mockMetrics);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === MetricsRegistryService) return mockMetrics;
+				throw new Error('not found');
+			},
+		} as any;
+
+		interceptor = new HTTPMetricsInterceptor(mockModuleRef);
 	});
 
 	it('should be defined', () => {

@@ -1,6 +1,6 @@
-import { Injectable, Optional, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
@@ -102,15 +102,13 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		'pin',
 	];
 
-	private readonly additionalSensitiveKeys: string[] = [];
+	constructor(public readonly Module: ModuleRef) {}
 
-	constructor(
-		public readonly moduleRef: ModuleRef,
-		@Optional() @Inject(ERROR_SANITIZER_OPTIONS) private readonly options?: ErrorSanitizerOptions,
-	) {
-		// Merge additional sensitive keys from options
-		if (this.options?.additionalSensitiveKeys) {
-			this.additionalSensitiveKeys = this.options.additionalSensitiveKeys;
+	private get Options(): ErrorSanitizerOptions | undefined {
+		try {
+			return this.Module.get(ERROR_SANITIZER_OPTIONS, { strict: false });
+		} catch {
+			return undefined;
 		}
 	}
 
@@ -308,7 +306,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		const fieldNameLower = fieldName.toLowerCase();
 		const allSensitiveFields = [
 			...ErrorSanitizerService.DEFAULT_SENSITIVE_KEYS,
-			...this.additionalSensitiveKeys,
+			...(this.Options?.additionalSensitiveKeys ?? []),
 		];
 
 		return allSensitiveFields.some(field =>

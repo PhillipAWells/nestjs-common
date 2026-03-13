@@ -1,8 +1,7 @@
 
 /// <reference types="vitest" />
-import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { register } from 'prom-client';
 import {
 	MetricsRegistryService,
 	BaseMetricsCollector,
@@ -39,29 +38,25 @@ describe('nestjs-shared Integration Tests', () => {
 	let enableCorsCallCount: number;
 	let useGlobalPipesCallCount: number;
 
-	beforeEach(async () => {
+	beforeEach(() => {
+		register.clear();
+
 		const mockConfigService = {
 			get: (key: string, defaultValue?: any) => defaultValue,
 		};
+		const mockAppLogger = new AppLogger(mockConfigService as any, 'TestContext');
 
-		const module = await Test.createTestingModule({
-			providers: [
-				{
-					provide: ConfigService,
-					useValue: mockConfigService,
-				},
-				{
-					provide: AppLogger,
-					useValue: new AppLogger(mockConfigService as any, 'TestContext'),
-				},
-				MetricsRegistryService,
-				HealthCheckService,
-			],
-		}).compile();
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockAppLogger;
+				if (token === MetricsRegistryService) return metricsRegistry;
+				if (token === HealthCheckService) return healthCheck;
+				throw new Error(`not found: ${String(token)}`);
+			},
+		} as any;
 
-		metricsRegistry = module.get<MetricsRegistryService>(MetricsRegistryService);
-		metricsRegistry.clear(); // Clear metrics from previous tests
-		healthCheck = module.get<HealthCheckService>(HealthCheckService);
+		metricsRegistry = new MetricsRegistryService(mockModuleRef);
+		healthCheck = new HealthCheckService(mockModuleRef);
 
 		// Initialize call counters
 		appUseCallCount = 0;

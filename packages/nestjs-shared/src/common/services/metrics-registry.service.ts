@@ -1,4 +1,5 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Registry, collectDefaultMetrics, Histogram, Counter, Gauge } from 'prom-client';
 import {
 	HTTP_DURATION_BUCKETS,
@@ -6,6 +7,7 @@ import {
 	MILLISECONDS_TO_SECONDS,
 } from '../constants/histogram-buckets.constants.js';
 import { AppLogger } from './logger.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Metrics Registry Service
@@ -14,7 +16,7 @@ import { AppLogger } from './logger.service.js';
  * Provides HTTP request metrics, custom metrics registration, and registry management.
  */
 @Injectable()
-export class MetricsRegistryService {
+export class MetricsRegistryService implements OnModuleInit, LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
 	private readonly registry: Registry;
@@ -22,51 +24,54 @@ export class MetricsRegistryService {
 	private readonly enabled: boolean;
 
 	// HTTP Request Metrics
-	private readonly httpRequestDuration: Histogram<string> | null = null;
+	private httpRequestDuration: Histogram<string> | null = null;
 
-	private readonly httpRequestTotal: Counter<string> | null = null;
+	private httpRequestTotal: Counter<string> | null = null;
 
-	private readonly httpRequestSize: Histogram<string> | null = null;
+	private httpRequestSize: Histogram<string> | null = null;
 
-	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
+	constructor(public readonly Module: ModuleRef) {
 		this.registry = new Registry();
 		this.enabled = process.env['PROMETHEUS_ENABLED'] !== 'false';
 
+		if (this.enabled) {
+			// Collect default Node.js metrics
+			collectDefaultMetrics({ register: this.registry });
+
+			// HTTP Request Duration Histogram
+			this.httpRequestDuration = new Histogram({
+				name: 'http_request_duration_seconds',
+				help: 'Duration of HTTP requests in seconds',
+				labelNames: ['method', 'route', 'status_code'],
+				buckets: HTTP_DURATION_BUCKETS,
+				registers: [this.registry],
+			});
+
+			// HTTP Request Total Counter
+			this.httpRequestTotal = new Counter({
+				name: 'http_requests_total',
+				help: 'Total number of HTTP requests',
+				labelNames: ['method', 'route', 'status_code'],
+				registers: [this.registry],
+			});
+
+			// HTTP Request Size Histogram
+			this.httpRequestSize = new Histogram({
+				name: 'http_request_size_bytes',
+				help: 'Size of HTTP requests in bytes',
+				labelNames: ['method', 'route'],
+				buckets: HTTP_REQUEST_SIZE_BUCKETS,
+				registers: [this.registry],
+			});
+		}
+	}
+
+	public onModuleInit(): void {
 		if (!this.enabled) {
 			this.Logger.info('Prometheus metrics disabled');
-			return;
+		} else {
+			this.Logger.info('MetricsRegistryService initialized with HTTP metrics');
 		}
-
-		// Collect default Node.js metrics
-		collectDefaultMetrics({ register: this.registry });
-
-		// HTTP Request Duration Histogram
-		this.httpRequestDuration = new Histogram({
-			name: 'http_request_duration_seconds',
-			help: 'Duration of HTTP requests in seconds',
-			labelNames: ['method', 'route', 'status_code'],
-			buckets: HTTP_DURATION_BUCKETS,
-			registers: [this.registry],
-		});
-
-		// HTTP Request Total Counter
-		this.httpRequestTotal = new Counter({
-			name: 'http_requests_total',
-			help: 'Total number of HTTP requests',
-			labelNames: ['method', 'route', 'status_code'],
-			registers: [this.registry],
-		});
-
-		// HTTP Request Size Histogram
-		this.httpRequestSize = new Histogram({
-			name: 'http_request_size_bytes',
-			help: 'Size of HTTP requests in bytes',
-			labelNames: ['method', 'route'],
-			buckets: HTTP_REQUEST_SIZE_BUCKETS,
-			registers: [this.registry],
-		});
-
-		this.Logger.info('MetricsRegistryService initialized with HTTP metrics');
 	}
 
 	/**
@@ -75,7 +80,7 @@ export class MetricsRegistryService {
 	 */
 	private get Logger(): AppLogger {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-		this._contextualLogger ||= this.appLogger.createContextualLogger(MetricsRegistryService.name);
+		this._contextualLogger ||= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
 		return this._contextualLogger;
 	}
 

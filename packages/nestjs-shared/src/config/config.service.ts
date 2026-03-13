@@ -1,5 +1,5 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 import { AppLogger } from '../common/index.js';
@@ -21,22 +21,25 @@ export interface ConfigSchemaDefinition {
 }
 
 @Injectable()
-export class ConfigService implements LazyModuleRefService, OnModuleDestroy {
+export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModuleDestroy {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(
-		public readonly moduleRef: ModuleRef,
-		private readonly nestConfigService: NestConfigService,
-	) {
+	constructor(public readonly Module: ModuleRef) {}
+
+	public onModuleInit(): void {
 		this.Logger.info('Configuration service initialized');
 	}
 
 	public get Logger(): AppLogger {
 		if (!this._contextualLogger) {
-			const baseLogger = this.moduleRef.get(AppLogger);
+			const baseLogger = this.Module.get(AppLogger);
 			this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
 		}
 		return this._contextualLogger;
+	}
+
+	private get NestConfig(): NestConfigService {
+		return this.Module.get(NestConfigService, { strict: false });
 	}
 
 	/**
@@ -85,14 +88,14 @@ export class ConfigService implements LazyModuleRefService, OnModuleDestroy {
 	 * Get configuration value
 	 */
 	public get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
-		return this.nestConfigService.get(propertyPath, defaultValue);
+		return this.NestConfig.get(propertyPath, defaultValue);
 	}
 
 	/**
 	 * Get configuration value or throw
 	 */
 	public getOrThrow<T = any>(propertyPath: string): T {
-		return this.nestConfigService.getOrThrow(propertyPath);
+		return this.NestConfig.getOrThrow(propertyPath);
 	}
 
 	/**

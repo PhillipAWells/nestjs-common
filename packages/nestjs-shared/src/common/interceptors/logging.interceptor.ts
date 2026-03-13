@@ -3,22 +3,25 @@ import {
 	NestInterceptor,
 	ExecutionContext,
 	CallHandler,
-	Inject,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Logging Interceptor
  * Logs incoming requests and outgoing responses with timing information
  */
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
-	constructor(
-		@Inject(AppLogger) private readonly logger: AppLogger,
-	) {}
+export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get Logger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		// Skip logging for non-HTTP contexts (e.g., GraphQL)
@@ -36,7 +39,7 @@ export class LoggingInterceptor implements NestInterceptor {
 		// Note: Dynamic profiling tags are not supported by @pyroscope/nodejs
 		// Use static tags in config during initialization instead
 
-		const logFn = isHealthOrMetrics ? this.logger.debug.bind(this.logger) : this.logger.info.bind(this.logger);
+		const logFn = isHealthOrMetrics ? this.Logger.debug.bind(this.Logger) : this.Logger.info.bind(this.Logger);
 		logFn(`Incoming request: ${method} ${url} from ${ip}`, 'LoggingInterceptor');
 
 		return next.handle().pipe(

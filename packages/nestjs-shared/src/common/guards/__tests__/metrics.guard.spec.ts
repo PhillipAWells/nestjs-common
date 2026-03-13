@@ -3,6 +3,16 @@ import { ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '../../../config/config.service.js';
 import { vi } from 'vitest';
 
+function makeGuard(mockConfigService: any): MetricsGuard {
+	const mockModuleRef = {
+		get: (token: any) => {
+			if (token === ConfigService) return mockConfigService;
+			throw new Error('not found');
+		},
+	} as any;
+	return new MetricsGuard(mockModuleRef);
+}
+
 describe('MetricsGuard', () => {
 	let guard: MetricsGuard;
 	let configService: ConfigService;
@@ -29,7 +39,7 @@ describe('MetricsGuard', () => {
 				get: () => undefined,
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 
 			expect(guard).toBeDefined();
 		});
@@ -39,7 +49,7 @@ describe('MetricsGuard', () => {
 				get: () => undefined,
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 
 			expect(typeof guard.canActivate).toBe('function');
 		});
@@ -49,7 +59,11 @@ describe('MetricsGuard', () => {
 				get: vi.fn().mockReturnValue('test-key-123'),
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
+
+			// Key is read lazily during canActivate, not at construction
+			mockRequest.headers = { authorization: 'Bearer test-key-123' };
+			guard.canActivate(mockContext);
 
 			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
 		});
@@ -61,7 +75,7 @@ describe('MetricsGuard', () => {
 				get: () => undefined,
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should allow requests when METRICS_API_KEY is not configured', () => {
@@ -104,7 +118,7 @@ describe('MetricsGuard', () => {
 				get: () => 'secret-api-key',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should allow requests with correct Bearer token', () => {
@@ -141,12 +155,12 @@ describe('MetricsGuard', () => {
 			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
 		});
 
-		it('should be case-sensitive for Bearer scheme', () => {
+		it('should accept case-insensitive Bearer scheme', () => {
 			mockRequest.headers = {
 				authorization: 'bearer secret-api-key',
 			};
 
-			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
+			expect(guard.canActivate(mockContext)).toBe(true);
 		});
 	});
 
@@ -156,7 +170,7 @@ describe('MetricsGuard', () => {
 				get: () => 'secret-api-key',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should allow requests with correct X-API-Key header', () => {
@@ -195,7 +209,7 @@ describe('MetricsGuard', () => {
 				get: () => 'secret-api-key',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should accept Authorization header when X-API-Key is also present', () => {
@@ -232,7 +246,7 @@ describe('MetricsGuard', () => {
 				get: () => 'secret-api-key',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should throw ForbiddenException on invalid credentials', () => {
@@ -269,7 +283,7 @@ describe('MetricsGuard', () => {
 				get: () => 'secret-api-key',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 		});
 
 		it('should handle empty authorization header', () => {
@@ -293,7 +307,7 @@ describe('MetricsGuard', () => {
 				get: () => 'key-with-special-chars_123',
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 
 			mockRequest.headers = {
 				authorization: 'Bearer key-with-special-chars_123',
@@ -320,7 +334,7 @@ describe('MetricsGuard', () => {
 				get: () => undefined,
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 
 			const result = guard.canActivate(mockContext);
 
@@ -329,22 +343,25 @@ describe('MetricsGuard', () => {
 	});
 
 	describe('integration with ConfigService', () => {
-		it('should read API key from ConfigService during instantiation', () => {
+		it('should read API key from ConfigService during canActivate', () => {
 			const mockConfigService = {
 				get: vi.fn().mockReturnValue('configured-key'),
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
+
+			mockRequest.headers = { authorization: 'Bearer configured-key' };
+			guard.canActivate(mockContext);
 
 			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
 		});
 
-		it('should use cached API key value', () => {
+		it('should read API key on each canActivate call', () => {
 			const mockConfigService = {
 				get: vi.fn().mockReturnValue('configured-key'),
 			};
 
-			guard = new MetricsGuard(mockConfigService as any);
+			guard = makeGuard(mockConfigService);
 
 			mockRequest.headers = { authorization: 'Bearer configured-key' };
 			guard.canActivate(mockContext);
@@ -352,7 +369,9 @@ describe('MetricsGuard', () => {
 			mockRequest.headers = { 'x-api-key': 'configured-key' };
 			guard.canActivate(mockContext);
 
-			expect(mockConfigService.get).toHaveBeenCalledTimes(1);
+			// The key is read lazily (not cached) — called at least once per canActivate
+			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
+			expect(mockConfigService.get.mock.calls.length).toBeGreaterThanOrEqual(2);
 		});
 	});
 });

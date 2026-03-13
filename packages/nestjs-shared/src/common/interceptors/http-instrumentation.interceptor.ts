@@ -5,11 +5,13 @@ import {
 	CallHandler,
 	HttpException,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { performance } from 'node:perf_hooks';
 import { Request, Response } from 'express';
 import { InstrumentationRegistry } from '../registry/instrumentation-registry.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * HTTP Instrumentation Interceptor
@@ -38,8 +40,12 @@ import { InstrumentationRegistry } from '../registry/instrumentation-registry.js
  * ```
  */
 @Injectable()
-export class HTTPInstrumentationInterceptor implements NestInterceptor {
-	constructor(private readonly registry: InstrumentationRegistry) {}
+export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get Registry(): InstrumentationRegistry {
+		return this.Module.get(InstrumentationRegistry);
+	}
 
 	/**
 	 * Intercept HTTP requests and record instrumentation metrics.
@@ -70,18 +76,18 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor {
 				const statusCode = String(response.statusCode);
 				const duration = (performance.now() - start) / millisecondsPerSecond; // Convert to seconds
 
-				this.registry.recordMetric('http_request_duration_seconds', duration, {
+				this.Registry.recordMetric('http_request_duration_seconds', duration, {
 					method,
 					route,
 					status_code: statusCode,
 				});
-				this.registry.recordMetric('http_requests_total', 1, {
+				this.Registry.recordMetric('http_requests_total', 1, {
 					method,
 					route,
 					status_code: statusCode,
 				});
 				if (contentLength !== undefined) {
-					this.registry.recordMetric('http_request_size_bytes', contentLength, {
+					this.Registry.recordMetric('http_request_size_bytes', contentLength, {
 						method,
 						route,
 					});
@@ -94,12 +100,12 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor {
 					: '500';
 				const duration = (performance.now() - start) / millisecondsPerSecond; // Convert to seconds
 
-				this.registry.recordMetric('http_request_duration_seconds', duration, {
+				this.Registry.recordMetric('http_request_duration_seconds', duration, {
 					method,
 					route,
 					status_code: statusCode,
 				});
-				this.registry.recordMetric('http_requests_total', 1, {
+				this.Registry.recordMetric('http_requests_total', 1, {
 					method,
 					route,
 					status_code: statusCode,

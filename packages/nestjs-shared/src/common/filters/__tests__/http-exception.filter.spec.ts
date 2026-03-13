@@ -10,6 +10,7 @@ describe('HttpExceptionFilter', () => {
 	let mockLogger: any;
 	let mockErrorSanitizer: any;
 	let mockErrorCategorizer: any;
+	let mockModuleRef: any;
 
 	beforeEach(() => {
 		mockLogger = {
@@ -32,11 +33,16 @@ describe('HttpExceptionFilter', () => {
 			},
 		};
 
-		filter = new HttpExceptionFilter(
-			mockLogger as AppLogger,
-			mockErrorSanitizer as ErrorSanitizerService,
-			mockErrorCategorizer as ErrorCategorizerService,
-		);
+		mockModuleRef = {
+			get(token: any) {
+				if (token === AppLogger) return mockLogger;
+				if (token === ErrorSanitizerService) return mockErrorSanitizer;
+				if (token === ErrorCategorizerService) return mockErrorCategorizer;
+				return undefined;
+			},
+		};
+
+		filter = new HttpExceptionFilter(mockModuleRef);
 	});
 
 	it('should be defined', () => {

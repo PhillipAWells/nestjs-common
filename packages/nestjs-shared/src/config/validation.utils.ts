@@ -1,19 +1,26 @@
-import { Injectable, Inject } from '@nestjs/common';
-
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import Joi from 'joi';
 import type { ConfigSchema, ValidationResult } from './config.types.js';
 import { AppLogger } from '../common/index.js';
+import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 
 /**
  * Configuration Validation Service
  * Provides validation utilities with logging
  */
 @Injectable()
-export class ValidationService {
-	private readonly logger: AppLogger;
+export class ValidationService implements LazyModuleRefService {
+	private _contextualLogger: AppLogger | undefined;
 
-	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
-		this.logger = this.appLogger.createContextualLogger(ValidationService.name);
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get logger(): AppLogger {
+		if (!this._contextualLogger) {
+			const baseLogger = this.Module.get(AppLogger);
+			this._contextualLogger = baseLogger.createContextualLogger(ValidationService.name);
+		}
+		return this._contextualLogger;
 	}
 
 	/**

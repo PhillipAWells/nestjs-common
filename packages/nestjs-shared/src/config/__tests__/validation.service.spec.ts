@@ -1,6 +1,7 @@
 
 import Joi from 'joi';
 import { ValidationService } from '../validation.utils.js';
+import { AppLogger } from '../../common/index.js';
 
 describe('ValidationService', () => {
 	let service: ValidationService;
@@ -15,7 +16,14 @@ describe('ValidationService', () => {
 			}),
 		} as any;
 
-		service = new ValidationService(mockAppLogger);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockAppLogger;
+				throw new Error('not found');
+			},
+		} as any;
+
+		service = new ValidationService(mockModuleRef);
 	});
 
 	it('should be defined', () => {

@@ -53,11 +53,11 @@ interface HttpResponse<T = Record<string, unknown>> {
 export class HttpClientService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	public get Logger(): AppLogger {
 		if (!this._contextualLogger) {
-			const baseLogger = this.moduleRef.get(AppLogger);
+			const baseLogger = this.Module.get(AppLogger);
 			this._contextualLogger = baseLogger.createContextualLogger(HttpClientService.name);
 		}
 		return this._contextualLogger;

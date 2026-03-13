@@ -21,7 +21,14 @@ describe('HTTPInstrumentationInterceptor', () => {
 			_metrics: recordedMetrics,
 		};
 
-		interceptor = new HTTPInstrumentationInterceptor(mockRegistry as InstrumentationRegistry);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === InstrumentationRegistry) return mockRegistry;
+				throw new Error('not found');
+			},
+		} as any;
+
+		interceptor = new HTTPInstrumentationInterceptor(mockModuleRef);
 	});
 
 	it('should be defined', () => {

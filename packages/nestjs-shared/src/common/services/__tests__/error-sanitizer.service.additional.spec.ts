@@ -1,13 +1,22 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ErrorSanitizerService, ErrorSanitizerOptions } from '../error-sanitizer.service.js';
+import { ErrorSanitizerService, ErrorSanitizerOptions, ERROR_SANITIZER_OPTIONS } from '../error-sanitizer.service.js';
 
 describe('ErrorSanitizerService - Additional Coverage', () => {
 	let service: ErrorSanitizerService;
 
-	const mockModuleRef = {
-		get: () => ({}),
-		resolve: () => Promise.resolve({}),
-	} as any;
+	function makeMockModuleRef(options?: ErrorSanitizerOptions) {
+		return {
+			get: (token: any) => {
+				if (token === ERROR_SANITIZER_OPTIONS) {
+					if (options) return options;
+					throw new Error('not found');
+				}
+				throw new Error('not found');
+			},
+		} as any;
+	}
+
+	const mockModuleRef = makeMockModuleRef();
 
 	beforeEach(() => {
 		service = new ErrorSanitizerService(mockModuleRef);
@@ -18,7 +27,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customSecret', 'internalKey'],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const context = {
 				userId: '123',
@@ -37,7 +46,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customField'],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const context = {
 				password: 'default_sensitive',
@@ -55,7 +64,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalSensitiveKeys: [],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const context = {
 				password: 'should_redact',
@@ -71,7 +80,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['CustomSecret'],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const context = {
 				customsecret: 'value1',
@@ -94,7 +103,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalPatterns: [/custom_secret_[a-z0-9]+/gi],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const error = {
 				message: 'Error with custom_secret_abc123 exposed',
@@ -113,7 +122,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 					/token_[a-z0-9]+/gi,
 				],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const error = {
 				message: 'Error with secret_xyz789 and token_abc123',
@@ -128,7 +137,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 			const options: ErrorSanitizerOptions = {
 				additionalPatterns: [],
 			};
-			service = new ErrorSanitizerService(mockModuleRef, options);
+			service = new ErrorSanitizerService(makeMockModuleRef(options));
 
 			const error = {
 				message: 'Regular error message',

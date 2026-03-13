@@ -1,8 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Optional } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Request } from 'express';
 import { CSRFService } from '../services/csrf.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Guard that validates CSRF tokens on requests to prevent Cross-Site Request Forgery attacks.
@@ -19,12 +21,28 @@ import { AuditLoggerService } from '../services/audit-logger.service.js';
  */
 
 @Injectable()
-export class CSRFGuard implements CanActivate {
-	constructor(
-		private readonly csrfService: CSRFService,
-		@Optional() private readonly logger?: AppLogger,
-		@Optional() private readonly auditLogger?: AuditLoggerService,
-	) {}
+export class CSRFGuard implements CanActivate, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get CsrfService(): CSRFService {
+		return this.Module.get(CSRFService);
+	}
+
+	private get Logger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	private get AuditLogger(): AuditLoggerService | undefined {
+		try {
+			return this.Module.get(AuditLoggerService, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
 
 	/**
 	 * Evaluate whether the current request is authorized based on CSRF token validity.
@@ -46,16 +64,16 @@ export class CSRFGuard implements CanActivate {
 		}
 
 		// Validate CSRF token
-		if (!this.csrfService.validateToken(request)) {
+		if (!this.CsrfService.validateToken(request)) {
 			// Extract IP address from request — prefer request.ip which respects trustProxy
 			const ipAddress = request.ip ?? (request.socket as { remoteAddress?: string } | undefined)?.remoteAddress ?? 'unknown';
 			const endpoint = request.path ?? request.url ?? 'unknown';
 
 			// Log via audit logger if available
-			this.auditLogger?.logCsrfViolation(ipAddress, endpoint);
+			this.AuditLogger?.logCsrfViolation(ipAddress, endpoint);
 
 			// Also log via app logger for backward compatibility
-			this.logger?.warn('CSRF token validation failed', 'CSRFGuard', {
+			this.Logger?.warn('CSRF token validation failed', 'CSRFGuard', {
 				ip: ipAddress,
 				path: endpoint,
 				method: request.method,

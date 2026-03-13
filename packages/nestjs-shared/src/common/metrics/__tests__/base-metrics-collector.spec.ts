@@ -32,7 +32,8 @@ describe('BaseMetricsCollector', () => {
 			}),
 		};
 
-		metricsRegistry = new MetricsRegistryService(mockAppLogger);
+		const mockModuleRef = { get: () => mockAppLogger } as any;
+		metricsRegistry = new MetricsRegistryService(mockModuleRef);
 		collector = new TestMetricsCollector(metricsRegistry);
 	});
 

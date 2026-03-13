@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import {
 	HTTP_STATUS_BAD_REQUEST,
 	HTTP_STATUS_UNAUTHORIZED,
@@ -29,19 +29,18 @@ export interface ErrorCategory {
 
 @Injectable()
 export class ErrorCategorizerService implements LazyModuleRefService {
-	private readonly _contextualLogger: AppLogger;
+	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly moduleRef: ModuleRef) {
-		// Initialize contextual logger immediately in constructor to avoid race conditions
-		const baseLogger = this.moduleRef.get(AppLogger);
-		this._contextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
-	}
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Get contextual logger for error categorizer
-	 * Memoized in constructor for performance: this service logs frequently
 	 */
 	public get Logger(): AppLogger {
+		if (!this._contextualLogger) {
+			const baseLogger = this.Module.get(AppLogger);
+			this._contextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
+		}
 		return this._contextualLogger;
 	}
 

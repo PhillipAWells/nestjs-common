@@ -1,7 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Optional } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { Request } from 'express';
 import { ConfigService } from '../../config/config.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Optional API key guard for the /metrics endpoint
@@ -27,14 +29,23 @@ import { AuditLoggerService } from '../services/audit-logger.service.js';
  *   or X-API-Key header. Format: "Bearer <api-key>" or header "X-API-Key: <api-key>"
  */
 @Injectable()
-export class MetricsGuard implements CanActivate {
-	private readonly metricsApiKey: string | undefined;
+export class MetricsGuard implements CanActivate, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
 
-	constructor(
-		private readonly configService: ConfigService,
-		@Optional() private readonly auditLogger?: AuditLoggerService,
-	) {
-		this.metricsApiKey = this.configService.get('METRICS_API_KEY');
+	private get Config(): ConfigService {
+		return this.Module.get(ConfigService);
+	}
+
+	private get AuditLogger(): AuditLoggerService | undefined {
+		try {
+			return this.Module.get(AuditLoggerService, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	private get metricsApiKey(): string | undefined {
+		return this.Config.get('METRICS_API_KEY');
 	}
 
 	public canActivate(context: ExecutionContext): boolean {
@@ -49,8 +60,8 @@ export class MetricsGuard implements CanActivate {
 		const authHeader = request.headers.authorization;
 		if (authHeader) {
 			const [scheme, token] = authHeader.split(' ');
-			if (scheme === 'Bearer' && token === this.metricsApiKey) {
-				this.auditLogger?.logSecurityEvent({
+			if (scheme?.toLowerCase() === 'bearer' && token === this.metricsApiKey) {
+				this.AuditLogger?.logSecurityEvent({
 					timestamp: new Date(),
 					action: 'metrics_access',
 					resource: '/metrics',
@@ -66,7 +77,7 @@ export class MetricsGuard implements CanActivate {
 		// Check X-API-Key header
 		const apiKeyHeader = request.headers['x-api-key'] as string | undefined;
 		if (apiKeyHeader === this.metricsApiKey) {
-			this.auditLogger?.logSecurityEvent({
+			this.AuditLogger?.logSecurityEvent({
 				timestamp: new Date(),
 				action: 'metrics_access',
 				resource: '/metrics',

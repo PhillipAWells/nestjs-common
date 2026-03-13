@@ -28,7 +28,14 @@ describe('InstrumentationRegistry', () => {
 
 	beforeEach(() => {
 		mockAppLogger = createMockAppLogger();
-		registry = new InstrumentationRegistry(mockAppLogger as AppLogger);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockAppLogger;
+				throw new Error('not found');
+			},
+		} as any;
+		registry = new InstrumentationRegistry(mockModuleRef);
+		registry.onModuleInit();
 	});
 
 	describe('Constructor', () => {
@@ -317,7 +324,14 @@ describe('InstrumentationRegistry', () => {
 	describe('getAllMetrics()', () => {
 		it('should return empty map initially', () => {
 			// Fresh registry
-			const freshRegistry = new InstrumentationRegistry(mockAppLogger as AppLogger);
+			const freshModuleRef = {
+				get: (token: any) => {
+					if (token === AppLogger) return mockAppLogger;
+					throw new Error('not found');
+				},
+			} as any;
+			const freshRegistry = new InstrumentationRegistry(freshModuleRef);
+			freshRegistry.onModuleInit();
 			const metrics = freshRegistry.getAllMetrics();
 
 			// Should only have the 3 pre-registered HTTP metrics

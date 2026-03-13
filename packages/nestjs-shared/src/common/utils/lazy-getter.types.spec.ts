@@ -179,11 +179,11 @@ describe('LazyGetter Utilities', () => {
 
 		it('should support LazyModuleRefService interface', () => {
 			const service: LazyModuleRefService = {
-				moduleRef: mockModuleRef,
+				Module: mockModuleRef,
 			};
 
-			// service.moduleRef should be an instance of ModuleRef for this to work
-			expect(service.moduleRef instanceof mockModuleRef.constructor).toBe(true);
+			// service.Module should be an instance of ModuleRef for this to work
+			expect(service.Module instanceof mockModuleRef.constructor).toBe(true);
 		});
 	});
 
@@ -202,12 +202,12 @@ describe('LazyGetter Utilities', () => {
 			} as any;
 
 			class LazyService implements LazyModuleRefService {
-				constructor(public readonly moduleRef: ModuleRef) {}
+				constructor(public readonly Module: ModuleRef) {}
 
 				private _service?: { method: () => string };
 
 				get Service() {
-					this._service ??= this.moduleRef.get('TestService');
+					this._service ??= this.Module.get('TestService');
 					return this._service;
 				}
 			}

@@ -21,7 +21,8 @@ describe('MetricsRegistryService', () => {
 			}),
 		};
 
-		service = new MetricsRegistryService(mockAppLogger);
+		const mockModuleRef = { get: () => mockAppLogger } as any;
+		service = new MetricsRegistryService(mockModuleRef);
 	});
 
 	afterEach(() => {

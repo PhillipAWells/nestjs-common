@@ -47,8 +47,8 @@ describe('Config Integration', () => {
 				return mockNestConfigService;
 			}),
 		};
-		configService = new ConfigService(mockModuleRef as any, mockNestConfigService);
-		validationService = new ValidationService(mockAppLogger);
+		configService = new ConfigService(mockModuleRef as any);
+		validationService = new ValidationService(mockModuleRef as any);
 	});
 
 	it('should load configuration with NestJS ConfigModule', () => {

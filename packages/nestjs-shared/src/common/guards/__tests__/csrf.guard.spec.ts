@@ -1,5 +1,6 @@
 import { CSRFGuard } from '../csrf.guard.js';
 import { ForbiddenException } from '@nestjs/common';
+import { CSRFService } from '../../services/csrf.service.js';
 
 describe('CSRFGuard', () => {
 	let guard: CSRFGuard;
@@ -10,7 +11,14 @@ describe('CSRFGuard', () => {
 			validateToken: (_req: any) => true,
 		};
 
-		guard = new CSRFGuard(mockCSRFService);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === CSRFService) return mockCSRFService;
+				throw new Error('not found');
+			},
+		} as any;
+
+		guard = new CSRFGuard(mockModuleRef);
 	});
 
 	it('should be defined', () => {

@@ -1,5 +1,6 @@
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { LoggingInterceptor } from '../logging.interceptor.js';
+import { AppLogger } from '../../services/logger.service.js';
 import { of } from 'rxjs';
 
 describe('LoggingInterceptor', () => {
@@ -28,7 +29,13 @@ describe('LoggingInterceptor', () => {
 			_calls: logCalls,
 		};
 
-		interceptor = new LoggingInterceptor(mockLogger);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockLogger;
+				throw new Error('not found');
+			},
+		} as any;
+		interceptor = new LoggingInterceptor(mockModuleRef);
 	});
 
 	it('should be defined', () => {

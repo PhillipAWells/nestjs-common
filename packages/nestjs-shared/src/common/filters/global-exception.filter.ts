@@ -3,13 +3,14 @@ import {
 	Catch,
 	ArgumentsHost,
 	HttpStatus,
-	Inject,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Response, Request } from 'express';
 import { BaseApplicationError } from '../errors/base-application-error.js';
 import { AppLogger } from '../services/logger.service.js';
 import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
 import { ErrorCategorizerService, type ErrorCategory } from '../services/error-categorizer.service.js';
+import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Global Exception Filter
@@ -31,12 +32,20 @@ export interface ErrorResponseBody {
 }
 
 @Catch(BaseApplicationError, Error)
-export class GlobalExceptionFilter implements ExceptionFilter {
-	constructor(
-		@Inject(AppLogger) private readonly logger: AppLogger,
-		private readonly errorSanitizer: ErrorSanitizerService,
-		private readonly errorCategorizer: ErrorCategorizerService,
-	) {}
+export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefService {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get Logger(): AppLogger {
+		return this.Module.get(AppLogger);
+	}
+
+	private get ErrorSanitizer(): ErrorSanitizerService {
+		return this.Module.get(ErrorSanitizerService);
+	}
+
+	private get ErrorCategorizer(): ErrorCategorizerService {
+		return this.Module.get(ErrorCategorizerService);
+	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {
 		// Handle regular HTTP requests
@@ -69,7 +78,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 					} : {}),
 				},
 			};
-			errorCategory = this.errorCategorizer.categorizeError(exception);
+			errorCategory = this.ErrorCategorizer.categorizeError(exception);
 			errorTrace = isDevelopment ? exception.stack : undefined;
 		} else if (exception instanceof Error) {
 			// Generic Error
@@ -83,7 +92,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 					...(isDevelopment ? { stack: exception.stack } : {}),
 				},
 			};
-			errorCategory = this.errorCategorizer.categorizeError(exception);
+			errorCategory = this.ErrorCategorizer.categorizeError(exception);
 			errorTrace = isDevelopment ? exception.stack : undefined;
 		} else {
 			// Unknown exception type
@@ -104,7 +113,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		}
 
 		// Log the error with categorization
-		this.logger.error('Global exception caught', errorTrace, undefined, {
+		this.Logger.error('Global exception caught', errorTrace, undefined, {
 			message: errorResponse.error.message,
 			status,
 			errorType: errorCategory.type,
@@ -120,7 +129,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		// Sanitize error response for production
 		// Pass the nested error object (which has .message, .stack, .context) to the sanitizer,
 		// then reconstruct the full response envelope with the sanitized inner object.
-		const sanitizedInner = this.errorSanitizer.sanitizeErrorResponse(
+		const sanitizedInner = this.ErrorSanitizer.sanitizeErrorResponse(
 			{
 				message: errorResponse.error.message,
 				statusCode: status,
