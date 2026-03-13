@@ -1,4 +1,5 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Inject } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { PyroscopeConfig } from '@pyroscope/nodejs';
 import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
@@ -53,11 +54,27 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	// eslint-disable-next-line no-magic-numbers
 	private readonly STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
-	constructor(
-		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
-		private readonly logger: Logger,
-		private readonly metricsService?: MetricsService,
-	) {}
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get config(): IPyroscopeConfig {
+		const cfg = this.Module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
+		if (!cfg) {
+			throw new Error('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
+		}
+		return cfg;
+	}
+
+	private get logger(): Logger {
+		return this.Module.get(Logger, { strict: false }) ?? new Logger(PyroscopeService.name);
+	}
+
+	private get metricsService(): MetricsService | undefined {
+		try {
+			return this.Module.get(MetricsService, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
 
 	/**
 	 * Initialize Pyroscope client on module initialization
@@ -119,13 +136,13 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	/**
 	 * Cleanup on module destruction
 	 */
-	public onModuleDestroy(): void {
+	public async onModuleDestroy(): Promise<void> {
 		// Clear active profiles to release memory
 		this.activeProfiles.clear();
 
 		if (this.pyroscopeClient && this.isInitialized) {
 			try {
-				this.pyroscopeClient.stop();
+				await this.pyroscopeClient.stop();
 				this.logger.log('Pyroscope profiling stopped');
 			} catch (error) {
 				this.logger.error('Error stopping Pyroscope profiling', error);

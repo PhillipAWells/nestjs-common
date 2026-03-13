@@ -1,9 +1,9 @@
-import { DynamicModule, Global, Provider, Logger } from '@nestjs/common';
+import { DynamicModule, Global, Logger, Provider } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from './service.js';
 import { MetricsService } from './services/metrics.service.js';
 import { ProfilingHealthIndicator } from './indicators/profiling.health.js';
 import { HealthController } from './controllers/health.controller.js';
-import { IPyroscopeConfig } from './interfaces/profiling.interface.js';
 import { IPyroscopeModuleAsyncOptions, IPyroscopeModuleOptions } from './interfaces/module.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
 
@@ -24,30 +24,42 @@ export class PyroscopeModule {
 			useValue: config,
 		};
 
+		const loggerProvider: Provider = {
+			provide: Logger,
+			useValue: new Logger(PyroscopeService.name),
+		};
+
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
-			useClass: MetricsService,
+			useFactory: (moduleRef: ModuleRef) => new MetricsService(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const serviceProvider: Provider = {
 			provide: PyroscopeService,
-			useFactory: (config: IPyroscopeConfig, metricsService: MetricsService) => {
-				const logger = new Logger(PyroscopeService.name);
-				return new PyroscopeService(config, logger, metricsService);
-			},
-			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService],
+			useFactory: (moduleRef: ModuleRef) => new PyroscopeService(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const healthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
-			useClass: ProfilingHealthIndicator,
+			useFactory: (moduleRef: ModuleRef) => new ProfilingHealthIndicator(moduleRef),
+			inject: [ModuleRef],
+		};
+
+		const healthControllerProvider: Provider = {
+			provide: HealthController,
+			useFactory: (moduleRef: ModuleRef) => new HealthController(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const providers: Provider[] = [
 			configProvider,
+			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,
+			...(config.enableHealthChecks !== false ? [healthControllerProvider] : []),
 		];
 
 		const controllers = config.enableHealthChecks !== false ? [HealthController] : [];
@@ -72,27 +84,32 @@ export class PyroscopeModule {
 			inject: options.inject ?? [],
 		};
 
+		const loggerProvider: Provider = {
+			provide: Logger,
+			useValue: new Logger(PyroscopeService.name),
+		};
+
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
-			useClass: MetricsService,
+			useFactory: (moduleRef: ModuleRef) => new MetricsService(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const serviceProvider: Provider = {
 			provide: PyroscopeService,
-			useFactory: (config: IPyroscopeConfig, metricsService: MetricsService) => {
-				const logger = new Logger(PyroscopeService.name);
-				return new PyroscopeService(config, logger, metricsService);
-			},
-			inject: [PYROSCOPE_CONFIG_TOKEN, MetricsService],
+			useFactory: (moduleRef: ModuleRef) => new PyroscopeService(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const healthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
-			useClass: ProfilingHealthIndicator,
+			useFactory: (moduleRef: ModuleRef) => new ProfilingHealthIndicator(moduleRef),
+			inject: [ModuleRef],
 		};
 
 		const providers: Provider[] = [
 			configProvider,
+			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,

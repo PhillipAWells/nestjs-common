@@ -1,6 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
 import { Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from './service.js';
 import { IPyroscopeConfig, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
@@ -12,7 +12,26 @@ describe('PyroscopeService', () => {
 	let mockLogger: any;
 	let mockMetricsService: any;
 
-	beforeEach(async () => {
+	const createMockModuleRef = (config: IPyroscopeConfig, logger: any, metricsService?: any): ModuleRef => {
+		const mockModuleRef = {
+			get: vi.fn((token: any, options?: any) => {
+				if (token === PYROSCOPE_CONFIG_TOKEN) return config;
+				if (token === Logger) return logger;
+				if (token === MetricsService) {
+					if (metricsService === undefined) throw new Error('MetricsService not available');
+					return metricsService;
+				}
+				throw new Error(`Unknown token: ${String(token)}`);
+			}),
+		} as unknown as ModuleRef;
+		return mockModuleRef;
+	};
+
+	const createService = (config: IPyroscopeConfig, logger: any, metricsService?: any): PyroscopeService => {
+		return new PyroscopeService(createMockModuleRef(config, logger, metricsService));
+	};
+
+	beforeEach(() => {
 		mockConfig = {
 			enabled: false, // Disabled by default to avoid actual Pyroscope initialization
 			serverAddress: 'http://localhost:4040',
@@ -41,31 +60,7 @@ describe('PyroscopeService', () => {
 			reset: vi.fn(),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				{
-					provide: PYROSCOPE_CONFIG_TOKEN,
-					useValue: mockConfig,
-				},
-				{
-					provide: Logger,
-					useValue: mockLogger,
-				},
-				{
-					provide: MetricsService,
-					useValue: mockMetricsService,
-				},
-				{
-					provide: PyroscopeService,
-					useFactory: (config: IPyroscopeConfig, logger: Logger, metricsService: MetricsService) => {
-						return new PyroscopeService(config, logger, metricsService);
-					},
-					inject: [PYROSCOPE_CONFIG_TOKEN, Logger, MetricsService],
-				},
-			],
-		}).compile();
-
-		service = module.get<PyroscopeService>(PyroscopeService);
+		service = createService(mockConfig, mockLogger, mockMetricsService);
 	});
 
 	afterEach(() => {
@@ -73,11 +68,11 @@ describe('PyroscopeService', () => {
 	});
 
 	// Helper to create a mock Pyroscope client
-	 
+
 	const createMockPyroscopeClient = () => ({
 		init: vi.fn(),
 		start: vi.fn(),
-		stop: vi.fn(),
+		stop: vi.fn().mockResolvedValue(undefined),
 		addTag: vi.fn(),
 		removeTag: vi.fn(),
 		addTagList: vi.fn(),
@@ -166,13 +161,13 @@ describe('PyroscopeService', () => {
 	});
 
 	describe('onModuleDestroy', () => {
-		it('should not crash when destroying uninitialized service', () => {
-			expect(() => service.onModuleDestroy()).not.toThrow();
+		it('should not crash when destroying uninitialized service', async () => {
+			await expect(service.onModuleDestroy()).resolves.not.toThrow();
 		});
 
-		it('should call stop when pyroscope client is initialized (lines 235-242)', () => {
+		it('should call stop when pyroscope client is initialized (lines 235-242)', async () => {
 			// Create a new service and manually set it to initialized state
-			const serviceWithInit = new PyroscopeService(
+			const serviceWithInit = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger,
 				mockMetricsService,
@@ -183,14 +178,14 @@ describe('PyroscopeService', () => {
 			(serviceWithInit as any).pyroscopeClient = mockClient;
 			(serviceWithInit as any).isInitialized = true;
 
-			serviceWithInit.onModuleDestroy();
+			await serviceWithInit.onModuleDestroy();
 
 			expect(mockClient.stop).toHaveBeenCalled();
 			expect(mockLogger.log).toHaveBeenCalledWith('Pyroscope profiling stopped');
 		});
 
-		it('should log error when stopping pyroscope fails', () => {
-			const serviceWithInit = new PyroscopeService(
+		it('should log error when stopping pyroscope fails', async () => {
+			const serviceWithInit = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger,
 				mockMetricsService,
@@ -198,14 +193,12 @@ describe('PyroscopeService', () => {
 
 			const mockClient = createMockPyroscopeClient();
 			const stopError = new Error('Stop failed');
-			mockClient.stop.mockImplementationOnce(() => {
-				throw stopError;
-			});
+			mockClient.stop.mockRejectedValueOnce(stopError);
 
 			(serviceWithInit as any).pyroscopeClient = mockClient;
 			(serviceWithInit as any).isInitialized = true;
 
-			serviceWithInit.onModuleDestroy();
+			await serviceWithInit.onModuleDestroy();
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Error stopping Pyroscope profiling',
@@ -213,7 +206,7 @@ describe('PyroscopeService', () => {
 			);
 		});
 
-		it('should not call stop when pyroscope client is null', () => {
+		it('should not call stop when pyroscope client is null', async () => {
 			const mockLogger2 = {
 				log: vi.fn(),
 				error: vi.fn(),
@@ -221,7 +214,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceWithoutClient = new PyroscopeService(
+			const serviceWithoutClient = createService(
 				mockConfig,
 				mockLogger2,
 				mockMetricsService,
@@ -230,7 +223,7 @@ describe('PyroscopeService', () => {
 			(serviceWithoutClient as any).pyroscopeClient = null;
 			(serviceWithoutClient as any).isInitialized = true;
 
-			serviceWithoutClient.onModuleDestroy();
+			await serviceWithoutClient.onModuleDestroy();
 
 			expect(mockLogger2.log).not.toHaveBeenCalledWith('Pyroscope profiling stopped');
 		});
@@ -256,7 +249,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -287,7 +280,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -315,7 +308,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -342,7 +335,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -387,7 +380,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -425,7 +418,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -460,7 +453,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -490,7 +483,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -521,7 +514,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -556,7 +549,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -647,7 +640,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -668,7 +661,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -689,7 +682,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -717,7 +710,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -758,8 +751,8 @@ describe('PyroscopeService', () => {
 		});
 
 		it('should provide fallback aggregation when MetricsService unavailable', () => {
-			// Create service without MetricsService
-			const serviceWithoutMetrics = new PyroscopeService(
+			// Create service without MetricsService (module.get throws)
+			const serviceWithoutMetrics = createService(
 				mockConfig,
 				mockLogger,
 				undefined,
@@ -781,7 +774,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				undefined, // No MetricsService
@@ -807,7 +800,7 @@ describe('PyroscopeService', () => {
 		});
 
 		it('should return zero values when no metrics collected', () => {
-			const serviceWithoutMetrics = new PyroscopeService(
+			const serviceWithoutMetrics = createService(
 				mockConfig,
 				mockLogger,
 				undefined,
@@ -847,7 +840,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -869,7 +862,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -895,7 +888,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -923,7 +916,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -962,7 +955,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -983,7 +976,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -1015,7 +1008,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -1043,7 +1036,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -1072,7 +1065,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceDisabled = new PyroscopeService(
+			const serviceDisabled = createService(
 				mockConfig, // enabled: false
 				mockLogger2,
 				mockMetricsService,
@@ -1093,7 +1086,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -1119,7 +1112,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,
@@ -1149,7 +1142,7 @@ describe('PyroscopeService', () => {
 				debug: vi.fn(),
 			} as unknown as Logger;
 
-			const serviceEnabled = new PyroscopeService(
+			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
 				mockLogger2,
 				mockMetricsService,

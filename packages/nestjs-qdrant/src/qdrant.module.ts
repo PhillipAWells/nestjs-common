@@ -57,8 +57,7 @@ export class QdrantModule {
 				{ provide: clientToken, useValue: new QdrantClient(clientOptions) },
 				{
 					provide: QdrantService,
-					useFactory: (client: QdrantClient) => new QdrantService(client),
-					inject: [clientToken],
+					useClass: QdrantService,
 				},
 			],
 			exports: [QdrantService, clientToken],
@@ -105,8 +104,7 @@ export class QdrantModule {
 				},
 				{
 					provide: QdrantService,
-					useFactory: (client: QdrantClient) => new QdrantService(client),
-					inject: [clientToken],
+					useClass: QdrantService,
 				},
 			],
 			exports: [QdrantService, clientToken],

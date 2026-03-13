@@ -153,9 +153,11 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 
 				// Check if result is a Promise (async method)
 				if (result instanceof Promise) {
-					// Async path: Chain promise handlers
+					// Async path: Chain promise handlers wrapped in context.with(ctx, ...)
+					// so that span attribute writes and any child spans created inside
+					// the handlers run within the correct active span context.
 					return result.then(
-						(value) => {
+						(value) => context.with(ctx, () => {
 							try {
 								// Capture return value if enabled (default: false)
 								if (options.captureReturn === true) {
@@ -174,8 +176,8 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 							}
 
 							return value;
-						},
-						(error) => {
+						}),
+						(error) => context.with(ctx, () => {
 							try {
 								// Record exception and set error status
 								const errorInstance = error instanceof Error ? error : new Error(String(error));
@@ -195,7 +197,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 								span.end();
 							}
 							throw error;
-						},
+						}),
 					);
 				} else {
 					// Sync path: Handle span immediately with try-finally to guarantee span.end()

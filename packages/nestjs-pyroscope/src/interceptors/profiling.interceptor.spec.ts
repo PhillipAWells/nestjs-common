@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 import { of, throwError, from } from 'rxjs';
+import { ModuleRef } from '@nestjs/core';
 import { ProfilingInterceptor } from './profiling.interceptor.js';
 
 describe('ProfilingInterceptor', () => {
@@ -20,8 +21,12 @@ describe('ProfilingInterceptor', () => {
 			}),
 		} as any;
 
-		// Directly instantiate the interceptor with the mocked service
-		interceptor = new ProfilingInterceptor(mockPyroscopeService);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(mockPyroscopeService),
+		} as unknown as ModuleRef;
+
+		// Directly instantiate the interceptor with the mocked ModuleRef
+		interceptor = new ProfilingInterceptor(mockModuleRef);
 
 		// Set up mock execution context
 		const mockRequest = {

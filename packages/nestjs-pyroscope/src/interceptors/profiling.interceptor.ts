@@ -1,4 +1,5 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Observable, tap, catchError } from 'rxjs';
 import { PyroscopeService } from '../service.js';
 import { IProfileContext } from '../interfaces/profiling.interface.js';
@@ -20,7 +21,11 @@ interface HttpResponse {
  */
 @Injectable()
 export class ProfilingInterceptor implements NestInterceptor {
-	constructor(private readonly pyroscopeService: PyroscopeService) {}
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get pyroscopeService(): PyroscopeService {
+		return this.Module.get(PyroscopeService, { strict: false }); 
+	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
 		if (!this.pyroscopeService.isEnabled()) {

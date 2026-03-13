@@ -1,10 +1,15 @@
+import { vi } from 'vitest';
+import { ModuleRef } from '@nestjs/core';
 import { MetricsService  } from './metrics.service.js';
 
 describe('MetricsService', () => {
 	let service: MetricsService;
 
 	beforeEach(() => {
-		service = new MetricsService();
+		const mockModuleRef = {
+			get: vi.fn(),
+		} as unknown as ModuleRef;
+		service = new MetricsService(mockModuleRef);
 	});
 
 	describe('recordRequest', () => {

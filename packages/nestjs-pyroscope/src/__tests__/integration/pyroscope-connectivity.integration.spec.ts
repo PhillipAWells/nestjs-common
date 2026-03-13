@@ -1,9 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ModuleRef } from '@nestjs/core';
 import { PyroscopeModule } from '../../module.js';
 import { PyroscopeService } from '../../service.js';
 import { MetricsService } from '../../services/metrics.service.js';
 import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from '../../constants.js';
+
+/**
+ * Build a mock ModuleRef from a compiled TestingModule.
+ * Since Vitest's esbuild transform doesn't emit TypeScript decorator metadata,
+ * NestJS cannot inject ModuleRef by reflection. This helper creates a mock
+ * ModuleRef wrapping the compiled module so services can be directly instantiated.
+ */
+function buildMockModuleRef(compiledModule: TestingModule): ModuleRef {
+	return {
+		get: (token: any, options?: any) => compiledModule.get(token, options),
+	} as unknown as ModuleRef;
+}
+
+/**
+ * Create a PyroscopeService with a proper mock ModuleRef from a compiled TestingModule.
+ */
+function createServiceFromModule(compiledModule: TestingModule): PyroscopeService {
+	return new PyroscopeService(buildMockModuleRef(compiledModule));
+}
 
 /**
  * Integration tests for Pyroscope service initialization, lifecycle, and graceful degradation
@@ -70,7 +90,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			expect(pyroscopeService.isEnabled()).toBe(false);
 		});
@@ -85,7 +105,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: enabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			// Service will attempt initialization on module setup, but isEnabled() depends on
 			// both config.enabled AND isInitialized which requires actual Pyroscope SDK
@@ -112,7 +132,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
 		});
@@ -124,7 +144,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			// Should not throw even when disabled
 			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
@@ -138,7 +158,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			// Should not throw
 			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
@@ -166,7 +186,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: fullConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 			const config = module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN);
 
 			expect(() => pyroscopeService.onModuleInit()).not.toThrow();
@@ -237,7 +257,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
-			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			pyroscopeService = createServiceFromModule(module);
 
 			const context = {
 				functionName: 'testFunction',
@@ -255,7 +275,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
-			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			pyroscopeService = createServiceFromModule(module);
 
 			const context = {
 				functionName: 'testFunction',
@@ -279,7 +299,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			pyroscopeService = createServiceFromModule(module);
 
 			const context = {
 				functionName: 'testFunction',
@@ -298,7 +318,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
 			}).compile();
 
-			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			pyroscopeService = createServiceFromModule(module);
 
 			const context1 = {
 				functionName: 'func1',
@@ -344,7 +364,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			// Application should still function
 			expect(pyroscopeService.isEnabled()).toBe(false);
@@ -375,7 +395,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			const context = {
 				functionName: 'errorFunc',
@@ -396,7 +416,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			const context1 = {
 				functionName: 'func1',
@@ -532,7 +552,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 			const health = pyroscopeService.getHealth();
 
 			expect(health).toBeDefined();
@@ -546,7 +566,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 			const metrics = pyroscopeService.getMetrics();
 
 			expect(metrics).toBeDefined();
@@ -564,7 +584,7 @@ describe('Pyroscope Connectivity and Lifecycle (Integration)', () => {
 				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
 			}).compile();
 
-			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			const pyroscopeService = createServiceFromModule(module);
 
 			const context = {
 				functionName: 'testFunc',

@@ -6,10 +6,12 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import { describe, it, expect, beforeEach , vi } from 'vitest';
 import { QdrantService } from '../qdrant.service.js';
 import { QdrantCollectionService } from '../qdrant-collection.service.js';
+import { QDRANT_CLIENT_TOKEN } from '../qdrant.constants.js';
 
 describe('QdrantService', () => {
 	let service: QdrantService;
 	let mockClient: QdrantClient;
+	let mockModuleRef: { get: ReturnType<typeof vi.fn> };
 
 	beforeEach(() => {
 		mockClient = {
@@ -19,7 +21,11 @@ describe('QdrantService', () => {
 			search: vi.fn(),
 		} as unknown as QdrantClient;
 
-		service = new QdrantService(mockClient);
+		mockModuleRef = {
+			get: vi.fn().mockReturnValue(mockClient),
+		};
+
+		service = new QdrantService(mockModuleRef as any);
 	});
 
 	it('should be defined', () => {
@@ -30,6 +36,7 @@ describe('QdrantService', () => {
 		it('should return the injected QdrantClient', () => {
 			const client = service.getClient();
 			expect(client).toBe(mockClient);
+			expect(mockModuleRef.get).toHaveBeenCalledWith(QDRANT_CLIENT_TOKEN, { strict: false });
 		});
 
 		it('should always return the same client instance', () => {

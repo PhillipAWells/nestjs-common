@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
+import { ModuleRef } from '@nestjs/core';
 import { HealthController } from './health.controller.js';
 import { PyroscopeService } from '../service.js';
 import { MetricsService } from '../services/metrics.service.js';
@@ -12,7 +12,7 @@ describe('HealthController', () => {
 	let mockMetricsService: { getMetrics: ReturnType<typeof vi.fn>; getPrometheusMetrics: ReturnType<typeof vi.fn> };
 	let mockConfig: IPyroscopeConfig;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockConfig = {
 			enabled: true,
 			serverAddress: 'http://localhost:4040',
@@ -30,25 +30,16 @@ describe('HealthController', () => {
 			getPrometheusMetrics: vi.fn(),
 		} as any;
 
-		const module: TestingModule = await Test.createTestingModule({
-			controllers: [HealthController],
-			providers: [
-				{
-					provide: PyroscopeService,
-					useValue: mockPyroscopeService,
-				},
-				{
-					provide: MetricsService,
-					useValue: mockMetricsService,
-				},
-				{
-					provide: PYROSCOPE_CONFIG_TOKEN,
-					useValue: mockConfig,
-				},
-			],
-		}).compile();
+		const mockModuleRef = {
+			get: vi.fn((token: any, _options?: any) => {
+				if (token === PyroscopeService) return mockPyroscopeService;
+				if (token === MetricsService) return mockMetricsService;
+				if (token === PYROSCOPE_CONFIG_TOKEN) return mockConfig;
+				throw new Error(`Unknown token: ${String(token)}`);
+			}),
+		} as unknown as ModuleRef;
 
-		controller = module.get<HealthController>(HealthController);
+		controller = new HealthController(mockModuleRef);
 	});
 
 	afterEach(() => {

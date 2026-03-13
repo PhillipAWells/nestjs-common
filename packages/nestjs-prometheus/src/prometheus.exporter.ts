@@ -222,12 +222,18 @@ export class PrometheusExporter implements IMetricsExporter {
 
 			// Record all pending values into the appropriate instrument
 			for (const metricValue of pendingValues) {
-				if (instrument instanceof Counter) {
-					instrument.inc(metricValue.labels, metricValue.value);
-				} else if (instrument instanceof Histogram) {
-					instrument.observe(metricValue.labels, metricValue.value);
-				} else if (instrument instanceof Gauge) {
-					instrument.set(metricValue.labels, metricValue.value);
+				try {
+					if (instrument instanceof Counter) {
+						instrument.inc(metricValue.labels, metricValue.value);
+					} else if (instrument instanceof Histogram) {
+						instrument.observe(metricValue.labels, metricValue.value);
+					} else if (instrument instanceof Gauge) {
+						instrument.set(metricValue.labels, metricValue.value);
+					}
+				} catch (recordError) {
+					this.logger.warn(
+						`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+					);
 				}
 			}
 		}

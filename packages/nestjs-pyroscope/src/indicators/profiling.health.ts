@@ -1,4 +1,5 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { PyroscopeService } from '../service.js';
 import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
@@ -11,11 +12,16 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
  */
 @Injectable()
 export class ProfilingHealthIndicator extends HealthIndicator {
-	constructor(
-		@Inject(PyroscopeService) private readonly pyroscopeService: PyroscopeService,
-		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
-	) {
+	constructor(public readonly Module: ModuleRef) {
 		super();
+	}
+
+	private get pyroscopeService(): PyroscopeService {
+		return this.Module.get(PyroscopeService, { strict: false }); 
+	}
+
+	private get config(): IPyroscopeConfig {
+		return this.Module.get(PYROSCOPE_CONFIG_TOKEN, { strict: false }); 
 	}
 
 	/**

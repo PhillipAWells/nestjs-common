@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Header } from '@nestjs/common';
+import { Controller, Get, Header, Inject } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from '../service.js';
 import { MetricsService } from '../services/metrics.service.js';
 import type { MetricsResponse } from '../services/metrics.service.js';
@@ -32,11 +33,19 @@ export interface HealthResponse {
  */
 @Controller('profiling')
 export class HealthController {
-	constructor(
-		@Inject(PyroscopeService) private readonly pyroscopeService: PyroscopeService,
-		@Inject(MetricsService) private readonly metricsService: MetricsService,
-		@Inject(PYROSCOPE_CONFIG_TOKEN) private readonly config: IPyroscopeConfig,
-	) {}
+	constructor(@Inject(ModuleRef) public readonly Module: ModuleRef) {}
+
+	private get pyroscopeService(): PyroscopeService {
+		return this.Module.get(PyroscopeService, { strict: false }); 
+	}
+
+	private get metricsService(): MetricsService {
+		return this.Module.get(MetricsService, { strict: false }); 
+	}
+
+	private get config(): IPyroscopeConfig {
+		return this.Module.get(PYROSCOPE_CONFIG_TOKEN, { strict: false }); 
+	}
 
 	/**
 	 * Get profiling service health status

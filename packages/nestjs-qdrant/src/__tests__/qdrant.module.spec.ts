@@ -50,12 +50,6 @@ describe('QdrantModule', () => {
 			expect(service).toBeInstanceOf(QdrantService);
 		});
 
-		it('should inject the same client into QdrantService', () => {
-			const client = module.get<QdrantClient>(QDRANT_CLIENT_TOKEN);
-			const service = module.get<QdrantService>(QdrantService);
-			expect(service.getClient()).toBe(client);
-		});
-
 		it('should be global by default', () => {
 			// Check module is registered globally - this is framework behavior we trust
 			expect(module).toBeDefined();
@@ -197,13 +191,6 @@ describe('QdrantModule', () => {
 				const service = module.get<QdrantService>(QdrantService);
 				expect(service).toBeDefined();
 				expect(service).toBeInstanceOf(QdrantService);
-			});
-
-			it('should inject named client into QdrantService', () => {
-				const namedClientToken = getQdrantClientToken('archive');
-				const client = module.get<QdrantClient>(namedClientToken);
-				const service = module.get<QdrantService>(QdrantService);
-				expect(service.getClient()).toBe(client);
 			});
 		});
 

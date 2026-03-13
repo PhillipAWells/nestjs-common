@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import {
 	METRICS_STATUS_OK,
 	METRICS_STATUS_REDIRECT_MIN,
@@ -32,6 +33,8 @@ export interface MetricsResponse {
  */
 @Injectable()
 export class MetricsService {
+	constructor(public readonly Module: ModuleRef) {}
+
 	private readonly logger = new Logger(MetricsService.name);
 
 	// CPU metrics
