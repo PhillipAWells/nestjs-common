@@ -1,6 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -13,7 +15,7 @@ interface ICacheStats {
 	size: number;
 	store: string;
 }
- 
+
 const DEFAULT_CACHE_TTL = 300000; // 5 minutes
 const HIT_RATE_PERCENTAGE = 100;
 
@@ -44,20 +46,25 @@ const HIT_RATE_PERCENTAGE = 100;
  * ```
  */
 @Injectable()
-export class GraphQLCacheService {
-	private readonly logger: AppLogger;
-
+export class GraphQLCacheService implements LazyModuleRefService {
 	private readonly cacheStats = {
 		hits: 0,
 		misses: 0,
 	};
 
-	constructor(
-		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {
-		this.logger = this.appLogger.createContextualLogger(GraphQLCacheService.name);
+	public get CacheManager(): Cache {
+		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
 	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLCacheService.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Generates a cache key for GraphQL operations
@@ -98,7 +105,7 @@ export class GraphQLCacheService {
 	public async set<T>(key: string, value: T, ttl?: number): Promise<void> {
 		try {
 			const cacheTtl = ttl ?? DEFAULT_CACHE_TTL;
-			await this.cacheManager.set(key, value, cacheTtl);
+			await this.CacheManager.set(key, value, cacheTtl);
 			this.logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
 		} catch (error) {
 			this.logger.error(`Failed to cache value for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
@@ -114,7 +121,7 @@ export class GraphQLCacheService {
 	 */
 	public async get<T>(key: string): Promise<T | undefined> {
 		try {
-			const value = await this.cacheManager.get<T>(key);
+			const value = await this.CacheManager.get<T>(key);
 			if (value !== null && value !== undefined) {
 				this.cacheStats.hits++;
 				this.logger.debug(`Cache hit for key: ${key} (Hit rate: ${this.getHitRate().toFixed(2)}%)`);
@@ -162,7 +169,7 @@ export class GraphQLCacheService {
 	 */
 	public async delete(key: string): Promise<void> {
 		try {
-			await this.cacheManager.del(key);
+			await this.CacheManager.del(key);
 			this.logger.debug(`Deleted cache entry for key: ${key}`);
 		} catch (error) {
 			this.logger.error(`Failed to delete cache entry for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
@@ -177,7 +184,11 @@ export class GraphQLCacheService {
 	 */
 	public async clear(): Promise<void> {
 		try {
-			await this.cacheManager.reset();
+			if (typeof (this.CacheManager as any).clear === 'function') {
+				await (this.CacheManager as any).clear();
+			} else if (typeof (this.CacheManager as any).reset === 'function') {
+				await (this.CacheManager as any).reset();
+			}
 			this.logger.debug('Cache cleared successfully');
 		} catch (error) {
 			this.logger.error(`Failed to clear cache: ${error instanceof Error ? error.message : String(error)}`);

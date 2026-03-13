@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -15,12 +17,14 @@ export interface Tag {
  * Prevents N+1 query problems when resolving tag fields in GraphQL
  */
 @Injectable()
-export class TagLoader {
+export class TagLoader implements LazyModuleRefService {
 	private readonly logger = new Logger(TagLoader.name);
 
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-	) {}
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the tag DataLoader instance
@@ -30,7 +34,7 @@ export class TagLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(Tag | Error)[]>,
 	): DataLoader<string, Tag> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'tag-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -102,6 +106,6 @@ export class TagLoader {
    * Clears all cached tags
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('tag-loader');
+		this.DataLoaderRegistry.clearCache('tag-loader');
 	}
 }

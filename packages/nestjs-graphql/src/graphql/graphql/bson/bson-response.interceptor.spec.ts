@@ -14,7 +14,10 @@ describe('BsonResponseInterceptor', () => {
 
 	beforeEach(() => {
 		bsonService = new BsonSerializationService();
-		interceptor = new BsonResponseInterceptor(bsonService);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(bsonService),
+		} as any;
+		interceptor = new BsonResponseInterceptor(mockModuleRef);
 
 		mockResponse = {
 			setHeader: vi.fn(),

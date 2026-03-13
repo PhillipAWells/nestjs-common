@@ -72,6 +72,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		clears: 0,
 		errors: 0,
 		hitRate: 0,
+		memoryUsage: 0,
 		// Enhanced metrics for Phase 3
 		evictions: 0,
 		evictionReasons: {},
@@ -111,11 +112,11 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	// Base logger - memoized and contextualized
 	private _appLogger: AppLogger | undefined;
 
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {}
 
 	public get CacheManager(): Cache {
 		if (!this._cacheManager) {
-			const cacheManager = this.moduleRef.get<Cache>(CACHE_MANAGER);
+			const cacheManager = this.Module.get<Cache>(CACHE_MANAGER);
 			if (!cacheManager) {
 				throw new Error('CacheManager not found in module');
 			}
@@ -126,7 +127,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 	public get AppLogger(): AppLogger {
 		if (!this._appLogger) {
-			const logger = this.moduleRef.get<AppLogger>(AppLogger);
+			const logger = this.Module.get<AppLogger>(AppLogger);
 			if (!logger) {
 				throw new Error('AppLogger not found in module');
 			}
@@ -136,7 +137,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	}
 
 	public get Pyroscope(): PyroscopeService {
-		return this.moduleRef.get(PyroscopeService);
+		return this.Module.get(PyroscopeService);
 	}
 
 	// Initialize contextual logger after getting AppLogger
@@ -391,7 +392,11 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	public async clear(): Promise<void> {
 		this.logger.info('Clearing all cache entries');
 		try {
-			await this.CacheManager.reset();
+			if (typeof (this.CacheManager as any).clear === 'function') {
+				await (this.CacheManager as any).clear();
+			} else {
+				await this.CacheManager.reset();
+			}
 			this.stats.clears++;
 			this.logger.info('Cache cleared successfully');
 		} catch (error) {
@@ -519,6 +524,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			clears: 0,
 			errors: 0,
 			hitRate: 0,
+			memoryUsage: 0,
 			// Enhanced metrics for Phase 3
 			evictions: 0,
 			evictionReasons: {},
@@ -753,10 +759,17 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				this.cleanupIntervalRef = undefined;
 			}
 
-			// Log final enhanced statistics
-			this.logEnhancedStats();
-
+			// Log final statistics unconditionally on destroy
 			const stats = this.getStats();
+			this.logger.info('Cache statistics', JSON.stringify({
+				hitRate: `${(stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
+				hits: stats.hits,
+				misses: stats.misses,
+				sets: stats.sets,
+				deletes: stats.deletes,
+				clears: stats.clears,
+				errors: stats.errors,
+			}));
 			this.logger.info('Cache service shutdown', JSON.stringify({
 				finalStats: stats,
 				totalOperations: stats.hits + stats.misses + stats.sets + stats.deletes + stats.clears,

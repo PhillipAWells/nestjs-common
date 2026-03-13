@@ -1,4 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import {
@@ -52,12 +54,16 @@ export interface PerformanceStats {
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceService {
-	private readonly logger: AppLogger;
-
-	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
-		this.logger = this.appLogger.createContextualLogger(GraphQLPerformanceService.name);
+export class GraphQLPerformanceService implements LazyModuleRefService {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
 	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLPerformanceService.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	private readonly metrics: PerformanceMetrics[] = [];
 

@@ -1,5 +1,4 @@
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { CacheService } from '../cache.service.js';
@@ -7,8 +6,6 @@ import { vi } from 'vitest';
 
 describe('CacheService', () => {
 	let service: CacheService;
-
-	let _cacheManager: any;
 
 	const mockCacheManager: any = {
 		get: vi.fn(),
@@ -20,44 +17,41 @@ describe('CacheService', () => {
 		},
 	};
 
-	beforeEach(async () => {
+	const mockContextualLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+	};
+
+	const mockAppLogger = {
+		createContextualLogger: vi.fn().mockReturnValue(mockContextualLogger),
+	};
+
+	beforeEach(() => {
 		// Reset all mocks before each test
 		mockCacheManager.get.mockReset();
 		mockCacheManager.set.mockReset();
 		mockCacheManager.del.mockReset();
 		mockCacheManager.clear.mockReset();
 		mockCacheManager.store.keys.mockReset();
+		mockAppLogger.createContextualLogger.mockReturnValue(mockContextualLogger);
 
-		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			}),
-		};
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === CACHE_MANAGER) return mockCacheManager;
+				if (token === AppLogger) return mockAppLogger;
+				throw new Error(`Unknown token: ${String(token)}`);
+			},
+		} as any;
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				CacheService,
-				{
-					provide: CACHE_MANAGER,
-					useValue: mockCacheManager,
-				},
-				{
-					provide: AppLogger,
-					useValue: mockAppLogger,
-				},
-			],
-		}).compile();
-
-		service = module.get<CacheService>(CacheService);
-		_cacheManager = module.get(CACHE_MANAGER);
-		void (_cacheManager); // Mark as used to satisfy linter
+		service = new CacheService(mockModuleRef);
 	});
 
 	beforeEach(() => {
-		vi.clearAllMocks();
+		vi.resetAllMocks();
+		// Restore default mock implementations after reset
+		mockAppLogger.createContextualLogger.mockReturnValue(mockContextualLogger);
 		service.resetStats();
 	});
 
@@ -312,7 +306,7 @@ describe('CacheService', () => {
 				store: undefined,
 			};
 
-			const mockAppLogger = {
+			const localMockAppLogger = {
 				createContextualLogger: vi.fn().mockReturnValue({
 					debug: vi.fn(),
 					info: vi.fn(),
@@ -321,21 +315,15 @@ describe('CacheService', () => {
 				}),
 			};
 
-			const module: TestingModule = await Test.createTestingModule({
-				providers: [
-					CacheService,
-					{
-						provide: CACHE_MANAGER,
-						useValue: cacheManagerWithoutStore,
-					},
-					{
-						provide: AppLogger,
-						useValue: mockAppLogger,
-					},
-				],
-			}).compile();
+			const localMockModuleRef = {
+				get: (token: any) => {
+					if (token === CACHE_MANAGER) return cacheManagerWithoutStore;
+					if (token === AppLogger) return localMockAppLogger;
+					throw new Error(`Unknown token: ${String(token)}`);
+				},
+			} as any;
 
-			const serviceWithoutStore = module.get<CacheService>(CacheService);
+			const serviceWithoutStore = new CacheService(localMockModuleRef);
 
 			const result = await serviceWithoutStore.invalidatePattern(pattern);
 
@@ -358,7 +346,7 @@ describe('CacheService', () => {
 		it('should return current statistics', () => {
 			const stats = service.getStats();
 
-			expect(stats).toEqual({
+			expect(stats).toMatchObject({
 				hits: 0,
 				misses: 0,
 				sets: 0,

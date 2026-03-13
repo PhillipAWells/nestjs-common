@@ -1,14 +1,24 @@
-import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 /**
  * Service for WebSocket connection authentication
  */
 @Injectable()
-export class WebSocketAuthService {
+export class WebSocketAuthService implements LazyModuleRefService {
 	private readonly logger = new Logger(WebSocketAuthService.name);
 
-	constructor(@Inject(JwtService) @Optional() private readonly jwtService?: JwtService) {}
+	private get jwtService(): JwtService | undefined {
+		try {
+			return this.Module.get(JwtService, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Authenticates a WebSocket connection
@@ -58,19 +68,21 @@ export class WebSocketAuthService {
 	}
 
 	/**
-   * Validates JWT token with cryptographic signature verification and extracts user ID
+   * Validates JWT token with cryptographic signature verification and extracts user ID.
    * @param token JWT token
    * @returns User ID or null if invalid
    */
 	private async validateToken(token: string): Promise<string | null> {
 		try {
-			if (!this.jwtService) {
-				this.logger.error('JwtService not available — WebSocket authentication cannot verify token signatures');
+			const { jwtService } = this;
+			if (!jwtService) {
+				// JwtService is required for signature verification — fail closed per security policy
+				this.logger.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
 				return null;
 			}
 
 			// Verify token with cryptographic signature validation
-			const payload = await this.jwtService.verifyAsync(token);
+			const payload = await jwtService.verifyAsync(token);
 
 			if (!payload?.sub) {
 				return null;
@@ -91,10 +103,10 @@ export class WebSocketAuthService {
 	private extractToken(connectionParams: any): string | null {
 		// Try different sources for the token
 		return (
-			connectionParams.authorization ?? 
-      connectionParams.Authorization ?? 
-      connectionParams.token ?? 
-      connectionParams.authToken ?? 
+			connectionParams.authorization ??
+      connectionParams.Authorization ??
+      connectionParams.token ??
+      connectionParams.authToken ??
       null
 		);
 	}

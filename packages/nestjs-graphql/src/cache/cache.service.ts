@@ -7,8 +7,8 @@ import { BaseCacheService } from './services/base-cache.service.js';
  */
 @Injectable()
 export class CacheService extends BaseCacheService {
-	constructor(module: ModuleRef) {
-		super(module);
+	constructor(Module: ModuleRef) {
+		super(Module);
 		// Initialize contextual logger after lazy dependencies are ready
 		this.initializeContextualLogger();
 	}

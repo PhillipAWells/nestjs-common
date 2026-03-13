@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { Order } from './order.loader.js';
 
@@ -8,12 +10,14 @@ import { Order } from './order.loader.js';
  * Prevents N+1 query problems when resolving user's orders in GraphQL
  */
 @Injectable()
-export class OrdersByUserLoader {
+export class OrdersByUserLoader implements LazyModuleRefService {
 	private readonly logger = new Logger(OrdersByUserLoader.name);
 
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-	) {}
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the orders by user DataLoader instance
@@ -23,7 +27,7 @@ export class OrdersByUserLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(Order[] | Error)[]>,
 	): DataLoader<string, Order[]> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'orders-by-user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -95,6 +99,6 @@ export class OrdersByUserLoader {
    * Clears all cached orders by user
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('orders-by-user-loader');
+		this.DataLoaderRegistry.clearCache('orders-by-user-loader');
 	}
 }

@@ -59,7 +59,10 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 			getClass: () => ({}),
 		};
 
-		guard = new GraphQLRateLimitGuard(mockRateLimitService);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(mockRateLimitService),
+		} as any;
+		guard = new GraphQLRateLimitGuard(mockModuleRef);
 
 		// Mock GqlExecutionContext.create using vi.spyOn (required for static methods)
 		vi.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);
@@ -215,14 +218,13 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 			expect(capturedClientId).toBe('ip:10.0.0.1');
 		});
 
-		it('should allow request when rate limit check fails', async () => {
+		it('should throw SERVICE_UNAVAILABLE when rate limit check fails (fail closed)', async () => {
 			mockRateLimitService._checkLimitOverride = async () => {
 				throw new Error('Rate limit service unavailable');
 			};
 
-			const result = await guard.canActivate(mockExecutionContext as ExecutionContext);
-
-			expect(result).toBe(true);
+			await expect(guard.canActivate(mockExecutionContext as ExecutionContext))
+				.rejects.toThrow('Rate limit service unavailable');
 		});
 
 		it('should not set headers when response is undefined', async () => {

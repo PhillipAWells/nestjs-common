@@ -1,7 +1,9 @@
 import DataLoader from 'dataloader';
-import { Injectable, Inject } from '@nestjs/common';
-import { DataLoaderRegistry } from './dataloader-registry.js';
+import { Injectable } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
  * Interface for User entity
@@ -16,15 +18,20 @@ export interface User {
  * Prevents N+1 query problems when resolving user fields in GraphQL
  */
 @Injectable()
-export class UserLoader {
-	private readonly logger: AppLogger;
-
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {
-		this.logger = this.appLogger.createContextualLogger(UserLoader.name);
+export class UserLoader implements LazyModuleRefService {
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
 	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(UserLoader.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the user DataLoader instance
@@ -34,7 +41,7 @@ export class UserLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(User | Error)[]>,
 	): DataLoader<string, User> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -108,6 +115,6 @@ export class UserLoader {
    * Clears all cached users
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('user-loader');
+		this.DataLoaderRegistry.clearCache('user-loader');
 	}
 }

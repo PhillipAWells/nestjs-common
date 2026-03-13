@@ -12,7 +12,10 @@ describe('BsonSerializationMiddleware', () => {
 
 	beforeEach(() => {
 		bsonService = new BsonSerializationService();
-		middleware = new BsonSerializationMiddleware(bsonService);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(bsonService),
+		} as any;
+		middleware = new BsonSerializationMiddleware(mockModuleRef);
 
 		nextFn = vi.fn();
 		mockResponse = {

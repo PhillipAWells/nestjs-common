@@ -1,5 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { RateLimitService } from '../services/rate-limit.service.js';
 
 const MS_PER_SECOND = 1000;
@@ -20,10 +22,14 @@ const MS_PER_SECOND = 1000;
  * ```
  */
 @Injectable()
-export class GraphQLRateLimitGuard implements CanActivate {
+export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService {
 	private readonly logger = new Logger(GraphQLRateLimitGuard.name);
 
-	constructor(private readonly rateLimitService: RateLimitService) {}
+	public get RateLimitService(): RateLimitService {
+		return this.Module.get(RateLimitService, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Determines if the request can proceed based on rate limits
@@ -41,7 +47,7 @@ export class GraphQLRateLimitGuard implements CanActivate {
 
 		try {
 			// Check rate limit
-			const result = await this.rateLimitService.checkLimit(clientId);
+			const result = await this.RateLimitService.checkLimit(clientId);
 
 			if (!result.allowed) {
 				this.logger.warn(
@@ -73,13 +79,7 @@ export class GraphQLRateLimitGuard implements CanActivate {
 			}
 
 			this.logger.error(`Rate limit check failed for client ${clientId}: ${error instanceof Error ? error.message : String(error)}`);
-			// Block request if rate limiting check fails (fail-closed for security)
-			throw new HttpException(
-				{
-					message: 'Rate limit check unavailable',
-				},
-				HttpStatus.SERVICE_UNAVAILABLE,
-			);
+			throw new HttpException('Rate limit service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
 

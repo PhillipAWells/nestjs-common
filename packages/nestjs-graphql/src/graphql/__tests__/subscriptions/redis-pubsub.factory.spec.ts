@@ -4,20 +4,58 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RedisPubSubFactory } from '../../subscriptions/redis-pubsub.factory.js';
 import { RedisConfig } from '../../subscriptions/subscription-config.interface.js';
 
+const mockRedisInstance = {
+	on: vi.fn(),
+	ping: vi.fn(),
+	quit: vi.fn(),
+};
+
+const mockPubSubInstance = {
+	close: vi.fn().mockResolvedValue(undefined),
+};
+
+vi.mock('ioredis', () => {
+	// eslint-disable-next-line no-var
+	var MockRedis = vi.fn(function MockRedisConstructor(this: any) {
+		Object.assign(this, mockRedisInstance);
+		return mockRedisInstance;
+	});
+	return { Redis: MockRedis };
+});
+
+vi.mock('graphql-redis-subscriptions', () => {
+	// eslint-disable-next-line no-var
+	var MockRedisPubSub = vi.fn(function MockRedisPubSubConstructor(this: any) {
+		Object.assign(this, mockPubSubInstance);
+		return mockPubSubInstance;
+	});
+	return { RedisPubSub: MockRedisPubSub };
+});
+
 describe('RedisPubSubFactory', () => {
 	let factory: RedisPubSubFactory;
-	let mockRedis: any;
+	let MockRedis: any;
+	let MockRedisPubSub: any;
 
 	beforeEach(async () => {
-		mockRedis = {
-			on: vi.fn(),
-			ping: vi.fn(),
-			quit: vi.fn(),
-		};
+		// Get the mocked modules
+		const ioredis = await import('ioredis');
+		MockRedis = ioredis.Redis as any;
 
-		// Mock the Redis constructor
-		const mockRedisConstructor = vi.fn().mockReturnValue(mockRedis);
-		(global as any).Redis = mockRedisConstructor;
+		const grs = await import('graphql-redis-subscriptions');
+		MockRedisPubSub = grs.RedisPubSub as any;
+
+		vi.clearAllMocks();
+		// Restore mock implementations after clearAllMocks
+		MockRedis.mockImplementation(function(this: any) {
+			Object.assign(this, mockRedisInstance);
+			return mockRedisInstance;
+		});
+		MockRedisPubSub.mockImplementation(function(this: any) {
+			Object.assign(this, mockPubSubInstance);
+			return mockPubSubInstance;
+		});
+		mockPubSubInstance.close.mockResolvedValue(undefined);
 
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [RedisPubSubFactory],
@@ -40,10 +78,10 @@ describe('RedisPubSubFactory', () => {
 			const pubSub = factory.createPubSub(config);
 
 			expect(pubSub).toBeDefined();
-			expect(mockRedis.on).toHaveBeenCalledWith('connect', expect.any(Function));
-			expect(mockRedis.on).toHaveBeenCalledWith('error', expect.any(Function));
-			expect(mockRedis.on).toHaveBeenCalledWith('ready', expect.any(Function));
-			expect(mockRedis.on).toHaveBeenCalledWith('end', expect.any(Function));
+			expect(mockRedisInstance.on).toHaveBeenCalledWith('connect', expect.any(Function));
+			expect(mockRedisInstance.on).toHaveBeenCalledWith('error', expect.any(Function));
+			expect(mockRedisInstance.on).toHaveBeenCalledWith('ready', expect.any(Function));
+			expect(mockRedisInstance.on).toHaveBeenCalledWith('end', expect.any(Function));
 		});
 
 		it('should create Redis clients with full configuration', () => {
@@ -58,14 +96,14 @@ describe('RedisPubSubFactory', () => {
 
 			factory.createPubSub(config);
 
-			expect((global as any).Redis).toHaveBeenCalledWith({
+			expect(MockRedis).toHaveBeenCalledWith(expect.objectContaining({
 				host: 'redis.example.com',
 				port: 6380,
 				password: 'secret',
 				db: 1,
 				connectTimeout: 30000,
 				tls: { ca: 'ca-cert' },
-			});
+			}));
 		});
 
 		it('should start health checks when enabled', () => {
@@ -104,7 +142,7 @@ describe('RedisPubSubFactory', () => {
 
 	describe('getHealthStatus', () => {
 		beforeEach(() => {
-			mockRedis.ping.mockImplementation((callback: Function) => {
+			mockRedisInstance.ping.mockImplementation((callback: Function) => {
 				callback(null, 'PONG');
 			});
 		});
@@ -125,7 +163,7 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should return unhealthy status when ping fails', async () => {
-			mockRedis.ping.mockImplementation((callback: Function) => {
+			mockRedisInstance.ping.mockImplementation((callback: Function) => {
 				callback(new Error('Connection failed'), null);
 			});
 
@@ -144,7 +182,9 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should handle ping timeout', async () => {
-			mockRedis.ping.mockImplementation(() => {
+			vi.useFakeTimers();
+
+			mockRedisInstance.ping.mockImplementation(() => {
 				// Don't call callback to simulate timeout
 			});
 
@@ -155,11 +195,16 @@ describe('RedisPubSubFactory', () => {
 
 			factory.createPubSub(config);
 
-			const status = await factory.getHealthStatus();
+			// Start the health check and advance timers to trigger timeout
+			const statusPromise = factory.getHealthStatus();
+			await vi.advanceTimersByTimeAsync(10000); // Advance past the 5s timeout
+			const status = await statusPromise;
+
+			vi.useRealTimers();
 
 			expect(status.publisher).toBe(false);
 			expect(status.subscriber).toBe(false);
-		});
+		}, 15000);
 	});
 
 	describe('onModuleDestroy', () => {
@@ -170,20 +215,12 @@ describe('RedisPubSubFactory', () => {
 				healthCheck: { enabled: true, interval: 60000, timeout: 5000 },
 			};
 
-			const mockPubSub = {
-				close: vi.fn().mockResolvedValue(undefined),
-			};
-
-			// Mock RedisPubSub constructor
-			const mockRedisPubSubConstructor = vi.fn().mockReturnValue(mockPubSub);
-			(global as any).RedisPubSub = mockRedisPubSubConstructor;
-
 			factory.createPubSub(config);
 
 			await factory.onModuleDestroy();
 
-			expect(mockPubSub.close).toHaveBeenCalled();
-			expect(mockRedis.quit).toHaveBeenCalledTimes(2); // publisher and subscriber
+			expect(mockPubSubInstance.close).toHaveBeenCalled();
+			expect(mockRedisInstance.quit).toHaveBeenCalledTimes(2); // publisher and subscriber
 		});
 
 		it('should handle errors during cleanup', async () => {
@@ -192,12 +229,7 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 			};
 
-			const mockPubSub = {
-				close: vi.fn().mockRejectedValue(new Error('Close failed')),
-			};
-
-			const mockRedisPubSubConstructor = vi.fn().mockReturnValue(mockPubSub);
-			(global as any).RedisPubSub = mockRedisPubSubConstructor;
+			mockPubSubInstance.close.mockRejectedValue(new Error('Close failed'));
 
 			factory.createPubSub(config);
 

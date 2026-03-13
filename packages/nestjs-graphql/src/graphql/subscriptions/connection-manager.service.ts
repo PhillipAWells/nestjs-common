@@ -4,7 +4,9 @@ declare global {
 	}
 }
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.js';
 
@@ -12,7 +14,7 @@ import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.
  * Service for managing WebSocket connections and subscriptions
  */
 @Injectable()
-export class ConnectionManagerService {
+export class ConnectionManagerService implements LazyModuleRefService {
 	private readonly logger = new Logger(ConnectionManagerService.name);
 
 	private readonly connections = new Map<string, Set<any>>();
@@ -26,7 +28,11 @@ export class ConnectionManagerService {
 
 	private connectionCounter = 0;
 
-	constructor(@Inject('SUBSCRIPTION_CONFIG') private readonly config: SubscriptionConfig) {}
+	public get SubscriptionConfig(): SubscriptionConfig {
+		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Generate a unique key for a connection based on userId and the ws object
@@ -54,9 +60,9 @@ export class ConnectionManagerService {
    * @param userId User ID
    * @param authenticatedUserId Authenticated user ID from token verification — must match userId
    */
-	public addConnection(ws: any, userId: string, authenticatedUserId?: string): void {
+	public addConnection(ws: any, userId: string, authenticatedUserId: string): void {
 		// Verify the authenticated user matches the requested userId
-		if (authenticatedUserId !== undefined && userId !== authenticatedUserId) {
+		if (userId !== authenticatedUserId) {
 			this.logger.warn(`Connection rejected: authenticated user ${authenticatedUserId} attempted to connect as ${userId}`);
 			throw new Error(`Unauthorized: cannot create connection for user ${userId}`);
 		}
@@ -77,7 +83,7 @@ export class ConnectionManagerService {
 		// Set connection timeout
 		const timer = setTimeout(() => {
 			this.removeConnection(ws, userId);
-		}, this.config.connection.timeout);
+		}, this.SubscriptionConfig.connection.timeout);
 
 		this.connectionTimers.set(connectionId, timer);
 
@@ -137,7 +143,7 @@ export class ConnectionManagerService {
 	public canAcceptConnection(userId: string): boolean {
 		const userConnections = this.connections.get(userId);
 		const currentCount = userConnections ? userConnections.size : 0;
-		return currentCount < (this.config.websocket.maxConnections ?? MAX_WEBSOCKET_CONNECTIONS);
+		return currentCount < (this.SubscriptionConfig.websocket.maxConnections ?? MAX_WEBSOCKET_CONNECTIONS);
 	}
 
 	/**
@@ -179,7 +185,7 @@ export class ConnectionManagerService {
 	public canAcceptSubscription(userId: string): boolean {
 		const userSubscriptions = this.subscriptions.get(userId);
 		const currentCount = userSubscriptions ? userSubscriptions.size : 0;
-		return currentCount < this.config.connection.maxSubscriptionsPerUser;
+		return currentCount < this.SubscriptionConfig.connection.maxSubscriptionsPerUser;
 	}
 
 	/**

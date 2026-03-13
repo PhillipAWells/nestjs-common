@@ -1,9 +1,11 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { GraphQLPerformanceService } from '../services/performance.service.js';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import { GraphQLPerformanceService } from '../services/performance.service.js';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
 
 /**
@@ -23,15 +25,20 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor {
-	private readonly logger: AppLogger;
-
-	constructor(
-		private readonly performanceService: GraphQLPerformanceService,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {
-		this.logger = this.appLogger.createContextualLogger(GraphQLPerformanceMonitoringInterceptor.name);
+export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor, LazyModuleRefService {
+	public get GraphQLPerformanceService(): GraphQLPerformanceService {
+		return this.Module.get(GraphQLPerformanceService, { strict: false });
 	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLPerformanceMonitoringInterceptor.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Intercepts resolver execution to monitor performance
@@ -52,7 +59,7 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor 
 				const duration = Date.now() - startTime;
 
 				// Record successful operation
-				await this.performanceService.measure(operation, () => result, {
+				await this.GraphQLPerformanceService.measure(operation, () => result, {
 					fieldName: info.fieldName,
 					operationType: info.operation.operation,
 					args: gqlContext.getArgs(),
@@ -71,7 +78,7 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor 
 				const duration = Date.now() - startTime;
 
 				// Record failed operation
-				await this.performanceService.measure(
+				await this.GraphQLPerformanceService.measure(
 					operation,
 					() => {
 						throw error;

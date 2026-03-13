@@ -117,7 +117,7 @@ export function getRedisConfig(): RedisConfig {
 		keyPrefix: process.env['REDIS_KEY_PREFIX'] ?? REDIS_DEFAULT_KEY_PREFIX,
 		enableReadyCheck: process.env['REDIS_ENABLE_READY_CHECK'] !== 'false',
 		maxRetriesPerRequest: parseInt(process.env['REDIS_MAX_RETRIES'] ?? `${REDIS_DEFAULT_MAX_RETRIES}`, 10),
-		lazyConnect: process.env['REDIS_LAZY_CONNECT'] !== 'false',
+		lazyConnect: process.env['REDIS_LAZY_CONNECT'] === 'true',
 		reconnectOnError: (err: Error) => {
 			const targetErrors = ['READONLY', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'];
 			return targetErrors.some(errorType => err.message.includes(errorType));

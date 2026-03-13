@@ -41,7 +41,10 @@ describe('GraphQL Roles Guard - Advanced Authorization', () => {
 			}),
 		};
 
-		guard = new GraphQLRolesGuard(mockReflector);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(mockReflector),
+		} as any;
+		guard = new GraphQLRolesGuard(mockModuleRef);
 
 		// Mock GqlExecutionContext.create using vi.spyOn (required for static methods)
 		vi.spyOn(GqlExecutionContext, 'create').mockReturnValue(mockGqlContext as any);

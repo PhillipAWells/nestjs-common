@@ -123,8 +123,6 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 				graphqlCode: (this.extensions as Record<string, unknown>)['code'],
 				context: this.context,
 				timestamp: this.timestamp.toISOString(),
-				// Include stack trace in development
-				...(process.env['NODE_ENV'] !== 'production' ? { stack: this.stack } : {}),
 			};
 		}
 

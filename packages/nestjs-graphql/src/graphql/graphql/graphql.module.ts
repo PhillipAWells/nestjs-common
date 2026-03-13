@@ -2,8 +2,6 @@ import Joi from 'joi';
 import { Module, DynamicModule, Global, MiddlewareConsumer, NestModule, OnModuleInit, Optional, Provider, Type } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { CommonModule } from '@pawells/nestjs-shared/common';
-import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 // Note: AuthModule NOT imported here to avoid circular dependency
 // AuthModule depends on CacheModule from this package
 // Applications should import both modules at root level
@@ -44,14 +42,14 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	 */
 	private static validateGraphQLConfig(options: GraphQLConfigOptions): void {
 		const schema = Joi.object({
-			autoSchemaFile: Joi.string().optional().description('Path to auto-generated schema file'),
-			sortSchema: Joi.boolean().optional().description('Whether to sort schema'),
-			playground: Joi.boolean().optional().description('Enable GraphQL playground'),
-			introspection: Joi.boolean().optional().description('Enable schema introspection'),
+			autoSchemaFile: Joi.alternatives().try(Joi.string(), Joi.boolean()).optional().description('Path to auto-generated schema file or boolean'),
+			sortSchema: Joi.boolean().strict().optional().description('Whether to sort schema'),
+			playground: Joi.boolean().strict().optional().description('Enable GraphQL playground'),
+			introspection: Joi.boolean().strict().optional().description('Enable schema introspection'),
 			debug: Joi.boolean().optional().description('Enable debug mode'),
 			tracing: Joi.boolean().optional().description('Enable tracing'),
 			cache: Joi.boolean().optional().description('Enable caching'),
-		});
+		}).options({ allowUnknown: true });
 
 		const { error } = schema.validate(options);
 		if (error) {
@@ -106,20 +104,6 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 		return {
 			module: GraphQLModule,
 			imports: [
-				CommonModule,
-				// PyroscopeModule explicitly registered for profiling support
-				PyroscopeModule.forRoot({
-					config: {
-						enabled: true,
-						serverAddress: process.env['PYROSCOPE_SERVER_URL'] ?? 'http://localhost:4040',
-						applicationName: 'nestjs-graphql',
-						environment: process.env['NODE_ENV'] ?? 'development',
-						tags: {
-							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-graphql',
-						},
-					},
-				}),
 				NestGraphQLModule.forRoot(defaultOptions),
 			],
 			providers,
@@ -167,20 +151,6 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 		return {
 			module: GraphQLModule,
 			imports: [
-				CommonModule,
-				// PyroscopeModule explicitly registered for profiling support
-				PyroscopeModule.forRoot({
-					config: {
-						enabled: true,
-						serverAddress: process.env['PYROSCOPE_SERVER_URL'] ?? 'http://localhost:4040',
-						applicationName: 'nestjs-graphql',
-						environment: process.env['NODE_ENV'] ?? 'development',
-						tags: {
-							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-graphql',
-						},
-					},
-				}),
 				NestGraphQLModule.forRootAsync({
 					driver: ApolloDriver,
 					useFactory: options.useFactory,

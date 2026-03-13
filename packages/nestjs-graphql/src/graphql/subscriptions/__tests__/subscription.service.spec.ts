@@ -1,33 +1,38 @@
 import { vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionService } from '../subscription.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 describe('SubscriptionService', () => {
 	let service: SubscriptionService;
 	let mockLogger: any;
+	let contextualLogger: any;
+	let deps: { pubSub: any };
 
-	beforeEach(async () => {
+	beforeEach(() => {
+		contextualLogger = {
+			debug: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+		};
 		mockLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			}),
+			createContextualLogger: vi.fn().mockReturnValue(contextualLogger),
 		} as any;
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				SubscriptionService,
-				{
-					provide: AppLogger,
-					useValue: mockLogger,
-				},
-			],
-		}).compile();
+		deps = { pubSub: undefined };
 
-		service = module.get<SubscriptionService>(SubscriptionService);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === AppLogger) return mockLogger;
+				if (token === 'GRAPHQL_PUBSUB') {
+					if (deps.pubSub === undefined) throw new Error('No pubSub configured');
+					return deps.pubSub;
+				}
+				throw new Error(`Unknown token: ${String(token)}`);
+			},
+		} as any;
+
+		service = new SubscriptionService(mockModuleRef);
 	});
 
 	describe('module lifecycle', () => {
@@ -98,16 +103,10 @@ describe('SubscriptionService', () => {
 				publish: vi.fn().mockRejectedValue(new Error('Publish failed')),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			await expect(service.publish('topic', { data: 'test' })).rejects.toThrow('Publish failed');
-			expect((service as any).logger.error).toHaveBeenCalled();
+			expect(contextualLogger.error).toHaveBeenCalled();
 		});
 
 		it('should handle subscribe errors and log them', async () => {
@@ -117,16 +116,10 @@ describe('SubscriptionService', () => {
 				}),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			expect(() => service.subscribe('topic')).toThrow('Subscribe failed');
-			expect((service as any).logger.error).toHaveBeenCalled();
+			expect(contextualLogger.error).toHaveBeenCalled();
 		});
 	});
 
@@ -136,13 +129,7 @@ describe('SubscriptionService', () => {
 				publish: vi.fn().mockResolvedValue(1),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			const data = { userId: 'user123', message: 'test message' };
 			await service.publish('authenticated-topic', data);
@@ -155,13 +142,7 @@ describe('SubscriptionService', () => {
 				publish: vi.fn(),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			// Without userId, should still allow (auth check is at subscription layer)
 			const data = { message: 'test' };
@@ -177,13 +158,7 @@ describe('SubscriptionService', () => {
 				}),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			const iterator = service.subscribe('user-specific-topic');
 			expect(iterator).toBeDefined();
@@ -196,13 +171,7 @@ describe('SubscriptionService', () => {
 				publish: vi.fn().mockResolvedValue(2),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			const message = { data: 'broadcast' };
 			await service.publish('broadcast-topic', message);
@@ -217,13 +186,7 @@ describe('SubscriptionService', () => {
 				}),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			const user1Iterator = service.subscribe('user:user1:updates');
 			const user2Iterator = service.subscribe('user:user2:updates');
@@ -233,23 +196,15 @@ describe('SubscriptionService', () => {
 		});
 
 		it('should log successful message delivery', async () => {
-			const mockLogger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
-
 			const mockPubSub = {
 				publish: vi.fn().mockResolvedValue(1),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = mockLogger;
+			deps.pubSub = mockPubSub;
 
 			await service.publish('logged-topic', { data: 'test' });
 
-			expect(mockLogger.debug).toHaveBeenCalledWith('Publishing to topic: logged-topic');
+			expect(contextualLogger.debug).toHaveBeenCalledWith('Publishing to topic: logged-topic');
 		});
 	});
 
@@ -261,13 +216,7 @@ describe('SubscriptionService', () => {
 				}),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			expect(() => service.subscribe('cleanup-topic')).toThrow('Connection lost');
 		});
@@ -281,13 +230,6 @@ describe('SubscriptionService', () => {
 		});
 
 		it('should not throw during cleanup of already-closed subscriptions', async () => {
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
-
 			expect(() => {
 				service.onModuleDestroy();
 				service.onModuleDestroy();
@@ -303,13 +245,7 @@ describe('SubscriptionService', () => {
 				}),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			// Subscribe to many topics
 			const subscriptions = [];
@@ -326,13 +262,7 @@ describe('SubscriptionService', () => {
 				publish: vi.fn().mockResolvedValue(1),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			const publishPromises = [];
 			for (let i = 0; i < 50; i++) {
@@ -352,13 +282,7 @@ describe('SubscriptionService', () => {
 				publish: vi.fn().mockResolvedValue(1),
 			};
 
-			(service as any).pubSub = mockPubSub;
-			(service as any).logger = {
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			};
+			deps.pubSub = mockPubSub;
 
 			// Create and cleanup subscriptions
 			for (let i = 0; i < 10; i++) {

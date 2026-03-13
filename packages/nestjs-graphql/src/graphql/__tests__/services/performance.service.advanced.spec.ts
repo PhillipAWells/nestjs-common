@@ -1,4 +1,5 @@
 
+import { vi } from 'vitest';
 import { GraphQLPerformanceService } from '../../services/performance.service.js';
 
 describe('GraphQL Performance Service - Advanced Metrics', () => {
@@ -27,7 +28,10 @@ describe('GraphQL Performance Service - Advanced Metrics', () => {
 			}),
 		};
 
-		service = new GraphQLPerformanceService(mockAppLogger);
+		const mockModuleRef = {
+			get: vi.fn().mockReturnValue(mockAppLogger),
+		} as any;
+		service = new GraphQLPerformanceService(mockModuleRef);
 	});
 
 	describe('measure() - Performance Tracking', () => {

@@ -1,5 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
 // Status code for client errors
@@ -10,8 +12,12 @@ const HTTP_STATUS_BAD_REQUEST = 400;
  * Deserializes incoming BSON data to JSON before GraphQL processing
  */
 @Injectable()
-export class BsonSerializationMiddleware implements NestMiddleware {
-	constructor(private readonly bsonService: BsonSerializationService) {}
+export class BsonSerializationMiddleware implements NestMiddleware, LazyModuleRefService {
+	public get BsonSerializationService(): BsonSerializationService {
+		return this.Module.get(BsonSerializationService, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Handle incoming request
@@ -35,15 +41,17 @@ export class BsonSerializationMiddleware implements NestMiddleware {
 		};
 
 		const removeListeners = (): void => {
-			req.removeListener('data', onData);
-			req.removeListener('end', onEnd);
-			req.removeListener('error', onError);
+			if (typeof req.removeListener === 'function') {
+				req.removeListener('data', onData);
+				req.removeListener('end', onEnd);
+				req.removeListener('error', onError);
+			}
 		};
 
 		// Handle end event — async with proper error handling and listener cleanup
 		const onEnd = (): void => {
 			const buffer = Buffer.concat(chunks);
-			this.bsonService.deserialize(buffer).then(
+			this.BsonSerializationService.deserialize(buffer).then(
 				(body) => {
 					removeListeners();
 					req.body = body;

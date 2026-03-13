@@ -1,5 +1,4 @@
 import {
-	Inject,
 	Injectable,
 	NestInterceptor,
 } from '@nestjs/common';
@@ -8,6 +7,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Observable, of, from } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import { CACHE_INTERCEPTOR_DEFAULT_TTL, CACHE_ETAG_BASE64_SUBSTRING_LENGTH } from '../constants/cache-config.constants.js';
@@ -42,14 +43,19 @@ export interface CacheContextHandler {
  * subclasses to provide context-specific behavior through strategy interfaces.
  */
 @Injectable()
-export abstract class BaseCacheInterceptor implements NestInterceptor {
-	protected logger: AppLogger;
+export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModuleRefService {
+	protected logger!: AppLogger;
 
-	constructor(
-		@Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
-		@Inject(AppLogger) protected readonly appLogger: AppLogger,
-	) {
-		this.logger = this.appLogger.createContextualLogger(BaseCacheInterceptor.name);
+	public get CacheManager(): Cache {
+		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = this.AppLogger.createContextualLogger(BaseCacheInterceptor.name);
 	}
 
 	/**
@@ -97,7 +103,7 @@ export abstract class BaseCacheInterceptor implements NestInterceptor {
 		const ttl = metadataExtractor.getCacheTtl(context) ?? CACHE_INTERCEPTOR_DEFAULT_TTL; // 5 minutes default
 
 		// Check cache
-		return from(this.cacheManager.get(cacheKey)).pipe(
+		return from(this.CacheManager.get(cacheKey)).pipe(
 			switchMap((cachedResponse) => {
 				if (cachedResponse !== null && cachedResponse !== undefined) {
 					this.logger.debug(`Cache hit for ${cacheKey}`);
@@ -112,7 +118,7 @@ export abstract class BaseCacheInterceptor implements NestInterceptor {
 				return next.handle().pipe(
 					tap(async (data) => {
 						try {
-							await this.cacheManager.set(cacheKey, data, ttl);
+							await this.CacheManager.set(cacheKey, data, ttl);
 							this.logger.debug(`Cached response for ${cacheKey} (TTL: ${ttl}s)`);
 						} catch (error) {
 							this.logger.error(`Failed to cache response for ${cacheKey}:`, error as string);

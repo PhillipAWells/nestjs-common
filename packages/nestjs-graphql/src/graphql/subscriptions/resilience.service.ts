@@ -4,7 +4,9 @@ declare global {
 	}
 }
 
-import { Injectable, Logger, OnModuleDestroy, Inject } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.constants.js';
 
@@ -12,7 +14,7 @@ import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.consta
  * Service for handling resilience patterns (keepalive, reconnection, error recovery)
  */
 @Injectable()
-export class ResilienceService implements OnModuleDestroy {
+export class ResilienceService implements OnModuleDestroy, LazyModuleRefService {
 	private readonly logger = new Logger(ResilienceService.name);
 
 	// eslint-disable-next-line no-undef
@@ -24,7 +26,11 @@ export class ResilienceService implements OnModuleDestroy {
 	// eslint-disable-next-line no-undef
 	private shutdownTimeout?: NodeJS.Timeout;
 
-	constructor(@Inject('SUBSCRIPTION_CONFIG') private readonly config: SubscriptionConfig) {}
+	public get SubscriptionConfig(): SubscriptionConfig {
+		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Starts keepalive for a connection
@@ -32,7 +38,7 @@ export class ResilienceService implements OnModuleDestroy {
    * @param callback Keepalive callback function
    */
 	public startKeepalive(connectionId: string, callback: () => void): void {
-		if (!this.config.resilience.keepalive.enabled) {
+		if (!this.SubscriptionConfig.resilience.keepalive.enabled) {
 			return;
 		}
 
@@ -42,7 +48,7 @@ export class ResilienceService implements OnModuleDestroy {
 			} catch (error: any) {
 				this.logger.error(`Keepalive error for connection ${connectionId}: ${error.message}`);
 			}
-		}, this.config.resilience.keepalive.interval);
+		}, this.SubscriptionConfig.resilience.keepalive.interval);
 
 		this.keepaliveTimers.set(connectionId, timer);
 		this.logger.debug(`Started keepalive for connection: ${connectionId}`);
@@ -72,11 +78,11 @@ export class ResilienceService implements OnModuleDestroy {
 		callback: () => Promise<void>,
 		attempt: number = 1,
 	): void {
-		if (!this.config.resilience.reconnection.enabled) {
+		if (!this.SubscriptionConfig.resilience.reconnection.enabled) {
 			return;
 		}
 
-		if (attempt > this.config.resilience.reconnection.attempts) {
+		if (attempt > this.SubscriptionConfig.resilience.reconnection.attempts) {
 			this.logger.warn(`Max reconnection attempts reached for connection: ${connectionId}`);
 			return;
 		}
@@ -124,7 +130,7 @@ export class ResilienceService implements OnModuleDestroy {
 	): Promise<void> {
 		this.logger.error(`Connection error for ${connectionId}: ${error.message}`, error.stack);
 
-		if (!this.config.resilience.errorRecovery.enabled) {
+		if (!this.SubscriptionConfig.resilience.errorRecovery.enabled) {
 			return;
 		}
 
@@ -133,11 +139,11 @@ export class ResilienceService implements OnModuleDestroy {
 
 		// Attempt recovery
 		let attempt = 1;
-		const { maxRetries } = this.config.resilience.errorRecovery;
+		const { maxRetries } = this.SubscriptionConfig.resilience.errorRecovery;
 
 		while (attempt <= maxRetries) {
 			try {
-				await new Promise(resolve => setTimeout(resolve, this.config.resilience.errorRecovery.retryDelay));
+				await new Promise(resolve => setTimeout(resolve, this.SubscriptionConfig.resilience.errorRecovery.retryDelay));
 				await recoveryCallback();
 				this.logger.log(`Error recovery successful for connection: ${connectionId}`);
 				return;
@@ -161,7 +167,7 @@ export class ResilienceService implements OnModuleDestroy {
 		this.shutdownTimeout = setTimeout(() => {
 			this.logger.error('Graceful shutdown timeout exceeded, forcing shutdown');
 			process.exit(1);
-		}, this.config.resilience.shutdown.timeout);
+		}, this.SubscriptionConfig.resilience.shutdown.timeout);
 
 		try {
 			await shutdownCallback();
@@ -181,9 +187,9 @@ export class ResilienceService implements OnModuleDestroy {
    * @returns Delay in milliseconds
    */
 	private calculateReconnectionDelay(attempt: number): number {
-		const baseDelay = this.config.resilience.reconnection.delay;
+		const baseDelay = this.SubscriptionConfig.resilience.reconnection.delay;
 
-		if (this.config.resilience.reconnection.backoff === 'exponential') {
+		if (this.SubscriptionConfig.resilience.reconnection.backoff === 'exponential') {
 			return Math.min(baseDelay * Math.pow(2, attempt - 1), REDIS_PUBSUB_CLEANUP_INTERVAL); // Max 30 seconds
 		} else {
 			return baseDelay;

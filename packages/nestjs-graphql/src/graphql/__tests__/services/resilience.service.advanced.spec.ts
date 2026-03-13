@@ -1,6 +1,13 @@
 
 import { ResilienceService } from '../../subscriptions/resilience.service.js';
 
+function createService(config: any): ResilienceService {
+	const mockModuleRef = {
+		get: () => config,
+	} as any;
+	return new ResilienceService(mockModuleRef);
+}
+
 describe('Resilience Service - Advanced Connection Management', () => {
 	let service: ResilienceService;
 	let mockConfig: any;
@@ -30,7 +37,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 			},
 		};
 
-		service = new ResilienceService(mockConfig);
+		service = createService(mockConfig);
 	});
 
 	afterEach(async () => {
@@ -52,7 +59,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should not start keepalive when disabled', () => {
 			mockConfig.resilience.keepalive.enabled = false;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			newService.startKeepalive('conn-1', () => {});
 
@@ -62,7 +69,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should execute keepalive callback at intervals', async () => {
 			mockConfig.resilience.keepalive.interval = 100;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let callbackCount = 0;
 			const callback = () => {
@@ -80,7 +87,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should handle callback errors gracefully', async () => {
 			mockConfig.resilience.keepalive.interval = 50;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			const failingCallback = () => {
 				throw new Error('Callback failed');
@@ -143,7 +150,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should not schedule when disabled', () => {
 			mockConfig.resilience.reconnection.enabled = false;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			newService.scheduleReconnection('conn-1', async () => {});
 
@@ -153,7 +160,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should execute callback after delay', async () => {
 			mockConfig.resilience.reconnection.delay = 100;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let callbackExecuted = false;
 			const callback = async () => {
@@ -172,7 +179,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 		it('should retry on failure up to max attempts', async () => {
 			mockConfig.resilience.reconnection.delay = 50;
 			mockConfig.resilience.reconnection.attempts = 2;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let attemptCount = 0;
 			const callback = async () => {
@@ -192,7 +199,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 		it('should stop retrying after max attempts', async () => {
 			mockConfig.resilience.reconnection.delay = 50;
 			mockConfig.resilience.reconnection.attempts = 2;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let attemptCount = 0;
 			const callback = async () => {
@@ -212,7 +219,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 		it('should use exponential backoff for delays', async () => {
 			mockConfig.resilience.reconnection.delay = 100;
 			mockConfig.resilience.reconnection.backoff = 'exponential';
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			const timestamps: number[] = [];
 			const callback = async () => {
@@ -279,7 +286,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 		it('should retry recovery on failure', async () => {
 			mockConfig.resilience.errorRecovery.maxRetries = 2;
 			mockConfig.resilience.errorRecovery.retryDelay = 50;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let attemptCount = 0;
 			const recoveryCallback = async () => {
@@ -296,7 +303,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should not retry when error recovery disabled', async () => {
 			mockConfig.resilience.errorRecovery.enabled = false;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			let recoveryExecuted = false;
 			const recoveryCallback = async () => {
@@ -334,7 +341,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 		it('should complete shutdown without timing out', async () => {
 			let shutdownCompleted = false;
-			const newService = new ResilienceService(mockConfig);
+			const newService = createService(mockConfig);
 
 			await newService.gracefulShutdown(async () => {
 				shutdownCompleted = true;

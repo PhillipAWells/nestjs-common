@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -15,12 +17,14 @@ export interface Order {
  * Prevents N+1 query problems when resolving order fields in GraphQL
  */
 @Injectable()
-export class OrderLoader {
+export class OrderLoader implements LazyModuleRefService {
 	private readonly logger = new Logger(OrderLoader.name);
 
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-	) {}
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the order DataLoader instance
@@ -30,7 +34,7 @@ export class OrderLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(Order | Error)[]>,
 	): DataLoader<string, Order> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'order-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -102,6 +106,6 @@ export class OrderLoader {
    * Clears all cached orders
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('order-loader');
+		this.DataLoaderRegistry.clearCache('order-loader');
 	}
 }

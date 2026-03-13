@@ -1,6 +1,7 @@
 import { Injectable, ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
+import type { ModuleRef } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BaseCacheInterceptor, CacheKeyGenerator, CacheMetadataExtractor, CacheContextHandler } from '../../cache/interceptors/base-cache.interceptor.js';
@@ -74,21 +75,24 @@ export class GraphQLCacheContextHandler implements CacheContextHandler {
  */
 @Injectable()
 export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
-	constructor(
-		private readonly reflector: Reflector,
-		private readonly cacheService: GraphQLCacheService,
-		cacheManager: any,
-		appLogger: any,
-	) {
-		super(cacheManager, appLogger);
+	public get Reflector(): Reflector {
+		return this.Module.get(Reflector, { strict: false });
+	}
+
+	public get GraphQLCacheService(): GraphQLCacheService {
+		return this.Module.get(GraphQLCacheService, { strict: false });
+	}
+
+	constructor(Module: ModuleRef) {
+		super(Module);
 	}
 
 	protected getCacheKeyGenerator(): CacheKeyGenerator {
-		return new GraphQLCacheKeyGenerator(this.cacheService);
+		return new GraphQLCacheKeyGenerator(this.GraphQLCacheService);
 	}
 
 	protected getCacheMetadataExtractor(): CacheMetadataExtractor {
-		return new GraphQLCacheMetadataExtractor(this.reflector);
+		return new GraphQLCacheMetadataExtractor(this.Reflector);
 	}
 
 	protected getCacheContextHandler(): CacheContextHandler {
@@ -129,7 +133,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		result: any,
 		when: 'before' | 'after',
 	): Promise<void> {
-		const invalidateOptions = this.reflector.getAllAndOverride<CacheInvalidateOptions>(
+		const invalidateOptions = this.Reflector.getAllAndOverride<CacheInvalidateOptions>(
 			CACHE_INVALIDATE_METADATA,
 			[context.getHandler(), context.getClass()],
 		);
@@ -152,7 +156,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		// Invalidate each pattern
 		for (const pattern of patterns) {
 			try {
-				await this.cacheService.invalidatePattern(pattern);
+				await this.GraphQLCacheService.invalidatePattern(pattern);
 				this.logger.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
 			} catch (error) {
 				this.logger.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);

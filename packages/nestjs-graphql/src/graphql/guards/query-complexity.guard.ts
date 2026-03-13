@@ -11,10 +11,11 @@ import {
 	BadRequestException,
 	InternalServerErrorException,
 	Logger,
-	Optional,
 	OnModuleDestroy,
 } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import type {
 	ComplexityConfig,
 } from '../graphql/query-complexity.js';
@@ -33,7 +34,7 @@ import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVA
  * complexity for identical queries
  */
 @Injectable()
-export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
+export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyModuleRefService {
 	private readonly logger = new Logger(QueryComplexityGuard.name);
 
 	private readonly complexityCache = new Map<string, number>();
@@ -41,7 +42,15 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 	// eslint-disable-next-line no-undef
 	private cleanupIntervalRef: NodeJS.Timeout | null = null;
 
-	constructor(@Optional() private readonly config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG) {
+	private get config(): ComplexityConfig {
+		try {
+			return this.Module.get<ComplexityConfig>('COMPLEXITY_CONFIG', { strict: false });
+		} catch {
+			return DEFAULT_COMPLEXITY_CONFIG;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {
 		this.startPeriodicCleanup();
 	}
 
@@ -124,7 +133,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy {
 	 * @param context Execution context
 	 * @returns True if query is allowed
 	 */
-	public canActivate(context: ExecutionContext): boolean {
+	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		const gqlContext = GqlExecutionContext.create(context);
 		const { req } = gqlContext.getContext();
 		const { schema, document, variables, operationName } = gqlContext.getArgs();

@@ -1,6 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, Inject } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -21,15 +23,20 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```
  */
 @Injectable()
-export class GraphQLPublicGuard implements CanActivate {
-	private readonly logger: AppLogger;
-
-	constructor(
-		private readonly reflector: Reflector,
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-	) {
-		this.logger = this.appLogger.createContextualLogger(GraphQLPublicGuard.name);
+export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
+	public get Reflector(): Reflector {
+		return this.Module.get(Reflector, { strict: false });
 	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLPublicGuard.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Determines if the current resolver is marked as public
@@ -39,7 +46,7 @@ export class GraphQLPublicGuard implements CanActivate {
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Check if resolver is marked as public
-		const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
+		const isPublic = this.Reflector.getAllAndOverride<boolean>('isPublic', [
 			context.getHandler(),
 			context.getClass(),
 		]);

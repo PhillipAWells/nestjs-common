@@ -176,12 +176,17 @@ export class GraphQLErrorFormatter {
 		// Log internal errors for debugging
 		this.logger.error(`GraphQL Error: ${error.message}`, error.stack);
 
+		const originalError = error.originalError as any;
+		const statusCode = originalError?.getStatus?.() ?? originalError?.status ?? originalError?.statusCode;
+
 		// Don't expose internal error details to client
 		return {
 			message: 'An unexpected error occurred',
 			extensions: {
 				code: GraphQLErrorCode.INTERNAL_ERROR,
 				timestamp: new Date().toISOString(),
+				...(statusCode !== undefined && { statusCode }),
+				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};

@@ -1,31 +1,38 @@
 
 import { vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLCacheService } from '../../services/cache.service.js';
 
 describe('GraphQLCacheService', () => {
 	let service: GraphQLCacheService;
 	let mockCacheManager: any;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockCacheManager = {
 			set: vi.fn().mockResolvedValue(undefined),
 			get: vi.fn().mockResolvedValue(null),
 			del: vi.fn().mockResolvedValue(undefined),
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				GraphQLCacheService,
-				{
-					provide: CACHE_MANAGER,
-					useValue: mockCacheManager,
-				},
-			],
-		}).compile();
+		const mockAppLogger = {
+			createContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+			}),
+		};
 
-		service = module.get<GraphQLCacheService>(GraphQLCacheService);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === CACHE_MANAGER) return mockCacheManager;
+				if (token === AppLogger) return mockAppLogger;
+				throw new Error(`Unknown token: ${String(token)}`);
+			},
+		} as any;
+
+		service = new GraphQLCacheService(mockModuleRef);
 	});
 
 	afterEach(() => {

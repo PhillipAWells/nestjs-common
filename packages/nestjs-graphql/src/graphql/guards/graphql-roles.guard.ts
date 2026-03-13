@@ -1,6 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Roles-Based Access Control Guard
@@ -19,10 +21,14 @@ import { GqlExecutionContext } from '@nestjs/graphql';
  * ```
  */
 @Injectable()
-export class GraphQLRolesGuard implements CanActivate {
+export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 	private readonly logger = new Logger(GraphQLRolesGuard.name);
 
-	constructor(private readonly reflector: Reflector) {}
+	public get Reflector(): Reflector {
+		return this.Module.get(Reflector, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Determines if the current user has the required roles
@@ -32,7 +38,7 @@ export class GraphQLRolesGuard implements CanActivate {
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Get required roles from metadata
-		const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
+		const requiredRoles = this.Reflector.getAllAndOverride<string[]>('roles', [
 			context.getHandler(),
 			context.getClass(),
 		]);

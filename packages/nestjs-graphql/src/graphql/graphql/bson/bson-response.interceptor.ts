@@ -1,7 +1,9 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import type { ModuleRef } from '@nestjs/core';
+import { Observable, from } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
 /**
@@ -9,10 +11,14 @@ import { BsonSerializationService } from './bson-serialization.service.js';
  * Checks Accept header for application/bson and converts response accordingly
  */
 @Injectable()
-export class BsonResponseInterceptor implements NestInterceptor {
+export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefService {
 	private readonly logger = new Logger(BsonResponseInterceptor.name);
 
-	constructor(private readonly bsonService: BsonSerializationService) {}
+	public get BsonSerializationService(): BsonSerializationService {
+		return this.Module.get(BsonSerializationService, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Intercept GraphQL response and serialize to BSON if requested
@@ -24,37 +30,42 @@ export class BsonResponseInterceptor implements NestInterceptor {
 		const request = ctx.getRequest<any>();
 
 		return next.handle().pipe(
-			tap(async (data) => {
+			switchMap((data) => {
 				// Check if client requested BSON response via Accept header
 				const acceptHeader = request.get('accept')?.toLowerCase() ?? '';
 				const acceptsBson = acceptHeader.includes('application/bson');
 
-				if (acceptsBson) {
-					try {
-						// Serialize response to BSON
-						const bsonBuffer = await this.bsonService.serialize(data);
-
-						// Set response headers
-						response.setHeader('Content-Type', 'application/bson');
-						response.setHeader('Content-Length', bsonBuffer.length);
-
-						// Send BSON buffer directly
-						response.end(bsonBuffer);
-					} catch (error) {
-						// Log error but fall through to JSON response
-						this.logger.error(
-							`Failed to serialize BSON response: ${error instanceof Error ? error.message : String(error)},
-						`,
-						);
-
-						// Set content type to JSON as fallback
-						response.setHeader('Content-Type', 'application/json');
-
-						// Return data as JSON (will be handled by default serialization)
-						response.json(data);
-					}
+				if (!acceptsBson) {
+					// If not BSON request, let default JSON serialization handle it
+					return from(Promise.resolve(data));
 				}
-				// If not BSON request, let default JSON serialization handle it
+
+				return from(
+					this.BsonSerializationService.serialize(data).then(
+						(bsonBuffer) => {
+							// Set response headers
+							response.setHeader('Content-Type', 'application/bson');
+							response.setHeader('Content-Length', bsonBuffer.length);
+
+							// Send BSON buffer directly
+							response.end(bsonBuffer);
+							return data;
+						},
+						(error: unknown) => {
+							// Log error but fall through to JSON response
+							this.logger.error(
+								`Failed to serialize BSON response: ${error instanceof Error ? error.message : String(error)}`,
+							);
+
+							// Set content type to JSON as fallback
+							response.setHeader('Content-Type', 'application/json');
+
+							// Return data as JSON (will be handled by default serialization)
+							response.json(data);
+							return data;
+						},
+					),
+				);
 			}),
 		);
 	}

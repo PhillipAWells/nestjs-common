@@ -4,7 +4,9 @@ declare global {
 	}
 }
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 const MS_PER_SECOND = 1000;
@@ -119,20 +121,29 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
  * ```
  */
 @Injectable()
-export class RateLimitService implements OnModuleInit, OnModuleDestroy {
-	private readonly logger: AppLogger;
-
+export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModuleRefService {
 	private readonly store = new Map<string, RateLimitEntry>();
 
 	// eslint-disable-next-line no-undef
 	private cleanupInterval?: NodeJS.Timeout;
 
-	constructor(
-		@Inject(AppLogger) private readonly appLogger: AppLogger,
-		@Optional() @Inject('RATE_LIMIT_STORAGE') private readonly storage?: RateLimitStorage,
-	) {
-		this.logger = this.appLogger.createContextualLogger(RateLimitService.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
 	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(RateLimitService.name);
+	}
+
+	private get storage(): RateLimitStorage | undefined {
+		try {
+			return this.Module.get<RateLimitStorage>('RATE_LIMIT_STORAGE', { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Default rate limit configuration
@@ -176,8 +187,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 		const config = operation ? this.getConfigForOperation(operation) : this.defaultConfig;
 
 		// Use storage backend if available, otherwise fall back to in-memory
-		if (this.storage) {
-			return this.checkLimitWithStorage(clientId, config);
+		const { storage } = this;
+		if (storage) {
+			return this.checkLimitWithStorage(clientId, config, storage);
 		} else {
 			return this.checkLimitInMemory(clientId, config);
 		}
@@ -186,13 +198,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	/**
 	 * Check rate limit using storage backend
 	 */
-	private async checkLimitWithStorage(clientId: string, config: RateLimitConfig): Promise<RateLimitResult> {
-		if (!this.storage) {
-			return this.checkLimitInMemory(clientId, config);
-		}
-
+	private async checkLimitWithStorage(clientId: string, config: RateLimitConfig, storage: RateLimitStorage): Promise<RateLimitResult> {
 		try {
-			const current = await this.storage.increment(clientId, config.windowMs);
+			const current = await storage.increment(clientId, config.windowMs);
 			const remaining = Math.max(0, config.maxRequests - current);
 			const allowed = current <= config.maxRequests;
 
@@ -306,9 +314,10 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private async cleanup(): Promise<void> {
 		// Clean up storage backend if available
-		if (this.storage) {
+		const { storage } = this;
+		if (storage) {
 			try {
-				await this.storage.cleanup();
+				await storage.cleanup();
 			} catch (error) {
 				this.logger.error('Storage cleanup failed:', error instanceof Error ? error.message : String(error));
 			}

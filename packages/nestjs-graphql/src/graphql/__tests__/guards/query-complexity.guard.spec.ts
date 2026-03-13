@@ -1,6 +1,5 @@
 
 import { vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { QueryComplexityGuard } from '../../guards/query-complexity.guard.js';
@@ -11,12 +10,14 @@ describe('QueryComplexityGuard', () => {
 	let mockExecutionContext: any;
 	let mockRequest: any;
 
-	beforeEach(async () => {
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [QueryComplexityGuard],
-		}).compile();
+	beforeEach(() => {
+		const mockModuleRef = {
+			get: () => {
+				throw new Error('No dependencies expected');
+			},
+		} as any;
 
-		guard = module.get<QueryComplexityGuard>(QueryComplexityGuard);
+		guard = new QueryComplexityGuard(mockModuleRef);
 
 		mockRequest = {
 			headers: {},
@@ -145,6 +146,17 @@ describe('QueryComplexityGuard', () => {
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(BadRequestException);
 
 			// Second test: Other errors should throw InternalServerErrorException
+			// Use a different document to avoid cache hit from previous call
+			(GqlExecutionContext.create as any).mockReturnValue({
+				getContext: () => ({ req: mockRequest }),
+				getArgs: () => ({
+					schema: {},
+					document: { kind: 'Document', definitions: [{ differentDoc: true }] },
+					variables: {},
+					operationName: 'DifferentQuery',
+				}),
+			});
+
 			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Unexpected error');
 			});

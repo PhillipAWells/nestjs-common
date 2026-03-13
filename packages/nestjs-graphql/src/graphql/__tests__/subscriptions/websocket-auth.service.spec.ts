@@ -1,15 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
+import { JwtService } from '@nestjs/jwt';
 import { WebSocketAuthService } from '../../subscriptions/websocket-auth.service.js';
 
 describe('WebSocketAuthService', () => {
 	let service: WebSocketAuthService;
 
-	beforeEach(async () => {
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [WebSocketAuthService],
-		}).compile();
+	beforeEach(() => {
+		const mockJwtService = {
+			verifyAsync: vi.fn().mockImplementation(async (token: string) => {
+				const parts = token.split('.');
+				if (parts.length !== 3) throw new Error('Invalid token format');
+				const base64 = (parts[1] ?? '').replace(/-/g, '+').replace(/_/g, '/');
+				const payload = JSON.parse(Buffer.from(base64, 'base64').toString('utf8')) as Record<string, unknown>;
+				if (typeof payload['exp'] === 'number' && payload['exp'] <= Math.floor(Date.now() / 1000)) {
+					throw new Error('Token expired');
+				}
+				return payload;
+			}),
+		};
 
-		service = module.get<WebSocketAuthService>(WebSocketAuthService);
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === JwtService) return mockJwtService;
+				return undefined;
+			},
+		} as any;
+
+		service = new WebSocketAuthService(mockModuleRef);
 	});
 
 	describe('authenticate', () => {
@@ -119,39 +136,6 @@ describe('WebSocketAuthService', () => {
 		});
 	});
 
-	describe('decodeToken', () => {
-		it('should decode valid JWT payload', () => {
-			const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64url');
-			const payload = Buffer.from(JSON.stringify({ sub: 'user123', exp: 1234567890 })).toString('base64url');
-			const signature = 'signature';
-			const token = `${header}.${payload}.${signature}`;
-
-			const decoded = (service as any).decodeToken(token);
-
-			expect(decoded).toEqual({ sub: 'user123', exp: 1234567890 });
-		});
-
-		it('should return null for invalid JWT format', () => {
-			const decoded = (service as any).decodeToken('invalid');
-			expect(decoded).toBeNull();
-		});
-
-		it('should return null for invalid base64url', () => {
-			const token = 'header.invalid-base64.signature';
-			const decoded = (service as any).decodeToken(token);
-			expect(decoded).toBeNull();
-		});
-
-		it('should return null for invalid JSON', () => {
-			const header = Buffer.from('{}').toString('base64url');
-			const payload = Buffer.from('invalid json').toString('base64url');
-			const token = `${header}.${payload}.signature`;
-
-			const decoded = (service as any).decodeToken(token);
-			expect(decoded).toBeNull();
-		});
-	});
-
 	describe('validateToken', () => {
 		it('should validate token with valid payload and future expiration', async () => {
 			const payload = { sub: 'user123', exp: Math.floor(Date.now() / 1000) + 3600 };
@@ -179,6 +163,15 @@ describe('WebSocketAuthService', () => {
 
 		it('should handle decode errors', async () => {
 			const userId = await (service as any).validateToken('invalid-token');
+			expect(userId).toBeNull();
+		});
+
+		it('should return null when JwtService is unavailable (fail closed)', async () => {
+			const serviceWithoutJwt = new WebSocketAuthService({
+				get: () => undefined,
+			} as any);
+
+			const userId = await (serviceWithoutJwt as any).validateToken('some-token');
 			expect(userId).toBeNull();
 		});
 	});

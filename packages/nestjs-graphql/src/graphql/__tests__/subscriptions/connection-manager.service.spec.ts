@@ -1,6 +1,5 @@
 
 import { vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConnectionManagerService } from '../../subscriptions/connection-manager.service.js';
 import type { SubscriptionConfig } from '../../subscriptions/subscription-config.interface.js';
 
@@ -9,7 +8,7 @@ describe('ConnectionManagerService', () => {
 	let config: SubscriptionConfig;
 	let mockWs: any;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockWs = { id: 'ws123' };
 
 		config = {
@@ -41,17 +40,14 @@ describe('ConnectionManagerService', () => {
 			},
 		};
 
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [
-				ConnectionManagerService,
-				{
-					provide: 'SUBSCRIPTION_CONFIG',
-					useValue: config,
-				},
-			],
-		}).compile();
+		const mockModuleRef = {
+			get: (token: any) => {
+				if (token === 'SUBSCRIPTION_CONFIG') return config;
+				throw new Error(`Unknown token: ${String(token)}`);
+			},
+		} as any;
 
-		service = module.get<ConnectionManagerService>(ConnectionManagerService);
+		service = new ConnectionManagerService(mockModuleRef);
 	});
 
 	afterEach(() => {
@@ -60,7 +56,7 @@ describe('ConnectionManagerService', () => {
 
 	describe('addConnection', () => {
 		it('should add connection for new user', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			expect(service.getConnectionCount()).toBe(1);
 		});
@@ -68,8 +64,8 @@ describe('ConnectionManagerService', () => {
 		it('should add multiple connections for same user', () => {
 			const mockWs2 = { id: 'ws456' };
 
-			service.addConnection(mockWs, 'user123');
-			service.addConnection(mockWs2, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
+			service.addConnection(mockWs2, 'user123', 'user123');
 
 			expect(service.getConnectionCount()).toBe(2);
 		});
@@ -77,7 +73,7 @@ describe('ConnectionManagerService', () => {
 		it('should set connection timeout', () => {
 			vi.useFakeTimers();
 
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			expect(service.getConnectionCount()).toBe(1);
 
@@ -92,8 +88,8 @@ describe('ConnectionManagerService', () => {
 		it('should remove specific connection', () => {
 			const mockWs2 = { id: 'ws456' };
 
-			service.addConnection(mockWs, 'user123');
-			service.addConnection(mockWs2, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
+			service.addConnection(mockWs2, 'user123', 'user123');
 
 			service.removeConnection(mockWs, 'user123');
 
@@ -101,7 +97,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should remove user when no connections remain', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			service.removeConnection(mockWs, 'user123');
 
@@ -109,7 +105,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should clear connection timeout', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			service.removeConnection(mockWs, 'user123');
 
@@ -118,7 +114,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should remove all subscriptions when connection is removed', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			service.addSubscription('user123', 'sub1');
 			service.addSubscription('user123', 'sub2');
 
@@ -138,7 +134,7 @@ describe('ConnectionManagerService', () => {
 		it('should reject connection when at limit', () => {
 			// Add connections up to limit
 			for (let i = 0; i < config.websocket.maxConnections!; i++) {
-				service.addConnection({ id: `ws${i}` }, 'user123');
+				service.addConnection({ id: `ws${i}` }, 'user123', 'user123');
 			}
 
 			expect(service.canAcceptConnection('user123')).toBe(false);
@@ -147,7 +143,7 @@ describe('ConnectionManagerService', () => {
 		it('should allow connections for different users', () => {
 			// Fill up one user
 			for (let i = 0; i < config.websocket.maxConnections!; i++) {
-				service.addConnection({ id: `ws${i}` }, 'user123');
+				service.addConnection({ id: `ws${i}` }, 'user123', 'user123');
 			}
 
 			expect(service.canAcceptConnection('user456')).toBe(true);
@@ -214,8 +210,8 @@ describe('ConnectionManagerService', () => {
 
 	describe('getConnectionCount', () => {
 		it('should return total connection count', () => {
-			service.addConnection(mockWs, 'user123');
-			service.addConnection({ id: 'ws456' }, 'user456');
+			service.addConnection(mockWs, 'user123', 'user123');
+			service.addConnection({ id: 'ws456' }, 'user456', 'user456');
 
 			expect(service.getConnectionCount()).toBe(2);
 		});
@@ -240,8 +236,8 @@ describe('ConnectionManagerService', () => {
 
 	describe('getStats', () => {
 		it('should return comprehensive statistics', () => {
-			service.addConnection(mockWs, 'user123');
-			service.addConnection({ id: 'ws456' }, 'user456');
+			service.addConnection(mockWs, 'user123', 'user123');
+			service.addConnection({ id: 'ws456' }, 'user456', 'user456');
 			service.addSubscription('user123', 'sub1');
 			service.addSubscription('user123', 'sub2');
 			service.addSubscription('user456', 'sub3');
@@ -272,7 +268,7 @@ describe('ConnectionManagerService', () => {
 
 	describe('onModuleDestroy', () => {
 		it('should cleanup all resources', async () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			service.addSubscription('user123', 'sub1');
 
 			await service.onModuleDestroy();
@@ -292,7 +288,7 @@ describe('ConnectionManagerService', () => {
 			];
 
 			users.forEach((user, idx) => {
-				service.addConnection(wsObjects[idx], user);
+				service.addConnection(wsObjects[idx], user, user);
 			});
 
 			expect(service.getConnectionCount()).toBe(3);
@@ -302,8 +298,8 @@ describe('ConnectionManagerService', () => {
 			const ws1 = { id: 'ws1' };
 			const ws2 = { id: 'ws2' };
 
-			service.addConnection(ws1, 'user123');
-			service.addConnection(ws2, 'user456');
+			service.addConnection(ws1, 'user123', 'user123');
+			service.addConnection(ws2, 'user456', 'user456');
 
 			service.removeConnection(ws1, 'user123');
 
@@ -312,7 +308,7 @@ describe('ConnectionManagerService', () => {
 
 		it('should enforce max connections per user', () => {
 			for (let i = 0; i < config.websocket.maxConnections!; i++) {
-				service.addConnection({ id: `ws${i}` }, 'user123');
+				service.addConnection({ id: `ws${i}` }, 'user123', 'user123');
 			}
 
 			expect(service.canAcceptConnection('user123')).toBe(false);
@@ -322,7 +318,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should track concurrent subscriptions per user', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			service.addSubscription('user123', 'sub1');
 			service.addSubscription('user123', 'sub2');
 			service.addSubscription('user123', 'sub3');
@@ -332,7 +328,7 @@ describe('ConnectionManagerService', () => {
 
 		it('should handle rapid add/remove cycles', () => {
 			for (let i = 0; i < 10; i++) {
-				service.addConnection({ id: `ws${i}` }, 'user123');
+				service.addConnection({ id: `ws${i}` }, 'user123', 'user123');
 				service.addSubscription('user123', `sub${i}`);
 			}
 
@@ -352,7 +348,7 @@ describe('ConnectionManagerService', () => {
 	describe('connection state tracking', () => {
 		it('should track connection creation time', () => {
 			const _beforeAdd = Date.now();
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			const _afterAdd = Date.now();
 
 			// Connection was added within this timeframe
@@ -360,7 +356,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should track last activity time implicitly', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			// Activity is implicit - just verify connection exists
 			expect(service.getConnectionCount()).toBe(1);
@@ -368,7 +364,7 @@ describe('ConnectionManagerService', () => {
 
 		it('should verify authentication status on connection', () => {
 			// By adding a connection, we verify it was authenticated
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			expect(service.getConnectionCount()).toBe(1);
 			const stats = service.getStats();
@@ -382,7 +378,7 @@ describe('ConnectionManagerService', () => {
 				protocol: 'graphql-ws',
 			};
 
-			service.addConnection(wsWithMetadata, 'user123');
+			service.addConnection(wsWithMetadata, 'user123', 'user123');
 
 			const stats = service.getStats();
 			expect(stats.connectionsByUser['user123']).toBe(1);
@@ -394,8 +390,8 @@ describe('ConnectionManagerService', () => {
 			const ws1 = { id: 'ws1' };
 			const ws2 = { id: 'ws2' };
 
-			service.addConnection(ws1, 'user1');
-			service.addConnection(ws2, 'user2');
+			service.addConnection(ws1, 'user1', 'user1');
+			service.addConnection(ws2, 'user2', 'user2');
 
 			const stats = service.getStats();
 
@@ -428,13 +424,13 @@ describe('ConnectionManagerService', () => {
 	describe('edge cases', () => {
 		it('should handle null user ID gracefully', () => {
 			expect(() => {
-				service.addConnection(mockWs, null as any);
+				service.addConnection(mockWs, null as any, null as any);
 			}).not.toThrow();
 		});
 
 		it('should handle undefined connection object', () => {
 			expect(() => {
-				service.addConnection(undefined as any, 'user123');
+				service.addConnection(undefined as any, 'user123', 'user123');
 			}).not.toThrow();
 		});
 
@@ -451,9 +447,9 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should return accurate stats with mixed operations', () => {
-			service.addConnection({ id: 'ws1' }, 'user1');
-			service.addConnection({ id: 'ws2' }, 'user1');
-			service.addConnection({ id: 'ws3' }, 'user2');
+			service.addConnection({ id: 'ws1' }, 'user1', 'user1');
+			service.addConnection({ id: 'ws2' }, 'user1', 'user1');
+			service.addConnection({ id: 'ws3' }, 'user2', 'user2');
 
 			service.addSubscription('user1', 'sub1');
 			service.addSubscription('user1', 'sub2');
@@ -469,7 +465,7 @@ describe('ConnectionManagerService', () => {
 
 	describe('cleanup and lifecycle', () => {
 		it('should preserve connection state until explicit removal', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			// Connection should persist
 			expect(service.getConnectionCount()).toBe(1);
@@ -480,7 +476,7 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should handle subscription cleanup on connection removal', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			service.addSubscription('user123', 'sub1');
 			service.addSubscription('user123', 'sub2');
 
@@ -491,16 +487,16 @@ describe('ConnectionManagerService', () => {
 		});
 
 		it('should allow re-adding connections after removal', () => {
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 			service.removeConnection(mockWs, 'user123');
-			service.addConnection(mockWs, 'user123');
+			service.addConnection(mockWs, 'user123', 'user123');
 
 			expect(service.getConnectionCount()).toBe(1);
 		});
 
 		it('should handle module destroy with active connections', async () => {
-			service.addConnection(mockWs, 'user123');
-			service.addConnection({ id: 'ws2' }, 'user456');
+			service.addConnection(mockWs, 'user123', 'user123');
+			service.addConnection({ id: 'ws2' }, 'user456', 'user456');
 			service.addSubscription('user123', 'sub1');
 
 			await service.onModuleDestroy();

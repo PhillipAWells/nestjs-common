@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { Comment } from './comment.loader.js';
 
@@ -8,12 +10,14 @@ import { Comment } from './comment.loader.js';
  * Prevents N+1 query problems when resolving user's comments in GraphQL
  */
 @Injectable()
-export class CommentsByUserLoader {
+export class CommentsByUserLoader implements LazyModuleRefService {
 	private readonly logger = new Logger(CommentsByUserLoader.name);
 
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-	) {}
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the comments by user DataLoader instance
@@ -23,7 +27,7 @@ export class CommentsByUserLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>,
 	): DataLoader<string, Comment[]> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'comments-by-user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -95,6 +99,6 @@ export class CommentsByUserLoader {
    * Clears all cached comments by user
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('comments-by-user-loader');
+		this.DataLoaderRegistry.clearCache('comments-by-user-loader');
 	}
 }

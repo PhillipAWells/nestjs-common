@@ -62,8 +62,9 @@ export class GraphQLService {
 			},
 		};
 
-		// Include stack trace in development if configured
-		if (config?.errorHandling?.includeStackTrace && (error instanceof Error) && error.stack) {
+		// Include stack trace in development mode or if explicitly configured
+		const isDevelopment = process.env['NODE_ENV'] === 'development';
+		if ((isDevelopment || config?.errorHandling?.includeStackTrace) && (error instanceof Error) && error.stack) {
 			const ext = formattedError['extensions'] as Record<string, unknown>;
 			ext['stack'] = error.stack;
 		}

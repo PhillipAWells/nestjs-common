@@ -1,6 +1,4 @@
 
-import { Cache } from 'cache-manager';
-import { AppLogger } from '@pawells/nestjs-shared/common';
 import { vi } from 'vitest';
 import { of } from 'rxjs';
 import {
@@ -41,13 +39,12 @@ class TestBaseCacheInterceptor extends BaseCacheInterceptor {
 	}
 
 	constructor(
-		cacheManager: Cache,
-		appLogger: AppLogger,
+		moduleRef: any,
 		private readonly keyGenerator: CacheKeyGenerator,
 		private readonly metadataExtractor: CacheMetadataExtractor,
 		private readonly contextHandler: CacheContextHandler,
 	) {
-		super(cacheManager, appLogger);
+		super(moduleRef);
 	}
 }
 
@@ -77,13 +74,21 @@ describe('BaseCacheInterceptor', () => {
 			}),
 		};
 
+		const mockModuleRef = {
+			get: vi.fn((token: any) => {
+				if (token === 'CACHE_MANAGER' || (typeof token === 'symbol')) {
+					return mockCacheManager;
+				}
+				return mockAppLogger;
+			}),
+		} as any;
+
 		mockKeyGenerator = new MockCacheKeyGenerator();
 		mockMetadataExtractor = new MockCacheMetadataExtractor();
 		mockContextHandler = new MockCacheContextHandler();
 
 		interceptor = new TestBaseCacheInterceptor(
-			mockCacheManager,
-			mockAppLogger as any,
+			mockModuleRef,
 			mockKeyGenerator,
 			mockMetadataExtractor,
 			mockContextHandler,

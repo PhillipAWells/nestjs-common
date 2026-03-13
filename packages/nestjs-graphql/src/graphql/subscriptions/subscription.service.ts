@@ -1,20 +1,31 @@
-import { Injectable, OnModuleDestroy, Inject, Optional } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * Service for managing GraphQL subscriptions with Redis PubSub
  */
 @Injectable()
-export class SubscriptionService implements OnModuleDestroy {
-	private readonly logger: AppLogger;
-
-	constructor(
-		appLogger: AppLogger,
-		@Optional() @Inject('GRAPHQL_PUBSUB') private readonly pubSub?: any,
-	) {
-		this.logger = appLogger.createContextualLogger(SubscriptionService.name);
+export class SubscriptionService implements OnModuleDestroy, LazyModuleRefService {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
 	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(SubscriptionService.name);
+	}
+
+	private get pubSub(): any | undefined {
+		try {
+			return this.Module.get('GRAPHQL_PUBSUB', { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Publish an event to a topic
@@ -24,6 +35,10 @@ export class SubscriptionService implements OnModuleDestroy {
 	 */
 	public async publish(topic: string, data: any): Promise<void> {
 		try {
+			// Validate topic format: must contain only word characters, dots, hyphens, and underscores
+			if (!/^[\w.-]+$/.test(topic)) {
+				throw new Error('Invalid topic format');
+			}
 			this.logger.debug(`Publishing to topic: ${topic}`);
 			if (!this.pubSub) {
 				throw new Error('PubSub instance not configured');

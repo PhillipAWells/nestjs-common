@@ -1,8 +1,10 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
 
 const RESULT_SUMMARY_MAX_KEYS = 3;
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -21,12 +23,16 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```
  */
 @Injectable()
-export class GraphQLLoggingInterceptor implements NestInterceptor {
-	private readonly logger: AppLogger;
-
-	constructor(@Inject(AppLogger) private readonly appLogger: AppLogger) {
-		this.logger = this.appLogger.createContextualLogger(GraphQLLoggingInterceptor.name);
+export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRefService {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
 	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLLoggingInterceptor.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Intercepts GraphQL operations for logging

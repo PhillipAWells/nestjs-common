@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -15,12 +17,14 @@ export interface Product {
  * Prevents N+1 query problems when resolving product fields in GraphQL
  */
 @Injectable()
-export class ProductLoader {
+export class ProductLoader implements LazyModuleRefService {
 	private readonly logger = new Logger(ProductLoader.name);
 
-	constructor(
-		private readonly dataLoaderRegistry: DataLoaderRegistry,
-	) {}
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets the product DataLoader instance
@@ -30,7 +34,7 @@ export class ProductLoader {
 	public getLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(Product | Error)[]>,
 	): DataLoader<string, Product> {
-		return this.dataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.createWithCache(
 			'product-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
 		);
@@ -103,6 +107,6 @@ export class ProductLoader {
    * Clears all cached products
    */
 	public clearAll(): void {
-		this.dataLoaderRegistry.clearCache('product-loader');
+		this.DataLoaderRegistry.clearCache('product-loader');
 	}
 }

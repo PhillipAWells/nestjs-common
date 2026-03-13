@@ -1,18 +1,32 @@
 
 import { vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { RateLimitService, RateLimitResult } from '../../services/rate-limit.service.js';
+
+function createService(): RateLimitService {
+	const mockAppLogger = {
+		createContextualLogger: vi.fn().mockReturnValue({
+			debug: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+		}),
+	};
+	const mockModuleRef = {
+		get: (token: any) => {
+			if (token === AppLogger) return mockAppLogger;
+			throw new Error(`Unknown token: ${String(token)}`);
+		},
+	} as any;
+	return new RateLimitService(mockModuleRef);
+}
 
 describe('RateLimitService', () => {
 	let service: RateLimitService;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		vi.useFakeTimers();
-		const module: TestingModule = await Test.createTestingModule({
-			providers: [RateLimitService],
-		}).compile();
-
-		service = module.get<RateLimitService>(RateLimitService);
+		service = createService();
 	});
 
 	afterEach(() => {
@@ -179,12 +193,14 @@ describe('RateLimitService', () => {
 			const client2 = 'user456';
 
 			await service.checkLimit(client1);
+			// Advance time slightly so client2 has a later resetTime
+			vi.advanceTimersByTime(2000);
 			await service.checkLimit(client2);
 
 			expect(service.getStats().totalEntries).toBe(2);
 
-			// Advance time past reset for client1
-			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
+			// Advance time past reset for client1 but not client2
+			vi.advanceTimersByTime(15 * 60 * 1000 - 1000);
 
 			// Trigger cleanup (normally done by interval)
 			(service as any).cleanup();
@@ -210,15 +226,7 @@ describe('RateLimitService', () => {
 
 	describe('lifecycle', () => {
 		it('should initialize and destroy properly', async () => {
-			const mockLogger = {
-				createContextualLogger: vi.fn().mockReturnValue({
-					debug: vi.fn(),
-					info: vi.fn(),
-					warn: vi.fn(),
-					error: vi.fn(),
-				}),
-			};
-			const newService = new RateLimitService(mockLogger as any);
+			const newService = createService();
 
 			// Should initialize without throwing
 			newService.onModuleInit();

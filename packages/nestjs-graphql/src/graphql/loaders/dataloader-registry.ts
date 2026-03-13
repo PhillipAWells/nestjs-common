@@ -1,5 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger, Scope } from '@nestjs/common';
+import type { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderFactory, BatchLoadFn, DataLoaderOptions } from './dataloader.factory.js';
 
 /**
@@ -7,12 +9,16 @@ import { DataLoaderFactory, BatchLoadFn, DataLoaderOptions } from './dataloader.
  * Ensures DataLoaders are created once per request and properly cleaned up
  */
 @Injectable({ scope: Scope.REQUEST })
-export class DataLoaderRegistry {
+export class DataLoaderRegistry implements LazyModuleRefService {
 	private readonly logger = new Logger(DataLoaderRegistry.name);
 
 	private readonly loaders = new Map<string, DataLoader<any, any>>();
 
-	constructor(private readonly dataLoaderFactory: DataLoaderFactory) {}
+	public get DataLoaderFactory(): DataLoaderFactory {
+		return this.Module.get(DataLoaderFactory, { strict: false });
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
    * Gets or creates a DataLoader for the given key
@@ -30,7 +36,7 @@ export class DataLoaderRegistry {
 		}
 
 		this.logger.debug(`Creating new DataLoader for key: ${key}`);
-		const dataLoader = this.dataLoaderFactory.create(options);
+		const dataLoader = this.DataLoaderFactory.create(options);
 		this.loaders.set(key, dataLoader);
 
 		return dataLoader;
