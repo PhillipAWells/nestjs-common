@@ -1,0 +1,43 @@
+{
+	"name": "nestjs-example-service",
+	"displayName": "nestjs-example-service",
+	"private": true,
+	"version": "1.0.0",
+	"description": "Example NestJS service demonstrating usage of all @pawells/nestjs-* packages. Not published.",
+	"type": "module",
+	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint src/",
+		"lint:fix": "eslint src/ --fix",
+		"test": "vitest run",
+		"test:coverage": "vitest --coverage",
+		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
+	},
+	"dependencies": {
+		"@pawells/nestjs-auth": "workspace:*",
+		"@pawells/nestjs-graphql": "workspace:*",
+		"@pawells/nestjs-open-telemetry": "workspace:*",
+		"@pawells/nestjs-prometheus": "workspace:*",
+		"@pawells/nestjs-pyroscope": "workspace:*",
+		"@pawells/nestjs-qdrant": "workspace:*",
+		"@pawells/nestjs-shared": "workspace:*"
+	},
+	"peerDependencies": {
+		"@nestjs/common": ">=10.0.0",
+		"@nestjs/config": ">=3.0.0",
+		"@nestjs/core": ">=10.0.0",
+		"@nestjs/jwt": ">=10.0.0",
+		"@nestjs/passport": ">=10.0.0",
+		"@opentelemetry/api": ">=1.0.0",
+		"@qdrant/js-client-rest": ">=1.0.0",
+		"prom-client": ">=15.0.0",
+		"rxjs": ">=7.0.0"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	},
+	"packageManager": "yarn@4.12.0",
+	"author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
+	"license": "MIT"
+}

@@ -1,0 +1,75 @@
+import { Controller, Get, Post, Delete, Body, Query, Param } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { Auth, Public, CurrentUser } from '@pawells/nestjs-auth';
+import { ItemsService, type Item, type StoredItem } from './items.service.js';
+
+const DEFAULT_LIMIT = 10;
+
+/**
+ * Minimal representation of an authenticated user injected via @CurrentUser().
+ * In production this comes from the JWT payload resolved by userLookupFn.
+ */
+interface AppUser {
+	id: string;
+	email: string;
+	roles: string[];
+}
+
+/**
+ * ItemsController — REST API for vector-based item search and management.
+ *
+ * Demonstrates:
+ *  - @Auth    — require a valid JWT on a route (@pawells/nestjs-auth)
+ *  - @Public  — opt a route out of the global auth guard
+ *  - @CurrentUser — inject the resolved user from the JWT payload
+ */
+@Controller('items')
+export class ItemsController {
+	constructor(public readonly Module: ModuleRef) {}
+
+	private get Items(): ItemsService {
+		return this.Module.get(ItemsService);
+	}
+
+	/**
+	 * POST /items
+	 * Upsert an item with its embedding vector. Requires authentication.
+	 */
+	@Post()
+	@Auth()
+	public async upsertItem(
+		@Body() body: StoredItem,
+		@CurrentUser() _user: AppUser,
+	): Promise<void> {
+		await this.Items.upsertItem(body);
+	}
+
+	/**
+	 * GET /items/similar?vector=0.1,0.2,0.3&limit=5
+	 * Find the nearest items for a query vector. Public — no auth required.
+	 */
+	@Get('similar')
+	@Public()
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public findSimilar(
+		@Query('vector') vectorStr: string,
+		@Query('limit') limitStr?: string,
+	): Promise<Item[]> {
+		const vector = vectorStr.split(',').map(Number);
+		const limit = limitStr !== undefined ? Number(limitStr) : DEFAULT_LIMIT;
+		return this.Items.findSimilar(vector, limit);
+	}
+
+	/**
+	 * DELETE /items/:id
+	 * Remove an item by id. Requires authentication.
+	 */
+	@Delete(':id')
+	@Auth()
+	public async deleteItem(
+		@Param('id') id: string,
+		@CurrentUser() _user: AppUser,
+	): Promise<void> {
+		await this.Items.deleteItem(id);
+	}
+}
