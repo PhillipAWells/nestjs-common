@@ -5,14 +5,14 @@
 	"projectType": "library",
 	"targets": {
 		"build": {
-			"executor": "nx:run-commands",
+			"executor": "@nx/js:tsc",
 			"options": {
-				"command": "tsc --project tsconfig.build.json",
-				"cwd": "{projectRoot}"
+				"main": "{projectRoot}/src/index.ts",
+				"outputPath": "{projectRoot}/build",
+				"tsConfig": "{projectRoot}/tsconfig.build.json",
+				"rootDir": "{projectRoot}/src"
 			},
-			"outputs": [
-				"{projectRoot}/build"
-			]
+			"outputs": ["{projectRoot}/build"]
 		},
 		"typecheck": {
 			"executor": "nx:run-commands",
