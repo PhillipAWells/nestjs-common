@@ -135,7 +135,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			throw new Error(
 				`CSRF_SECRET must be at least ${CSRFService.MIN_SECRET_LENGTH} characters long for adequate entropy. ` +
 			`Current length: ${csrfSecret.length}. ` +
-			'Generate a cryptographically secure value with: openssl rand -hex 32',
+			'Generate a cryptographically secure value with: openssl rand -base64 32',
 			);
 		}
 
@@ -144,7 +144,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			throw new Error(
 				'CSRF_SECRET contains obviously weak pattern. ' +
 			'Must have a mix of different characters, not repeated or common strings. ' +
-			'Generate a cryptographically secure value with: openssl rand -hex 32',
+			'Generate a cryptographically secure value with: openssl rand -base64 32',
 			);
 		}
 
@@ -155,7 +155,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			throw new Error(
 				`CSRF_SECRET entropy is insufficient (${entropy.toFixed(2)} bits/char). ` +
 			`Minimum required: ${MIN_ENTROPY} bits/char. ` +
-			'Generate a cryptographically secure value with: openssl rand -hex 32',
+			'Generate a cryptographically secure value with: openssl rand -base64 32',
 			);
 		}
 
@@ -268,21 +268,6 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		const lowerSecret = secret.toLowerCase();
 		const weakPatterns = ['password', 'secret', '12345678', 'qwerty', '00000000', '11111111', '88888888', '99999999'];
 		if (weakPatterns.some(pattern => lowerSecret.includes(pattern))) {
-			return true;
-		}
-
-		// Require character set diversity: must contain at least 3 of the following:
-		// - uppercase letters
-		// - lowercase letters
-		// - digits
-		// - symbols (non-alphanumeric)
-		const hasUppercase = /[A-Z]/.test(secret);
-		const hasLowercase = /[a-z]/.test(secret);
-		const hasDigits = /[0-9]/.test(secret);
-		const hasSymbols = /[^a-zA-Z0-9]/.test(secret);
-
-		const characterSetCount = [hasUppercase, hasLowercase, hasDigits, hasSymbols].filter(Boolean).length;
-		if (characterSetCount < CSRFService.MIN_CHARACTER_SET_DIVERSITY) {
 			return true;
 		}
 
