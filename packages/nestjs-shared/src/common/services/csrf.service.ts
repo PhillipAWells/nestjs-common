@@ -4,7 +4,7 @@ import { doubleCsrf, type DoubleCsrfUtilities } from 'csrf-csrf';
 import { Request, Response, NextFunction } from 'express';
 
 /**
- * Configuration options for CSRF protection
+ * Configuration options for CSRF protection.
  */
 export interface CSRFServiceOptions {
 	/**
@@ -20,6 +20,46 @@ export interface CSRFServiceOptions {
 	trustProxy?: boolean;
 }
 
+/**
+ * CSRF Service.
+ * Provides CSRF token generation and validation using the Double Submit Cookie pattern.
+ * Uses cryptographic signing and per-session/IP binding for secure token verification.
+ *
+ * Features:
+ * - Double-CSRF token pattern (cookie + request header/body)
+ * - Per-IP rate limiting: 10 tokens per 60 seconds
+ * - Session binding (when available) or IP-based fallback
+ * - Automatic pruning of stale timestamps
+ * - Capacity monitoring with safety margin (80% threshold)
+ * - SSL-only, HTTPOnly cookies in production
+ *
+ * Configuration requirements:
+ * - CSRF_SECRET: Min 32 characters, cryptographically random, high entropy
+ * - Express app with cookie parser middleware
+ * - Optional: trustProxy for reverse proxy environments
+ *
+ * @remarks
+ * - In-memory rate limiting supports ~10,000 concurrent IPs per instance
+ * - For distributed deployments, use Redis-backed SharedThrottlerModule instead
+ * - Token generation timeout: 30 seconds (queue timeout)
+ * - Token timestamp pruning interval: 10 seconds
+ * - IP map capacity threshold: 80% (8,000 IPs) before pruning
+ * - Returns 503 Service Unavailable if at capacity after pruning
+ * - Returns 429 Too Many Requests if rate limit exceeded
+ *
+ * @example
+ * ```typescript
+ * // Generate token for form
+ * const token = await csrfService.generateToken(req, res);
+ * res.render('form', { csrfToken: token });
+ *
+ * // Validate incoming request (done automatically by CSRFGuard)
+ * const isValid = csrfService.validateToken(req);
+ *
+ * // Refresh token after sensitive operation (login, password change)
+ * const newToken = csrfService.refreshToken(req, res);
+ * ```
+ */
 @Injectable()
 export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	// Configuration constants
@@ -70,7 +110,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 
 	constructor(
 		@Inject(ConfigService) @Optional() private readonly configService?: ConfigService,
-		options?: CSRFServiceOptions,
+		@Optional() options?: CSRFServiceOptions,
 	) {
 		// Note: CSRF_SECRET validation is deferred to onModuleInit() to ensure
 		// NestJS surfaces the error at bootstrap time rather than during DI resolution

@@ -17,20 +17,34 @@ import { HealthCheckService } from './services/health-check.service.js';
 import { MetricsController } from './controllers/metrics.controller.js';
 import { SetRequestPropertyDecoratorLogger } from './decorators/request-property.decorator.js';
 import { ConfigService } from '../config/index.js';
+import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
 
 /**
- * Common module
- * Provides shared utilities, filters, interceptors, and pipes for NestJS applications
+ * Common Module.
+ * Global module providing foundational infrastructure for NestJS applications:
+ * - Filters: GlobalExceptionFilter, HttpExceptionFilter
+ * - Interceptors: LoggingInterceptor, HTTPMetricsInterceptor
+ * - Pipes: ValidationPipe
+ * - Services: AppLogger, AuditLoggerService, CSRFService, ErrorCategorizerService, ErrorSanitizerService, HttpClientService, MetricsRegistryService, HealthCheckService
  *
- * @important ConfigModule MUST be imported before CommonModule in your application
- * module imports array. Failure to do so will cause an error at startup.
+ * @important ConfigModule MUST be imported before CommonModule in your application.
+ * Failure to do so will cause initialization errors at startup.
+ *
+ * @remarks
+ * - Automatically registers global filters, interceptors, and pipes
+ * - Exports all services for use in feature modules
+ * - Initializes AppLogger and RequestProperty decorator at module init
+ * - Validates ConfigService availability to catch import order issues
+ * - Global flag ensures exports are available application-wide without explicit imports
  *
  * @example
  * ```typescript
+ * // Correct import order
  * @Module({
  *   imports: [
- *     ConfigModule.forRoot(...),  // Must come first
- *     CommonModule,
+ *     ConfigModule.forRoot({}),    // MUST come first
+ *     CommonModule,                // Depends on ConfigModule
+ *     // ... feature modules
  *   ]
  * })
  * export class AppModule {}
@@ -77,6 +91,7 @@ import { ConfigService } from '../config/index.js';
 		HttpClientService,
 		MetricsRegistryService,
 		HealthCheckService,
+		InstrumentationRegistry,
 		Logger,
 	],
 	exports: [
@@ -94,6 +109,7 @@ import { ConfigService } from '../config/index.js';
 		HttpClientService,
 		MetricsRegistryService,
 		HealthCheckService,
+		InstrumentationRegistry,
 	],
 })
 export class CommonModule implements OnModuleInit {
