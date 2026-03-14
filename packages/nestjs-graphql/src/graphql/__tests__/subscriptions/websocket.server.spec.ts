@@ -44,7 +44,6 @@ describe('GraphQLWebSocketServer', () => {
 		});
 
 		it('should warn when HttpAdapterHost is unavailable', async () => {
-			const loggerSpy = vi.spyOn(server['logger'], 'warn');
 			const config = { path: '/graphql', keepalive: 12000, maxPayloadSize: 102400, connectionTimeout: 60000 };
 
 			// Create a new server instance with broken module ref

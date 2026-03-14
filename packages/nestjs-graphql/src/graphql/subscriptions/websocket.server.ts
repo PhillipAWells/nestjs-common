@@ -89,14 +89,15 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 	 *
 	 * @param config WebSocket server configuration
 	 */
+	// eslint-disable-next-line require-await
 	public async initialize(config: WebSocketServerConfig): Promise<void> {
-		const httpAdapterHost = this.httpAdapterHost;
+		const { httpAdapterHost } = this;
 		if (!httpAdapterHost?.httpAdapter) {
 			this.logger.warn('HttpAdapterHost unavailable — WebSocket server cannot start');
 			return;
 		}
 
-		const schemaHost = this.schemaHost;
+		const { schemaHost } = this;
 		if (!schemaHost?.schema) {
 			this.logger.warn('GraphQLSchemaHost unavailable — WebSocket server cannot start (schema not yet built)');
 			return;
@@ -104,7 +105,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 
 		const httpServer = httpAdapterHost.httpAdapter.getHttpServer() as import('http').Server;
 		const { schema } = schemaHost;
-		const authService = this.authService;
+		const { authService } = this;
 
 		this.wsServer = new WebSocketServer({ server: httpServer, path: config.path });
 
@@ -148,8 +149,9 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		}
 
 		if (this.wsServer) {
+			const { wsServer } = this;
 			await new Promise<void>((resolve) => {
-				this.wsServer!.close(() => resolve());
+				wsServer.close(() => resolve());
 			});
 			this.wsServer = null;
 		}
