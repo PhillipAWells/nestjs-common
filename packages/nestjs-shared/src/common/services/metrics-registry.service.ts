@@ -42,7 +42,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 			this.httpRequestDuration = new Histogram({
 				name: 'http_request_duration_seconds',
 				help: 'Duration of HTTP requests in seconds',
-				labelNames: ['method', 'route', 'status_code'],
+				labelNames: ['method', 'route', 'status_code', 'status_class'],
 				buckets: HTTP_DURATION_BUCKETS,
 				registers: [this.registry],
 			});
@@ -51,7 +51,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 			this.httpRequestTotal = new Counter({
 				name: 'http_requests_total',
 				help: 'Total number of HTTP requests',
-				labelNames: ['method', 'route', 'status_code'],
+				labelNames: ['method', 'route', 'status_code', 'status_class'],
 				registers: [this.registry],
 			});
 
@@ -97,7 +97,8 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	public recordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
 		if (!this.enabled || !this.httpRequestDuration || !this.httpRequestTotal) return;
 
-		const labels = { method, route, status_code: statusCode.toString() };
+		const statusClass = statusCode >= 500 ? '5xx' : statusCode >= 400 ? '4xx' : '2xx';
+		const labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
 
 		this.httpRequestDuration.observe(labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
 		this.httpRequestTotal.inc(labels);
