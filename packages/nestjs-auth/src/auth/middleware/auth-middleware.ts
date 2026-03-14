@@ -155,7 +155,7 @@ export interface AuthMiddlewareConfig {
 @Injectable()
 export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 	private _logger: AppLogger | undefined;
-	private _config: AuthMiddlewareConfig | undefined;
+	private readonly _config: AuthMiddlewareConfig | undefined;
 
 	public get JwtService(): JwtService {
 		return this.Module.get(JwtService);
@@ -190,10 +190,11 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 			if (!token) {
 				this.logger.debug('No token found in request');
 				this.handleAuthError(new UnauthorizedException('No token provided'), context, config);
+				return false; // unreachable but satisfies type checker
 			}
 
 			// Validate token
-			const payload = await this.validateToken(token!, context, config);
+			const payload = await this.validateToken(token, context, config);
 
 			// Store user in request context
 			this.setUserInContext(context, payload);
@@ -208,12 +209,14 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 				const isValid = await config.customValidator(payload, context);
 				if (!isValid) {
 					this.handleAuthError(new UnauthorizedException('Custom validation failed'), context, config);
+					return false; // unreachable but satisfies type checker
 				}
 			}
 
 			return true;
 		} catch (error) {
 			this.handleAuthError(error, context, config);
+			return false; // unreachable but satisfies type checker
 		}
 	}
 

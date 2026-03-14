@@ -57,6 +57,7 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	/**
     * Get public key for token verification
     */
+	// eslint-disable-next-line require-await
 	public async getPublicKey(provider: string): Promise<string> {
 		const cacheKey = `public_key_${provider}`;
 		const cached = this.publicKeyCache.get(cacheKey);
@@ -77,9 +78,10 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 		}
 
 		// Single-flight pattern: reuse in-flight fetch if one exists
-		if (this._jwksFetching.has(jwksUrl)) {
+		const inFlight = this._jwksFetching.get(jwksUrl);
+		if (inFlight) {
 			this.logger.debug(`Reusing in-flight JWKS fetch for ${jwksUrl}`);
-			return this._jwksFetching.get(jwksUrl)!;
+			return inFlight;
 		}
 
 		const fetchPromise = this.fetchAndCachePublicKey(jwksUrl, provider)
