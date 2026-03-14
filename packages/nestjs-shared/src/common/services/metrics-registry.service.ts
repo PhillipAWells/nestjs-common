@@ -13,10 +13,33 @@ const HTTP_STATUS_CODE_500 = 500;
 const HTTP_STATUS_CODE_400 = 400;
 
 /**
- * Metrics Registry Service
- *
+ * Metrics Registry Service.
  * Centralized service for managing Prometheus metrics across the application.
- * Provides HTTP request metrics, custom metrics registration, and registry management.
+ *
+ * Features:
+ * - HTTP request metrics (duration, count, size)
+ * - Custom metric creation (counter, gauge, histogram)
+ * - Default Node.js metrics collection
+ * - Prometheus registry management
+ * - Per-route metric cardinality prevention
+ *
+ * @remarks
+ * - Controlled by METRICS_ENABLED environment variable (default: true)
+ * - Automatically collects Node.js default metrics
+ * - HTTP request metrics use normalized route paths to prevent unbounded label cardinality
+ *
+ * @example
+ * ```typescript
+ * // Record HTTP request
+ * metricsService.recordHttpRequest('GET', '/users/:id', 200, 45, 2048);
+ *
+ * // Create custom metric
+ * const customCounter = metricsService.createCounter('orders_total', 'Total orders processed');
+ * customCounter.inc({ status: 'completed' });
+ *
+ * // Get metrics in Prometheus format
+ * const metrics = await metricsService.getMetrics();
+ * ```
  */
 @Injectable()
 export class MetricsRegistryService implements OnModuleInit, LazyModuleRefService {
@@ -35,7 +58,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 
 	constructor(public readonly Module: ModuleRef) {
 		this.registry = new Registry();
-		this.enabled = process.env['PROMETHEUS_ENABLED'] !== 'false';
+		this.enabled = process.env['METRICS_ENABLED'] !== 'false';
 
 		if (this.enabled) {
 			// Collect default Node.js metrics
