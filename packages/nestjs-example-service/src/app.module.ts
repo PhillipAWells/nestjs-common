@@ -20,7 +20,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { ConfigModule, CommonModule } from '@pawells/nestjs-shared';
+import { CommonModule, ConfigModule } from '@pawells/nestjs-shared';
 import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
 import { PrometheusModule } from '@pawells/nestjs-prometheus';
 import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
@@ -36,8 +36,8 @@ import { ItemsModule } from './items/items.module.js';
 		NestConfigModule.forRoot({ isGlobal: true }),
 
 		// ── 2. nestjs-shared: Config + Common ─────────────────────────────────
-		// ConfigModule must come before CommonModule — CommonModule.onModuleInit()
-		// asserts that ConfigService is already registered.
+		// ConfigModule must come before CommonModule — CommonModule depends on
+		// ConfigService and verifies it is available during onModuleInit().
 		ConfigModule,
 		CommonModule,
 
