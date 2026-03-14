@@ -123,6 +123,7 @@ export default [
 				{ selector: 'variable', modifiers: ['destructured'], format: null },
 				{ selector: 'variable', format: ['camelCase', 'UPPER_CASE', 'PascalCase'], leadingUnderscore: 'allow' },
 				{ selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
+			{ selector: 'parameterProperty', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
 				{ selector: 'default', format: ['camelCase'], leadingUnderscore: 'allow', trailingUnderscore: 'allow' },
 			],
 			'no-var': 'error',
