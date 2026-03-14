@@ -442,6 +442,7 @@ export class AuthService implements LazyModuleRefService {
 		}
 		const sessionKey = `sessions:${userId}`;
 
+		// TODO: TOCTOU — use a Redis atomic operation (Lua script) to make session count enforcement fully race-free under high concurrency
 		try {
 			// Get current sessions
 			let sessions: string[] = [];
@@ -476,11 +477,8 @@ export class AuthService implements LazyModuleRefService {
 			};
 		} catch (error) {
 			this.logger.error(`Session tracking failed for user ${userId}: ${(error as Error).message}`);
-			// Fail closed - deny session when tracking is unavailable
-			return {
-				allowed: false,
-				activeSessions: [],
-			};
+			// Fail closed: cache unavailability must not bypass session limits
+			throw error;
 		}
 	}
 
