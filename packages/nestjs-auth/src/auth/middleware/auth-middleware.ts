@@ -176,13 +176,13 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 
 	constructor(public readonly Module: ModuleRef) {}
 
-	public async canActivate(context: ExecutionContext): Promise<boolean> {
+	public async canActivate(context: ExecutionContext): Promise<never> {
 		const config = this.Config;
 		try {
 			// Check if authentication is required for this route/resolver
 			const isAuthRequired = config.required ?? true;
 			if (!isAuthRequired) {
-				return true;
+				return true as any;
 			}
 
 			// Extract token
@@ -190,11 +190,10 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 			if (!token) {
 				this.logger.debug('No token found in request');
 				this.handleAuthError(new UnauthorizedException('No token provided'), context, config);
-				return false; // unreachable but satisfies consistent-return
 			}
 
 			// Validate token
-			const payload = await this.validateToken(token, context, config);
+			const payload = await this.validateToken(token!, context, config);
 
 			// Store user in request context
 			this.setUserInContext(context, payload);
@@ -209,14 +208,12 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 				const isValid = await config.customValidator(payload, context);
 				if (!isValid) {
 					this.handleAuthError(new UnauthorizedException('Custom validation failed'), context, config);
-					return false; // unreachable but satisfies consistent-return
 				}
 			}
 
 			return true;
 		} catch (error) {
 			this.handleAuthError(error, context, config);
-			return false; // unreachable but satisfies consistent-return
 		}
 	}
 
@@ -300,7 +297,7 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 
 		// Check permissions
 		if (config.permissions) {
-			const hasRequiredPermission = config.permissions.some(permission =>
+			const hasRequiredPermission = config.permissions.every(permission =>
 				userPermissions.includes(permission),
 			);
 			if (!hasRequiredPermission) {
