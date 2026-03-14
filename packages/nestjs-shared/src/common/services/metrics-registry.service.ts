@@ -9,6 +9,9 @@ import {
 import { AppLogger } from './logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
+const HTTP_STATUS_CODE_500 = 500;
+const HTTP_STATUS_CODE_400 = 400;
+
 /**
  * Metrics Registry Service
  *
@@ -24,11 +27,11 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	private readonly enabled: boolean;
 
 	// HTTP Request Metrics
-	private httpRequestDuration: Histogram<string> | null = null;
+	private readonly httpRequestDuration: Histogram<string> | null = null;
 
-	private httpRequestTotal: Counter<string> | null = null;
+	private readonly httpRequestTotal: Counter<string> | null = null;
 
-	private httpRequestSize: Histogram<string> | null = null;
+	private readonly httpRequestSize: Histogram<string> | null = null;
 
 	constructor(public readonly Module: ModuleRef) {
 		this.registry = new Registry();
@@ -97,7 +100,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	public recordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
 		if (!this.enabled || !this.httpRequestDuration || !this.httpRequestTotal) return;
 
-		const statusClass = statusCode >= 500 ? '5xx' : statusCode >= 400 ? '4xx' : '2xx';
+		const statusClass = statusCode >= HTTP_STATUS_CODE_500 ? '5xx' : statusCode >= HTTP_STATUS_CODE_400 ? '4xx' : '2xx';
 		const labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
 
 		this.httpRequestDuration.observe(labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds

@@ -66,11 +66,11 @@ describe('Decorator Factories', () => {
 				(req) => req.headers['x-custom'],
 			);
 
-			let extractedValue: any;
+			let _extractedValue: any;
 			const paramDecorator = decorator as any;
 			if (paramDecorator.__wrapper__) {
 				// Handle paramDecorator wrapping
-				extractedValue = paramDecorator(undefined, mockContext);
+				_extractedValue = paramDecorator(undefined, mockContext);
 			}
 		});
 
@@ -100,7 +100,7 @@ describe('Decorator Factories', () => {
 
 		it('should throw validation error when validation fails', () => {
 			const options: BaseDecoratorOptions = {
-				validate: (value) => false,
+				validate: (_value) => false,
 			};
 
 			const decorator = CreateRequestPropertyDecorator(
@@ -193,7 +193,7 @@ describe('Decorator Factories', () => {
 
 		it('should throw error on validation failure when throwOnInvalid is true', () => {
 			const options: ValidatingDecoratorOptions = {
-				validate: (value) => false,
+				validate: (_value) => false,
 				throwOnInvalid: true,
 				errorMessage: 'Custom validation failed',
 			};
@@ -207,7 +207,7 @@ describe('Decorator Factories', () => {
 
 		it('should not throw error on validation failure when throwOnInvalid is false', () => {
 			const options: ValidatingDecoratorOptions = {
-				validate: (value) => false,
+				validate: (_value) => false,
 				throwOnInvalid: false,
 			};
 
@@ -279,7 +279,7 @@ describe('Decorator Factories', () => {
 			};
 
 			const decorator = CreateTransformingDecorator(
-				(req) => undefined,
+				(_req) => undefined,
 				options,
 			);
 			expect(typeof decorator).toBe('function');
@@ -287,12 +287,12 @@ describe('Decorator Factories', () => {
 
 		it('should transform undefined values when transformUndefined is true', () => {
 			const options: TransformingDecoratorOptions = {
-				transform: (value) => 'DEFAULT_VALUE',
+				transform: (_value) => 'DEFAULT_VALUE',
 				transformUndefined: true,
 			};
 
 			const decorator = CreateTransformingDecorator(
-				(req) => undefined,
+				(_req) => undefined,
 				options,
 			);
 			expect(typeof decorator).toBe('function');
@@ -300,12 +300,12 @@ describe('Decorator Factories', () => {
 
 		it('should apply transformation to null values when transformUndefined is true', () => {
 			const options: TransformingDecoratorOptions = {
-				transform: (value) => 'NULL_REPLACEMENT',
+				transform: (_value) => 'NULL_REPLACEMENT',
 				transformUndefined: true,
 			};
 
 			const decorator = CreateTransformingDecorator(
-				(req) => null,
+				(_req) => null,
 				options,
 			);
 			expect(typeof decorator).toBe('function');
@@ -322,7 +322,7 @@ describe('Decorator Factories', () => {
 			};
 
 			const decorator = CreateTransformingDecorator(
-				(req) => 'a, b, c',
+				(_req) => 'a, b, c',
 				options,
 			);
 			expect(typeof decorator).toBe('function');

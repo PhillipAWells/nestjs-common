@@ -24,7 +24,7 @@ function createMockExecutionContext(request: any = {}) {
 }
 
 // Helper to extract decorator value
-function extractDecoratorValue(decorator: ParameterDecorator, request: any): any {
+function _extractDecoratorValue(decorator: ParameterDecorator, request: any): any {
 	const mockCtx = createMockExecutionContext(request);
 
 	// The decorator returns a function that is immediately invoked
@@ -42,13 +42,8 @@ function extractDecoratorValue(decorator: ParameterDecorator, request: any): any
 }
 
 describe('Common Decorators', () => {
-	const mockRequest = createMockRequest();
-
 	describe('@Query decorator', () => {
 		it('should extract all query parameters when no key is provided', () => {
-			const decorator = Query();
-			const mockCtx = createMockExecutionContext(mockRequest);
-
 			// Since Query returns a decorator function, we test the underlying behavior
 			// by checking that it calls CreateRequestPropertyDecorator with the right path
 			expect(Query).toBeDefined();

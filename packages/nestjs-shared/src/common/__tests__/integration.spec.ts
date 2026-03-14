@@ -413,11 +413,11 @@ describe('nestjs-shared Integration Tests', () => {
 		});
 
 		it('should work with different environment configurations', () => {
-			let devAppUseCount = 0;
+			let _devAppUseCount = 0;
 			let devAppEnableCorsCount = 0;
 			const devApp = {
 				use: ((_req?: any, _res?: any, _next?: any) => {
-					devAppUseCount++;
+					_devAppUseCount++;
 					return devApp;
 				}) as any,
 				enableCors: ((_options?: any) => {
@@ -427,11 +427,11 @@ describe('nestjs-shared Integration Tests', () => {
 				useGlobalPipes: ((..._pipes: any[]) => devApp) as any,
 			} as any;
 
-			let prodAppUseCount = 0;
+			let _prodAppUseCount = 0;
 			let prodAppEnableCorsCount = 0;
 			const prodApp = {
 				use: ((_req?: any, _res?: any, _next?: any) => {
-					prodAppUseCount++;
+					_prodAppUseCount++;
 					return prodApp;
 				}) as any,
 				enableCors: ((_options?: any) => {
