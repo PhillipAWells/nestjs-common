@@ -29,7 +29,8 @@
 		},
 		"build": {
 			"cache": true,
-			"dependsOn": ["version-sync", "^build"]
+			"dependsOn": ["version-sync", "^build"],
+			"inputs": ["production", "^production"]
 		},
 		"@nx/js:tsc": {
 			"cache": true,
@@ -45,6 +46,9 @@
 		},
 		"typecheck": {
 			"cache": true
+		},
+		"serve": {
+			"dependsOn": ["^build"]
 		}
 	},
 	"namedInputs": {
