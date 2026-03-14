@@ -18,7 +18,7 @@ export class RoleGuard implements CanActivate, LazyModuleRefService {
 	}
 
 	public get AppLogger(): AppLogger {
-		return this.Module.get(AppLogger);
+		return this.Module.get(AppLogger, { strict: false });
 	}
 
 	constructor(public readonly Module: ModuleRef) {}
@@ -43,7 +43,7 @@ export class RoleGuard implements CanActivate, LazyModuleRefService {
 		const userRoles: string[] = Array.isArray(rawUser.roles)
 			? rawUser.roles
 			: rawUser.roles
-				? [rawUser.roles]
+				? rawUser.roles.split(',').map((r: string) => r.trim()).filter(Boolean)
 				: rawUser.role
 					? [rawUser.role]
 					: [];

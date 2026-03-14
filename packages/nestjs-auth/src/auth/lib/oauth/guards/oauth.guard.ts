@@ -10,11 +10,11 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) implement
 	private _contextualLogger: AppLogger | undefined;
 
 	public get OAuthService(): OAuthService {
-		return this.Module.get(OAuthService);
+		return this.Module.get(OAuthService, { strict: false });
 	}
 
 	public get AppLogger(): AppLogger {
-		return this.Module.get(AppLogger);
+		return this.Module.get(AppLogger, { strict: false });
 	}
 
 	private get logger(): AppLogger {

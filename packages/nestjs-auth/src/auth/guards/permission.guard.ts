@@ -18,7 +18,7 @@ export class PermissionGuard implements CanActivate, LazyModuleRefService {
 	}
 
 	public get AppLogger(): AppLogger {
-		return this.Module.get(AppLogger);
+		return this.Module.get(AppLogger, { strict: false });
 	}
 
 	constructor(public readonly Module: ModuleRef) {}
@@ -39,7 +39,7 @@ export class PermissionGuard implements CanActivate, LazyModuleRefService {
 		}
 
 		// Check if user has all required permissions
-		const userPermissions = user.permissions ?? [];
+		const userPermissions: string[] = Array.isArray(user.permissions) ? user.permissions : (typeof user.permissions === 'string' ? user.permissions.split(',').map((p: string) => p.trim()).filter(Boolean) : []);
 		const hasAllPermissions = requiredPermissions.every(permission => userPermissions.includes(permission));
 
 		if (!hasAllPermissions) {
