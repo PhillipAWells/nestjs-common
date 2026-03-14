@@ -18,6 +18,8 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 
 	private readonly publicKeyCache = new Map<string, { key: string; expires: number }>();
 
+	private readonly _jwksFetching = new Map<string, Promise<string>>();
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger);
 	}
@@ -74,15 +76,35 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 			throw new Error(`JWKS URL not configured for provider ${provider}`);
 		}
 
+		// Single-flight pattern: reuse in-flight fetch if one exists
+		if (this._jwksFetching.has(jwksUrl)) {
+			this.logger.debug(`Reusing in-flight JWKS fetch for ${jwksUrl}`);
+			return this._jwksFetching.get(jwksUrl)!;
+		}
+
+		const fetchPromise = this.fetchAndCachePublicKey(jwksUrl, provider)
+			.finally(() => {
+				this._jwksFetching.delete(jwksUrl);
+			});
+
+		this._jwksFetching.set(jwksUrl, fetchPromise);
+		return fetchPromise;
+	}
+
+	/**
+	 * Fetch and cache public key from JWKS endpoint
+	 */
+	private async fetchAndCachePublicKey(jwksUrl: string, provider: string): Promise<string> {
 		try {
 			const response = await this.httpClient.get(jwksUrl);
-			const jwk = response.data.keys?.[0];
+			const jwk = response.data.keys?.find((k: any) => k.use === 'sig' && (!k.alg || k.alg === 'RS256'));
 			if (!jwk) {
-				this.logger.error(`No JWK found in response from ${jwksUrl}`);
-				throw new Error('No JWK found');
+				this.logger.error(`No suitable signing key found in JWKS response from ${jwksUrl}`);
+				throw new Error('No suitable signing key found in JWKS');
 			}
 
 			const pem = jwkToPem(jwk);
+			const cacheKey = `public_key_${provider}`;
 			this.publicKeyCache.set(cacheKey, {
 				key: pem,
 				expires: Date.now() + JWK_CACHE_TTL_MS,
