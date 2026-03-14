@@ -70,7 +70,7 @@ export function sanitizeObject(value: any, depth: number = 0, logger?: Logger): 
 			const dangerousKeyPatterns = ['eval', 'function', '__proto__', 'constructor', 'prototype'];
 			for (const pattern of dangerousKeyPatterns) {
 				if (sanitizedKey.toLowerCase().includes(pattern)) {
-					sanitizedKey = sanitizedKey.replace(new RegExp(pattern, 'gi'), '_redacted_');
+					sanitizedKey = sanitizedKey.replace(new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '_redacted_');
 				}
 			}
 
