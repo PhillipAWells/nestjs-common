@@ -4,6 +4,7 @@ declare global {
 	}
 }
 
+import { createHash } from 'node:crypto';
 import {
 	Injectable,
 	CanActivate,
@@ -24,7 +25,7 @@ import {
 	exceedsComplexityLimit,
 	DEFAULT_COMPLEXITY_CONFIG,
 } from '../graphql/query-complexity.js';
-import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVAL_MS, QUERY_HASH_BASE, QUERY_HASH_CONVERSION_BASE, QUERY_COMPLEXITY_THRESHOLD } from '../constants/complexity.constants.js';
+import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVAL_MS, QUERY_COMPLEXITY_THRESHOLD } from '../constants/complexity.constants.js';
 
 /**
  * Guard that enforces query complexity limits
@@ -55,20 +56,14 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 	}
 
 	/**
-	 * Hashes a query for cache key generation
-	 * Simple string hash for fast lookups
+	 * Hashes a query for cache key generation using SHA-256
+	 * Collision-safe hash for reliable cache lookups
 	 * @param query GraphQL query document
-	 * @returns Hash string
+	 * @returns SHA-256 hex string
 	 */
 	private hashQuery(query: any): string {
 		const queryStr = JSON.stringify(query);
-		let hash = 0;
-		for (let i = 0; i < queryStr.length; i++) {
-			const char = queryStr.charCodeAt(i);
-			hash = ((hash << QUERY_HASH_BASE) - hash) + char;
-			hash = hash & hash; // Convert to 32bit integer
-		}
-		return hash.toString(QUERY_HASH_CONVERSION_BASE);
+		return createHash('sha256').update(queryStr).digest('hex');
 	}
 
 	/**
