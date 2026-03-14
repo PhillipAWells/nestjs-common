@@ -61,7 +61,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 
 		// Node.js network error codes are always transient (checked first before pattern matching)
 		const NODE_TRANSIENT_CODES = new Set(['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN']);
-		if (NODE_TRANSIENT_CODES.has((error as NodeJS.ErrnoException).code ?? '')) {
+		if (NODE_TRANSIENT_CODES.has((error as { code?: string }).code ?? '')) {
 			this.Logger.debug('Categorized as transient network error (Node.js error code)', {
 				error: errorMessage,
 				code: errorCode,
