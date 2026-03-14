@@ -1,4 +1,5 @@
 import { Controller, Post, UseGuards, Request, Body, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
 import { TokenBlacklistService } from './token-blacklist.service.js';
 import { JWTAuthGuard } from './jwt-auth.guard.js';
@@ -18,9 +19,9 @@ export class AuthController {
 	/**
 	 * Logout endpoint - blacklists the current access token
 	 */
-	// TODO: Add rate limiting via @nestjs/throttler - e.g., @Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('logout')
 	@UseGuards(JWTAuthGuard)
+	@Throttle({ default: { limit: 5, ttl: 60000 } })
 	public async logout(@Request() req: { headers: { authorization?: string } }): Promise<{ message: string }> {
 		const authHeader = req.headers.authorization;
 		const token = authHeader ? this.tokenBlacklistService.extractTokenFromHeader(authHeader) : null;
@@ -43,9 +44,9 @@ export class AuthController {
 	 * Refresh token endpoint
 	 * Validates refresh token format and detects invalid/suspicious input
 	 */
-	// TODO: Add rate limiting via @nestjs/throttler - e.g., @Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('refresh')
 	@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
+	@Throttle({ default: { limit: 3, ttl: 60000 } })
 	public refresh(@Body() _refreshTokenDto: RefreshTokenValidationInput): { message: string } {
 		// This would need to be implemented with user lookup function
 		// For now, return a placeholder response

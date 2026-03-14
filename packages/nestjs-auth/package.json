@@ -29,6 +29,7 @@
 		"@nestjs/mongoose": ">=10.0.0",
 		"@nestjs/passport": ">=10.0.0",
 		"@nestjs/terminus": ">=10.0.0",
+		"@nestjs/throttler": ">=5.0.0",
 		"axios": ">=1.0.0",
 		"bcryptjs": ">=2.0.0",
 		"ioredis": ">=5.0.0",
@@ -39,6 +40,11 @@
 		"passport-oauth2": ">=1.0.0",
 		"passport-openidconnect": ">=0.1.0",
 		"uuid": ">=9.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@nestjs/throttler": {
+			"optional": true
+		}
 	},
 	"dependencies": {
 		"@pawells/nestjs-open-telemetry": "workspace:*",
