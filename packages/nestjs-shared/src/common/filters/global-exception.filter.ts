@@ -40,23 +40,20 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 	constructor(public readonly Module: ModuleRef) {}
 
 	private get Logger(): AppLogger {
-		if (!this._logger) {
-			this._logger = this.Module.get(AppLogger);
-		}
+		this._logger ??= this.Module.get(AppLogger);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return this._logger!;
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
-		if (!this._errorSanitizer) {
-			this._errorSanitizer = this.Module.get(ErrorSanitizerService);
-		}
+		this._errorSanitizer ??= this.Module.get(ErrorSanitizerService);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return this._errorSanitizer!;
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
-		if (!this._errorCategorizer) {
-			this._errorCategorizer = this.Module.get(ErrorCategorizerService);
-		}
+		this._errorCategorizer ??= this.Module.get(ErrorCategorizerService);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		return this._errorCategorizer!;
 	}
 
