@@ -67,10 +67,11 @@ export class AppLogger implements IContextualLogger {
 
 		// Create instance of @pawells/logger
 		const pawellsLogLevel = this.mapNestjsLogLevelToPawells(this.minLevel);
+		const logFormat = this.parseLogFormat();
 		this.pawellsLogger = new PawellsLogger({
 			service: this.serviceName,
 			level: pawellsLogLevel,
-			format: 'json',
+			format: logFormat,
 		});
 	}
 
@@ -98,6 +99,30 @@ export class AppLogger implements IContextualLogger {
 		}
 
 		return parsedLevel;
+	}
+
+	/**
+	 * Parse LOG_FORMAT environment variable
+	 * @returns Format type ('json' | 'text'), defaults to 'json'
+	 */
+	private parseLogFormat(): 'json' | 'text' {
+		if (!this.configService) {
+			return 'json';
+		}
+		const format = this.configService.get<string>('LOG_FORMAT', 'json').toLowerCase();
+
+		// Validate format is either 'json' or 'text'
+		if (format !== 'json' && format !== 'text') {
+			const message = `[AppLogger] Invalid LOG_FORMAT value: "${format}". Valid values are: json, text. Falling back to "json".`;
+			try {
+				console.error(message);
+			} catch {
+				// Ignore console error failures silently
+			}
+			return 'json';
+		}
+
+		return format;
 	}
 
 	/**
