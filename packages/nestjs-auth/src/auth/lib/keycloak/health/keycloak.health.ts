@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { KeycloakAdminService } from '../services/keycloak-admin.service.js';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';

@@ -1,3 +1,15 @@
+/**
+ * GraphQL Decorators
+ *
+ * Decorators for GraphQL resolvers:
+ * - Authentication and authorization (@Auth, @Public, @Roles)
+ * - User context extraction (@CurrentUser, @AuthToken, @GraphQLContextParam)
+ * - Subscription management (@Subscription)
+ * - Caching decorators (@Cacheable, @CacheInvalidate)
+ *
+ * @packageDocumentation
+ */
+
 export { Subscription, SubscriptionFilter, SubscriptionAuth, SUBSCRIPTION_METADATA } from './subscription.decorator.js';
 export type { SubscriptionOptions } from './subscription.decorator.js';
 

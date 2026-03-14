@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';

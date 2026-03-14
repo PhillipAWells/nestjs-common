@@ -1,5 +1,5 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { Observable, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';

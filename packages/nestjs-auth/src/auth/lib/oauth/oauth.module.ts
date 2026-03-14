@@ -7,12 +7,18 @@ import { OAuthModuleOptions } from './types/oauth-config.types.js';
 
 import { CommonModule } from '@pawells/nestjs-shared/common';
 
+/**
+ * OAuth/OIDC module for multi-provider authentication support.
+ * Provides Keycloak and generic OIDC strategies with token verification.
+ */
 @Global()
 @Module({})
 export class OAuthModule {
 	/**
-   * Create dynamic module with OAuth configuration
-   */
+	 * Create OAuth module with static configuration
+	 * @param options OAuth provider configurations
+	 * @returns Dynamic module configuration
+	 */
 	public static forRoot(options: OAuthModuleOptions): DynamicModule {
 		return {
 			module: OAuthModule,
@@ -32,8 +38,10 @@ export class OAuthModule {
 	}
 
 	/**
-    * Create dynamic module with async OAuth configuration
-    */
+	 * Create OAuth module with asynchronous configuration
+	 * @param options Async factory configuration
+	 * @returns Dynamic module configuration
+	 */
 	public static forRootAsync(options: {
 		useFactory: (...args: any[]) => Promise<OAuthModuleOptions> | OAuthModuleOptions;
 		inject?: any[];

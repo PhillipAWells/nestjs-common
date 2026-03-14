@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as OpenIDConnectStrategy } from 'passport-openidconnect';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';

@@ -6,15 +6,57 @@ import { ProfileMethod } from '@pawells/nestjs-pyroscope';
  * Options for @Cacheable decorator
  */
 export interface CacheableOptions {
+	/**
+	 * Cache key — either a constant string or a function to generate keys dynamically
+	 * Default: `${ClassName}:${methodName}`
+	 */
 	key?: string | ((...args: any[]) => string);
+
+	/**
+	 * Time-to-live for the cached value in milliseconds
+	 */
 	ttl?: number;
+
+	/**
+	 * Optional condition function to determine if caching should occur
+	 * Called with method arguments; caching skipped if returns false
+	 */
 	condition?: (...args: any[]) => boolean;
 }
 
 /**
  * Cacheable decorator for automatic method result caching
- * @param options Cache options
- * @returns Method decorator
+ *
+ * Wraps a method to automatically cache its return value using the injected cache manager.
+ * On cache hit, returns the cached value. On cache miss, executes the method, caches
+ * the result, and returns it. Falls back to executing the method if cache manager is
+ * unavailable. Applies Pyroscope profiling with the `cacheable` tag.
+ *
+ * @param options Cache options (key, ttl, condition)
+ * @returns Method decorator function
+ *
+ * @example
+ * ```typescript
+ * @Cacheable({ key: 'user:profile', ttl: 300000 })
+ * async getUserProfile(userId: string) {
+ *   return this.userService.getProfile(userId);
+ * }
+ *
+ * // Dynamic key based on arguments
+ * @Cacheable({
+ *   key: (userId) => `user:${userId}:profile`,
+ *   ttl: 600000,
+ *   condition: (userId) => userId !== 'admin',
+ * })
+ * async getUserProfile(userId: string) {
+ *   return this.userService.getProfile(userId);
+ * }
+ * ```
+ *
+ * @remarks
+ * - Requires CACHE_MANAGER injection (provided by @nestjs/cache-manager)
+ * - Falls back gracefully if cache is unavailable
+ * - Async-safe; works with async/await methods
  */
 export function Cacheable(options: CacheableOptions = {}) {
 	const logger = new Logger('CacheableDecorator');

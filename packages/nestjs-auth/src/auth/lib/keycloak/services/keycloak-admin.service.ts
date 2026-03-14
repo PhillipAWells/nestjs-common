@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { KeycloakClient } from '../client/client.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';

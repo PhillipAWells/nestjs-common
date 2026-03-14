@@ -1,5 +1,5 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 
 const RESULT_SUMMARY_MAX_KEYS = 3;
 import { GqlExecutionContext } from '@nestjs/graphql';

@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 import { Injectable, Logger } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { Order } from './order.loader.js';

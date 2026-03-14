@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 

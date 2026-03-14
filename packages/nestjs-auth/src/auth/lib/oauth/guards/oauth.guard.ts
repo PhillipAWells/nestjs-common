@@ -1,10 +1,18 @@
 import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { OAuthService } from '../oauth.service.js';
 
+/**
+ * OAuth/OIDC authorization guard with fallback to Passport strategies.
+ * Attempts token verification using OAuthService, falls back to JWT/Keycloak/OIDC strategies.
+ *
+ * @class OAuthGuard
+ * @extends {AuthGuard}
+ * @implements {LazyModuleRefService}
+ */
 @Injectable()
 export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
@@ -26,6 +34,12 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) implement
 		super();
 	}
 
+	/**
+	 * Validate OAuth authentication
+	 * @param context Execution context
+	 * @returns True if authentication succeeds
+	 * @throws UnauthorizedException if token is missing or invalid
+	 */
 	public override async canActivate(context: ExecutionContext): Promise<boolean> {
 		const request = context.switchToHttp().getRequest();
 		this.logger.debug(`OAuth guard activated for ${request.path}`);
@@ -53,6 +67,11 @@ export class OAuthGuard extends AuthGuard(['jwt', 'keycloak', 'oidc']) implement
 		}
 	}
 
+	/**
+	 * Extract bearer token from Authorization header
+	 * @param request HTTP request object
+	 * @returns Bearer token or null if not found
+	 */
 	private extractTokenFromHeader(request: any): string | null {
 		const authHeader = request.headers.authorization;
 		const BEARER_PREFIX = 'Bearer ';

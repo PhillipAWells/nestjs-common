@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '@pawells/nestjs-shared/common/utils/lazy-getter.types';
 import { AppLogger, CACHE_PROVIDER, type ICacheProvider } from '@pawells/nestjs-shared/common';
 import { TOKEN_TTL_24_HOURS, TOKEN_LOG_PREFIX_LENGTH } from '../constants/auth-timeouts.constants.js';

@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import axios, { AxiosInstance } from 'axios';
 import jwkToPem from 'jwk-to-pem';
 import * as jwt from 'jsonwebtoken';
@@ -10,6 +10,15 @@ import { OAUTH_SERVICE_TIMEOUT, OAUTH_TIMEOUT_10_SECONDS_MULTIPLIER, JWK_CACHE_T
 
 const OAUTH_DEFAULT_EXPIRES_IN = 3600;
 
+/**
+ * OAuth service for multi-provider token verification, refresh, and user info retrieval.
+ * Handles token validation using JWKS, user extraction from claims,
+ * and role extraction from various provider formats.
+ *
+ * @class OAuthService
+ * @implements {LazyModuleRefService}
+ * @implements {OnModuleInit}
+ */
 @Injectable()
 export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	private _logger: AppLogger | undefined;
@@ -38,8 +47,12 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-    * Verify and decode OAuth token
-    */
+	 * Verify and decode OAuth token from provider
+	 * @param token OAuth token to verify
+	 * @param provider OAuth provider name (e.g., 'keycloak', 'google')
+	 * @returns Verified OAuth user information
+	 * @throws Error if token verification fails
+	 */
 	public async verifyToken(token: string, provider: string): Promise<OAuthUser> {
 		this.logger.debug(`Token verification initiated for provider ${provider}`);
 		try {
@@ -55,8 +68,11 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-    * Get public key for token verification
-    */
+	 * Get public key for token verification with caching and single-flight pattern
+	 * @param provider OAuth provider name
+	 * @returns Public key (PEM format) for verifying tokens
+	 * @throws Error if JWKS endpoint not configured or fetching fails
+	 */
 	// eslint-disable-next-line require-await
 	public async getPublicKey(provider: string): Promise<string> {
 		const cacheKey = `public_key_${provider}`;
@@ -95,6 +111,10 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 
 	/**
 	 * Fetch and cache public key from JWKS endpoint
+	 * @param jwksUrl JWKS endpoint URL
+	 * @param provider OAuth provider name
+	 * @returns Public key (PEM format)
+	 * @throws Error if JWKS fetch fails or no suitable signing key found
 	 */
 	private async fetchAndCachePublicKey(jwksUrl: string, provider: string): Promise<string> {
 		try {
@@ -121,8 +141,12 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-    * Validate JWT token with public key
-    */
+	 * Validate JWT token with public key using RS256 algorithm
+	 * @param token JWT token to validate
+	 * @param publicKey Public key (PEM format) for signature verification
+	 * @returns Decoded and verified token payload
+	 * @throws Error if token signature is invalid
+	 */
 	public async validateToken(token: string, publicKey: string): Promise<any> {
 		this.logger.debug('JWT token validation initiated');
 		const decoded = await new Promise((resolve, reject) => {
@@ -140,8 +164,10 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-    * Extract user information from JWT claims
-    */
+	 * Extract OAuth user information from JWT token claims
+	 * @param decoded Decoded JWT token payload
+	 * @returns Normalized OAuthUser object
+	 */
 	public extractUserFromToken(decoded: any): OAuthUser {
 		this.logger.debug(`Extracting user info from token for user ${decoded.email ?? decoded.sub}`);
 		const user = {
@@ -160,8 +186,11 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-    * Extract roles from token claims
-    */
+	 * Extract roles from token claims supporting multiple provider formats
+	 * Handles Keycloak realm/client roles, generic OIDC roles claims, and custom role structures
+	 * @param decoded Decoded JWT token payload
+	 * @returns Array of unique roles from token
+	 */
 	public extractRolesFromToken(decoded: any): string[] {
 		const roles: string[] = [];
 
@@ -194,8 +223,12 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-   * Refresh OAuth token
-   */
+	 * Refresh OAuth token from provider's token endpoint
+	 * @param refreshToken Refresh token from previous authentication
+	 * @param provider OAuth provider name
+	 * @returns New access/refresh token pair
+	 * @throws Error if refresh fails or endpoint not configured
+	 */
 	public async refreshToken(refreshToken: string, provider: string): Promise<OAuthToken> {
 		this.logger.debug(`Token refresh initiated for provider ${provider}`);
 		try {
@@ -241,8 +274,12 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-   * Get user info from OAuth provider
-   */
+	 * Get user information from OAuth provider's userinfo endpoint
+	 * @param accessToken OAuth access token
+	 * @param provider OAuth provider name
+	 * @returns OAuth user information from provider
+	 * @throws Error if endpoint not configured or request fails
+	 */
 	public async getUserInfo(accessToken: string, provider: string): Promise<OAuthUser> {
 		this.logger.debug(`Retrieving user info from provider ${provider}`);
 		try {
@@ -283,15 +320,19 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-   * Get JWKS URL for provider
-   */
+	 * Get JWKS endpoint URL from environment variable
+	 * @param provider OAuth provider name
+	 * @returns JWKS URL from environment or null if not configured
+	 */
 	private getJwksUrl(provider: string): string | null {
 		const envKey = `${provider.toUpperCase()}_JWKS_URI`;
 		return process.env[envKey] ?? null;
 	}
 
 	/**
-	 * Get token endpoint URL for provider
+	 * Get token endpoint URL from environment variable
+	 * @param provider OAuth provider name
+	 * @returns Token endpoint URL from environment or null if not configured
 	 */
 	private getTokenEndpoint(provider: string): string | null {
 		const envKey = `${provider.toUpperCase()}_TOKEN_ENDPOINT`;
@@ -299,7 +340,9 @@ export class OAuthService implements LazyModuleRefService, OnModuleInit {
 	}
 
 	/**
-	 * Get user info endpoint URL for provider
+	 * Get user info endpoint URL from environment variable
+	 * @param provider OAuth provider name
+	 * @returns Userinfo endpoint URL from environment or null if not configured
 	 */
 	private getUserInfoEndpoint(provider: string): string | null {
 		const envKey = `${provider.toUpperCase()}_USERINFO_ENDPOINT`;

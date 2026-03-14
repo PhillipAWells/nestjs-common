@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import { HttpAdapterHost } from '@nestjs/core';
-import type { ModuleRef } from '@nestjs/core';
+import { HttpAdapterHost , ModuleRef } from '@nestjs/core';
 import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';

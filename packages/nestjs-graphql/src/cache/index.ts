@@ -1,3 +1,16 @@
+/**
+ * Redis Cache Module
+ *
+ * Provides Redis-backed caching with:
+ * - Automatic TTL management
+ * - Cache statistics and metrics
+ * - Decorator-based caching (@Cacheable, @CacheInvalidate, @CacheEvict)
+ * - Configurable invalidation strategies
+ * - HTTP interceptor for automatic response caching
+ *
+ * @packageDocumentation
+ */
+
 // Main exports
 export { CacheModule } from './cache.module.js';
 export { CacheService } from './cache.service.js';

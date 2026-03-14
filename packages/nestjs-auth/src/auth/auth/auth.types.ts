@@ -1,6 +1,7 @@
 /**
  * Standard OAuth2/OIDC profile structure
- * Covers common fields from Google, GitHub, Keycloak, and other providers
+ * Covers common fields from Google, GitHub, Keycloak, and other providers.
+ * Used for extracting user information from OAuth access tokens.
  */
 export interface OAuthProfile {
 	id?: string;
@@ -20,7 +21,8 @@ export interface OAuthProfile {
 }
 
 /**
- * User interface for authentication
+ * User object for authentication and authorization.
+ * Contains core user identity, role/permission information, and OAuth profiles.
  */
 export interface User {
 	id: string;
@@ -41,7 +43,8 @@ export interface User {
 }
 
 /**
- * Login request DTO
+ * Login request data transfer object.
+ * Used to submit email and password for user authentication.
  */
 export interface LoginDto {
 	email: string;
@@ -49,7 +52,8 @@ export interface LoginDto {
 }
 
 /**
- * Register request DTO
+ * User registration request data transfer object.
+ * Used to create new user accounts with email, password, and optional profile information.
  */
 export interface RegisterDto {
 	email: string;
@@ -60,7 +64,9 @@ export interface RegisterDto {
 }
 
 /**
- * JWT payload interface
+ * JWT (JSON Web Token) payload structure.
+ * Contains claims for user identity, authorization, and token metadata.
+ * Standard claims follow RFC 7519 conventions.
  */
 export interface JWTPayload {
 	sub: string;
@@ -74,7 +80,8 @@ export interface JWTPayload {
 }
 
 /**
- * Authentication response
+ * Response returned after successful authentication.
+ * Contains access/refresh tokens, expiration info, and authenticated user details.
  */
 export interface AuthResponse {
 	accessToken: string;
@@ -85,14 +92,16 @@ export interface AuthResponse {
 }
 
 /**
- * Refresh token request DTO
+ * Refresh token request data transfer object.
+ * Used to submit a refresh token for generating new access tokens.
  */
 export interface RefreshTokenDto {
 	refreshToken: string;
 }
 
 /**
- * Refresh token response
+ * Response returned after successfully refreshing an access token.
+ * Contains the new access token, expiration time, and token type.
  */
 export interface RefreshTokenResponse {
 	accessToken: string;

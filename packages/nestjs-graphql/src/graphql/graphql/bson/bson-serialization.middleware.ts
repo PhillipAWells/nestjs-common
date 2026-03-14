@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';

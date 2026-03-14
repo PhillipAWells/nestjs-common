@@ -1,3 +1,15 @@
+/**
+ * GraphQL Services
+ *
+ * Core business logic services:
+ * - Rate limiting with configurable storage backends
+ * - Cache management and statistics
+ * - Performance metrics tracking
+ * - BSON serialization
+ *
+ * @packageDocumentation
+ */
+
 export { RateLimitService, MemoryRateLimitStorage } from './rate-limit.service.js';
 export type { RateLimitResult, RateLimitConfig, RateLimitStorage } from './rate-limit.service.js';
 

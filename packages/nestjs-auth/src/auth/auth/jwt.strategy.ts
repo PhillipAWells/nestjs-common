@@ -3,7 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request as ExpressRequest } from 'express';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { User } from './auth.types.js';
@@ -15,8 +15,23 @@ import { AUTH_JWT_KEY_SIZE } from '../constants/auth-timeouts.constants.js';
 import { USER_LOOKUP_FN } from './tokens.js';
 
 /**
- * JWT authentication strategy
- * Validates JWT tokens and extracts user information
+ * JWT (JSON Web Token) authentication strategy for Passport.
+ * Validates JWT token signatures, expiration, and blacklist status.
+ * Extracts user information from validated JWT payloads.
+ *
+ * @class JWTStrategy
+ * @extends {PassportStrategy(Strategy)}
+ * @implements {LazyModuleRefService}
+ *
+ * @example
+ * ```typescript
+ * @UseGuards(AuthGuard('jwt'))
+ * @Get('protected')
+ * getProtected(@Request() req) {
+ *   // req.user is populated by JWT validation
+ *   return { user: req.user };
+ * }
+ * ```
  */
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy) implements LazyModuleRefService {

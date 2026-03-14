@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
 
+/**
+ * Audit log entry for security events.
+ */
 export interface AuditLogEntry {
 	timestamp: Date;
 	userId?: string;
@@ -14,6 +17,38 @@ export interface AuditLogEntry {
 	userAgent?: string;
 }
 
+/**
+ * Audit Logger Service.
+ * Specialized logging for security-related events: authentication, authorization, token operations,
+ * CSRF violations, rate limiting, and configuration changes.
+ *
+ * All audit events are logged at INFO level (or WARN for failures) with structured JSON data
+ * for easy parsing by log aggregation systems (Loki, Splunk, etc.).
+ *
+ * @remarks
+ * - Automatically redacts sensitive fields (passwords, tokens) via AppLogger
+ * - All events include ISO timestamps and structured event data
+ * - Integrates with log aggregation for compliance and forensics
+ * - Available globally via CommonModule
+ *
+ * @example
+ * ```typescript
+ * // Log authentication attempt
+ * auditLogger.logAuthenticationAttempt('user@example.com', true, '192.168.1.1');
+ *
+ * // Log CSRF violation
+ * auditLogger.logCsrfViolation('192.168.1.1', '/api/users');
+ *
+ * // Log custom security event
+ * auditLogger.logSecurityEvent({
+ *   userId: 'user-123',
+ *   action: 'delete_user',
+ *   resource: 'users/456',
+ *   result: 'failure',
+ *   ipAddress: '192.168.1.1'
+ * });
+ * ```
+ */
 @Injectable()
 export class AuditLoggerService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;

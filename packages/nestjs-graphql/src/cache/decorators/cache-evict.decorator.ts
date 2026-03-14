@@ -5,13 +5,43 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
  * Options for @CacheEvict decorator
  */
 export interface CacheEvictOptions {
+	/**
+	 * Redis glob pattern to match cache keys for eviction
+	 * Examples: `user:*`, `post:123:*`, `*:comments`
+	 */
 	pattern: string;
 }
 
 /**
  * CacheEvict decorator for pattern-based cache eviction after method execution
- * @param options Cache eviction options
- * @returns Method decorator
+ *
+ * Wraps a method to automatically evict cached values matching a pattern after
+ * method execution completes. Useful for mutations that invalidate related cached data.
+ * Executes the method first, then evicts matching keys. Fails gracefully if
+ * pattern-based eviction is not supported by the cache store.
+ *
+ * @param options Cache eviction options (pattern required)
+ * @returns Method decorator function
+ *
+ * @example
+ * ```typescript
+ * @CacheEvict({ pattern: 'user:*' })
+ * async updateUser(userId: string, data: UpdateUserDto) {
+ *   return this.userService.update(userId, data);
+ * }
+ *
+ * // Specific post and its comments
+ * @CacheEvict({ pattern: 'post:123:*' })
+ * async updatePost(postId: string, data: UpdatePostDto) {
+ *   return this.postService.update(postId, data);
+ * }
+ * ```
+ *
+ * @remarks
+ * - Requires CACHE_MANAGER injection (provided by @nestjs/cache-manager)
+ * - Pattern matching depends on cache store support (Redis supports glob patterns)
+ * - Eviction happens after method execution, so the method's result is not affected
+ * - Logs warnings if store doesn't support pattern-based eviction
  */
 export function CacheEvict(options: CacheEvictOptions) {
 	const logger = new Logger('CacheEvictDecorator');

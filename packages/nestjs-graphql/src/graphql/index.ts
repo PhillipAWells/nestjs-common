@@ -1,3 +1,20 @@
+/**
+ * GraphQL Module Exports
+ *
+ * Complete GraphQL module with Apollo Server 5.x integration providing:
+ * - Custom scalars (ObjectId, DateTime, JSON)
+ * - Guards for authentication, authorization, rate limiting, and query complexity
+ * - Interceptors for logging, error handling, caching, and performance monitoring
+ * - Pipes for input validation and security checks
+ * - Services for rate limiting, caching, and performance tracking
+ * - Context management for HTTP and WebSocket connections
+ * - DataLoaders for batch loading and N+1 prevention
+ * - WebSocket subscriptions with authentication
+ * - Structured error handling with standardized codes
+ *
+ * @packageDocumentation
+ */
+
 // GraphQL Core
 export { GraphQLModule, GraphQLService } from './graphql/index.js';
 export type { GraphQLConfigOptions, GraphQLAsyncConfig } from './graphql/index.js';

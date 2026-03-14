@@ -1,3 +1,13 @@
+/**
+ * DataLoader Module
+ *
+ * Batch loading utilities to prevent N+1 queries in GraphQL resolvers.
+ * Provides DataLoader factory, registry for request-scoped loaders,
+ * and pre-built loaders for common entities.
+ *
+ * @packageDocumentation
+ */
+
 export * from './dataloader.factory.js';
 export * from './dataloader-registry.js';
 export * from './user.loader.js';

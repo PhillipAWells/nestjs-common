@@ -1,7 +1,6 @@
 import { Injectable, ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { Reflector } from '@nestjs/core';
-import type { ModuleRef } from '@nestjs/core';
+import { Reflector , ModuleRef } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BaseCacheInterceptor, CacheKeyGenerator, CacheMetadataExtractor, CacheContextHandler } from '../../cache/interceptors/base-cache.interceptor.js';

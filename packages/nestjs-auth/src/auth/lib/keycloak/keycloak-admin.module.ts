@@ -6,9 +6,19 @@ import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './keycloak.constants.js';
 import type { KeycloakAdminConfig } from './config/keycloak.config.js';
 import { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
 
+/**
+ * Keycloak Admin module for managing users, roles, and groups.
+ * Provides Admin API client with configurable authentication methods.
+ */
 @Global()
 @Module({})
 export class KeycloakAdminModule {
+	/**
+	 * Create Keycloak admin module with static configuration
+	 * @param config Partial Keycloak admin configuration
+	 * @returns Dynamic module configuration
+	 * @throws Error if Keycloak is enabled but credentials are missing
+	 */
 	public static forRoot(config: Partial<KeycloakAdminConfig> = {}): DynamicModule {
 		const mergedConfig = { ...KeycloakAdminDefaults, ...config };
 		validateKeycloakAdminConfig(mergedConfig);
@@ -43,6 +53,11 @@ export class KeycloakAdminModule {
 		};
 	}
 
+	/**
+	 * Create Keycloak admin module with asynchronous configuration
+	 * @param options Async factory configuration
+	 * @returns Dynamic module configuration
+	 */
 	public static forRootAsync(options: {
 		useFactory: (...args: any[]) => Promise<KeycloakAdminConfig> | KeycloakAdminConfig;
 		inject?: any[];

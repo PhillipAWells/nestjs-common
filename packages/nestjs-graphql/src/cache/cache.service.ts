@@ -1,9 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { BaseCacheService } from './services/base-cache.service.js';
 
 /**
  * Cache service providing Redis-based caching functionality
+ *
+ * Extends BaseCacheService to provide HTTP-specific cache key generation
+ * and contextual logging. Manages in-memory and Redis-backed caching of
+ * application data with configurable TTL and invalidation strategies.
+ *
+ * @example
+ * ```typescript
+ * // Inject into service
+ * constructor(private cacheService: CacheService) {}
+ *
+ * // Get or set value
+ * const value = await this.cacheService.get('key');
+ * await this.cacheService.set('key', { data: 'value' }, 300);
+ * ```
+ *
+ * @see BaseCacheService - Base class with core functionality
+ * @see CacheModule - Module that provides this service
  */
 @Injectable()
 export class CacheService extends BaseCacheService {

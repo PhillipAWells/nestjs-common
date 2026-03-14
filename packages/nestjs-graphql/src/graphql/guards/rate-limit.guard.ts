@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { RateLimitService } from '../services/rate-limit.service.js';

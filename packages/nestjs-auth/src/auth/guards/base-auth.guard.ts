@@ -1,6 +1,6 @@
 import { ExecutionContext, UnauthorizedException, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';

@@ -8,13 +8,27 @@ import { SessionEventEmitter } from './session-event.emitter.js';
 import { ISessionConfig } from './session.types.js';
 import { Redis } from 'ioredis';
 
+/**
+ * Session module configuration options
+ */
 export interface SessionModuleOptions {
+	/** Session configuration including TTL and concurrency limits */
 	config: ISessionConfig;
+	/** Redis client instance for session tracking and management */
 	redisClient: Redis;
 }
 
+/**
+ * Session management module for MongoDB-persisted user sessions.
+ * Handles session creation, authentication, token refresh, and concurrency management.
+ */
 @Module({})
 export class SessionModule {
+	/**
+	 * Create session module with configuration
+	 * @param options Session module configuration
+	 * @returns Dynamic module configuration
+	 */
 	public static forRoot(options: SessionModuleOptions): DynamicModule {
 		return {
 			module: SessionModule,

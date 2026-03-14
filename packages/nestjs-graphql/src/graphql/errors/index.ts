@@ -1,3 +1,15 @@
+/**
+ * GraphQL Error Classes and Factories
+ *
+ * Standardized error types for GraphQL resolvers with:
+ * - Automatic error code mapping
+ * - Consistent error response formatting
+ * - Base and GraphQL-specific error classes
+ * - Backward compatibility aliases
+ *
+ * @packageDocumentation
+ */
+
 // Re-export base errors from nestjs-common
 export {
 	BaseApplicationError,

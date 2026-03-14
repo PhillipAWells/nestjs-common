@@ -1,3 +1,46 @@
+/**
+ * @pawells/nestjs-graphql
+ *
+ * Enterprise-grade NestJS GraphQL module with Apollo Server 5.x integration.
+ *
+ * Provides:
+ * - Redis-backed caching with @Cacheable, @CacheEvict, @CacheInvalidate decorators
+ * - GraphQL module with custom scalars (ObjectId, DateTime, JSON)
+ * - Query complexity analysis to prevent DoS attacks
+ * - WebSocket subscriptions with authentication
+ * - DataLoaders for N+1 query prevention
+ * - Guards for authentication, authorization, rate limiting
+ * - Interceptors for logging, error handling, caching, performance monitoring
+ * - Pipes for input validation with XSS detection
+ * - Standardized error handling with GraphQLErrorFormatter
+ * - Cursor-based pagination utilities
+ * - BSON serialization support
+ *
+ * @example
+ * ```typescript
+ * import { GraphQLModule, CacheModule } from '@pawells/nestjs-graphql';
+ *
+ * @Module({
+ *   imports: [
+ *     CacheModule.forRoot(),
+ *     GraphQLModule.forRoot({
+ *       autoSchemaFile: 'schema.gql',
+ *       playground: true,
+ *     }),
+ *   ],
+ * })
+ * export class AppModule {}
+ * ```
+ *
+ * @see {@link GraphQLModule} - Main GraphQL module
+ * @see {@link CacheModule} - Redis caching module
+ * @see {@link RateLimitService} - Rate limiting
+ * @see {@link DataLoaderRegistry} - Batch loading
+ * @see {@link GraphQLWebSocketServer} - WebSocket subscriptions
+ *
+ * @packageDocumentation
+ */
+
 // ============================================================================
 // Cache Module Exports
 // ============================================================================

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ModuleRef } from '@nestjs/core';
+import { ModuleRef } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from './session.entity.js';
