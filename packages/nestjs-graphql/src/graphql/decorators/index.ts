@@ -1,18 +1,22 @@
 export { Subscription, SubscriptionFilter, SubscriptionAuth, SUBSCRIPTION_METADATA } from './subscription.decorator.js';
 export type { SubscriptionOptions } from './subscription.decorator.js';
 
-// TODO: Re-enable auth decorators after breaking circular dependency with @pawells/nestjs-auth
-// export {
-// 	Auth,
-// 	Public,
-// 	Roles,
-// 	CurrentUser,
-// 	AuthToken,
-// 	GraphQLContextParam,
-// 	GraphQLUser,
-// 	IS_PUBLIC_KEY,
-// 	ROLES_KEY
-// } from './graphql-auth-decorators.ts';
+export {
+	Auth,
+	Public,
+	Roles,
+	CurrentUser,
+	AuthToken,
+	GraphQLContextParam,
+	GraphQLUser,
+	GraphQLAuth,
+	GraphQLPublic,
+	GraphQLRoles,
+	GraphQLCurrentUser,
+	GraphQLAuthToken,
+	IS_PUBLIC_KEY,
+	ROLES_KEY,
+} from './graphql-auth-decorators.js';
 
 export { Cacheable, CACHEABLE_METADATA } from './cacheable.decorator.js';
 export type { CacheableOptions } from './cacheable.decorator.js';

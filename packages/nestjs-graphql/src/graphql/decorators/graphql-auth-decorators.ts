@@ -11,29 +11,24 @@
  * @packageDocumentation
  */
 
-// TODO: Re-enable these exports after breaking circular dependency with @pawells/nestjs-auth
 // Re-export base authentication decorators from nestjs-auth
-// export {
-// 	Auth,
-// 	Public,
-// 	Roles,
-// 	CurrentUser,
-// 	AuthToken,
-// 	IS_PUBLIC_KEY,
-// 	ROLES_KEY
-// } from '@pawells/nestjs-auth';
+export {
+	Auth,
+	Public,
+	Roles,
+	CurrentUser,
+	AuthToken,
+	IS_PUBLIC_KEY,
+	ROLES_KEY,
+} from '@pawells/nestjs-auth';
 
 // Re-export GraphQL-specific decorator variants from nestjs-auth
-// export {
-// 	GraphQLPublic,
-// 	GraphQLAuth,
-// 	GraphQLRoles,
-// 	GraphQLCurrentUser,
-// 	GraphQLAuthToken,
-// 	GraphQLContextParam,
-// 	GraphQLUser
-// } from '@pawells/nestjs-auth';
-
-// This is a placeholder to avoid circular dependency with @pawells/nestjs-auth
-// The actual decorators are re-exported when circular dependency is resolved
-export {};
+export {
+	GraphQLPublic,
+	GraphQLAuth,
+	GraphQLRoles,
+	GraphQLCurrentUser,
+	GraphQLAuthToken,
+	GraphQLContextParam,
+	GraphQLUser,
+} from '@pawells/nestjs-auth';
