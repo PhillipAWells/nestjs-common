@@ -12,6 +12,7 @@
 		"lint:fix": "eslint src/ --fix",
 		"test": "vitest run",
 		"test:coverage": "vitest --coverage",
+		"serve": "nx serve nestjs-example-service",
 		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
 	},
 	"dependencies": {

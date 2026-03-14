@@ -31,6 +31,12 @@
 			"cache": true,
 			"dependsOn": ["version-sync", "^build"]
 		},
+		"@nx/js:tsc": {
+			"cache": true,
+			"dependsOn": ["version-sync", "^build"],
+			"inputs": ["production", "^production"],
+			"outputs": ["{options.outputPath}"]
+		},
 		"test": {
 			"cache": true
 		},

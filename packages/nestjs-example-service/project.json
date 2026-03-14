@@ -5,12 +5,22 @@
 	"projectType": "application",
 	"targets": {
 		"build": {
-			"executor": "nx:run-commands",
+			"executor": "@nx/js:tsc",
 			"options": {
-				"command": "tsc --project tsconfig.build.json",
-				"cwd": "{projectRoot}"
+				"main": "{projectRoot}/src/main.ts",
+				"outputPath": "{projectRoot}/build",
+				"tsConfig": "{projectRoot}/tsconfig.build.json",
+				"generatePackageJson": true
 			},
 			"outputs": ["{projectRoot}/build"]
+		},
+		"serve": {
+			"executor": "@nx/js:node",
+			"options": {
+				"buildTarget": "nestjs-example-service:build",
+				"watch": true,
+				"runtimeArgs": ["--env-file=packages/nestjs-example-service/.env"]
+			}
 		},
 		"typecheck": {
 			"executor": "nx:run-commands",
