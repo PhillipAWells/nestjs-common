@@ -38,6 +38,18 @@ export interface ICacheProvider {
 	 * Clear all cache values
 	 */
 	clear(): Promise<void>;
+
+	/**
+	 * Execute an atomic script/command (e.g. Redis Lua script) on the cache backend.
+	 * This is optional — implementations backed by Redis should provide it;
+	 * in-memory or other backends may leave it undefined.
+	 *
+	 * @param script The script to execute (Lua for Redis)
+	 * @param keys Array of cache keys the script operates on
+	 * @param args Array of string arguments passed to the script
+	 * @returns The result from the script execution
+	 */
+	executeScript?(script: string, keys: readonly string[], args: readonly string[]): Promise<unknown>;
 }
 
 /**

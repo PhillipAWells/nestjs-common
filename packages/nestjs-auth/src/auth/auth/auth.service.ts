@@ -451,31 +451,67 @@ export class AuthService implements LazyModuleRefService {
 		}
 		const sessionKey = `sessions:${userId}`;
 
-		// TODO: TOCTOU — use a Redis atomic operation (Lua script) to make session count enforcement fully race-free under high concurrency
+		// Atomic session tracking via Lua script (requires cache provider with executeScript support, e.g. Redis)
+		// Falls back to a non-atomic get→modify→set when atomic execution is unavailable,
+		// which may allow momentary session count overshoots under very high concurrency.
+		const LUA_TRACK_SESSION = `
+local raw = redis.call('GET', KEYS[1])
+local list = raw and cjson.decode(raw) or {}
+local sessionId = ARGV[1]
+local maxSessions = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+
+-- Check if session already tracked
+local exists = false
+for _, s in ipairs(list) do
+  if s == sessionId then exists = true; break end
+end
+
+if not exists then
+  if #list >= maxSessions then
+    table.remove(list, 1)
+  end
+  table.insert(list, sessionId)
+end
+
+redis.call('SET', KEYS[1], cjson.encode(list), 'EX', ttl)
+return cjson.encode(list)
+`;
+
 		try {
-			// Get current sessions
-			let sessions: string[] = [];
-			try {
-				const cached = await cacheService.get(sessionKey);
-				sessions = cached ? JSON.parse(String(cached)) : [];
-			} catch {
-				sessions = [];
-			}
+			let sessions: string[];
 
-			// Check if session already exists
-			const existingIndex = sessions.indexOf(sessionId);
-			if (existingIndex === -1) {
-				// New session
-				if (sessions.length >= maxConcurrentSessions) {
-					// Remove oldest session
-					const removedSession = sessions.shift();
-					this.logger.info(`Removed old session for user ${userId}: ${removedSession}`);
+			if ((cacheService as any).executeScript) {
+				// Atomic path — single round-trip, no TOCTOU window
+				const result = await (cacheService as any).executeScript(LUA_TRACK_SESSION, [sessionKey], [
+					sessionId,
+					String(maxConcurrentSessions),
+					String(SESSION_TRACKING_TTL),
+				]);
+				sessions = JSON.parse(String(result)) as string[];
+			} else {
+				// Non-atomic fallback — acceptable for low-concurrency or non-Redis deployments
+				this.logger.debug('Cache provider lacks executeScript; using non-atomic session tracking (TOCTOU window exists under high concurrency)');
+				let rawSessions: string[] = [];
+				try {
+					const cached = await cacheService.get(sessionKey);
+					rawSessions = cached ? JSON.parse(String(cached)) as string[] : [];
+				} catch {
+					rawSessions = [];
 				}
-				sessions.push(sessionId);
-			}
 
-			// Save updated sessions
-			await cacheService.set(sessionKey, JSON.stringify(sessions), SESSION_TRACKING_TTL);
+				const existingIndex = rawSessions.indexOf(sessionId);
+				if (existingIndex === -1) {
+					if (rawSessions.length >= maxConcurrentSessions) {
+						const removedSession = rawSessions.shift();
+						this.logger.info(`Removed old session for user ${userId}: ${removedSession}`);
+					}
+					rawSessions.push(sessionId);
+				}
+
+				await cacheService.set(sessionKey, JSON.stringify(rawSessions), SESSION_TRACKING_TTL);
+				sessions = rawSessions;
+			}
 
 			const allowed = sessions.length <= maxConcurrentSessions;
 			this.logger.debug(`Session tracking result for user ${userId}: allowed=${allowed}, active=${sessions.length}`);

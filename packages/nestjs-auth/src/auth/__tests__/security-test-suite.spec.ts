@@ -350,6 +350,24 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 			}
 		});
 
+		it('should use atomic session tracking when executeScript is available', async () => {
+			const userId = 'user-atomic';
+			const sessionId = 'session-atomic';
+			const maxSessions = 3;
+			const sessionList = JSON.stringify([sessionId]);
+
+			// Mock cache provider WITH executeScript
+			mockCacheService.executeScript = vi.fn().mockResolvedValue(sessionList);
+
+			const result = await authService.trackUserSession(userId, sessionId, maxSessions);
+			expect(result.activeSessions).toContain(sessionId);
+			expect(mockCacheService.executeScript).toHaveBeenCalledWith(
+				expect.any(String), // Lua script
+				[`sessions:${userId}`],
+				[sessionId, String(maxSessions), expect.any(String)],
+			);
+		});
+
 		it('should prevent brute force attacks with failed login attempts', async () => {
 			// This would typically be implemented with a rate limiter service
 			// For this test, we verify the audit logging captures failed attempts
