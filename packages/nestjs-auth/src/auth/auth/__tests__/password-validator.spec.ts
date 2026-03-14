@@ -19,7 +19,7 @@ describe('PasswordValidatorService', () => {
 			const result = service.validatePassword('Xk9$mR2!pL7@wN');
 
 			expect(result.isValid).toBe(true);
-			expect(result.strength).toBe('strong');
+			expect(result.strength).toBe('very-strong');
 		});
 
 		it('should reject password without uppercase', () => {

@@ -59,28 +59,28 @@ export class PasswordValidatorService implements LazyModuleRefService {
 		}
 
 		// Check for uppercase letters
-		if (!/[A-Z]/.test(password)) {
+		if (!/\p{Lu}/u.test(password)) {
 			result.feedback.push('Password must contain at least one uppercase letter');
 		} else {
 			result.score += PASSWORD_SCORE_UPPERCASE;
 		}
 
 		// Check for lowercase letters
-		if (!/[a-z]/.test(password)) {
+		if (!/\p{Ll}/u.test(password)) {
 			result.feedback.push('Password must contain at least one lowercase letter');
 		} else {
 			result.score += PASSWORD_SCORE_LOWERCASE;
 		}
 
 		// Check for numbers
-		if (!/\d/.test(password)) {
+		if (!/\p{Nd}/u.test(password)) {
 			result.feedback.push('Password must contain at least one number');
 		} else {
 			result.score += PASSWORD_SCORE_NUMBERS;
 		}
 
 		// Check for special characters
-		if (!/[!@#$%^&*()_+\-=[]{};':"\\|,.<>?`]/.test(password)) {
+		if (!/[^\p{L}\p{N}]/u.test(password)) {
 			result.feedback.push('Password must contain at least one special character');
 		} else {
 			result.score += PASSWORD_SCORE_SPECIAL_CHARS;
