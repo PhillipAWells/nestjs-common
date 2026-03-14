@@ -100,11 +100,10 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 		}
 
 		// Fall back to IP address
-		const ip: string = request.ip ??
-				   request.connection?.remoteAddress ??
-				   request.socket?.remoteAddress ??
-				   request.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ??
-				   'unknown';
+		const ip: string =
+			request.ip ??
+			request.headers?.['x-forwarded-for']?.toString().split(',')[0]?.trim() ??
+			'unknown';
 
 		return `ip:${ip}`;
 	}
