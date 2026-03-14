@@ -104,7 +104,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: await require('bcryptjs').hash('correctpassword', 12),
+				passwordHash: await require('bcryptjs').hash('correctpassword', 4),
 			};
 
 			const result = await authService.validateUser(userWithHash, 'wrongpassword');
@@ -127,7 +127,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: await require('bcryptjs').hash('correctpassword', 12),
+				passwordHash: await require('bcryptjs').hash('correctpassword', 4),
 			};
 
 			for (const sqlPassword of sqlInjectionPasswords) {
@@ -360,7 +360,7 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 				role: 'user',
 				firstName: 'Test',
 				lastName: 'User',
-				passwordHash: await require('bcryptjs').hash('correctpassword', 12),
+				passwordHash: await require('bcryptjs').hash('correctpassword', 4),
 			};
 
 			// Simulate multiple failed login attempts with wrong password
