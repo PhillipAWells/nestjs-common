@@ -12,7 +12,8 @@ export class GraphQLWebSocketServer implements OnModuleDestroy {
 	// private readonly wsServer: WebSocketServer | null = null; // Unused in stub
 	private readonly disposeServer: (() => Promise<void>) | (() => void) = () => {};
 
-	public initialize(): void {
+	// eslint-disable-next-line require-await
+	public async initialize(): Promise<void> {
 		this.logger.warn('GraphQLWebSocketServer is stubbed - GraphQL subscriptions disabled');
 	}
 

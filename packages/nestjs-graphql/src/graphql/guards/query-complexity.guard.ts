@@ -128,7 +128,8 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 	 * @param context Execution context
 	 * @returns True if query is allowed
 	 */
-	public canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+	// eslint-disable-next-line require-await
+	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		const gqlContext = GqlExecutionContext.create(context);
 		const { req } = gqlContext.getContext();
 		const { schema, document, variables, operationName } = gqlContext.getArgs();
