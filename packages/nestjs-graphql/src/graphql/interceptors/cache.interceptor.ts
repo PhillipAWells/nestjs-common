@@ -83,8 +83,8 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		return this.Module.get(GraphQLCacheService, { strict: false });
 	}
 
-	constructor(Module: ModuleRef) {
-		super(Module);
+	constructor(moduleRef: ModuleRef) {
+		super(moduleRef);
 	}
 
 	protected getCacheKeyGenerator(): CacheKeyGenerator {
