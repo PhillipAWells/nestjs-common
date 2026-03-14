@@ -11,7 +11,7 @@ import { USER_REPOSITORY } from './tokens.js';
 import { TokenBlacklistService } from './token-blacklist.service.js';
 import { DEFAULT_JWT_ISSUER, DEFAULT_JWT_AUDIENCE, MS_PER_SECOND, TOKEN_TTL_15_MINUTES, TOKEN_TTL_3_DAYS, TOKEN_TTL_MIN_POSITIVE, DEFAULT_MAX_CONCURRENT_SESSIONS, SESSION_TRACKING_TTL } from '../constants/auth-timeouts.constants.js';
 
-import type { User, AuthResponse, JWTPayload } from './auth.types.js';
+import type { User, AuthResponse, JWTPayload, OAuthProfile } from './auth.types.js';
 
 /**
  * Authentication service
@@ -182,7 +182,7 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	@Traced({ name: 'auth.validateOAuthUser' })
 	@ProfileMethod({ tags: { operation: 'validateOAuthUser' } })
-	public async validateOAuthUser(profile: any, accessToken: string, refreshToken: string): Promise<User> {
+	public async validateOAuthUser(profile: OAuthProfile, accessToken: string, refreshToken: string): Promise<User> {
 		this.logger.debug(`Validating OAuth2 user: ${profile.id ?? profile.sub}`);
 
 		// Extract user info from profile
@@ -232,7 +232,7 @@ export class AuthService implements LazyModuleRefService {
 	 * @param userData User data
 	 * @returns Created user
 	 */
-	private async createOAuthUser(userData: { email: string; displayName: string; profile: unknown; accessToken: string; refreshToken: string }): Promise<User> {
+	private async createOAuthUser(userData: { email: string; displayName: string; profile: OAuthProfile; accessToken: string; refreshToken: string }): Promise<User> {
 		try {
 			const user = await this.UserRepository.create({
 				email: userData.email,
@@ -263,7 +263,7 @@ export class AuthService implements LazyModuleRefService {
 	 * @param refreshToken Refresh token
 	 * @returns Updated user
 	 */
-	private async updateOAuthUser(user: User, profile: any, accessToken: string, refreshToken: string): Promise<User> {
+	private async updateOAuthUser(user: User, profile: OAuthProfile, accessToken: string, refreshToken: string): Promise<User> {
 		try {
 			const updated = await this.UserRepository.update(user.id, {
 				oauthProfile: profile,
@@ -290,7 +290,11 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	public decodeToken(token: string): JWTPayload | null {
 		try {
-			return this.JwtService.decode(token) as JWTPayload;
+			const decoded = this.JwtService.decode(token);
+			if (!decoded || typeof decoded === 'string') {
+				return null;
+			}
+			return decoded as JWTPayload;
 		} catch (error) {
 			this.logger.error(`Failed to decode token: ${error instanceof Error ? error.message : String(error)}`);
 			return null;
@@ -304,13 +308,17 @@ export class AuthService implements LazyModuleRefService {
 	 */
 	private validateTokenExpiration(token: string, _expectedExpiry: string): void {
 		try {
-			const decoded = this.JwtService.decode(token) as JWTPayload;
-			if (!decoded?.exp) {
+			const decoded = this.JwtService.decode(token);
+			if (!decoded || typeof decoded === 'string') {
+				throw new Error('Token decode returned invalid result');
+			}
+			const decodedPayload = decoded as JWTPayload;
+			if (!decodedPayload?.exp) {
 				throw new Error('Token has no expiration');
 			}
 			// For validation, we just check that the token has an expiration
 			// The actual expiry validation is handled by the JWT library
-			this.logger.debug(`Token expiration validated: ${new Date(decoded.exp * MS_PER_SECOND).toISOString()}`);
+			this.logger.debug(`Token expiration validated: ${new Date(decodedPayload.exp * MS_PER_SECOND).toISOString()}`);
 		} catch (error) {
 			this.logger.error(`Token expiration validation failed: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
@@ -371,7 +379,8 @@ export class AuthService implements LazyModuleRefService {
 			);
 
 			// Blacklist the old refresh token
-			const refreshTokenDecoded = this.JwtService.decode(refreshToken) as JWTPayload;
+			const refreshTokenDecodedRaw = this.JwtService.decode(refreshToken);
+			const refreshTokenDecoded = (!refreshTokenDecodedRaw || typeof refreshTokenDecodedRaw === 'string') ? null : (refreshTokenDecodedRaw as JWTPayload);
 			const calculatedTtl = refreshTokenDecoded?.exp
 				? Math.floor((refreshTokenDecoded.exp * MS_PER_SECOND - Date.now()) / MS_PER_SECOND)
 				: TOKEN_TTL_3_DAYS; // Default 3 days for refresh tokens

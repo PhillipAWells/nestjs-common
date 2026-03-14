@@ -1,4 +1,25 @@
 /**
+ * Standard OAuth2/OIDC profile structure
+ * Covers common fields from Google, GitHub, Keycloak, and other providers
+ */
+export interface OAuthProfile {
+	id?: string;
+	sub?: string;
+	displayName?: string;
+	name?: string;
+	given_name?: string;
+	family_name?: string;
+	emails?: Array<{ value: string; type?: string }>;
+	email?: string;
+	oauthProfile?: unknown;
+	oauthTokens?: {
+		accessToken: string;
+		refreshToken?: string;
+	};
+	[key: string]: unknown;
+}
+
+/**
  * User interface for authentication
  */
 export interface User {
@@ -12,7 +33,7 @@ export interface User {
 	displayName?: string | undefined;
 	createdAt?: Date | undefined;
 	updatedAt?: Date | undefined;
-	oauthProfile?: any;
+	oauthProfile?: unknown;
 	oauthTokens?: {
 		accessToken: string;
 		refreshToken?: string;

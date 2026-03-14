@@ -21,8 +21,9 @@ export class AuthController {
 	// TODO: Add rate limiting via @nestjs/throttler - e.g., @Throttle({ default: { limit: 10, ttl: 60000 } })
 	@Post('logout')
 	@UseGuards(JWTAuthGuard)
-	public async logout(@Request() req: any): Promise<{ message: string }> {
-		const token = this.tokenBlacklistService.extractTokenFromHeader(req.headers.authorization);
+	public async logout(@Request() req: { headers: { authorization?: string } }): Promise<{ message: string }> {
+		const authHeader = req.headers.authorization;
+		const token = authHeader ? this.tokenBlacklistService.extractTokenFromHeader(authHeader) : null;
 
 		if (token) {
 			// Decode token to get expiration time
