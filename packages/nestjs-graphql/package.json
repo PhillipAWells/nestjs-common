@@ -37,10 +37,14 @@
 		"graphql-redis-subscriptions": ">=2.0.0",
 		"ioredis": ">=5.0.0",
 		"rxjs": ">=7.0.0",
-		"uuid": ">=9.0.0"
+		"uuid": ">=9.0.0",
+		"ws": ">=8.0.0"
 	},
 	"peerDependenciesMeta": {
 		"@pawells/nestjs-auth": {
+			"optional": true
+		},
+		"ws": {
 			"optional": true
 		}
 	},
