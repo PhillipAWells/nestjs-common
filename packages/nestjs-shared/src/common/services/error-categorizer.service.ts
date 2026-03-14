@@ -59,6 +59,23 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		const errorMessage = error?.message ?? String(error);
 		const errorCode = error?.code ?? error?.status;
 
+		// Node.js network error codes are always transient (checked first before pattern matching)
+		const NODE_TRANSIENT_CODES = new Set(['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN']);
+		if (NODE_TRANSIENT_CODES.has((error as NodeJS.ErrnoException).code ?? '')) {
+			this.Logger.debug('Categorized as transient network error (Node.js error code)', {
+				error: errorMessage,
+				code: errorCode,
+				category: 'transient',
+				strategy: 'backoff',
+			});
+			return {
+				type: 'transient',
+				retryable: true,
+				strategy: 'backoff',
+				backoffMs: BACKOFF_RETRY_MS,
+			};
+		}
+
 		// Database connection errors (transient) - check before timeout since "timeout" may be in message
 		if (this.isDatabaseError(error)) {
 			this.Logger.debug('Categorized as transient database error', {
