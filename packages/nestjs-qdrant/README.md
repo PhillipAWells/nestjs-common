@@ -84,75 +84,180 @@ export class EmbeddingService {
 
 ### Using QdrantCollectionService
 
+The `QdrantCollectionService` is not directly injectable. Instead, obtain instances via `QdrantService.collection(name)`:
+
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { QdrantCollectionService } from '@pawells/nestjs-qdrant';
+import { QdrantService } from '@pawells/nestjs-qdrant';
 
 @Injectable()
 export class VectorStoreService {
-  constructor(private collectionService: QdrantCollectionService) {}
+  constructor(private qdrantService: QdrantService) {}
 
   async getCollectionInfo(name: string) {
-    return this.collectionService.getInfo(name);
+    const collection = this.qdrantService.collection(name);
+    return collection.getInfo();
   }
 
-  async upsertVectors(collection: string, points: any[]) {
-    return this.collectionService.upsert(collection, points);
+  async upsertVectors(collectionName: string, points: any[]) {
+    const collection = this.qdrantService.collection(collectionName);
+    return collection.upsert({ points });
   }
 
-  async deleteVectors(collection: string, ids: number[]) {
-    return this.collectionService.delete(collection, ids);
+  async deleteVectors(collectionName: string, pointIds: number[]) {
+    const collection = this.qdrantService.collection(collectionName);
+    return collection.delete({
+      points_selector: {
+        points: {
+          ids: pointIds
+        }
+      }
+    });
   }
 }
 ```
 
 ## Configuration
 
+### Overview
+
+The `nestjs-qdrant` module uses **plain typed interfaces** (no Joi validation). All configuration comes from the `QdrantModuleOptions` type, which extends the Qdrant JS client's `QdrantClientParams`.
+
+### API Key Security
+
+**Important security note**: In `forRootAsync()`, the `apiKey` is automatically sanitized and **stripped from the publicly injectable options token**. This prevents accidental exposure of credentials through dependency injection. The apiKey is only available to the internal client factory.
+
 ### QdrantModule.forRoot()
 
+Synchronous module registration with inline configuration:
+
 ```typescript
-interface QdrantModuleOptions {
-  url: string; // Qdrant server URL (e.g., 'http://localhost:6333')
-  apiKey?: string; // API key for authentication
-  timeout?: number; // Request timeout in milliseconds
-  retryAttempts?: number; // Number of retry attempts
-  retryDelay?: number; // Delay between retries in milliseconds
+interface QdrantModuleOptions extends QdrantClientParams {
+  url: string;              // Qdrant server URL (e.g., 'http://localhost:6333')
+  apiKey?: string;          // API key for authentication (optional)
+  timeout?: number;         // Request timeout in milliseconds (optional)
+  retryAttempts?: number;   // Number of retry attempts (optional)
+  retryDelay?: number;      // Delay between retries in milliseconds (optional)
+  name?: string;            // Optional name for multi-client scenarios
 }
 ```
 
-### forRootAsync()
+**Note**: In `forRoot()`, the apiKey is also sanitized from the public options token, but stored separately for client initialization.
+
+### forRootAsync() - Factory Function
+
+Asynchronous registration using a factory function:
 
 ```typescript
-QdrantModule.forRootAsync({
-  useFactory: (configService: ConfigService) => ({
-    url: configService.get('QDRANT_URL'),
-    apiKey: configService.get('QDRANT_API_KEY'),
-    timeout: configService.get('QDRANT_TIMEOUT') || 5000,
-  }),
-  inject: [ConfigService],
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { QdrantModule } from '@pawells/nestjs-qdrant';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    QdrantModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        url: configService.get('QDRANT_URL'),
+        apiKey: configService.get('QDRANT_API_KEY'),
+        timeout: configService.get('QDRANT_TIMEOUT') || 5000,
+      }),
+    }),
+  ],
 })
+export class AppModule {}
 ```
 
-### Using Custom Options Factory
+### forRootAsync() - Class-Based Factory
+
+Using a custom class that implements `QdrantOptionsFactory`:
 
 ```typescript
-class QdrantConfigService {
-  createQdrantOptions(): QdrantModuleOptions {
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { QdrantOptionsFactory, QdrantModuleOptions } from '@pawells/nestjs-qdrant';
+
+@Injectable()
+export class QdrantConfigService implements QdrantOptionsFactory {
+  constructor(private configService: ConfigService) {}
+
+  async createQdrantOptions(): Promise<QdrantModuleOptions> {
     return {
-      url: process.env.QDRANT_URL,
-      apiKey: process.env.QDRANT_API_KEY,
+      url: await this.configService.get('QDRANT_URL'),
+      apiKey: this.configService.get('QDRANT_API_KEY'),
+      timeout: this.configService.get('QDRANT_TIMEOUT') || 5000,
     };
   }
 }
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     QdrantModule.forRootAsync({
       useClass: QdrantConfigService,
     }),
   ],
 })
 export class AppModule {}
+```
+
+### forRootAsync() - Reuse Existing Factory
+
+Reuse an existing options factory from another module:
+
+```typescript
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    QdrantModule.forRootAsync({
+      useExisting: QdrantConfigService,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Multiple Named Clients
+
+Register multiple Qdrant client instances with different names:
+
+```typescript
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    QdrantModule.forRoot(
+      {
+        name: 'primary',
+        url: 'http://primary-qdrant:6333',
+        apiKey: process.env.PRIMARY_QDRANT_KEY,
+      },
+      false // Not global
+    ),
+    QdrantModule.forRoot(
+      {
+        name: 'backup',
+        url: 'http://backup-qdrant:6333',
+        apiKey: process.env.BACKUP_QDRANT_KEY,
+      },
+      false // Not global
+    ),
+  ],
+})
+export class AppModule {}
+```
+
+Then inject specific clients:
+
+```typescript
+@Injectable()
+export class VectorService {
+  constructor(
+    @InjectQdrantClient('primary') private primaryClient: QdrantClient,
+    @InjectQdrantClient('backup') private backupClient: QdrantClient,
+  ) {}
+}
 ```
 
 ## Key Features
@@ -172,6 +277,61 @@ export class AppModule {}
 - **TypeScript Support**: Full type definitions
 - **Custom Point Types**: Type-safe vector points
 - **Configuration Validation**: Type checking at module initialization
+
+## Service Usage
+
+### QdrantService.collection() Validation
+
+The `collection()` method validates collection names according to Qdrant rules:
+
+- Must start and end with alphanumeric characters (a-z, A-Z, 0-9)
+- Can contain hyphens (-) and underscores (_) in the middle
+- Maximum length: 255 characters
+- Invalid names throw `BadRequestException`
+
+```typescript
+const service = this.qdrantService;
+
+// Valid names
+service.collection('documents');        // ✓
+service.collection('doc-embeddings');   // ✓
+service.collection('doc_embeddings');   // ✓
+service.collection('doc123');           // ✓
+
+// Invalid names
+service.collection('-documents');       // ✗ Starts with hyphen
+service.collection('documents-');       // ✗ Ends with hyphen
+service.collection('');                 // ✗ Empty string
+service.collection('a'.repeat(256));    // ✗ Too long (> 255 chars)
+```
+
+### Error Handling
+
+All QdrantCollectionService methods wrap errors with collection context:
+
+```typescript
+@Injectable()
+export class VectorService {
+  constructor(private qdrantService: QdrantService) {}
+
+  async searchWithErrorHandling(embedding: number[]) {
+    try {
+      const collection = this.qdrantService.collection('embeddings');
+      return await collection.search({
+        vector: embedding,
+        limit: 10,
+      });
+    } catch (error) {
+      // Errors include collection context
+      // E.g., "Qdrant search failed on collection \"embeddings\": 404 Collection not found"
+      if (error.message?.includes('Collection not found')) {
+        throw new NotFoundException('Embeddings collection not found');
+      }
+      throw new InternalServerErrorException('Vector search failed');
+    }
+  }
+}
+```
 
 ## Common Operations
 

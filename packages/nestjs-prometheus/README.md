@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-prometheus.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-prometheus)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Prometheus metrics exporter for NestJS with `/metrics` endpoint.
+Prometheus metrics exporter for NestJS with `/metrics` endpoint, integrated with `@pawells/nestjs-shared` InstrumentationRegistry for event-based metric collection.
 
 ## Installation
 
@@ -31,6 +31,8 @@ yarn add @pawells/nestjs-prometheus prom-client
 
 ### Module Setup
 
+Import `PrometheusModule` in your application module:
+
 ```typescript
 import { Module } from '@nestjs/common';
 import { PrometheusModule } from '@pawells/nestjs-prometheus';
@@ -41,80 +43,77 @@ import { PrometheusModule } from '@pawells/nestjs-prometheus';
 export class AppModule {}
 ```
 
-The module automatically exposes metrics at `GET /metrics` in Prometheus text format.
+This automatically registers the PrometheusExporter globally and exposes metrics at `GET /metrics` in Prometheus text format.
 
-### Using PrometheusExporter
+## How It Works
 
-```typescript
-import { PrometheusExporter } from '@pawells/nestjs-prometheus';
+The module integrates with `@pawells/nestjs-shared`'s `InstrumentationRegistry` to:
 
-@Injectable()
-export class CustomMetricsService {
-  constructor(private prometheusExporter: PrometheusExporter) {}
+1. **Register descriptors**: When a metric is registered with the InstrumentationRegistry, PrometheusExporter pre-creates the corresponding prom-client instrument (Counter, Gauge, or Histogram)
+2. **Buffer values**: Metric values are buffered in memory as they are recorded
+3. **Flush on pull**: When the `/metrics` endpoint is scraped, all pending values are flushed into prom-client instruments and returned in Prometheus text format
+4. **Cleanup**: On shutdown, the registry and internal caches are cleared
 
-  recordCustomMetric() {
-    // Access the prom-client registry
-    const registry = this.prometheusExporter.getRegistry();
+This event-based design decouples metric recording from Prometheus scraping, preventing performance overhead on high-frequency metrics.
 
-    // Register custom metrics
-    const customCounter = new registry.Counter({
-      name: 'custom_operations_total',
-      help: 'Total custom operations',
-      labelNames: ['operation_type'],
-    });
+## The /metrics Endpoint
 
-    customCounter.inc({ operation_type: 'create' });
-  }
-}
+The module automatically exposes:
+
+- **Endpoint**: `GET /metrics`
+- **Content-Type**: `text/plain; version=0.0.4; charset=utf-8`
+- **Headers**: `X-Robots-Tag: noindex, nofollow` (prevents indexing)
+- **Authentication**: Protected by `MetricsGuard` from `@pawells/nestjs-shared`
+
+### Authentication
+
+The `/metrics` endpoint respects the optional `METRICS_API_KEY` environment variable:
+
+- If **not set**: All requests are allowed
+- If **set**: Requires Bearer token, X-API-Key header, or `?key=` query parameter
+
+```bash
+# With METRICS_API_KEY=secret123
+curl -H "Authorization: Bearer secret123" http://localhost:3000/metrics
+curl -H "X-API-Key: secret123" http://localhost:3000/metrics
+curl "http://localhost:3000/metrics?key=secret123"
 ```
 
-## Key Features
+## Exported Metrics
 
-### Metrics Endpoint
-- **GET /metrics**: Prometheus-compatible metrics in text format
-- **Authentication**: Integrated with `@pawells/nestjs-shared` guards
-- **Health Checks**: Service health status metrics
+The exporter provides three types of metrics:
 
-### Pre-configured Metrics
-- **HTTP Request Metrics**: Duration, status codes, method/path
-- **Process Metrics**: Memory, CPU, file descriptors
-- **Custom Metrics**: Define application-specific metrics
+### Node.js Default Metrics
+Automatically collected via `prom-client`:
+- `process_cpu_user_seconds_total` - User CPU time
+- `process_cpu_system_seconds_total` - System CPU time
+- `process_resident_memory_bytes` - RSS memory usage
+- `nodejs_eventloop_delay_seconds` - Event loop delay
+- `nodejs_gc_duration_seconds` - Garbage collection duration
+- And many more...
 
-### Integration
-- **MetricsController**: Pre-built `/metrics` endpoint
-- **PrometheusExporter**: Direct registry access
-- **prom-client**: Full Prometheus client library support
+### Custom Metrics
+Applications can register custom metrics with the InstrumentationRegistry and they will be exported automatically.
 
-## Configuration
+### Example Metrics Output
 
-### PrometheusModule.forRoot()
-
-```typescript
-interface PrometheusModuleConfig {
-  endpoint?: string; // Default: '/metrics'
-  defaultLabels?: Record<string, string>;
-  collectDefaultMetrics?: boolean; // Default: true
-}
 ```
+# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
+# TYPE process_cpu_user_seconds_total counter
+process_cpu_user_seconds_total 12.345
 
-### forRootAsync()
-
-```typescript
-PrometheusModule.forRootAsync({
-  useFactory: (configService: ConfigService) => ({
-    endpoint: configService.get('METRICS_ENDPOINT') || '/metrics',
-    defaultLabels: {
-      service: configService.get('SERVICE_NAME'),
-      environment: configService.get('NODE_ENV'),
-    },
-  }),
-  inject: [ConfigService],
-})
+# HELP http_request_duration_seconds HTTP request duration in seconds
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{le="0.001",method="GET",route="/api/users"} 0
+http_request_duration_seconds_bucket{le="0.01",method="GET",route="/api/users"} 5
+http_request_duration_seconds_bucket{le="0.1",method="GET",route="/api/users"} 42
 ```
 
 ## Accessing Metrics
 
 ### Via Prometheus Scraper
+
+Configure Prometheus to scrape your application:
 
 ```yaml
 # prometheus.yml
@@ -124,77 +123,29 @@ scrape_configs:
       - targets: ['localhost:3000']
     metrics_path: '/metrics'
     scrape_interval: 15s
+    # Optional: Add auth if METRICS_API_KEY is set
+    authorization:
+      credentials: 'secret123'
+      type: Bearer
 ```
 
 ### Manual HTTP Request
 
 ```bash
 curl http://localhost:3000/metrics
+
+# With authentication
+curl -H "Authorization: Bearer secret123" http://localhost:3000/metrics
 ```
 
-### Metrics Format
+## Integration with @pawells/nestjs-shared HTTPMetricsInterceptor
 
-```
-# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
-# TYPE process_cpu_user_seconds_total counter
-process_cpu_user_seconds_total 123.45
-
-# HELP http_request_duration_seconds HTTP request latency in seconds
-# TYPE http_request_duration_seconds histogram
-http_request_duration_seconds_bucket{le="0.1",method="GET",route="/api/users"} 42
-```
-
-## Custom Metrics Example
+Combine PrometheusModule with HTTPMetricsInterceptor for automatic HTTP metrics:
 
 ```typescript
-import { PrometheusExporter } from '@pawells/nestjs-prometheus';
-import { Counter, Histogram } from 'prom-client';
-
-@Injectable()
-export class OrderService {
-  private orderCounter: Counter;
-  private orderDuration: Histogram;
-
-  constructor(exporter: PrometheusExporter) {
-    const registry = exporter.getRegistry();
-
-    this.orderCounter = new Counter({
-      name: 'orders_created_total',
-      help: 'Total orders created',
-      labelNames: ['status'],
-      registries: [registry],
-    });
-
-    this.orderDuration = new Histogram({
-      name: 'order_processing_seconds',
-      help: 'Order processing duration',
-      labelNames: ['operation'],
-      registries: [registry],
-    });
-  }
-
-  async createOrder(dto: CreateOrderDto) {
-    const timer = this.orderDuration.startTimer({ operation: 'create' });
-
-    try {
-      const order = { id: uuid(), ...dto };
-      this.orderCounter.inc({ status: 'success' });
-      return order;
-    } catch (error) {
-      this.orderCounter.inc({ status: 'error' });
-      throw error;
-    } finally {
-      timer();
-    }
-  }
-}
-```
-
-## Integration with HTTPMetricsInterceptor
-
-Combine with `@pawells/nestjs-shared` for automatic HTTP metrics:
-
-```typescript
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PrometheusModule } from '@pawells/nestjs-prometheus';
 import { HTTPMetricsInterceptor } from '@pawells/nestjs-shared';
 
 @Module({
@@ -210,15 +161,114 @@ export class AppModule {}
 ```
 
 This automatically tracks:
-- Request count by method and route
-- Request duration (histogram)
-- Response status codes
-- Path normalization (`:id` for dynamic segments)
+- **Request count** by method and route
+- **Request duration** (histogram with default buckets)
+- **Response status codes**
+- **Path normalization** (dynamic segments like UUIDs are normalized to `:id`)
+
+## Module API
+
+### PrometheusModule.forRoot()
+
+Returns a DynamicModule configured as global, enabling single import at the top level:
+
+```typescript
+@Module({
+  imports: [PrometheusModule.forRoot()],
+})
+export class AppModule {}
+```
+
+## Class Reference
+
+### PrometheusModule
+
+The main NestJS module. Implements `OnModuleInit` and `OnApplicationShutdown`.
+
+**Static Methods:**
+- `forRoot()` - Create global module with automatic registration
+
+**Lifecycle Methods:**
+- `onModuleInit()` - Registers the exporter with InstrumentationRegistry
+- `onApplicationShutdown()` - Calls exporter.shutdown() to clean up resources
+
+### PrometheusExporter
+
+Implements `IMetricsExporter` from `@pawells/nestjs-shared`.
+
+**Properties:**
+- `supportsEventBased` - `true` (buffers metric values)
+- `supportsPull` - `true` (supports pull-based retrieval)
+
+**Methods:**
+- `onDescriptorRegistered(descriptor: MetricDescriptor)` - Called when a metric is registered; creates the appropriate prom-client instrument
+- `onMetricRecorded(value: MetricValue)` - Buffers a metric value to be flushed on next pull
+- `getMetrics(): Promise<string>` - Flushes pending values and returns metrics in Prometheus text format
+- `shutdown(): Promise<void>` - Clears registry and releases resources
+
+**Internals:**
+- Maintains a prom-client `Registry` for instrument management
+- Buffers metric values per metric (max 1000 per metric to prevent unbounded memory growth)
+- Atomically swaps pending arrays during flush to prevent data loss on concurrent records
+
+### MetricsController
+
+HTTP controller with single endpoint.
+
+**Methods:**
+- `getMetrics(response: Response): Promise<void>` - GET /metrics, protected by MetricsGuard
+
+## Advanced Patterns
+
+### Custom Metrics via InstrumentationRegistry
+
+Register custom metrics with `@pawells/nestjs-shared`:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { InstrumentationRegistry } from '@pawells/nestjs-shared';
+
+@Injectable()
+export class OrderService {
+  constructor(private readonly registry: InstrumentationRegistry) {}
+
+  trackOrderCreation(status: string) {
+    // Register descriptor (once)
+    this.registry.registerDescriptor({
+      name: 'orders_created_total',
+      type: 'counter',
+      help: 'Total orders created',
+      labelNames: ['status'],
+    });
+
+    // Record value
+    this.registry.recordMetric({
+      descriptor: { name: 'orders_created_total' } as MetricDescriptor,
+      value: 1,
+      labels: { status },
+    });
+  }
+}
+```
+
+When metrics are pulled from `/metrics`, they are automatically exported in Prometheus format.
+
+## Metric Types
+
+The PrometheusExporter supports these metric types (as defined in MetricDescriptor):
+
+| Type | Mapping | Usage |
+|------|---------|-------|
+| `counter` | prom-client Counter | Monotonically increasing values (e.g., request count) |
+| `gauge` | prom-client Gauge | Point-in-time values (e.g., memory usage) |
+| `updown_counter` | prom-client Gauge | Values that can increase or decrease |
+| `histogram` | prom-client Histogram | Distribution of values (e.g., request latency) |
 
 ## Related Packages
 
-- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - HTTP metrics interceptor
-- **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - Additional observability
+- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation: InstrumentationRegistry, HTTPMetricsInterceptor, MetricsGuard
+- **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - OpenTelemetry tracing and metrics integration
+- **[prom-client](https://github.com/siimon/prom-client)** - Official Prometheus client library for Node.js
 
 ## License
 
