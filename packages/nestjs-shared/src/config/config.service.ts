@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
@@ -49,12 +49,12 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	constructor(public readonly Module: ModuleRef) {}
 
 	public onModuleInit(): void {
-		this.Logger.info('Configuration service initialized');
+		Logger.log('Configuration service initialized', ConfigService.name);
 	}
 
 	public get Logger(): AppLogger {
 		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
+			const baseLogger = this.Module.get(AppLogger, { strict: false });
 			this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
 		}
 		return this._contextualLogger;

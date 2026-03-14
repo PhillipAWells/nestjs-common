@@ -17,7 +17,7 @@ export class ValidationService implements LazyModuleRefService {
 
 	private get logger(): AppLogger {
 		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
+			const baseLogger = this.Module.get(AppLogger, { strict: false });
 			this._contextualLogger = baseLogger.createContextualLogger(ValidationService.name);
 		}
 		return this._contextualLogger;
