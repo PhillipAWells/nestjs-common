@@ -12,8 +12,29 @@ import { ErrorCategorizerService } from '../services/error-categorizer.service.j
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * HTTP Exception Filter
- * Handles all HTTP exceptions and formats error responses consistently
+ * HTTP Exception Filter.
+ * Handles all HTTP exceptions (400, 401, 403, 404, etc.) and formats error responses consistently.
+ * Complements GlobalExceptionFilter by handling NestJS built-in and thrown HTTP exceptions.
+ *
+ * Error Response Format:
+ * - Preserves original HTTP status code and response body
+ * - Sanitizes sensitive information before sending to client
+ * - Categorizes error for logging (transient vs permanent)
+ *
+ * @remarks
+ * - Automatically redacts sensitive data via ErrorSanitizerService
+ * - Logs error with categorization for monitoring
+ * - Preserves original exception response structure
+ * - Works in conjunction with GlobalExceptionFilter (processes first)
+ *
+ * @example
+ * ```typescript
+ * // Handled exceptions
+ * throw new BadRequestException('Invalid input'); // 400
+ * throw new UnauthorizedException('Invalid token'); // 401
+ * throw new ForbiddenException('Access denied'); // 403
+ * throw new NotFoundException('User not found'); // 404
+ * ```
  */
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefService {

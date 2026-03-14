@@ -25,8 +25,42 @@ interface IPyroscopeClient {
 }
 
 /**
- * Service for managing Pyroscope profiling integration
- * Provides methods for starting/stopping profiling, adding tags, and tracking function execution
+ * Core service for managing Pyroscope profiling integration.
+ *
+ * Provides methods for:
+ * - Starting/stopping profiling sessions with unique IDs
+ * - Tracking function execution with automatic timing
+ * - Managing tags (note: dynamic tag manipulation not supported by @pyroscope/nodejs)
+ * - Collecting and aggregating profiling metrics
+ * - Health status reporting
+ *
+ * Features:
+ * - Automatic stale profile eviction (30-minute timeout)
+ * - Bounded memory with max 10,000 active profiles and 1,000 metrics history
+ * - Fire-and-forget async initialization to avoid blocking module startup
+ * - Graceful degradation if Pyroscope client fails to initialize
+ *
+ * @example
+ * ```typescript
+ * export class MyService {
+ *   constructor(private pyroscope: PyroscopeService) {}
+ *
+ *   async processData(data: any[]) {
+ *     const context: IProfileContext = {
+ *       functionName: 'processData',
+ *       tags: { dataSize: data.length.toString() },
+ *       startTime: Date.now(),
+ *     };
+ *
+ *     this.pyroscope.startProfiling(context);
+ *     try {
+ *       return await this.heavyOperation(data);
+ *     } finally {
+ *       this.pyroscope.stopProfiling(context);
+ *     }
+ *   }
+ * }
+ * ```
  */
 @Injectable()
 export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
@@ -151,7 +185,28 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Start profiling for a given context
+	 * Start profiling for a given context.
+	 *
+	 * Generates a unique profile ID, stores the context, and triggers stale profile eviction
+	 * if the active profile count exceeds the maximum threshold.
+	 *
+	 * @param context Profiling context with function name, tags, and timing
+	 * @remarks
+	 * - Returns immediately if profiling is disabled
+	 * - Profile ID is automatically generated and stored in context
+	 * - Old profiles (30+ minutes) are evicted if max profiles exceeded
+	 *
+	 * @example
+	 * ```typescript
+	 * const context: IProfileContext = {
+	 *   functionName: 'getUserById',
+	 *   className: 'UserService',
+	 *   methodName: 'getUserById',
+	 *   startTime: Date.now(),
+	 *   tags: { userId: '123' },
+	 * };
+	 * this.pyroscope.startProfiling(context);
+	 * ```
 	 */
 	public startProfiling(context: IProfileContext): void {
 		if (!this.isEnabled()) return;
@@ -179,7 +234,29 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Stop profiling and return metrics
+	 * Stop profiling and return metrics.
+	 *
+	 * Marks the end of a profiling session, calculates duration, and adds the metrics
+	 * to the internal history (bounded to 1,000 entries).
+	 *
+	 * @param context Profiling context (should have profileId from startProfiling)
+	 * @returns IProfileMetrics with timing and tag information
+	 * @remarks
+	 * - Returns empty metrics if profiling is disabled
+	 * - Calculates duration as endTime - startTime from original context
+	 * - Merges start-time and stop-time tags
+	 * - Removes the profile from active profiles map
+	 *
+	 * @example
+	 * ```typescript
+	 * try {
+	 *   const result = await this.heavyOperation();
+	 *   return result;
+	 * } finally {
+	 *   const metrics = this.pyroscope.stopProfiling(context);
+	 *   console.log(`Operation took ${metrics.duration}ms`);
+	 * }
+	 * ```
 	 */
 	public stopProfiling(context: IProfileContext): IProfileMetrics {
 		if (!this.isEnabled()) {
@@ -228,9 +305,23 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Add static tags to all profiling data
-	 * Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs v0.2.x
-	 * Tags must be set during initialization via config.tags
+	 * Add static tags to all profiling data.
+	 *
+	 * @param tags Key-value pairs to add to profiling context
+	 * @deprecated Dynamic tag manipulation is not supported by @pyroscope/nodejs.
+	 * Tags must be set during module initialization via IPyroscopeConfig.tags.
+	 * This method logs a debug message and does nothing.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Set tags at module initialization instead
+	 * PyroscopeModule.forRoot({
+	 *   config: {
+	 *     // ...
+	 *     tags: { environment: 'production', version: '1.0' },
+	 *   },
+	 * })
+	 * ```
 	 */
 	public addTags(tags: Record<string, string>): void {
 		if (!this.isEnabled() || !this.pyroscopeClient) return;
@@ -239,8 +330,11 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Remove tags from profiling data
-	 * Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs v0.2.x
+	 * Remove tags from profiling data.
+	 *
+	 * @param keys Tag keys to remove
+	 * @deprecated Dynamic tag manipulation is not supported by @pyroscope/nodejs.
+	 * This method logs a debug message and does nothing.
 	 */
 	public removeTags(keys: string[]): void {
 		if (!this.isEnabled() || !this.pyroscopeClient) return;
@@ -249,7 +343,23 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Track function execution with profiling
+	 * Track function execution with profiling.
+	 *
+	 * Provides a convenience method to wrap a function with automatic profiling
+	 * start/stop lifecycle management.
+	 *
+	 * @param name Function name for profiling
+	 * @param fn Function to execute (sync or async)
+	 * @param tags Optional tags to attach to this profile
+	 * @returns Result of the function execution
+	 * @throws Rethrows any error thrown by fn after stopping profiling
+	 *
+	 * @example
+	 * ```typescript
+	 * const result = await this.pyroscope.trackFunction('expensive-operation', async () => {
+	 *   return await this.database.query(sql);
+	 * }, { queryType: 'select' });
+	 * ```
 	 */
 	public async trackFunction<T>(
 		name: string,
@@ -276,15 +386,35 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Get collected profile metrics
+	 * Get collected profile metrics.
+	 *
+	 * Returns a copy of all collected profiling metrics (bounded to 1,000 entries).
+	 *
+	 * @returns Array of IProfileMetrics with timing and tag information
+	 *
+	 * @example
+	 * ```typescript
+	 * const allMetrics = this.pyroscope.getProfileMetrics();
+	 * const avgDuration = allMetrics.reduce((sum, m) => sum + m.duration, 0) / allMetrics.length;
+	 * ```
 	 */
 	public getProfileMetrics(): IProfileMetrics[] {
 		return [...this.metrics];
 	}
 
 	/**
-	 * Get aggregated metrics summary
-	 * @returns MetricsResponse with aggregated profiling data
+	 * Get aggregated metrics summary.
+	 *
+	 * Delegates to MetricsService if available, otherwise returns basic aggregations
+	 * from collected metrics.
+	 *
+	 * @returns MetricsResponse with aggregated CPU, memory, and request metrics
+	 *
+	 * @example
+	 * ```typescript
+	 * const metrics = this.pyroscope.getMetrics();
+	 * console.log(`Processed ${metrics.requests.total} requests with ${metrics.requests.successful} successes`);
+	 * ```
 	 */
 	public getMetrics(): MetricsResponse {
 		if (this.metricsService) {
@@ -319,7 +449,20 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Get health status of profiling service
+	 * Get health status of profiling service.
+	 *
+	 * Returns the current health state including initialization status,
+	 * active profiles, and metrics count.
+	 *
+	 * @returns Object with status ('healthy' | 'unhealthy') and detailed information
+	 *
+	 * @example
+	 * ```typescript
+	 * const health = this.pyroscope.getHealth();
+	 * if (health.status === 'healthy') {
+	 *   console.log(`Active profiles: ${health.details.activeProfiles}`);
+	 * }
+	 * ```
 	 */
 	public getHealth(): {
 		status: 'healthy' | 'unhealthy';
@@ -353,7 +496,9 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	/**
-	 * Check if profiling is enabled and initialized
+	 * Check if profiling is enabled and initialized.
+	 *
+	 * @returns true only if profiling is configured as enabled AND Pyroscope client initialization succeeded
 	 */
 	public isEnabled(): boolean {
 		return this.config.enabled && this.isInitialized;

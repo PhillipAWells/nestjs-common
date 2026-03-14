@@ -14,6 +14,12 @@ import { QdrantService } from './qdrant.service.js';
  * Qdrant NestJS Module
  * Provides DynamicModule for both synchronous and asynchronous configuration
  *
+ * Integrates the Qdrant vector database client with NestJS dependency injection.
+ * Supports multiple named client instances for multi-tenant scenarios.
+ *
+ * Security: API keys are automatically sanitized and stripped from the publicly injectable options token
+ * in forRootAsync() to prevent accidental exposure. The apiKey is only available to the client factory.
+ *
  * @example
  * ```typescript
  * // Synchronous usage
@@ -36,10 +42,29 @@ import { QdrantService } from './qdrant.service.js';
 @Module({})
 export class QdrantModule {
 	/**
-	 * Register the Qdrant module synchronously
-	 * @param options Qdrant client configuration options
-	 * @param isGlobal Whether to register module as global (default: true)
-	 * @returns DynamicModule with Qdrant client and service
+	 * Register the Qdrant module synchronously with configuration options.
+	 * Creates and provides the Qdrant client instance and service globally.
+	 *
+	 * The apiKey is sanitized and not included in the publicly injectable options token
+	 * to prevent accidental exposure through dependency injection.
+	 *
+	 * @param options - Qdrant client configuration options (extends QdrantClientParams)
+	 * @param isGlobal - Whether to register module as global (default: true)
+	 * @returns DynamicModule with Qdrant client and service providers
+	 * @throws Error - If invalid configuration options are provided
+	 *
+	 * @example
+	 * ```typescript
+	 * @Module({
+	 *   imports: [
+	 *     QdrantModule.forRoot({
+	 *       url: 'http://localhost:6333',
+	 *       apiKey: process.env.QDRANT_API_KEY,
+	 *     })
+	 *   ]
+	 * })
+	 * export class AppModule {}
+	 * ```
 	 */
 	public static forRoot(options: QdrantModuleOptions, isGlobal = true): DynamicModule {
 		const { name, ...clientOptions } = options;
@@ -65,10 +90,36 @@ export class QdrantModule {
 	}
 
 	/**
-	 * Register the Qdrant module asynchronously
-	 * @param options Async configuration options
-	 * @param isGlobal Whether to register module as global (default: true)
-	 * @returns DynamicModule with Qdrant client and service
+	 * Register the Qdrant module asynchronously with deferred configuration.
+	 * Supports factory functions, class-based factories, and existing service reuse.
+	 * Creates and provides the Qdrant client instance and service globally.
+	 *
+	 * The apiKey is automatically sanitized and stored separately from the public options token
+	 * to ensure security. The client factory receives the full options including the apiKey,
+	 * but the publicly injectable options token excludes it.
+	 *
+	 * @param options - Async configuration options (useFactory, useClass, or useExisting)
+	 * @param isGlobal - Whether to register module as global (default: true)
+	 * @returns DynamicModule with async providers for client creation and service
+	 * @throws Error - If async factory fails or options validation fails
+	 *
+	 * @example
+	 * ```typescript
+	 * // With factory function
+	 * QdrantModule.forRootAsync({
+	 *   imports: [ConfigModule],
+	 *   inject: [ConfigService],
+	 *   useFactory: (config: ConfigService) => ({
+	 *     url: config.get('QDRANT_URL'),
+	 *     apiKey: config.get('QDRANT_API_KEY'),
+	 *   })
+	 * })
+	 *
+	 * // With class-based factory
+	 * QdrantModule.forRootAsync({
+	 *   useClass: QdrantConfigService
+	 * })
+	 * ```
 	 */
 	public static forRootAsync(options: QdrantModuleAsyncOptions, isGlobal = true): DynamicModule {
 		const clientToken = getQdrantClientToken(options.name);
@@ -113,9 +164,12 @@ export class QdrantModule {
 
 	/**
 	 * Create providers for async configuration
-	 * @param options Async configuration options
-	 * @param token Token to provide the options under
+	 * Internal method that constructs the appropriate provider array based on the configuration strategy.
+	 *
+	 * @param options - Async configuration options (useFactory, useClass, or useExisting)
+	 * @param token - Symbol token to provide the options under (internal raw options token)
 	 * @returns Array of providers for async setup
+	 * @throws Error - If options do not specify useFactory, useClass, or useExisting
 	 * @private
 	 */
 	private static createAsyncProviders(options: QdrantModuleAsyncOptions, token: symbol): Provider[] {
@@ -133,9 +187,12 @@ export class QdrantModule {
 
 	/**
 	 * Create the async options provider
-	 * @param options Async configuration options
-	 * @param token Token to provide the options under
-	 * @returns Provider for module options
+	 * Internal method that constructs a single provider for the given configuration strategy.
+	 * Handles useFactory, useClass, and useExisting patterns with proper error handling.
+	 *
+	 * @param options - Async configuration options
+	 * @param token - Symbol token to provide the options under (internal raw options token)
+	 * @returns Provider for module options that resolves asynchronously
 	 * @private
 	 */
 	private static createAsyncOptionsProvider(options: QdrantModuleAsyncOptions, token: symbol): Provider {

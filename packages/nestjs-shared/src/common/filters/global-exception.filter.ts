@@ -13,12 +13,7 @@ import { ErrorCategorizerService, type ErrorCategory } from '../services/error-c
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Global Exception Filter
- * Catches all unhandled exceptions except HttpException (which is handled by HttpExceptionFilter)
- * Standardizes error responses and logs errors with categorization
- */
-/**
- * Standard error response structure for all exceptions
+ * Standard error response structure for all exceptions.
  */
 export interface ErrorResponseBody {
 	success: false;
@@ -31,6 +26,56 @@ export interface ErrorResponseBody {
 	};
 }
 
+/**
+ * Global Exception Filter.
+ * Catches all unhandled exceptions except HttpException (which is handled by HttpExceptionFilter).
+ * Standardizes error responses with consistent structure and logs all errors with categorization.
+ *
+ * Handles:
+ * - BaseApplicationError: Standardized application errors with code, status, context
+ * - Error: Generic JavaScript errors
+ * - Unknown: Unclassified exceptions
+ *
+ * Error Response Format:
+ * - success: false
+ * - error.code: Error code for programmatic handling
+ * - error.message: Human-readable error message
+ * - error.timestamp: ISO timestamp of error occurrence
+ * - error.context: Additional context (development only)
+ * - error.stack: Stack trace (development only)
+ *
+ * @remarks
+ * - Automatically redacts sensitive information via ErrorSanitizerService
+ * - Categorizes errors for logging (transient vs permanent, retryable, strategy)
+ * - Development mode includes full context and stack traces
+ * - Production mode shows generic error messages for security
+ * - Logs request details: method, URL, IP, user-agent
+ *
+ * @example
+ * ```typescript
+ * // Development response
+ * {
+ *   success: false,
+ *   error: {
+ *     code: 'USER_NOT_FOUND',
+ *     message: 'User with ID 123 not found',
+ *     timestamp: '2024-01-01T12:00:00.000Z',
+ *     context: { userId: '123' },
+ *     stack: '...'
+ *   }
+ * }
+ *
+ * // Production response
+ * {
+ *   success: false,
+ *   error: {
+ *     code: 'USER_NOT_FOUND',
+ *     message: 'User with ID 123 not found',
+ *     timestamp: '2024-01-01T12:00:00.000Z'
+ *   }
+ * }
+ * ```
+ */
 @Catch(BaseApplicationError, Error)
 export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefService {
 	private _logger: AppLogger | undefined;

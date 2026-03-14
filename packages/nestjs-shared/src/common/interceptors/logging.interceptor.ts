@@ -12,8 +12,15 @@ import { AppLogger } from '../services/logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Logging Interceptor
- * Logs incoming requests and outgoing responses with timing information
+ * Logging Interceptor.
+ * Logs incoming HTTP requests and outgoing responses with timing information.
+ * Uses DEBUG level for health/metrics endpoints to reduce noise.
+ * Automatically logs request details: method, URL, IP address, and response time.
+ *
+ * @remarks
+ * - Skips logging for non-HTTP contexts (GraphQL, WebSocket, etc.)
+ * - Uses DEBUG level for /health and /metrics endpoints
+ * - Uses INFO level for other requests
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService {

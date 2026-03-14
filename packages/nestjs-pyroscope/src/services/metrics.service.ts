@@ -7,7 +7,10 @@ import {
 } from '../constants/profiling.constants.js';
 
 /**
- * Metrics response interface
+ * Metrics response interface for profiling data.
+ *
+ * Contains aggregated profiling metrics including CPU samples, memory allocations,
+ * and HTTP request statistics.
  */
 export interface MetricsResponse {
 	timestamp: number;
@@ -28,8 +31,29 @@ export interface MetricsResponse {
 }
 
 /**
- * Service for tracking profiling metrics
- * Provides thread-safe metric aggregation and export functionality
+ * Service for tracking profiling metrics.
+ *
+ * Provides thread-safe metric aggregation and export functionality for CPU samples,
+ * memory allocations, and HTTP request performance statistics. Metrics are accumulated
+ * and can be exported in both JSON and Prometheus exposition formats.
+ *
+ * Features:
+ * - CPU and memory sample recording
+ * - Request metrics with status code classification
+ * - Prometheus format metrics export
+ * - Metric reset capability
+ *
+ * @example
+ * ```typescript
+ * // Record individual metrics
+ * this.metrics.recordCPUSample(125);
+ * this.metrics.recordMemorySample(1024000);
+ * this.metrics.recordRequest(200, 45);
+ *
+ * // Retrieve aggregated metrics
+ * const stats = this.metrics.getMetrics();
+ * const prometheus = this.metrics.getPrometheusMetrics();
+ * ```
  */
 @Injectable()
 export class MetricsService {
@@ -106,8 +130,19 @@ export class MetricsService {
 	}
 
 	/**
-	 * Get current metrics snapshot
+	 * Get current metrics snapshot.
+	 *
+	 * Returns aggregated metrics from all recorded samples since service creation
+	 * or last reset.
+	 *
 	 * @returns MetricsResponse with current aggregated metrics
+	 *
+	 * @example
+	 * ```typescript
+	 * const metrics = this.metricsService.getMetrics();
+	 * console.log(`Processed ${metrics.requests.total} requests`);
+	 * console.log(`CPU time: ${metrics.cpu.duration}ms across ${metrics.cpu.samples} samples`);
+	 * ```
 	 */
 	public getMetrics(): MetricsResponse {
 		const averageResponseTime = this.totalRequests > 0
@@ -135,8 +170,22 @@ export class MetricsService {
 	}
 
 	/**
-	 * Export metrics in Prometheus format
+	 * Export metrics in Prometheus format.
+	 *
+	 * Formats aggregated metrics as Prometheus exposition format (text-based format)
+	 * suitable for ingestion by Prometheus servers.
+	 *
 	 * @returns String containing metrics in Prometheus exposition format
+	 *
+	 * @example
+	 * ```typescript
+	 * const prometheusMetrics = this.metricsService.getPrometheusMetrics();
+	 * // Returns:
+	 * // # HELP profiling_cpu_samples_total Total number of CPU profiling samples collected
+	 * // # TYPE profiling_cpu_samples_total counter
+	 * // profiling_cpu_samples_total 1250
+	 * // ...
+	 * ```
 	 */
 	public getPrometheusMetrics(): string {
 		const metrics = this.getMetrics();
@@ -176,8 +225,15 @@ profiling_requests_average_response_time_ms ${metrics.requests.averageResponseTi
 	}
 
 	/**
-	 * Reset all metrics to zero
-	 * Useful for testing or periodic resets
+	 * Reset all metrics to zero.
+	 *
+	 * Clears all accumulated metrics, useful for testing or periodic metric resets.
+	 *
+	 * @example
+	 * ```typescript
+	 * this.metricsService.reset();
+	 * // All metrics are now zero
+	 * ```
 	 */
 	public reset(): void {
 		this.cpuSamples = 0;

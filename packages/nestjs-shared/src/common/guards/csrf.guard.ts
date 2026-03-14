@@ -7,16 +7,34 @@ import { AuditLoggerService } from '../services/audit-logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Guard that validates CSRF tokens on requests to prevent Cross-Site Request Forgery attacks.
+ * CSRF Guard.
+ * Validates CSRF tokens on requests to prevent Cross-Site Request Forgery attacks.
  * Automatically bypasses validation for safe HTTP methods (GET, HEAD, OPTIONS) and enforces
  * token validation for state-changing operations (POST, PUT, DELETE, PATCH).
  *
- * Use this guard globally or on specific routes that require CSRF protection:
+ * CSRF validation:
+ * - Safe methods (GET, HEAD, OPTIONS): Always allowed
+ * - State-changing methods (POST, PUT, DELETE, PATCH): Token validation required
+ *
+ * @remarks
+ * - Registered globally by CommonModule
+ * - Uses CSRFService for token generation and validation
+ * - Logs failed validations via AppLogger and AuditLoggerService
+ * - Throws ForbiddenException (403) on token validation failure
+ * - CSRF_SECRET environment variable required (validated by CSRFService.onModuleInit)
+ *
+ * @example
  * ```typescript
- * app.useGlobalGuards(new CSRFGuard(csrfService, logger));
- * // or on a controller:
+ * // Automatically applied globally when CommonModule is imported
+ * // No decorator needed on endpoints
+ *
+ * // Manual application to specific controller
  * @UseGuards(CSRFGuard)
- * export class MyController { ... }
+ * @Controller('api')
+ * export class ApiController {
+ *   @Post()
+ *   updateData() { ... }
+ * }
  * ```
  */
 

@@ -3,15 +3,19 @@ import { ValidationError } from 'class-validator';
 import { BaseValidationPipe } from './base-validation.pipe.js';
 
 /**
- * HTTP Validation Pipe
- *
+ * HTTP Validation Pipe.
  * Validates incoming HTTP request data using class-validator and transforms using class-transformer.
  * Extends BaseValidationPipe with HTTP-specific error formatting.
  *
+ * @remarks
+ * - Automatically applied as a global pipe in CommonModule
+ * - Supports nested object validation with path prefixes
+ * - Recursively processes validation errors with depth traversal
+ * - Formats errors as string array for consistent HTTP responses
+ *
  * @example
  * ```typescript
- * // In a controller
- * @UsePipes(ValidationPipe)
+ * // Automatically applied globally; decorator is optional
  * @Post()
  * async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
  *   // DTO will be validated automatically

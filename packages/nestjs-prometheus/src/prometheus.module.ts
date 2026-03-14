@@ -9,6 +9,13 @@ import { MetricsController } from './controllers/metrics.controller.js';
  * Provides integration with @pawells/nestjs-shared InstrumentationRegistry
  * to export metrics in Prometheus format via a `/metrics` HTTP endpoint.
  *
+ * Features:
+ * - Event-based metric collection: buffers metric values and flushes on pull
+ * - Automatic HTTP endpoint: exposes GET /metrics with Prometheus text format
+ * - Node.js default metrics: process CPU, memory, event loop, garbage collection
+ * - MetricsGuard integration: optional METRICS_API_KEY authentication
+ * - Lifecycle management: registers exporter on init, cleans up on shutdown
+ *
  * Registers PrometheusExporter globally and automatically connects it to the
  * InstrumentationRegistry so that metric descriptors and values are forwarded
  * to the Prometheus exporter.

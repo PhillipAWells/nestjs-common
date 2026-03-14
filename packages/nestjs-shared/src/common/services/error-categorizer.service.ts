@@ -20,6 +20,9 @@ const BACKOFF_TIMEOUT_MS = 2000;
 const BACKOFF_DATABASE_MS = 5000;
 const BACKOFF_RATE_LIMIT_MS = 10000;
 
+/**
+ * Error category classification for recovery strategy determination.
+ */
 export interface ErrorCategory {
 	type: 'transient' | 'permanent';
 	retryable: boolean;
@@ -27,6 +30,36 @@ export interface ErrorCategory {
 	backoffMs?: number;
 }
 
+/**
+ * Error Categorizer Service.
+ * Classifies errors as transient or permanent and recommends recovery strategies.
+ *
+ * Categories:
+ * - **Transient** (retryable): Network errors, timeouts, database connection errors, rate limits, server errors (5xx)
+ * - **Permanent** (not retryable): Validation errors, bad requests (4xx), authentication/authorization, not found
+ *
+ * Recovery strategies:
+ * - **retry**: Immediate retry (for network errors)
+ * - **backoff**: Exponential backoff retry (for timeouts, database, rate limits)
+ * - **fail**: Fast failure without retry (for validation, authentication, not found)
+ *
+ * @remarks
+ * - Node.js error codes (ECONNRESET, ECONNREFUSED, ETIMEDOUT, ENOTFOUND, EAI_AGAIN) are always transient
+ * - Database connection errors are always transient with long backoff (5s)
+ * - Timeout errors get medium backoff (2s)
+ * - Rate limit errors get maximum backoff (10s)
+ * - Unknown errors default to permanent/fail strategy
+ *
+ * @example
+ * ```typescript
+ * const category = errorCategorizer.categorizeError(error);
+ * if (category.retryable) {
+ *   // Retry with backoff: category.backoffMs
+ * } else {
+ *   // Fail fast
+ * }
+ * ```
+ */
 @Injectable()
 export class ErrorCategorizerService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;

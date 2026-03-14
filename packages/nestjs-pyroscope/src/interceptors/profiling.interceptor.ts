@@ -16,8 +16,43 @@ interface HttpResponse {
 }
 
 /**
- * HTTP request profiling interceptor
- * Automatically profiles HTTP requests with timing, method, path, and status code
+ * HTTP request profiling interceptor.
+ *
+ * Automatically profiles all HTTP requests that pass through it with timing,
+ * method, path, and status code information. Useful for collecting performance
+ * metrics across all endpoints.
+ *
+ * Features:
+ * - Automatic timing of HTTP request lifecycle
+ * - Captures HTTP method, path, and status code
+ * - Records User-Agent header
+ * - Distinguishes between successful and failed requests
+ * - Properly handles both sync and async responses
+ *
+ * When to use:
+ * - You want automatic profiling of all HTTP requests
+ * - You need comprehensive request performance metrics
+ * - You want global observability without per-method decoration
+ *
+ * @example
+ * ```typescript
+ * // Register globally in AppModule
+ * @Module({
+ *   providers: [
+ *     {
+ *       provide: APP_INTERCEPTOR,
+ *       useClass: ProfilingInterceptor,
+ *     },
+ *   ],
+ * })
+ * export class AppModule {}
+ * ```
+ *
+ * @remarks
+ * - Returns request unmodified if profiling is disabled
+ * - Captures profiles with names like 'HTTP GET /users/:id'
+ * - Error case distinguishes success/failure in tags
+ * - Error messages are not exposed in tags for security
  */
 @Injectable()
 export class ProfilingInterceptor implements NestInterceptor {

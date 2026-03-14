@@ -4,7 +4,7 @@ import { AppLogger } from './logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Health status enumeration for standardized health check responses
+ * Health status enumeration for standardized health check responses.
  */
 export enum HealthStatus {
 	OK = 'ok',
@@ -12,6 +12,9 @@ export enum HealthStatus {
 	ALIVE = 'alive',
 }
 
+/**
+ * Health check response interface.
+ */
 export interface IHealthCheck {
 	status: string;
 	timestamp: string;
@@ -21,8 +24,42 @@ export interface IHealthCheck {
 }
 
 /**
- * Health check service for Kubernetes probes and monitoring
- * Provides standardized health, readiness, and liveness checks
+ * Health Check Service.
+ * Provides standardized health, readiness, and liveness checks for Kubernetes probes and monitoring.
+ *
+ * Probe types:
+ * - **Health/Status**: General application health (used by load balancers)
+ * - **Readiness**: Determines if service should receive traffic (Kubernetes readiness probe)
+ * - **Liveness**: Confirms service is alive and responsive (Kubernetes liveness probe)
+ *
+ * @remarks
+ * - All responses include ISO timestamps for log correlation
+ * - Supports optional service name and version strings
+ * - Readiness probe can include custom checks (database, cache, etc.)
+ * - All checks automatically logged via AppLogger for monitoring
+ *
+ * @example
+ * ```typescript
+ * // In a health controller
+ * @Get('/')
+ * health() {
+ *   return this.healthService.getHealth('my-service', '1.0.0');
+ * }
+ *
+ * @Get('/ready')
+ * readiness() {
+ *   const checks = {
+ *     database: HealthStatus.OK,
+ *     cache: HealthStatus.OK,
+ *   };
+ *   return this.healthService.getReadiness(checks);
+ * }
+ *
+ * @Get('/live')
+ * liveness() {
+ *   return this.healthService.getLiveness();
+ * }
+ * ```
  */
 @Injectable()
 export class HealthCheckService implements LazyModuleRefService {

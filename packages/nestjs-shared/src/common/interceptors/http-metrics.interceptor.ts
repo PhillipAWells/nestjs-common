@@ -6,15 +6,28 @@ import { Request, Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
-/**
- * HTTP Metrics Interceptor
- *
- * Automatically collects HTTP request metrics including:
- * - Request duration histogram
- * - Request count counter
- * - Request size histogram
- */
 const DEFAULT_ERROR_STATUS_CODE = 500;
+
+/**
+ * HTTP Metrics Interceptor.
+ * Automatically collects and records HTTP request metrics for Prometheus.
+ *
+ * Metrics collected:
+ * - Request duration histogram (in seconds)
+ * - Request count counter (total requests)
+ * - Request size histogram (in bytes)
+ *
+ * Labels for all metrics:
+ * - method: HTTP method (GET, POST, etc.)
+ * - route: URL path (normalized to collapse dynamic segments like UUIDs)
+ * - status_code: HTTP status code
+ * - status_class: Status class (2xx, 4xx, 5xx)
+ *
+ * @remarks
+ * - Skips non-HTTP contexts (GraphQL, WebSocket, RPC, etc.)
+ * - Normalizes dynamic path segments (UUIDs, ObjectIDs, numeric IDs) to :id to prevent unbounded cardinality
+ * - Records metrics even when requests fail or throw errors
+ */
 
 @Injectable()
 export class HTTPMetricsInterceptor implements NestInterceptor, LazyModuleRefService {

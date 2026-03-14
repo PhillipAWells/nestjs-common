@@ -28,8 +28,25 @@ export interface HealthResponse {
 }
 
 /**
- * Health check controller for profiling service
- * Provides endpoints for monitoring profiling health and metrics
+ * Health check controller for profiling service.
+ *
+ * Provides REST endpoints for monitoring profiling health, metrics, and status.
+ * Automatically registered when enableHealthChecks is not false in module config.
+ *
+ * Features:
+ * - Real-time health status endpoint
+ * - Metrics aggregation and export
+ * - Prometheus format metrics support
+ * - Comprehensive status information
+ *
+ * Routes (mounted at /profiling):
+ * - GET /profiling/health - Health status check
+ * - GET /profiling/metrics - Aggregated metrics (JSON)
+ * - GET /profiling/status - Combined health and metrics
+ * - GET /profiling/metrics/prometheus - Prometheus format metrics
+ *
+ * WARNING: These endpoints expose infrastructure and performance information.
+ * They should be protected at the network level (firewall, VPN, internal network only).
  */
 @Controller('profiling')
 export class HealthController {
@@ -48,10 +65,37 @@ export class HealthController {
 	}
 
 	/**
-	 * Get profiling service health status
-	 * WARNING: This endpoint exposes infrastructure information (server address, application name, active profiles).
-	 * It should be protected at the network level (firewall, VPN, internal network only).
+	 * Get profiling service health status.
+	 *
+	 * Returns comprehensive health information including initialization status,
+	 * active profile count, and Pyroscope server connectivity.
+	 *
+	 * WARNING: This endpoint exposes infrastructure information (server address,
+	 * application name, active profiles). It should be protected at the network
+	 * level (firewall, VPN, internal network only).
+	 *
 	 * @returns HealthResponse with comprehensive health information
+	 *
+	 * @example
+	 * ```
+	 * GET /profiling/health
+	 * {
+	 *   "status": "healthy",
+	 *   "timestamp": 1710429254123,
+	 *   "uptime": 3600.5,
+	 *   "pyroscope": {
+	 *     "connected": true,
+	 *     "serverAddress": "http://localhost:4040",
+	 *     "applicationName": "my-app",
+	 *     "lastUpdate": 1710429254123
+	 *   },
+	 *   "profiling": {
+	 *     "enabled": true,
+	 *     "activeProfiles": 12,
+	 *     "totalProfiles": 5430
+	 *   }
+	 * }
+	 * ```
 	 */
 	@Get('health')
 	@Header('Cache-Control', 'no-store')
@@ -88,10 +132,38 @@ export class HealthController {
 	}
 
 	/**
-	 * Get current profiling metrics
-	 * WARNING: This endpoint exposes profiling metrics which reveal performance characteristics.
-	 * It should be protected at the network level (firewall, VPN, internal network only).
+	 * Get current profiling metrics.
+	 *
+	 * Returns aggregated profiling metrics including CPU samples, memory allocations,
+	 * and request statistics.
+	 *
+	 * WARNING: This endpoint exposes profiling metrics which reveal performance
+	 * characteristics. It should be protected at the network level (firewall, VPN,
+	 * internal network only).
+	 *
 	 * @returns MetricsResponse with aggregated profiling data
+	 *
+	 * @example
+	 * ```
+	 * GET /profiling/metrics
+	 * {
+	 *   "timestamp": 1710429254123,
+	 *   "cpu": {
+	 *     "samples": 1250,
+	 *     "duration": 45000
+	 *   },
+	 *   "memory": {
+	 *     "samples": 890,
+	 *     "allocations": 512000000
+	 *   },
+	 *   "requests": {
+	 *     "total": 5430,
+	 *     "successful": 5389,
+	 *     "failed": 41,
+	 *     "averageResponseTime": 125.34
+	 *   }
+	 * }
+	 * ```
 	 */
 	@Get('metrics')
 	@Header('Cache-Control', 'no-store')
@@ -100,9 +172,14 @@ export class HealthController {
 	}
 
 	/**
-	 * Get detailed status information
+	 * Get detailed status information.
+	 *
+	 * Returns both health and metrics in a single response for comprehensive
+	 * profiling service status.
+	 *
 	 * WARNING: This endpoint exposes comprehensive infrastructure and profiling data.
 	 * It should be protected at the network level (firewall, VPN, internal network only).
+	 *
 	 * @returns Comprehensive status including health and metrics
 	 */
 	@Get('status')
@@ -115,10 +192,25 @@ export class HealthController {
 	}
 
 	/**
-	 * Get metrics in Prometheus format
-	 * WARNING: This endpoint exposes profiling metrics in Prometheus format, revealing performance characteristics.
-	 * It should be protected at the network level (firewall, VPN, internal network only).
+	 * Get metrics in Prometheus format.
+	 *
+	 * Returns profiling metrics in standard Prometheus exposition format for
+	 * easy integration with Prometheus monitoring systems.
+	 *
+	 * WARNING: This endpoint exposes profiling metrics in Prometheus format,
+	 * revealing performance characteristics. It should be protected at the network
+	 * level (firewall, VPN, internal network only).
+	 *
 	 * @returns String containing metrics in Prometheus exposition format
+	 *
+	 * @example
+	 * ```
+	 * GET /profiling/metrics/prometheus
+	 * # HELP profiling_cpu_samples_total Total number of CPU profiling samples collected
+	 * # TYPE profiling_cpu_samples_total counter
+	 * profiling_cpu_samples_total 1250
+	 * ...
+	 * ```
 	 */
 	@Get('metrics/prometheus')
 	@Header('Cache-Control', 'no-store')

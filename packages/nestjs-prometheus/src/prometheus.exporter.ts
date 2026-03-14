@@ -9,6 +9,19 @@ import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/n
  * Uses prom-client library to manage Prometheus instruments (Counter, Gauge, Histogram)
  * and exports metrics in Prometheus text format on demand.
  *
+ * Architecture:
+ * - **Event-based buffering**: Metric values are buffered as they are recorded
+ * - **Pull-based export**: Flushes all pending values when `/metrics` endpoint is scraped
+ * - **Atomic swaps**: Uses atomic array swaps during flush to prevent concurrent data loss
+ * - **Bounded memory**: Limits pending values to 1000 per metric to prevent unbounded growth
+ * - **Node.js defaults**: Automatically collects Node.js process metrics (CPU, memory, GC, etc.)
+ *
+ * Type mapping:
+ * - `counter` → prom-client Counter (monotonically increasing)
+ * - `gauge` → prom-client Gauge (point-in-time value)
+ * - `updown_counter` → prom-client Gauge (can increase or decrease)
+ * - `histogram` → prom-client Histogram (distribution with buckets)
+ *
  * @example
  * ```typescript
  * const exporter = new PrometheusExporter();
@@ -65,6 +78,12 @@ export class PrometheusExporter implements IMetricsExporter {
 	 */
 	private readonly logger: Logger;
 
+	/**
+	 * Create a new PrometheusExporter instance
+	 *
+	 * Initializes a prom-client Registry and starts collecting Node.js default metrics
+	 * (process CPU, memory, event loop, garbage collection, etc.).
+	 */
 	constructor() {
 		this.registry = new Registry();
 		this.instruments = new Map();
@@ -80,8 +99,15 @@ export class PrometheusExporter implements IMetricsExporter {
 	 *
 	 * Pre-creates the corresponding prom-client instrument (Counter, Gauge, or Histogram)
 	 * based on the descriptor's type. The created instrument is cached for future use.
+	 * Initializes an empty pending array for the metric to buffer future recorded values.
+	 *
+	 * Type mapping:
+	 * - `counter` → Counter (incremented by value via inc())
+	 * - `histogram` → Histogram (observed via observe())
+	 * - `gauge` or `updown_counter` → Gauge (set via set())
 	 *
 	 * @param descriptor - The metric descriptor being registered
+	 * @throws Error if descriptor type is not supported
 	 *
 	 * @example
 	 * ```typescript
@@ -155,12 +181,17 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * Values are buffered rather than immediately recorded into prom-client.
 	 * They are applied to the appropriate instrument during the next pull (getMetrics) call.
 	 *
+	 * Buffering behavior:
+	 * - Values are appended to the pending array for the metric
+	 * - If the pending array exceeds MAX_PENDING_PER_METRIC (1000), oldest entries are culled
+	 * - If the metric descriptor was not registered first, a warning is logged and value is dropped
+	 *
 	 * @param value - The metric value to buffer
 	 *
 	 * @example
 	 * ```typescript
 	 * exporter.onMetricRecorded({
-	 *   descriptor: { ... },
+	 *   descriptor: { name: 'http_request_duration_seconds' },
 	 *   value: 0.125,
 	 *   labels: { method: 'GET', status_code: '200' },
 	 *   timestamp: performance.now(),
@@ -190,8 +221,19 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * Flushes all pending metric values into prom-client instruments, then returns
 	 * the complete metrics output in Prometheus text format (version 0.0.4).
 	 *
-	 * @returns Promise resolving to metrics in Prometheus text format
-	 * @throws Error if metrics generation fails
+	 * Flush process:
+	 * 1. For each metric, atomically swap the pending array with a fresh empty array
+	 * 2. Apply all pending values to the corresponding instrument:
+	 *    - Counter: increment by value
+	 *    - Histogram: observe value
+	 *    - Gauge: set to value
+	 * 3. Skip any values where the instrument was not pre-created (shouldn't happen)
+	 * 4. Return the serialized metrics from the registry
+	 *
+	 * Includes Node.js default metrics and all custom metrics registered with descriptors.
+	 *
+	 * @returns Promise resolving to metrics in Prometheus text format (version 0.0.4)
+	 * @throws Error if metrics generation fails (logged but re-thrown)
 	 *
 	 * @example
 	 * ```typescript
@@ -199,7 +241,8 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * // Returns:
 	 * // # HELP http_request_duration_seconds Duration of HTTP requests in seconds
 	 * // # TYPE http_request_duration_seconds histogram
-	 * // http_request_duration_seconds_bucket{...} ...
+	 * // http_request_duration_seconds_bucket{le="0.001",...} 0
+	 * // http_request_duration_seconds_bucket{le="0.01",...} 5
 	 * ```
 	 */
 	public async getMetrics(): Promise<string> {
@@ -251,8 +294,12 @@ export class PrometheusExporter implements IMetricsExporter {
 	/**
 	 * Shutdown the exporter and clean up resources
 	 *
-	 * Clears the prom-client registry and releases all internal state.
-	 * Called during application shutdown.
+	 * Clears the prom-client registry and releases all internal state:
+	 * - registry.clear() — removes all instruments
+	 * - instruments.clear() — removes cached instrument references
+	 * - pending.clear() — discards any buffered but unflushed metric values
+	 *
+	 * Called by PrometheusModule during application shutdown (onApplicationShutdown).
 	 *
 	 * @returns Promise that resolves when shutdown is complete
 	 *

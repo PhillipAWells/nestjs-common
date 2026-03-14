@@ -4,30 +4,60 @@ import { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Options for configuring the ErrorSanitizerService
+ * Options for configuring the ErrorSanitizerService.
  */
 export interface ErrorSanitizerOptions {
 	/**
-	 * Additional regex patterns to apply for message sanitization
+	 * Additional regex patterns to apply for message sanitization.
 	 */
 	additionalPatterns?: RegExp[];
 
 	/**
-	 * Additional field names to treat as sensitive and redact
+	 * Additional field names to treat as sensitive and redact.
 	 */
 	additionalSensitiveKeys?: string[];
 }
 
 /**
- * Injection token for ErrorSanitizerService configuration
+ * Injection token for ErrorSanitizerService configuration.
  */
 export const ERROR_SANITIZER_OPTIONS = 'ERROR_SANITIZER_OPTIONS';
 
 /**
- * Service for sanitizing error responses and error context to prevent information disclosure.
- * Removes sensitive information like stack traces, file paths, API keys, email addresses,
- * and IP addresses from error messages and context objects before sending to clients.
- * Implements defense-in-depth by sanitizing both message strings and nested context objects.
+ * Error Sanitizer Service.
+ * Sanitizes error responses and error context to prevent information disclosure in production.
+ * Removes sensitive information like stack traces, file paths, database URIs, API keys, email addresses,
+ * IP addresses, and custom sensitive fields.
+ *
+ * Implements defense-in-depth by sanitizing:
+ * - Error messages (via regex patterns)
+ * - Nested context objects (via field name matching)
+ * - Stack traces (removed in production)
+ *
+ * Sensitive patterns redacted:
+ * - File paths (e.g., `/home/user/app.ts` -> `[FILE]`)
+ * - Database URIs (e.g., `mongodb://...` -> `[REDACTED]`)
+ * - API keys and tokens (e.g., `Bearer sk_live_...` -> `Bearer [REDACTED]`)
+ * - Email addresses (e.g., `user@example.com` -> `[EMAIL]`)
+ * - IP addresses (IPv4 and IPv6) -> `[IP]`
+ * - Sensitive field values (passwords, tokens, API keys, etc.) -> `***REDACTED***`
+ *
+ * @remarks
+ * - Maximum message length: 5000 chars (prevents ReDoS attacks on regex patterns)
+ * - Maximum context depth: 5 levels (prevents deeply nested structure processing)
+ * - Circular reference detection prevents infinite loops
+ * - Case-insensitive field name matching for sensitivity
+ *
+ * @example
+ * ```typescript
+ * const error = {
+ *   message: 'Error at /home/user/app.ts, Bearer sk_live_abc123',
+ *   context: { password: 'secret123', userId: '456' }
+ * };
+ * const sanitized = errorSanitizer.sanitizeErrorResponse(error, false);
+ * // message: 'Error at [FILE], Bearer [REDACTED]'
+ * // context: { password: '***REDACTED***', userId: '456' }
+ * ```
  */
 
 @Injectable()

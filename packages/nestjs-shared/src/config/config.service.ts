@@ -5,13 +5,8 @@ import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 import { AppLogger } from '../common/index.js';
 
 /**
- * Configuration Service
- * Provides typed access to environment variables with validation and transformation
- * Extends NestJS ConfigService with additional typed accessor methods
- */
-/**
- * Configuration schema definition interface
- * Used for validating configuration structure
+ * Configuration schema definition interface.
+ * Used for validating configuration structure.
  */
 export interface ConfigSchemaDefinition {
 	[key: string]: {
@@ -20,6 +15,33 @@ export interface ConfigSchemaDefinition {
 	};
 }
 
+/**
+ * Configuration Service.
+ * Provides typed access to environment variables with validation and transformation.
+ * Extends NestJS ConfigService with additional typed accessor methods (getString, getNumber).
+ * Integrates with AppLogger for configuration validation logging.
+ *
+ * @remarks
+ * - Must be imported before CommonModule in your application
+ * - Validates configuration at module initialization
+ * - Supports type-safe getters for string and number values
+ * - Logs all configuration operations for audit trail
+ *
+ * @example
+ * ```typescript
+ * // Get configuration values
+ * const port = configService.getNumber('PORT') ?? 3000;
+ * const nodeEnv = configService.getString('NODE_ENV') ?? 'development';
+ * const dbUrl = configService.getOrThrow('DATABASE_URL');
+ *
+ * // Validate configuration
+ * configService.validate({
+ *   PORT: { required: true },
+ *   DATABASE_URL: { required: true },
+ *   LOG_LEVEL: { required: false }
+ * });
+ * ```
+ */
 @Injectable()
 export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModuleDestroy {
 	private _contextualLogger: AppLogger | undefined;

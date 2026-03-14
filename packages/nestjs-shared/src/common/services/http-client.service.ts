@@ -7,6 +7,9 @@ import { AppLogger } from './logger.service.js';
 import { getHttpClientTimeout } from '../constants/timeout.constants.js';
 import { HTTP_STATUS_OK } from '../constants/http-status.constants.js';
 
+/**
+ * HTTP request options.
+ */
 interface HttpRequestOptions {
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 	url: string;
@@ -41,6 +44,9 @@ interface HttpRequestOptions {
 	ca?: Buffer | string;
 }
 
+/**
+ * HTTP response wrapper.
+ */
 interface HttpResponse<T = Record<string, unknown>> {
 	data: T;
 	status: number;
@@ -49,6 +55,44 @@ interface HttpResponse<T = Record<string, unknown>> {
 	duration: number;
 }
 
+/**
+ * HTTP Client Service.
+ * Provides a robust HTTP client with timeout handling, SSL/TLS configuration, payload size limits,
+ * and comprehensive logging with sensitive data redaction.
+ *
+ * Features:
+ * - Configurable timeouts (default: HTTP_CLIENT_TIMEOUT)
+ * - SSL/TLS certificate validation (default: strict)
+ * - Custom CA certificate support for self-signed certs
+ * - Payload size limit enforcement (10MB default)
+ * - Automatic content-type parsing (JSON, text)
+ * - Correlation ID support for request tracing
+ * - Sensitive data redaction in logs (passwords, tokens, auth headers)
+ * - Request/response duration tracking
+ *
+ * @remarks
+ * - Maximum payload size: 10MB (prevents memory exhaustion from large responses)
+ * - Timeout error handling with clear error messages
+ * - Content-type validation before JSON parsing
+ * - All sensitive headers (Authorization, Cookie, X-API-Key) redacted in logs
+ * - URLs with embedded credentials are sanitized before logging
+ *
+ * @example
+ * ```typescript
+ * // Simple GET request
+ * const response = await client.get('https://api.example.com/users');
+ *
+ * // POST with custom timeout and correlation ID
+ * const response = await client.post('https://api.example.com/users',
+ *   { name: 'John', email: 'john@example.com' },
+ *   { timeout: 5000, correlationId: 'req-123' }
+ * );
+ *
+ * // HTTPS with custom CA certificate
+ * const cert = fs.readFileSync('/path/to/ca.pem');
+ * const response = await client.get('https://internal-api.local/data', { ca: cert });
+ * ```
+ */
 @Injectable()
 export class HttpClientService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;

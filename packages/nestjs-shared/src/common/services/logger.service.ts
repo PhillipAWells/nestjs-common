@@ -6,22 +6,34 @@ import { trace, context } from '@opentelemetry/api';
 import { LogLevel, LogMetadata, LOG_LEVEL_FROM_STRING } from '../interfaces/log-entry.interface.js';
 import { IContextualLogger } from '../interfaces/logger.interface.js';
 
-/**
- * Centralized logging service that wraps NestJS Logger
- * Respects LOG_LEVEL environment variable for filtering
- * Implements Interface Segregation Principle with focused interfaces
- */
 import { MAX_SANITIZE_DEPTH } from '../utils/sanitization.utils.js';
 
 /**
- * Options object for logging methods
- * Provides a cleaner alternative to positional parameters
+ * Options object for logging methods.
+ * Provides a cleaner alternative to positional parameters.
  */
 export interface LogOptions {
 	context?: string;
 	trace?: string;
 	metadata?: LogMetadata;
 }
+
+/**
+ * Centralized application logger service.
+ * Wraps @pawells/logger and respects LOG_LEVEL environment variable for filtering.
+ * Automatically redacts sensitive information (passwords, tokens, API keys) from logs.
+ * Supports structured logging with context and metadata.
+ * Integrates with OpenTelemetry for trace and span ID correlation.
+ * Implements Interface Segregation Principle with focused interfaces.
+ *
+ * @example
+ * ```typescript
+ * // Use flexible logging methods
+ * logger.info('User logged in', 'AuthService', { userId: '123' });
+ * logger.error('Database error', error.stack, 'DatabaseService', { query: '...' });
+ * logger.debug('Cache hit', { metadata: { key: 'users:123' } });
+ * ```
+ */
 
 @Injectable()
 export class AppLogger implements IContextualLogger {
