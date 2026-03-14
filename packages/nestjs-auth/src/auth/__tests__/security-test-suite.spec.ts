@@ -340,11 +340,11 @@ describe('Security Test Suite - Authentication & Authorization', () => {
 
 			// The service enforces limits by evicting the oldest session
 			// and keeping the count at or below maxSessions
-			for (let i = 0; i < sessionIds.length; i++) {
-				const result = await authService.trackUserSession(userId, sessionIds[i], maxSessions);
+			for (const sessionId of sessionIds) {
+				const result = await authService.trackUserSession(userId, sessionId, maxSessions);
 				// Service adds new session (evicting oldest if over limit)
 				// active sessions should always contain the new session
-				expect(result.activeSessions).toContain(sessionIds[i]);
+				expect(result.activeSessions).toContain(sessionId);
 				// Session count should never exceed maxSessions
 				expect(result.activeSessions.length).toBeLessThanOrEqual(maxSessions);
 			}

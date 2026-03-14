@@ -37,8 +37,8 @@ describe('Auth Service - User Validation & Token Management', () => {
 		};
 
 		mockJwtService = {
-			sign: (payload: any) => 'jwt-token-signed',
-			verify: (token: string) => ({ sub: 'user-id', iat: Date.now() }),
+			sign: (_payload: any) => 'jwt-token-signed',
+			verify: (_token: string) => ({ sub: 'user-id', iat: Date.now() }),
 		};
 
 		mockAppLogger = {

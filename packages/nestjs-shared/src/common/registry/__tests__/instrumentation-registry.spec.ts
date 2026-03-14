@@ -884,7 +884,7 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			// Record metric without any listeners registered
-			const handler = vi.fn();
+			const _handler = vi.fn();
 			expect(() => {
 				registry.recordMetric('undefined_listeners_test', 1);
 			}).not.toThrow();

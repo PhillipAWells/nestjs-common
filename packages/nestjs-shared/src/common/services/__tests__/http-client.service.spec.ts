@@ -460,7 +460,7 @@ describe('HttpClientService', () => {
 
 	describe('Response handling - Multiple chunks', () => {
 		it('should concatenate multiple data chunks', async () => {
-			const { handler } = setupHttpMock(200, '', {
+			setupHttpMock(200, '', {
 				'content-type': 'application/json',
 			});
 
@@ -1104,7 +1104,7 @@ describe('HttpClientService', () => {
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
-			} catch (e) {
+			} catch {
 				// Expected
 			}
 
@@ -1126,7 +1126,7 @@ describe('HttpClientService', () => {
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
-			} catch (e) {
+			} catch {
 				// Expected
 			}
 

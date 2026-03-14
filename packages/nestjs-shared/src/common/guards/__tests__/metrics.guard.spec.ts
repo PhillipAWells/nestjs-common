@@ -15,7 +15,7 @@ function makeGuard(mockConfigService: any): MetricsGuard {
 
 describe('MetricsGuard', () => {
 	let guard: MetricsGuard;
-	let configService: ConfigService;
+	let _configService: ConfigService;
 	let mockContext: any;
 	let mockRequest: any;
 

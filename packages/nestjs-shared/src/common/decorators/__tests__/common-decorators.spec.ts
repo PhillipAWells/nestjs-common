@@ -3,7 +3,7 @@ import { Query, Params, Body, Headers, Cookies } from '../common-decorators.js';
 import { ExecutionContext } from '@nestjs/common';
 
 // Mock request object
-function createMockRequest(overrides: any = {}) {
+function _createMockRequest(overrides: any = {}) {
 	return {
 		query: { page: '1', limit: '10' },
 		params: { id: '123', slug: 'test-post' },

@@ -364,7 +364,7 @@ describe('SessionService', () => {
 			);
 
 			const afterRefresh = Date.now();
-			const callArgs = mockRepository.Update.mock.calls[0][1];
+			const [[, callArgs]] = mockRepository.Update.mock.calls;
 			const lastActivityTime = (callArgs as any).lastActivityAt.getTime();
 
 			expect(lastActivityTime).toBeGreaterThanOrEqual(beforeRefresh);
@@ -563,7 +563,7 @@ describe('SessionService', () => {
 			await service.UpdateSessionPreferences(sessionId, { theme: 'dark' });
 
 			const afterUpdate = Date.now();
-			const callArgs = mockRepository.Update.mock.calls[0][1];
+			const [[, callArgs]] = mockRepository.Update.mock.calls;
 			const lastActivityTime = (callArgs as any).lastActivityAt.getTime();
 
 			expect(lastActivityTime).toBeGreaterThanOrEqual(beforeUpdate);
@@ -755,7 +755,7 @@ describe('SessionService', () => {
 			await testService.CreateOrGetSession(deviceInfo);
 
 			const afterCreate = Date.now();
-			const callArgs = mockRepository.Create.mock.calls[0][0];
+			const [[callArgs]] = mockRepository.Create.mock.calls;
 			const expiryTime = (callArgs as any).expiresAt.getTime();
 			const expectedMinExpiry = beforeCreate + ONE_HOUR_MS;
 			const expectedMaxExpiry = afterCreate + ONE_HOUR_MS;

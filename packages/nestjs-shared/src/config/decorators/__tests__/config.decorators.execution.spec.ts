@@ -3,7 +3,7 @@ import { ConfigValue, EnvVar } from '../config.decorators.js';
 import { ExecutionContext } from '@nestjs/common';
 
 describe('Config Decorators - Execution Tests', () => {
-	function createMockContext(configData: any = {}): ExecutionContext {
+	function _createMockContext(configData: any = {}): ExecutionContext {
 		return {
 			switchToHttp: vi.fn().mockReturnValue({
 				getRequest: vi.fn().mockReturnValue({
@@ -99,7 +99,7 @@ describe('Config Decorators - Execution Tests', () => {
 
 		it('should handle parameter stacking', () => {
 			// Simulating @Get() @Query() @ConfigValue()
-			const query = undefined;
+			const _query = undefined;
 			const configValue = ConfigValue('features.search');
 			const envVar = EnvVar('SEARCH_ENABLED', false);
 

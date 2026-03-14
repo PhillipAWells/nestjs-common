@@ -480,11 +480,11 @@ describe('CSRFService', () => {
 			process.env['CSRF_SECRET'] = 'KxP9mQ2wL4nR7vF8jB0cH3sT5dY6uG1a';
 			unInitService.onModuleInit();
 
-			const mockReq = {
+			const _mockReq = {
 				// Explicitly no ip or session properties
 				socket: {},
 			};
-			const mockRes = { setHeader: () => {} };
+			const _mockRes = { setHeader: () => {} };
 
 			// Should not throw and should work (using anonymous identifier)
 			// This tests the fallback path in generateToken
@@ -493,12 +493,12 @@ describe('CSRFService', () => {
 
 	describe('Entropy calculation edge cases', () => {
 		it('should accept secret with exactly 32 characters', () => {
-			const originalSecret = process.env['CSRF_SECRET'];
+			const _originalSecret = process.env['CSRF_SECRET'];
 			const exactSecret = 'abcdefghijklmnopqrstuvwxyz012345'; // Exactly 32 chars
 
 			process.env['CSRF_SECRET'] = exactSecret;
 
-			const service32 = new CSRFService();
+			const _service32 = new CSRFService();
 			// Should not throw (32 chars passes length check)
 			// May throw on entropy check but that's separate validation
 		});

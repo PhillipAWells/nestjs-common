@@ -125,9 +125,9 @@ describe('SecurityBootstrapFactory', () => {
 		});
 
 		it('should sanitize request body XSS vectors', () => {
-			const mockNext = () => { /* no-op */ };
+			const _mockNext = () => { /* no-op */ };
 			const mockRes = {} as any;
-			let capturedBody: any;
+			let _capturedBody: any;
 
 			const mockReq = {
 				body: { name: '<script>alert("xss")</script>' },
@@ -139,7 +139,7 @@ describe('SecurityBootstrapFactory', () => {
 			const xssMiddleware = appliedMiddlewares[appliedMiddlewares.length - 3]; // XSS is usually 3rd from end
 			if (xssMiddleware && typeof xssMiddleware === 'function') {
 				xssMiddleware(mockReq, mockRes, () => {
-					capturedBody = mockReq.body;
+					_capturedBody = mockReq.body;
 				});
 			}
 		});
@@ -174,7 +174,7 @@ describe('SecurityBootstrapFactory', () => {
 		it('should reject unknown origins in production', () => {
 			ApplySecurityMiddleware(app, { environment: 'production', corsOrigins: [] });
 			expect(corsOptions).toBeDefined();
-			const callback = (err: Error | null, allow?: boolean) => {
+			const callback = (err: Error | null, _allow?: boolean) => {
 				expect(err).toBeDefined();
 				expect(err?.message).toContain('Not allowed by CORS');
 			};
@@ -508,7 +508,7 @@ describe('SecurityBootstrapFactory', () => {
 		});
 
 		it('should invoke middleware when features are disabled', () => {
-			const initialCount = appliedMiddlewares.length;
+			const _initialCount = appliedMiddlewares.length;
 			ApplySecurityMiddleware(app, {
 				compressionEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
@@ -543,10 +543,10 @@ describe('SecurityBootstrapFactory', () => {
 		});
 
 		it('should apply compression when x-no-compression header is absent', () => {
-			const mockReq = {
+			const _mockReq = {
 				headers: {},
 			};
-			const mockRes = {};
+			const _mockRes = {};
 
 			ApplySecurityMiddleware(app, { compressionEnabled: true });
 			expect(appliedMiddlewares.length).toBeGreaterThan(0);
@@ -789,7 +789,7 @@ describe('SecurityBootstrapFactory', () => {
 
 			let callbackCalled = false;
 			let errorProvided = false;
-			const callback = (err: Error | null, allow?: boolean) => {
+			const callback = (err: Error | null, _allow?: boolean) => {
 				callbackCalled = true;
 				if (err) {
 					errorProvided = true;

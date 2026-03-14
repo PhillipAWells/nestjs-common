@@ -312,7 +312,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should handle factory with multiple dependencies', () => {
 			const result = SharedThrottlerModule.forRootAsync({
-				useFactory: (a: any, b: any) => ({ ttl: 30000 }),
+				useFactory: (_a: any, _b: any) => ({ ttl: 30000 }),
 				inject: ['DEP1', 'DEP2'],
 			});
 			expect(result).toBeDefined();
@@ -564,7 +564,7 @@ describe('SharedThrottlerModule', () => {
 		it('should preserve inject array in provider', () => {
 			const injectTokens = ['SERVICE_A', 'SERVICE_B'];
 			const result = SharedThrottlerModule.forRootAsync({
-				useFactory: (a: any, b: any) => ({ ttl: 30000 }),
+				useFactory: (_a: any, _b: any) => ({ ttl: 30000 }),
 				inject: injectTokens,
 			});
 

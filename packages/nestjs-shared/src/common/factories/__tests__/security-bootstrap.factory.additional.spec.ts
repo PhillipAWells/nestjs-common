@@ -35,7 +35,7 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 		});
 
 		it('should skip compression middleware when disabled', () => {
-			const callCount = mockApp.use.mock.calls.length;
+			const _callCount = mockApp.use.mock.calls.length;
 
 			ApplySecurityMiddleware(mockApp, {
 				compressionEnabled: false,
@@ -510,9 +510,9 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 			const originalEnv = process.env.NODE_ENV;
 			process.env.NODE_ENV = 'staging';
 
-			let corsConfig: any;
+			let _corsConfig: any;
 			mockApp.enableCors = vi.fn((config) => {
-				corsConfig = config;
+				_corsConfig = config;
 			});
 
 			ApplySecurityMiddleware(mockApp, {
@@ -534,9 +534,9 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 			const originalEnv = process.env.NODE_ENV;
 			delete process.env.NODE_ENV;
 
-			let corsConfig: any;
+			let _corsConfig: any;
 			mockApp.enableCors = vi.fn((config) => {
-				corsConfig = config;
+				_corsConfig = config;
 			});
 
 			ApplySecurityMiddleware(mockApp, {

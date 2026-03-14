@@ -221,7 +221,7 @@ describe('JWTAuthGuard - Additional Tests', () => {
 		it('should log authentication failures', () => {
 			try {
 				guard['handleAuthError'](new Error('Test error'), null, null);
-			} catch (e) {
+			} catch {
 				// Error expected
 			}
 

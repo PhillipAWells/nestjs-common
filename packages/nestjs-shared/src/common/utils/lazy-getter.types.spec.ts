@@ -15,7 +15,7 @@ describe('LazyGetter Utilities', () => {
 
 	beforeEach(() => {
 		mockModuleRef = {
-			get: (token: string | Function, options?: any) => {
+			get: (token: string | Function, _options?: any) => {
 				if (token === 'ExistingService') {
 					return { name: 'ExistingService' };
 				}

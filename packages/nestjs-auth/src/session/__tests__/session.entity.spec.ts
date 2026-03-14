@@ -33,7 +33,7 @@ describe('SessionSchema', () => {
 	it('should have TTL index on expiresAt for auto-cleanup', () => {
 		const indexes = SessionSchema.indexes();
 		const ttlIndex = indexes.some((index: any) => {
-			const indexObj = index[0];
+			const [indexObj] = index;
 			return indexObj.expiresAt && index[1]?.expireAfterSeconds === 0;
 		});
 		expect(ttlIndex).toBe(true);
@@ -42,7 +42,7 @@ describe('SessionSchema', () => {
 	it('should have unique index on sessionId', () => {
 		const indexes = SessionSchema.indexes();
 		const uniqueIndex = indexes.some((index: any) => {
-			const indexObj = index[0];
+			const [indexObj] = index;
 			return indexObj.sessionId && index[1]?.unique === true;
 		});
 		expect(uniqueIndex).toBe(true);

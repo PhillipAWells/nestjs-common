@@ -49,7 +49,7 @@ describe('SessionEventEmitter', () => {
 
 			await new Promise(resolve => setTimeout(resolve, 10));
 
-			const callArgs = mockRedis.publish.mock.calls[0];
+			const [callArgs] = mockRedis.publish.mock.calls;
 			expect(callArgs?.[0]).toContain('session:');
 		});
 
@@ -59,9 +59,9 @@ describe('SessionEventEmitter', () => {
 
 			await new Promise(resolve => setTimeout(resolve, 10));
 
-			const publishedCall = mockRedis.publish.mock.calls[0];
+			const [publishedCall] = mockRedis.publish.mock.calls;
 			if (publishedCall) {
-				const publishedMessage = publishedCall[1];
+				const [, publishedMessage] = publishedCall;
 				const parsedEvent = JSON.parse(publishedMessage as string);
 
 				expect(parsedEvent.eventType).toBe(SessionEventType.TOKEN_REFRESHED);

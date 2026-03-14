@@ -30,7 +30,7 @@ describe('JWT Strategy - Token Validation & User Lookup', () => {
 		};
 
 		mockTokenValidationService = {
-			validateToken: (token: string, type: string) => {
+			validateToken: (token: string, _type: string) => {
 				if (token === 'expired-token') {
 					throw new Error('Token expired');
 				}

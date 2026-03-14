@@ -117,7 +117,7 @@ describe('Session Service - Session Lifecycle & Concurrent Limits', () => {
 			};
 			const beforeCreate = Date.now();
 			const session = await service.CreateOrGetSession(deviceInfo);
-			const afterCreate = Date.now();
+			const _afterCreate = Date.now();
 			expect(session.expiresAt).toBeDefined();
 			expect(session.expiresAt.getTime()).toBeGreaterThan(beforeCreate);
 		});

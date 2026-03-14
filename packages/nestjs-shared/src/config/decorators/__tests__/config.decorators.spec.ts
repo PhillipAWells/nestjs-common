@@ -3,7 +3,7 @@ import { ConfigValue, EnvVar } from '../config.decorators.js';
 import { ExecutionContext } from '@nestjs/common';
 
 // Mock execution context with config service
-function createMockContextWithConfig(configData: any = {}) {
+function _createMockContextWithConfig(configData: any = {}) {
 	return {
 		switchToHttp: vi.fn().mockReturnValue({
 			getRequest: vi.fn().mockReturnValue({

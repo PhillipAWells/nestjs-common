@@ -147,7 +147,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 			try {
 				await strategy.validate(payload, request);
-			} catch (e) {
+			} catch {
 				// Expected
 			}
 
@@ -181,7 +181,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 			try {
 				await strategy.validate(payload, request);
-			} catch (e) {
+			} catch {
 				// Expected
 			}
 
@@ -241,7 +241,7 @@ describe('JWT Strategy - Advanced Validation & Token Handling', () => {
 
 			try {
 				await strategy.validate(payload, request);
-			} catch (e) {
+			} catch {
 				// Expected
 			}
 

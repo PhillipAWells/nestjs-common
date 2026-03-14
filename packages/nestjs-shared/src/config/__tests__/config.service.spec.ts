@@ -87,7 +87,7 @@ describe('ConfigService', () => {
 
 		it('should handle zero as valid number', () => {
 			const zeroNestConfig = { get: () => 0, getOrThrow: () => 0 };
-			const zeroModuleRef = { get: (token: any) => token === NestConfigService ? zeroNestConfig : mockModuleRef.get(token) };
+			const zeroModuleRef = { get: (token: any) => (token === NestConfigService ? zeroNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(zeroModuleRef as any);
 
 			const result = configService.getNumber('zero-value');
@@ -97,7 +97,7 @@ describe('ConfigService', () => {
 
 		it('should handle negative numbers', () => {
 			const negativeNestConfig = { get: () => -123, getOrThrow: () => -123 };
-			const negativeModuleRef = { get: (token: any) => token === NestConfigService ? negativeNestConfig : mockModuleRef.get(token) };
+			const negativeModuleRef = { get: (token: any) => (token === NestConfigService ? negativeNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(negativeModuleRef as any);
 
 			const result = configService.getNumber('negative-value');
@@ -205,10 +205,10 @@ describe('ConfigService', () => {
 				}),
 			} as any;
 
-			const localMockNestConfigService = {
+			const _localMockNestConfigService = {
 				get: () => undefined,
 				getOrThrow: () => {
-					throw new Error('Not found'); 
+					throw new Error('Not found');
 				},
 			} as any;
 
@@ -246,7 +246,7 @@ describe('ConfigService', () => {
 
 		it('should convert numeric value to string', () => {
 			const numericNestConfig = { get: () => 42, getOrThrow: () => 42 };
-			const numericModuleRef = { get: (token: any) => token === NestConfigService ? numericNestConfig : mockModuleRef.get(token) };
+			const numericModuleRef = { get: (token: any) => (token === NestConfigService ? numericNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(numericModuleRef as any);
 
 			const result = configService.getString('number-value');
@@ -256,7 +256,7 @@ describe('ConfigService', () => {
 
 		it('should convert boolean to string', () => {
 			const boolNestConfig = { get: () => true, getOrThrow: () => true };
-			const boolModuleRef = { get: (token: any) => token === NestConfigService ? boolNestConfig : mockModuleRef.get(token) };
+			const boolModuleRef = { get: (token: any) => (token === NestConfigService ? boolNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(boolModuleRef as any);
 
 			const result = configService.getString('boolean-value');

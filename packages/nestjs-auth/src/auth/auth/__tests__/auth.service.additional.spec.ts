@@ -76,7 +76,7 @@ describe('AuthService - Additional Tests', () => {
 				if (token.includes('expired')) throw new Error('Token expired');
 				return { sub: 'user-123', email: 'user@test.com' };
 			},
-			decode(token: string) {
+			decode(_token: string) {
 				// Return JWT payload with exp claim (Unix timestamp in seconds)
 				const now = Math.floor(Date.now() / 1000);
 				return {
@@ -475,7 +475,7 @@ describe('AuthService - Additional Tests', () => {
 			await service.validateUser(user, 'password');
 			const logCalls2 = mockAppLogger.getLogCalls();
 
-			expect(logCalls1 || logCalls2).toBeDefined();
+			expect(logCalls1 ?? logCalls2).toBeDefined();
 		});
 
 		it('should return same JWT service instance', () => {

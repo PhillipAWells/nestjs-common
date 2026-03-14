@@ -14,7 +14,7 @@ describe('PyroscopeService', () => {
 
 	const createMockModuleRef = (config: IPyroscopeConfig, logger: any, metricsService?: any): ModuleRef => {
 		const mockModuleRef = {
-			get: vi.fn((token: any, options?: any) => {
+			get: vi.fn((token: any, _options?: any) => {
 				if (token === PYROSCOPE_CONFIG_TOKEN) return config;
 				if (token === Logger) return logger;
 				if (token === MetricsService) {

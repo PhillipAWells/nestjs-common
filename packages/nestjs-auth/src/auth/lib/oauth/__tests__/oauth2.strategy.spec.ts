@@ -15,7 +15,7 @@ describe('OAuth2 Strategy - Token Exchange & User Mapping', () => {
 				validateCalls.push({ profile, accessToken, refreshToken });
 				return {
 					id: profile.id,
-					email: profile.emails?.[0]?.value || profile.email,
+					email: profile.emails?.[0]?.value ?? profile.email,
 					firstName: profile.displayName?.split(' ')[0],
 					lastName: profile.displayName?.split(' ')[1],
 					role: 'user',
