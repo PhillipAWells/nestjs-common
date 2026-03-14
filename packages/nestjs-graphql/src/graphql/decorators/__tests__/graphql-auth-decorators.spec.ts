@@ -1,38 +1,21 @@
-// TODO: Re-enable imports after breaking circular dependency with @pawells/nestjs-auth
-// import {
-// 	Auth,
-// 	Public,
-// 	Roles,
-// 	CurrentUser,
-// 	AuthToken,
-// 	IS_PUBLIC_KEY,
-// 	ROLES_KEY,
-// 	GraphQLPublic,
-// 	GraphQLAuth,
-// 	GraphQLRoles,
-// 	GraphQLCurrentUser,
-// 	GraphQLAuthToken,
-// 	GraphQLContextParam,
-// 	GraphQLUser,
-// } from '../graphql-auth-decorators.js';
+import {
+	Auth,
+	Public,
+	Roles,
+	CurrentUser,
+	AuthToken,
+	IS_PUBLIC_KEY,
+	ROLES_KEY,
+	GraphQLPublic,
+	GraphQLAuth,
+	GraphQLRoles,
+	GraphQLCurrentUser,
+	GraphQLAuthToken,
+	GraphQLContextParam,
+	GraphQLUser,
+} from '../graphql-auth-decorators.js';
 
-// Dummy declarations to allow the test file to compile while imports are commented out
-const Auth: any = undefined;
-const Public: any = undefined;
-const Roles: any = undefined;
-const CurrentUser: any = undefined;
-const AuthToken: any = undefined;
-const IS_PUBLIC_KEY: any = undefined;
-const ROLES_KEY: any = undefined;
-const GraphQLPublic: any = undefined;
-const GraphQLAuth: any = undefined;
-const GraphQLRoles: any = undefined;
-const GraphQLCurrentUser: any = undefined;
-const GraphQLAuthToken: any = undefined;
-const GraphQLContextParam: any = undefined;
-const GraphQLUser: any = undefined;
-
-describe.skip('GraphQL Auth Decorators (Re-exports)', () => {
+describe('GraphQL Auth Decorators (Re-exports)', () => {
 	describe('Base Decorator Re-exports', () => {
 		it('should re-export Auth', () => {
 			expect(typeof Auth).toBe('function');
