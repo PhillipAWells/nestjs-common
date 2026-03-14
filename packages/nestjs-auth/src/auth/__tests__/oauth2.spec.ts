@@ -104,7 +104,7 @@ describe('OAuth2 Integration Tests', () => {
 			// Mock JWKS response
 			const mockJwk = {
 				kty: 'RSA',
-			use: 'sig',
+				use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 			};
