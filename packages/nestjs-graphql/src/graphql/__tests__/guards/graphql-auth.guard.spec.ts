@@ -118,11 +118,10 @@ describe('GraphQLAuthGuard', () => {
 		});
 	});
 
-	// TODO: Restore handleRequest tests after re-enabling BaseAuthGuard extension
-	// (blocked by circular dependency between nestjs-graphql and nestjs-auth)
-	describe('handleRequest', () => {
-		it('is not yet implemented (pending BaseAuthGuard circular-dep resolution)', () => {
+	describe('Guard structure', () => {
+		it('should implement CanActivate without handleRequest (not a Passport AuthGuard)', () => {
 			expect(typeof (guard as any).handleRequest).toBe('undefined');
+			expect(typeof guard.canActivate).toBe('function');
 		});
 	});
 });

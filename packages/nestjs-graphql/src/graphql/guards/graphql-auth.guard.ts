@@ -1,12 +1,10 @@
-import { Injectable, ExecutionContext, UnauthorizedException, CanActivate } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException, CanActivate, Logger } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-// import { BaseAuthGuard } from '@pawells/nestjs-auth'; // TODO: Re-enable after breaking circular dependency
-// import { DAYS_IN_WEEK } from '@pawells/nestjs-auth/constants/auth-timeouts.constants.ts';
 
 /**
  * GraphQL Authentication Guard
  *
- * Extends BaseAuthGuard to work with GraphQL operations.
+ * Implements CanActivate to work with GraphQL operations.
  * Extracts JWT tokens from GraphQL context and validates them.
  * Supports both queries/mutations and subscriptions.
  *
@@ -19,14 +17,15 @@ import { GqlExecutionContext } from '@nestjs/graphql';
  * }
  * ```
  */
-// TODO: Restore BaseAuthGuard extension after breaking circular dependency
 @Injectable()
 export class GraphQLAuthGuard implements CanActivate {
+	private readonly logger = new Logger(GraphQLAuthGuard.name);
+
 	/**
 	 * Determines if the current request can proceed
 	 *
 	 * @param context - The execution context
-	 * @returns Promise<boolean> - True if authenticated, throws exception otherwise
+	 * @returns boolean - True if authenticated, throws exception otherwise
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Extract GraphQL context
@@ -37,14 +36,14 @@ export class GraphQLAuthGuard implements CanActivate {
 		const token = this.extractTokenFromHeader(request);
 
 		if (!token) {
-			// TODO: Re-enable logging after re-adding BaseAuthGuard
-			// this.logger.warn('No authentication token provided');
+			this.logger.warn('No authentication token provided');
 			throw new UnauthorizedException('Authentication required');
 		}
 
 		// Verify request.user is populated (set by a Passport strategy upstream)
 		const { user } = request;
 		if (!user) {
+			this.logger.warn('Authentication token invalid: user not found on request');
 			throw new UnauthorizedException('Invalid authentication token');
 		}
 
@@ -60,7 +59,9 @@ export class GraphQLAuthGuard implements CanActivate {
 	 * @param request - The HTTP request object
 	 * @returns string | null - The extracted token or null
 	 */
-	protected extractTokenFromHeader(request: any): string | null {
+	protected extractTokenFromHeader(
+		request: { headers?: { authorization?: string } },
+	): string | null {
 		const authHeader: unknown = request.headers?.authorization;
 
 		if (authHeader && typeof authHeader === 'string') {
@@ -72,21 +73,4 @@ export class GraphQLAuthGuard implements CanActivate {
 
 		return null;
 	}
-
-	/**
-	 * Handles authentication errors from passport strategies
-	 *
-	 * @param err - The error from passport
-	 * @param user - The authenticated user
-	 * @param info - Additional info from passport
-	 * @returns any - The user object or throws exception
-	 */
-	// TODO: Restore after breaking circular dependency
-	// public handleRequest(err: any, user: any, info: any): any {
-	// 	if (err || !user) {
-	// 		this.logger.warn(`Authentication request failed: ${err?.message ?? info?.message ?? 'Unknown error'}`);
-	// 		throw err ?? new UnauthorizedException('Authentication failed');
-	// 	}
-	// 	return user;
-	// }
 }

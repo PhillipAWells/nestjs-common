@@ -4,6 +4,17 @@ import { JwtService } from '@nestjs/jwt';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 /**
+ * Connection parameters for WebSocket authentication
+ */
+interface WebSocketConnectionParams {
+	authorization?: string;
+	Authorization?: string;
+	token?: string;
+	authToken?: string;
+	[key: string]: unknown;
+}
+
+/**
  * Service for WebSocket connection authentication
  */
 @Injectable()
@@ -25,7 +36,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
    * @param connectionParams Connection parameters from client
    * @returns Authentication result
    */
-	public async authenticate(connectionParams: any): Promise<{
+	public async authenticate(connectionParams: WebSocketConnectionParams): Promise<{
 		authenticated: boolean;
 		userId?: string;
 		error?: string;
@@ -58,8 +69,11 @@ export class WebSocketAuthService implements LazyModuleRefService {
 				authenticated: true,
 				userId,
 			};
-		} catch (error: any) {
-			this.logger.error(`WebSocket authentication error: ${error.message}`, error.stack);
+		} catch (error: unknown) {
+			this.logger.error(
+				`WebSocket authentication error: ${error instanceof Error ? error.message : String(error)}`,
+				error instanceof Error ? error.stack : undefined,
+			);
 			return {
 				authenticated: false,
 				error: 'Authentication failed',
@@ -89,8 +103,8 @@ export class WebSocketAuthService implements LazyModuleRefService {
 			}
 
 			return payload.sub;
-		} catch (error: any) {
-			this.logger.warn(`Token validation error: ${error.message}`);
+		} catch (error: unknown) {
+			this.logger.warn(`Token validation error: ${error instanceof Error ? error.message : String(error)}`);
 			return null;
 		}
 	}
@@ -100,7 +114,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
    * @param connectionParams Connection parameters
    * @returns Token string or null
    */
-	private extractToken(connectionParams: any): string | null {
+	private extractToken(connectionParams: WebSocketConnectionParams): string | null {
 		// Try different sources for the token
 		return (
 			connectionParams.authorization ??
