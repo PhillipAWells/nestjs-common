@@ -66,6 +66,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	private readonly trustProxy: boolean;
 	private capacityThresholdCrossedCount = 0;
 	private pruneIntervalHandle: ReturnType<typeof setInterval> | undefined;
+	private _isPruning = false;
 
 	constructor(
 		@Inject(ConfigService) @Optional() private readonly configService?: ConfigService,
@@ -416,7 +417,11 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 				`Threshold crossed ${this.capacityThresholdCrossedCount} times.`,
 			);
 
-			this.pruneTokenTimestamps();
+			if (!this._isPruning) {
+				this._isPruning = true;
+				this.pruneTokenTimestamps();
+				this._isPruning = false;
+			}
 			// Check again after pruning
 			if (this.tokenGenTimestamps.size >= CSRFService.MAX_TRACKED_IPS) {
 				// eslint-disable-next-line no-magic-numbers
