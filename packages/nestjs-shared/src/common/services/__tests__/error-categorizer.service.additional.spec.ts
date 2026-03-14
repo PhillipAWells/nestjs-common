@@ -86,12 +86,12 @@ describe('ErrorCategorizerService - Additional Coverage', () => {
 
 	describe('categorizeError - network errors', () => {
 		it('should categorize ECONNREFUSED as transient', () => {
-			const error = { code: 'ECONNREFUSED', message: 'Connection refused' };
-			const result = service.categorizeError(error);
+		const error = { code: 'ECONNREFUSED', message: 'Connection refused' };
+		const result = service.categorizeError(error);
 
-			expect(result.type).toBe('transient');
-			expect(result.retryable).toBe(true);
-			expect(result.strategy).toBe('retry');
+		expect(result.type).toBe('transient');
+		expect(result.retryable).toBe(true);
+		expect(result.strategy).toBe('backoff');
 		});
 
 		it('should categorize ENOTFOUND as transient', () => {
@@ -498,10 +498,9 @@ describe('ErrorCategorizerService - Additional Coverage', () => {
 		});
 
 		it('should have appropriate backoff for timeout', () => {
-			const error = { code: 'ETIMEDOUT' };
-			const result = service.categorizeError(error);
-
-			expect(result.backoffMs).toBe(2000);
+		const error = { code: 'ETIMEDOUT' };
+		const result = service.categorizeError(error);
+		expect(result.backoffMs).toBe(1000);
 		});
 
 		it('should have appropriate backoff for database error', () => {

@@ -31,6 +31,7 @@ describe('OAuthService', () => {
 		it('should convert valid RSA JWK to PEM', async () => {
 			const mockJwk = {
 				kty: 'RSA',
+			use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 				d: 'X4cTteJY_gn4FYPsXB8rdXix5vwsg1FLN5E3EaG6RJoVH-HLLKD9M7dx5oo7GURknchnrRweUkC7hT5fJLM0WbFAKNLWY2vv7B6NqXSzUvxT0_YSfqijwp3RTzlBaCxWp4doFk5N2o8Gy_nHNKroADIkJ46pRUohsXywbReAdYaMwFs9tv8d_cPVY3i07a3t8MNJLtmcyclZhTQK4MEQKR2L32wcZxlVYqWJ9z4o9DImshTk6XpfTiDbI5_0T7_8V-i3w',
@@ -63,6 +64,7 @@ describe('OAuthService', () => {
 		it('should handle JWK with leading zeros in key components', async () => {
 			const mockJwk = {
 				kty: 'RSA',
+			use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 			};
@@ -88,7 +90,7 @@ describe('OAuthService', () => {
 			vi.spyOn((service as any).httpClient, 'get').mockResolvedValue(mockAxiosResponse);
 			vi.spyOn(service as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 
-			await expect((service as any).getPublicKey('test-provider')).rejects.toThrow('No JWK found');
+			await expect((service as any).getPublicKey('test-provider')).rejects.toThrow('No suitable signing key found in JWKS');
 		});
 
 		it('should throw error when JWKS URL is not configured', async () => {
@@ -100,6 +102,7 @@ describe('OAuthService', () => {
 		it('should cache converted PEM key', async () => {
 			const mockJwk = {
 				kty: 'RSA',
+			use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 			};
@@ -125,6 +128,7 @@ describe('OAuthService', () => {
 		it('should validate JWT token with PEM public key', async () => {
 			const mockJwk = {
 				kty: 'RSA',
+			use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 			};

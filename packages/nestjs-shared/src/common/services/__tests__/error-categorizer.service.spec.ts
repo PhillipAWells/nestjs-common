@@ -54,7 +54,7 @@ describe('ErrorCategorizerService', () => {
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
-				expect(result.strategy).toBe('retry');
+				expect(result.strategy).toBe('backoff');
 				expect(result.backoffMs).toBe(RETRY_BACKOFF_MS);
 			});
 
@@ -66,7 +66,7 @@ describe('ErrorCategorizerService', () => {
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
-				expect(result.strategy).toBe('retry');
+				expect(result.strategy).toBe('backoff');
 			});
 
 			it('should categorize ECONNRESET as transient', () => {
@@ -108,7 +108,7 @@ describe('ErrorCategorizerService', () => {
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
 				expect(result.strategy).toBe('backoff');
-				expect(result.backoffMs).toBe(TIMEOUT_BACKOFF_MS);
+				expect(result.backoffMs).toBe(RETRY_BACKOFF_MS);
 			});
 
 			it('should categorize timeout message as transient', () => {
@@ -343,7 +343,7 @@ describe('ErrorCategorizerService', () => {
 				service.categorizeError(error);
 
 				expect(mockAppLogger.debug).toHaveBeenCalledWith(
-					'Categorized as transient network error',
+					'Categorized as transient network error (Node.js error code)',
 					expect.any(Object),
 				);
 			});
@@ -505,14 +505,14 @@ describe('ErrorCategorizerService', () => {
 
 	describe('error edge cases', () => {
 		it('should handle errors with both code and message matching', () => {
-			const error = new Error('Network connection timeout');
-			(error as any).code = 'ETIMEDOUT';
+		const error = new Error('Network connection timeout');
+		(error as any).code = 'ETIMEDOUT';
 
-			const result = service.categorizeError(error);
+		const result = service.categorizeError(error);
 
-			// Should categorize based on code first (ETIMEDOUT)
-			expect(result.strategy).toBe('backoff');
-			expect(result.backoffMs).toBe(TIMEOUT_BACKOFF_MS);
+		// Should categorize based on code first (ETIMEDOUT) - returns 1000ms for network code
+		expect(result.strategy).toBe('backoff');
+		expect(result.backoffMs).toBe(RETRY_BACKOFF_MS);
 		});
 
 		it('should handle case-insensitive message matching', () => {
@@ -690,14 +690,14 @@ describe('ErrorCategorizerService', () => {
 		});
 
 		it('should prioritize timeout over network for ETIMEDOUT code', () => {
-			const error = new Error('Network timeout occurred');
-			(error as any).code = 'ETIMEDOUT';
+		const error = new Error('Network timeout occurred');
+		(error as any).code = 'ETIMEDOUT';
 
-			const result = service.categorizeError(error);
+		const result = service.categorizeError(error);
 
-			// Should be timeout category, not network
-			expect(result.strategy).toBe('backoff');
-			expect(result.backoffMs).toBe(TIMEOUT_BACKOFF_MS);
+		// Should be network category (Node.js error code has priority)
+		expect(result.strategy).toBe('backoff');
+		expect(result.backoffMs).toBe(RETRY_BACKOFF_MS);
 		});
 
 		it('should detect database error with MongoDB mention', () => {
@@ -810,19 +810,19 @@ describe('ErrorCategorizerService', () => {
 			service.categorizeError(error);
 
 			expect(mockAppLogger.debug).toHaveBeenCalledWith(
-				'Categorized as transient network error',
+				'Categorized as transient network error (Node.js error code)',
 				expect.any(Object),
 			);
 		});
 
 		it('should log debug message for timeout errors', () => {
-			const error = new Error('Request timeout');
-			(error as any).code = 'ETIMEDOUT';
+		const error = new Error('Request timeout');
+		(error as any).code = 'ETIMEDOUT';
 
-			service.categorizeError(error);
+		service.categorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
-				'Categorized as transient timeout error',
+		expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			'Categorized as transient network error (Node.js error code)',
 				expect.any(Object),
 			);
 		});

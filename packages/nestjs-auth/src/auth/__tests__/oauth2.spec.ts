@@ -104,6 +104,7 @@ describe('OAuth2 Integration Tests', () => {
 			// Mock JWKS response
 			const mockJwk = {
 				kty: 'RSA',
+			use: 'sig',
 				n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG',
 				e: 'AQAB',
 			};
@@ -148,7 +149,7 @@ describe('OAuth2 Integration Tests', () => {
 		it('should handle invalid OAuth2 tokens', async () => {
 			vi.spyOn(oauthService as any, 'getJwksUrl').mockReturnValue('https://example.com/.well-known/jwks.json');
 			vi.spyOn((oauthService as any).httpClient, 'get').mockResolvedValue({
-				data: { keys: [{ kty: 'RSA', n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG', e: 'AQAB' }] },
+				data: { keys: [{ kty: 'RSA', use: 'sig', n: '0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GYTAJwTdfWbLwJHYG', e: 'AQAB' }] },
 			});
 
 			const jwt = require('jsonwebtoken');
