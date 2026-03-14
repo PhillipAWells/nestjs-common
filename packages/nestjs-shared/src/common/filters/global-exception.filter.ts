@@ -33,18 +33,31 @@ export interface ErrorResponseBody {
 
 @Catch(BaseApplicationError, Error)
 export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefService {
+	private _logger: AppLogger | undefined;
+	private _errorSanitizer: ErrorSanitizerService | undefined;
+	private _errorCategorizer: ErrorCategorizerService | undefined;
+
 	constructor(public readonly Module: ModuleRef) {}
 
 	private get Logger(): AppLogger {
-		return this.Module.get(AppLogger);
+		if (!this._logger) {
+			this._logger = this.Module.get(AppLogger);
+		}
+		return this._logger!;
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
-		return this.Module.get(ErrorSanitizerService);
+		if (!this._errorSanitizer) {
+			this._errorSanitizer = this.Module.get(ErrorSanitizerService);
+		}
+		return this._errorSanitizer!;
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
-		return this.Module.get(ErrorCategorizerService);
+		if (!this._errorCategorizer) {
+			this._errorCategorizer = this.Module.get(ErrorCategorizerService);
+		}
+		return this._errorCategorizer!;
 	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {
