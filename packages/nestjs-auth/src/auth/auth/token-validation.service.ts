@@ -14,8 +14,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Comprehensive token validation
-   */
+	   * Comprehensive token validation
+	   */
 	public validateToken(token: string, type: 'access' | 'refresh' = 'access'): JWTPayload {
 		try {
 			// Verify signature first — throws if signature is invalid or token is expired
@@ -54,8 +54,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate required claims
-   */
+	   * Validate required claims
+	   */
 	private validateRequiredClaims(payload: JWTPayload): void {
 		const requiredClaims: (keyof JWTPayload)[] = ['sub', 'email', 'iat', 'exp'];
 
@@ -67,8 +67,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate claim values
-   */
+	   * Validate claim values
+	   */
 	private validateClaimValues(payload: JWTPayload): void {
 		// Validate subject (user ID)
 		if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
@@ -92,8 +92,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate token type
-   */
+	   * Validate token type
+	   */
 	private validateTokenType(payload: JWTPayload, expectedType: 'access' | 'refresh'): void {
 		const tokenType = payload.type ?? 'access';
 
@@ -105,8 +105,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate token age
-   */
+	   * Validate token age
+	   */
 	private validateTokenAge(payload: JWTPayload): void {
 		const tokenAge = Math.floor(Date.now() / MS_PER_SECOND) - (payload.iat ?? 0);
 		const maxAge = TOKEN_TTL_24_HOURS;
@@ -117,8 +117,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate issuer
-   */
+	   * Validate issuer
+	   */
 	private validateIssuer(payload: JWTPayload): void {
 		const expectedIssuer = process.env['JWT_ISSUER'] ?? 'nestjs-app';
 
@@ -130,8 +130,8 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate audience
-   */
+	   * Validate audience
+	   */
 	private validateAudience(payload: JWTPayload): void {
 		const expectedAudience = process.env['JWT_AUDIENCE'] ?? 'nestjs-api';
 
@@ -143,10 +143,10 @@ export class TokenValidationService implements LazyModuleRefService {
 	}
 
 	/**
-   * Validate email format
-   */
+	   * Validate email format
+	   */
 	private isValidEmail(email: string): boolean {
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
 		return emailRegex.test(email);
 	}
 }
