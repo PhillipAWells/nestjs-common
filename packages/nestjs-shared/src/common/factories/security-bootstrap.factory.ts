@@ -144,6 +144,9 @@ export function ApplySecurityMiddleware(
 			if (req.params) {
 				req.params = sanitizeObject(req.params, 0, logger);
 			}
+			if (req.cookies && typeof req.cookies === 'object') {
+				req.cookies = sanitizeObject(req.cookies);
+			}
 			next();
 		});
 		logger.log('MongoDB injection prevention middleware applied');
@@ -172,16 +175,16 @@ export function ApplySecurityMiddleware(
 			helmet({
 				contentSecurityPolicy: {
 					directives: {
-						defaultSrc: ['\'self\''],
-						scriptSrc: ['\'self\''],
-						styleSrc: ['\'self\'', ...cspStyleSrc],
-						imgSrc: ['\'self\'', ...cspImgSrc],
-						connectSrc: ['\'self\'', ...cspConnectSrc],
-						fontSrc: ['\'self\'', ...cspFontSrc],
-						baseUri: ['\'self\''],
-						objectSrc: ['\'none\''],
-						mediaSrc: ['\'self\''],
-						frameSrc: ['\'none\''],
+						defaultSrc: [...new Set(['\'self\''])],
+						scriptSrc: [...new Set(['\'self\''])],
+						styleSrc: [...new Set(['\'self\'', ...cspStyleSrc])],
+						imgSrc: [...new Set(['\'self\'', ...cspImgSrc])],
+						connectSrc: [...new Set(['\'self\'', ...cspConnectSrc])],
+						fontSrc: [...new Set(['\'self\'', ...cspFontSrc])],
+						baseUri: [...new Set(['\'self\''])],
+						objectSrc: [...new Set(['\'none\''])],
+						mediaSrc: [...new Set(['\'self\''])],
+						frameSrc: [...new Set(['\'none\''])],
 					},
 				},
 				hsts: {
