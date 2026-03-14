@@ -176,13 +176,13 @@ export class BaseAuthGuard implements CanActivate, LazyModuleRefService {
 
 	constructor(public readonly Module: ModuleRef) {}
 
-	public async canActivate(context: ExecutionContext): Promise<never> {
+	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		const config = this.Config;
 		try {
 			// Check if authentication is required for this route/resolver
 			const isAuthRequired = config.required ?? true;
 			if (!isAuthRequired) {
-				return true as any;
+				return true;
 			}
 
 			// Extract token
