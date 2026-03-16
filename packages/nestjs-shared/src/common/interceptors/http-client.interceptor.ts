@@ -5,8 +5,10 @@ import { AppLogger } from '../services/logger.service.js';
 
 @Injectable()
 export class HttpClientInterceptor implements NestInterceptor {
+	private readonly contextualLogger: AppLogger;
+
 	constructor(private readonly logger: AppLogger) {
-		this.logger = this.logger.createContextualLogger(HttpClientInterceptor.name);
+		this.contextualLogger = this.logger.createContextualLogger(HttpClientInterceptor.name);
 	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -14,7 +16,7 @@ export class HttpClientInterceptor implements NestInterceptor {
 		const startTime = Date.now();
 
 		// Log outgoing request
-		this.logger.debug('HTTP request', JSON.stringify({
+		this.contextualLogger.debug('HTTP request', JSON.stringify({
 			method: request.method,
 			url: request.url,
 			headers: this.sanitizeHeaders(request.headers),
@@ -24,7 +26,7 @@ export class HttpClientInterceptor implements NestInterceptor {
 		return next.handle().pipe(
 			tap((response) => {
 				const duration = Date.now() - startTime;
-				this.logger.info('HTTP response', JSON.stringify({
+				this.contextualLogger.info('HTTP response', JSON.stringify({
 					method: request.method,
 					url: request.url,
 					statusCode: response.statusCode ?? response.status,
@@ -34,7 +36,7 @@ export class HttpClientInterceptor implements NestInterceptor {
 			}),
 			catchError((error) => {
 				const duration = Date.now() - startTime;
-				this.logger.error('HTTP request failed', JSON.stringify({
+				this.contextualLogger.error('HTTP request failed', JSON.stringify({
 					method: request.method,
 					url: request.url,
 					statusCode: error.status ?? error.response?.status,

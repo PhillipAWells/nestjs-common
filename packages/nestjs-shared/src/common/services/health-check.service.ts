@@ -67,7 +67,7 @@ export class HealthCheckService implements LazyModuleRefService {
 
 	constructor(public readonly Module: ModuleRef) {}
 
-	private get contextualLogger(): AppLogger {
+	private get Logger(): AppLogger {
 		if (!this._contextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
 			this._contextualLogger = baseLogger.createContextualLogger(HealthCheckService.name);
@@ -83,7 +83,7 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * @returns Health check response
 	 */
 	public getHealth(serviceName?: string, version?: string): IHealthCheck {
-		this.contextualLogger.debug('Health check requested');
+		this.Logger.debug('Health check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.OK,
@@ -98,7 +98,7 @@ export class HealthCheckService implements LazyModuleRefService {
 			response.version = version;
 		}
 
-		this.contextualLogger.debug(`Health check response: ${JSON.stringify(response)}`);
+		this.Logger.debug(`Health check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 
@@ -109,7 +109,7 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * @returns Readiness check response
 	 */
 	public getReadiness(checks?: Record<string, string>): IHealthCheck {
-		this.contextualLogger.debug('Readiness check requested');
+		this.Logger.debug('Readiness check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.READY,
@@ -117,7 +117,7 @@ export class HealthCheckService implements LazyModuleRefService {
 			checks: checks ?? {},
 		};
 
-		this.contextualLogger.debug(`Readiness check response: ${JSON.stringify(response)}`);
+		this.Logger.debug(`Readiness check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 
@@ -127,14 +127,14 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * @returns Liveness check response
 	 */
 	public getLiveness(): IHealthCheck {
-		this.contextualLogger.debug('Liveness check requested');
+		this.Logger.debug('Liveness check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.ALIVE,
 			timestamp: new Date().toISOString(),
 		};
 
-		this.contextualLogger.debug(`Liveness check response: ${JSON.stringify(response)}`);
+		this.Logger.debug(`Liveness check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 }
