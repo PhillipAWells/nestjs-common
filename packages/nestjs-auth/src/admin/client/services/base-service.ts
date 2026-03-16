@@ -25,14 +25,16 @@ const HTTP_STATUS_REQUEST_TIMEOUT = 408;
  * Base service class for Keycloak client services
  */
 export abstract class BaseService {
-	private readonly nestLogger: NestLogger = new NestLogger(BaseService.name);
+	private readonly nestLogger: NestLogger;
 
 	constructor(
 		protected adminClient: KcAdminClient,
 		protected grantedScopes: ReadonlySet<KeycloakAdminScope>,
 		protected logger?: Logger,
 		protected retryConfig?: RetryConfig,
-	) {}
+	) {
+		this.nestLogger = new NestLogger(this.constructor.name);
+	}
 
 	/**
 	 * Asserts that the given scope is granted. Throws {@link KeycloakAdminScopeError}

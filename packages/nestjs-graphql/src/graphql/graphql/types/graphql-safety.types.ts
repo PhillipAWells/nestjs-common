@@ -1,20 +1,9 @@
 import { GraphQLError } from 'graphql';
 import { Request, Response } from 'express';
+import { GraphQLErrorCode } from '../error-codes.js';
 
-/**
- * GraphQL Error Codes Enum
- * Standard error codes for GraphQL operations
- */
-export enum GraphQLErrorCode {
-	INTERNAL_ERROR = 'INTERNAL_ERROR',
-	VALIDATION_ERROR = 'VALIDATION_ERROR',
-	AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
-	AUTHORIZATION_ERROR = 'AUTHORIZATION_ERROR',
-	RATE_LIMIT_ERROR = 'RATE_LIMIT_ERROR',
-	NOT_FOUND_ERROR = 'NOT_FOUND_ERROR',
-	CONFLICT_ERROR = 'CONFLICT_ERROR',
-	BAD_REQUEST_ERROR = 'BAD_REQUEST_ERROR',
-}
+// Re-export GraphQLErrorCode for backward compatibility with test imports
+export { GraphQLErrorCode } from '../error-codes.js';
 
 /**
  * User information interface for GraphQL context

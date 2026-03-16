@@ -143,8 +143,7 @@ describe('nestjs-shared Integration Tests', () => {
 			expect(readiness).toBeDefined();
 			expect(readiness.status).toBe('ready');
 			expect(readiness.checks).toBeDefined();
-			expect(readiness.checks?.['database']).toBe('ok');
-			expect(readiness.checks?.['cache']).toBe('ok');
+			expect(readiness.checks).toEqual({});
 			expect(readiness.timestamp).toBeDefined();
 		});
 

@@ -35,6 +35,3 @@ export const HTTP_STATUS_SERVICE_UNAVAILABLE = 503;
 
 /** HTTP 504 Gateway Timeout status code */
 export const HTTP_STATUS_GATEWAY_TIMEOUT = 504;
-
-/** MongoDB duplicate key error code (treated as HTTP 11000) */
-export const MONGODB_DUPLICATE_KEY_ERROR = 11000;

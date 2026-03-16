@@ -14,6 +14,13 @@ export interface IPyroscopeModuleOptions {
 	isGlobal?: boolean;
 
 	/**
+	 * Whether to register the health check controller.
+	 * Defaults to true. Set to false to disable the /profiling/health, /profiling/metrics,
+	 * /profiling/status, and /profiling/metrics/prometheus endpoints.
+	 */
+	enableHealthChecks?: boolean;
+
+	/**
 	 * Pyroscope configuration object or factory function.
 	 * If a function, will be called during module initialization.
 	 */

@@ -201,7 +201,7 @@ describe('GraphQLService - Type Safety', () => {
 
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.AUTHENTICATION_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.UNAUTHENTICATED);
 		});
 
 		it('should map authorization errors correctly', () => {
@@ -209,7 +209,7 @@ describe('GraphQLService - Type Safety', () => {
 
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.AUTHORIZATION_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.FORBIDDEN);
 		});
 
 		it('should map not found errors correctly', () => {
@@ -217,7 +217,7 @@ describe('GraphQLService - Type Safety', () => {
 
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.NOT_FOUND_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.NOT_FOUND);
 		});
 
 		it('should default to internal error', () => {

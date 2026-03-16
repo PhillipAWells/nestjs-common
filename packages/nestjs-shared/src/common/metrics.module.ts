@@ -1,7 +1,23 @@
 import { Module, Global, DynamicModule } from '@nestjs/common';
+import { ModuleMetadata } from '@nestjs/common/interfaces';
 import { MetricsRegistryService } from './services/metrics-registry.service.js';
 import { HTTPMetricsInterceptor } from './interceptors/http-metrics.interceptor.js';
 import { MetricsController } from './controllers/metrics.controller.js';
+
+/**
+ * Async options for MetricsModule
+ */
+export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+	/**
+	 * Optional factory function to configure metrics module options
+	 */
+	useFactory?: (...args: any[]) => any | Promise<any>;
+
+	/**
+	 * Dependencies to inject into the factory function
+	 */
+	inject?: any[];
+}
 
 /**
  * Metrics Module.
@@ -61,11 +77,11 @@ export class MetricsModule {
 	/**
 	 * Configure metrics module with async options
 	 */
-	public static forRootAsync(options: any): DynamicModule {
+	public static forRootAsync(options: MetricsModuleAsyncOptions): DynamicModule {
 		return {
 			module: MetricsModule,
 			global: true,
-			...options,
+			imports: options.imports,
 		};
 	}
 }

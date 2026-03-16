@@ -34,11 +34,13 @@ describe('MetricsModule', () => {
 			expect(result.global).toBe(true);
 		});
 
-		it('should handle custom options', () => {
-			const customOption = { custom: 'value' };
+		it('should handle custom options with useFactory', () => {
+			const customOption = { useFactory: () => ({}) };
 			const result = MetricsModule.forRootAsync(customOption);
 
-			expect((result as any).custom).toBe('value');
+			expect(result).toBeDefined();
+			expect(result.module).toBe(MetricsModule);
+			expect(result.global).toBe(true);
 		});
 	});
 

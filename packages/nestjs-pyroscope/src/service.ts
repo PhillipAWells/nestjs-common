@@ -88,10 +88,10 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	// eslint-disable-next-line no-magic-numbers
 	private readonly STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(private readonly moduleRef: ModuleRef) {}
 
 	private get config(): IPyroscopeConfig {
-		const cfg = this.Module.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
+		const cfg = this.moduleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 		if (!cfg) {
 			throw new Error('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
 		}
@@ -99,12 +99,12 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	private get logger(): Logger {
-		return this.Module.get(Logger, { strict: false }) ?? new Logger(PyroscopeService.name);
+		return this.moduleRef.get(Logger, { strict: false }) ?? new Logger(PyroscopeService.name);
 	}
 
 	private get metricsService(): MetricsService | undefined {
 		try {
-			return this.Module.get(MetricsService, { strict: false });
+			return this.moduleRef.get(MetricsService, { strict: false });
 		} catch {
 			return undefined;
 		}

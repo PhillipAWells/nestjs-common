@@ -1,4 +1,4 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -69,9 +69,9 @@ export class HTTPMetricsInterceptor implements NestInterceptor, LazyModuleRefSer
 			catchError((error: unknown) => {
 				const duration = Date.now() - startTime;
 				const contentLength = this.getContentLength(request);
-				const statusCode = response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
+				const statusCode = (error instanceof HttpException ? error.getStatus() : undefined) ?? response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
 
-				// Record metrics even on error (use captured statusCode or default)
+				// Record metrics even on error (use status code from HttpException if available, then response, then default)
 				this.MetricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
 				return throwError(() => error);
 			}),

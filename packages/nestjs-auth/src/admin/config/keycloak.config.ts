@@ -18,7 +18,7 @@ export interface KeycloakAdminConfig {
 	timeout?: number;
 	retry?: {
 		maxRetries: number;
-		retryDelay: number;
+		initialDelay: number;
 	};
 	/**
 	 * Explicit list of permitted operation scopes.

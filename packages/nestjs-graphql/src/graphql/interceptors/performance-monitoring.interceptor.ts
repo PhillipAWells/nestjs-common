@@ -55,16 +55,18 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 		const startTime = Date.now();
 
 		return next.handle().pipe(
-			tap(async (result) => {
+			tap((result) => {
 				const duration = Date.now() - startTime;
 
-				// Record successful operation
-				await this.GraphQLPerformanceService.measure(operation, () => result, {
+				// Record successful operation (fire-and-forget with error handling)
+				this.GraphQLPerformanceService.measure(operation, () => result, {
 					fieldName: info.fieldName,
 					operationType: info.operation.operation,
 					args: gqlContext.getArgs(),
 					userId: gqlContext.getContext().user?.id,
 					duration,
+				}).catch((err) => {
+					this.logger.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
 				});
 
 				// Log performance warnings
@@ -74,11 +76,11 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 					this.logger.debug(`Slow GraphQL operation: ${operation} took ${duration}ms`);
 				}
 			}),
-			catchError(async (error) => {
+			catchError((error) => {
 				const duration = Date.now() - startTime;
 
-				// Record failed operation
-				await this.GraphQLPerformanceService.measure(
+				// Record failed operation (fire-and-forget with error handling)
+				this.GraphQLPerformanceService.measure(
 					operation,
 					() => {
 						throw error;
@@ -91,7 +93,9 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 						duration,
 						error: error instanceof Error ? error.message : String(error),
 					},
-				);
+				).catch((err) => {
+					this.logger.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
+				});
 
 				this.logger.error(`GraphQL operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
 

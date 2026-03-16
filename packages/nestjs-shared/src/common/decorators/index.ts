@@ -25,3 +25,10 @@ export {
 	Headers,
 	Cookies,
 } from './common-decorators.js';
+
+// Guard decorators
+export * from './guard.decorators.js';
+
+// Instrumentation
+export { InstrumentationRegistryHolder, Instrument } from './instrument.decorator.js';
+export type { InstrumentOptions } from './instrument.decorator.js';

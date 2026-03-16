@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Logger } from '@nestjs/common';
-import { Reflector , ModuleRef } from '@nestjs/core';
+import { Reflector, ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 

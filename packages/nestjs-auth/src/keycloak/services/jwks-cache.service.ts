@@ -124,7 +124,7 @@ export class JwksCacheService implements OnModuleInit {
 
 		this.isFetching = true;
 		try {
-			const jwksUrl = `${this.options.authServerUrl}/protocol/openid-connect/certs`;
+			const jwksUrl = `${this.options.authServerUrl}/realms/${this.options.realm}/protocol/openid-connect/certs`;
 			const response = await fetch(jwksUrl);
 
 			if (!response.ok) {

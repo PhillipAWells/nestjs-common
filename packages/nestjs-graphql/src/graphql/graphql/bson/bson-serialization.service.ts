@@ -13,13 +13,9 @@ export class BsonSerializationService {
 	 * Check if bson package is available
 	 */
 	public isAvailable(): boolean {
-		try {
-			// Try to check if bson is in node_modules
-			require.resolve('bson');
-			return true;
-		} catch {
-			return false;
-		}
+		// Use the cached bson instance if available
+		// If getBson() has already been called and succeeded, the module is cached
+		return this.bsonLib !== null;
 	}
 
 	/**

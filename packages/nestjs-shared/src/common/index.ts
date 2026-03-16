@@ -16,8 +16,8 @@ export type { BaseDecoratorOptions } from './decorators/index.js';
 export * from './decorators/metric.decorators.js';
 
 // Interfaces
-export type { LogContext, LogEntry, LogLevel, LogMetadata } from './interfaces/index.js';
-export { LOG_LEVEL_STRINGS } from './interfaces/index.js';
+export type { LogContext, LogEntry, LogMetadata } from './interfaces/index.js';
+export { LogLevel, LOG_LEVEL_STRINGS } from './interfaces/index.js';
 export type { ILogger, IContextualLogger } from './interfaces/index.js';
 export type { ICacheProvider } from './interfaces/index.js';
 export { CACHE_PROVIDER } from './interfaces/index.js';

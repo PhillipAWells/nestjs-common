@@ -14,6 +14,8 @@ interface WebSocketConnectionParams {
 	[key: string]: unknown;
 }
 
+const BEARER_PREFIX_LENGTH = 7; // 'Bearer '.length
+
 /**
  * Service for WebSocket connection authentication
  */
@@ -95,8 +97,11 @@ export class WebSocketAuthService implements LazyModuleRefService {
 				return null;
 			}
 
+			// Strip Bearer prefix if present
+			const bearerToken = token.startsWith('Bearer ') ? token.slice(BEARER_PREFIX_LENGTH) : token;
+
 			// Verify token with cryptographic signature validation
-			const payload = await jwtService.verifyAsync(token);
+			const payload = await jwtService.verifyAsync(bearerToken);
 
 			if (!payload?.sub) {
 				return null;

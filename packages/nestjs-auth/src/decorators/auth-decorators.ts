@@ -1,4 +1,4 @@
-import { createParamDecorator, ExecutionContext, SetMetadata } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { createConditionalDecorator } from '@pawells/nestjs-shared/common';
 import { ContextOptions, ExtractRequestFromContext } from './context-utils.js';
 
@@ -154,7 +154,10 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * }
  * ```
  */
-export const Permissions = (...permissions: string[]): MethodDecorator => SetMetadata(PERMISSIONS_KEY, permissions);
+export const Permissions = (...permissions: string[]): MethodDecorator => createConditionalDecorator({
+	key: PERMISSIONS_KEY,
+	value: permissions,
+});
 
 // Re-export context utilities for convenience
 export type { ContextOptions } from './context-utils.js';

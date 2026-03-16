@@ -45,8 +45,8 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		const timer = setInterval(() => {
 			try {
 				callback();
-			} catch (error: any) {
-				this.logger.error(`Keepalive error for connection ${connectionId}: ${error.message}`);
+			} catch (error: unknown) {
+				this.logger.error(`Keepalive error for connection ${connectionId}: ${error instanceof Error ? error.message : String(error)}`);
 			}
 		}, this.SubscriptionConfig.resilience.keepalive.interval);
 
@@ -93,8 +93,8 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 			try {
 				await callback();
 				this.logger.log(`Reconnection successful for connection: ${connectionId}`);
-			} catch (error: any) {
-				this.logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${error.message}`);
+			} catch (error: unknown) {
+				this.logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${error instanceof Error ? error.message : String(error)}`);
 				// Schedule next attempt
 				this.scheduleReconnection(connectionId, callback, attempt + 1);
 			}
@@ -147,8 +147,8 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 				await recoveryCallback();
 				this.logger.log(`Error recovery successful for connection: ${connectionId}`);
 				return;
-			} catch (recoveryError: any) {
-				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${recoveryError.message}`);
+			} catch (recoveryError: unknown) {
+				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`);
 				attempt++;
 			}
 		}
@@ -166,14 +166,14 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		// Set shutdown timeout
 		this.shutdownTimeout = setTimeout(() => {
 			this.logger.error('Graceful shutdown timeout exceeded, forcing shutdown');
-			process.exit(1);
+			throw new Error('GraphQL WebSocket server failed to shut down gracefully within the timeout period');
 		}, this.SubscriptionConfig.resilience.shutdown.timeout);
 
 		try {
 			await shutdownCallback();
 			this.logger.log('Graceful shutdown completed');
-		} catch (error: any) {
-			this.logger.error(`Shutdown error: ${error.message}`, error.stack);
+		} catch (error: unknown) {
+			this.logger.error(`Shutdown error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
 		} finally {
 			if (this.shutdownTimeout) {
 				clearTimeout(this.shutdownTimeout);

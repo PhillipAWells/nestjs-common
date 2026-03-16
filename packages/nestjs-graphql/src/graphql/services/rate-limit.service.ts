@@ -280,7 +280,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 */
 	public resetLimit(clientId: string): void {
 		this.store.delete(clientId);
-		this.logger.debug(`Reset rate limit for client: ${clientId}`);
+		this.logger.info(`Reset rate limit for client: ${clientId}`);
 	}
 
 	/**

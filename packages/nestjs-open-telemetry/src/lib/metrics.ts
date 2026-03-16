@@ -33,7 +33,7 @@ export function getMeter(name: string, version?: string): Meter {
 	// Evict oldest entry if cache is full (simple FIFO)
 	if (meterCache.size >= MAX_METER_CACHE_SIZE) {
 		const firstKey = meterCache.keys().next().value as string | undefined;
-		if (firstKey) {
+		if (typeof firstKey === 'string') {
 			meterCache.delete(firstKey);
 		}
 	}

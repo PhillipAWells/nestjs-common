@@ -50,18 +50,18 @@ export interface HealthResponse {
  */
 @Controller('profiling')
 export class HealthController {
-	constructor(@Inject(ModuleRef) public readonly Module: ModuleRef) {}
+	constructor(@Inject(ModuleRef) private readonly moduleRef: ModuleRef) {}
 
 	private get pyroscopeService(): PyroscopeService {
-		return this.Module.get(PyroscopeService, { strict: false }); 
+		return this.moduleRef.get(PyroscopeService, { strict: false });
 	}
 
 	private get metricsService(): MetricsService {
-		return this.Module.get(MetricsService, { strict: false }); 
+		return this.moduleRef.get(MetricsService, { strict: false });
 	}
 
 	private get config(): IPyroscopeConfig {
-		return this.Module.get(PYROSCOPE_CONFIG_TOKEN, { strict: false }); 
+		return this.moduleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 	}
 
 	/**

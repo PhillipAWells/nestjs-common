@@ -1,11 +1,11 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-
-const RESULT_SUMMARY_MAX_KEYS = 3;
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+
+const RESULT_SUMMARY_MAX_KEYS = 3;
 
 /**
  * GraphQL Logging Interceptor

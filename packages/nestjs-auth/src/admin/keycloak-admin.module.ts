@@ -49,7 +49,6 @@ export class KeycloakAdminModule {
 				KeycloakHealthIndicator,
 			],
 			exports: [KeycloakAdminService, KeycloakHealthIndicator],
-			global: true,
 		};
 	}
 
@@ -76,7 +75,6 @@ export class KeycloakAdminModule {
 				KeycloakHealthIndicator,
 			],
 			exports: [KeycloakAdminService, KeycloakHealthIndicator],
-			global: true,
 		};
 	}
 }

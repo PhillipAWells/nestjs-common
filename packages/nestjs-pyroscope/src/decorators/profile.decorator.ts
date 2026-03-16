@@ -41,7 +41,7 @@ type AnyFunction = (...args: unknown[]) => unknown;
  * - Profile name is formatted as 'ClassName.methodName'
  */
 export function Profile(options?: { tags?: Record<string, string> }): ClassDecorator {
-	return function(target: object) {
+	return function(target: object): void {
 		const proto = (target as { prototype: Record<string, unknown> }).prototype;
 		const originalMethods = Object.getOwnPropertyNames(proto);
 		const targetName = (target as { name: string }).name;

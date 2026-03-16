@@ -30,7 +30,7 @@ export { PageInfo } from './page-info.type.js';
 export { Connection, Edge, CursorUtils } from './connection.type.js';
 
 // Safety types
-export { GraphQLErrorCode } from './graphql-safety.types.js';
+export { GraphQLErrorCode } from '../error-codes.js';
 export type {
 	IGraphQLUser,
 	IGraphQLContextExtended,

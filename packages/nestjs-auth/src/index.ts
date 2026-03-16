@@ -80,6 +80,7 @@ export {
 	detectContextType,
 	extractRequestFromContext,
 	extractUserFromContext,
+	extractAuthTokenFromContext,
 } from './decorators/auth-decorators.js';
 
 export type { ContextOptions } from './decorators/auth-decorators.js';

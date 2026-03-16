@@ -1,4 +1,4 @@
-import { Injectable, LoggerService } from '@nestjs/common';
+import { LoggerService } from '@nestjs/common';
 import { trace, context as otelContext } from '@opentelemetry/api';
 import { Logger, ILoggerConfig } from '@pawells/logger';
 
@@ -21,7 +21,6 @@ import { Logger, ILoggerConfig } from '@pawells/logger';
  * export class AppModule {}
  * ```
  */
-@Injectable()
 export class OpenTelemetryLogger implements LoggerService {
 	private readonly logger: Logger;
 

@@ -6,12 +6,12 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		it('should have all required error codes', () => {
 			expect(GraphQLErrorCode.INTERNAL_ERROR).toBe('INTERNAL_ERROR');
 			expect(GraphQLErrorCode.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
-			expect(GraphQLErrorCode.AUTHENTICATION_ERROR).toBe('AUTHENTICATION_ERROR');
-			expect(GraphQLErrorCode.AUTHORIZATION_ERROR).toBe('AUTHORIZATION_ERROR');
-			expect(GraphQLErrorCode.RATE_LIMIT_ERROR).toBe('RATE_LIMIT_ERROR');
-			expect(GraphQLErrorCode.NOT_FOUND_ERROR).toBe('NOT_FOUND_ERROR');
-			expect(GraphQLErrorCode.CONFLICT_ERROR).toBe('CONFLICT_ERROR');
-			expect(GraphQLErrorCode.BAD_REQUEST_ERROR).toBe('BAD_REQUEST_ERROR');
+			expect(GraphQLErrorCode.UNAUTHENTICATED).toBe('UNAUTHENTICATED');
+			expect(GraphQLErrorCode.FORBIDDEN).toBe('FORBIDDEN');
+			expect(GraphQLErrorCode.RATE_LIMIT_EXCEEDED).toBe('RATE_LIMIT_EXCEEDED');
+			expect(GraphQLErrorCode.NOT_FOUND).toBe('NOT_FOUND');
+			expect(GraphQLErrorCode.CONFLICT).toBe('CONFLICT');
+			expect(GraphQLErrorCode.BAD_USER_INPUT).toBe('BAD_USER_INPUT');
 		});
 	});
 
@@ -19,14 +19,14 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		it('should create error with typed input', () => {
 			const errorInput: IGraphQLErrorInput = {
 				message: 'User not found',
-				code: GraphQLErrorCode.NOT_FOUND_ERROR,
+				code: GraphQLErrorCode.NOT_FOUND,
 				statusCode: 404,
 				details: { userId: '123' },
 			};
 
 			expect(errorInput).toBeDefined();
 			expect(errorInput.message).toBe('User not found');
-			expect(errorInput.code).toBe(GraphQLErrorCode.NOT_FOUND_ERROR);
+			expect(errorInput.code).toBe(GraphQLErrorCode.NOT_FOUND);
 			expect(errorInput.statusCode).toBe(404);
 			expect(errorInput.details?.userId).toBe('123');
 		});

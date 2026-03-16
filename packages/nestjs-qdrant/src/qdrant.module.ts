@@ -66,7 +66,7 @@ export class QdrantModule {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(options: QdrantModuleOptions, isGlobal = true): DynamicModule {
+	public static forRoot(options: QdrantModuleOptions, isGlobal: boolean = true): DynamicModule {
 		const { name, ...clientOptions } = options;
 		const clientToken = getQdrantClientToken(name);
 		const optionsToken = getQdrantModuleOptionsToken(name);
@@ -121,7 +121,7 @@ export class QdrantModule {
 	 * })
 	 * ```
 	 */
-	public static forRootAsync(options: QdrantModuleAsyncOptions, isGlobal = true): DynamicModule {
+	public static forRootAsync(options: QdrantModuleAsyncOptions, isGlobal: boolean = true): DynamicModule {
 		const clientToken = getQdrantClientToken(options.name);
 		const optionsToken = getQdrantModuleOptionsToken(options.name);
 		// Internal token for raw (unsanitized) options — includes apiKey for client creation

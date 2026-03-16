@@ -2,6 +2,7 @@ import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { HTTPMetricsInterceptor } from '../http-metrics.interceptor.js';
 import { MetricsRegistryService } from '../../services/metrics-registry.service.js';
 import { of, Observable } from 'rxjs';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('HTTPMetricsInterceptor', () => {
 	let interceptor: HTTPMetricsInterceptor;

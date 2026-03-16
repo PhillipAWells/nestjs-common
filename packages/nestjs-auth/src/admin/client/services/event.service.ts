@@ -17,14 +17,14 @@ import { BaseService } from './base-service.js';
  * @example
  * ```typescript
  * // Audit user deletions
- * const events = await keycloakAdmin.events.getAdminEvents({
+ * const events = await keycloakAdmin.events.getAdminEvents('master', {
  *   operationTypes: ['DELETE'],
  *   resourceTypes: ['USER'],
  *   max: 100
  * });
  *
  * // Monitor failed logins
- * const accessEvents = await keycloakAdmin.events.getAccessEvents({
+ * const accessEvents = await keycloakAdmin.events.getAccessEvents('master', {
  *   type: ['LOGIN_ERROR'],
  *   max: 50
  * });
@@ -39,12 +39,13 @@ export class EventService extends BaseService {
 	 *
 	 * Note: Keycloak caps `max` at 100; larger values are silently truncated.
 	 *
+	 * @param realm - The realm name to query events for
 	 * @param query - Optional filters and pagination parameters
 	 * @returns Array of admin events (may be empty if no matches)
 	 *
 	 * @example
 	 * ```typescript
-	 * const events = await this.events.getAdminEvents({
+	 * const events = await this.events.getAdminEvents('master', {
 	 *   operationTypes: ['CREATE', 'UPDATE'],
 	 *   resourceTypes: ['USER', 'CLIENT'],
 	 *   dateFrom: new Date('2024-01-01'),
@@ -53,13 +54,13 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAdminEvents(query?: AdminEventQuery): Promise<KeycloakAdminEvent[]> {
+	public async getAdminEvents(realm: string, query?: AdminEventQuery): Promise<KeycloakAdminEvent[]> {
 		this.requireScope('events:read');
 		try {
 			const params = this.buildAdminEventQuery(query);
 
 			return (await this.withRetry(() =>
-				this.adminClient.realms.findAdminEvents({ realm: this.adminClient.realmName, ...params }),
+				this.adminClient.realms.findAdminEvents({ realm, ...params }),
 			)) as KeycloakAdminEvent[];
 		} catch (error) {
 			return this.handleError(error);
@@ -74,12 +75,13 @@ export class EventService extends BaseService {
 	 *
 	 * Note: Keycloak caps `max` at 100; larger values are silently truncated.
 	 *
+	 * @param realm - The realm name to query events for
 	 * @param query - Optional filters and pagination parameters
 	 * @returns Array of access events (may be empty if no matches)
 	 *
 	 * @example
 	 * ```typescript
-	 * const events = await this.events.getAccessEvents({
+	 * const events = await this.events.getAccessEvents('master', {
 	 *   type: ['LOGIN', 'LOGIN_ERROR'],
 	 *   client: 'my-client',
 	 *   dateFrom: new Date('2024-01-01'),
@@ -87,13 +89,13 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAccessEvents(query?: AccessEventQuery): Promise<KeycloakAccessEvent[]> {
+	public async getAccessEvents(realm: string, query?: AccessEventQuery): Promise<KeycloakAccessEvent[]> {
 		this.requireScope('events:read');
 		try {
 			const params = this.buildAccessEventQuery(query);
 
 			return (await this.withRetry(() =>
-				this.adminClient.realms.findEvents({ realm: this.adminClient.realmName, ...params }),
+				this.adminClient.realms.findEvents({ realm, ...params }),
 			)) as KeycloakAccessEvent[];
 		} catch (error) {
 			return this.handleError(error);

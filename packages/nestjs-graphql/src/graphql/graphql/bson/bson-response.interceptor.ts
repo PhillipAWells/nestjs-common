@@ -1,6 +1,6 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { Observable, from } from 'rxjs';
+import { Observable, from, EMPTY } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
@@ -49,7 +49,7 @@ export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefSe
 
 							// Send BSON buffer directly
 							response.end(bsonBuffer);
-							return data;
+							return EMPTY;
 						},
 						(error: unknown) => {
 							// Log error but fall through to JSON response
@@ -62,7 +62,7 @@ export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefSe
 
 							// Return data as JSON (will be handled by default serialization)
 							response.json(data);
-							return data;
+							return EMPTY;
 						},
 					),
 				);

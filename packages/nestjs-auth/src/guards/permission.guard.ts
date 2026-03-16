@@ -34,7 +34,7 @@ export class PermissionGuard implements CanActivate {
 	constructor(private readonly reflector: Reflector) {}
 
 	public canActivate(context: ExecutionContext): boolean {
-		const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler());
+		const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
 		if (!requiredPermissions || requiredPermissions.length === 0) {
 			// No permissions required, allow access
@@ -53,7 +53,9 @@ export class PermissionGuard implements CanActivate {
 		const hasRequiredPermission = requiredPermissions.some(permission => userRoles.includes(permission));
 
 		if (!hasRequiredPermission) {
-			throw new ForbiddenException(`Insufficient permissions. Required permissions: ${requiredPermissions.join(', ')}`);
+			// Log only the missing permissions, not the full required set
+			const missingPermissions = requiredPermissions.filter(permission => !userRoles.includes(permission));
+			throw new ForbiddenException(`Insufficient permissions. Missing: ${missingPermissions.join(', ')}`);
 		}
 
 		return true;

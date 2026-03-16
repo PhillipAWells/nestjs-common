@@ -57,7 +57,7 @@ export interface CSRFServiceOptions {
  * const isValid = csrfService.validateToken(req);
  *
  * // Refresh token after sensitive operation (login, password change)
- * const newToken = csrfService.refreshToken(req, res);
+ * const newToken = await csrfService.refreshToken(req, res);
  * ```
  */
 @Injectable()
@@ -516,14 +516,16 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @returns New CSRF token
 	 * @throws Error if CSRF_SECRET was not initialized in onModuleInit
 	 */
-	public refreshToken(req: Request, res: Response): string {
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public refreshToken(req: Request, res: Response): Promise<string> {
 		if (!this.csrfProtection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
 
+		// Route through rate limiting to enforce per-IP token generation limits
 		// Clear any session-bound CSRF state by generating a fresh token
 		// The doubleCsrf library handles invalidation through cookie/session updates
-		return this.csrfProtection.generateToken(req, res);
+		return this.generateToken(req, res);
 	}
 
 	/**

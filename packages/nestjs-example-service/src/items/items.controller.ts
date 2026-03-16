@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param, BadRequestException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Auth, Public, CurrentUser } from '@pawells/nestjs-auth';
 import { ItemsService, type Item, type StoredItem } from './items.service.js';
@@ -25,10 +25,10 @@ interface AppUser {
  */
 @Controller('items')
 export class ItemsController {
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly moduleRef: ModuleRef) {}
 
-	private get Items(): ItemsService {
-		return this.Module.get(ItemsService);
+	private get items(): ItemsService {
+		return this.moduleRef.get(ItemsService);
 	}
 
 	/**
@@ -41,7 +41,7 @@ export class ItemsController {
 		@Body() body: StoredItem,
 		@CurrentUser() _user: AppUser,
 	): Promise<void> {
-		await this.Items.upsertItem(body);
+		await this.items.upsertItem(body);
 	}
 
 	/**
@@ -55,9 +55,18 @@ export class ItemsController {
 		@Query('vector') vectorStr: string,
 		@Query('limit') limitStr?: string,
 	): Promise<Item[]> {
+		if (!vectorStr) {
+			throw new BadRequestException('vector query param is required');
+		}
+
 		const vector = vectorStr.split(',').map(Number);
+
+		if (vector.some(n => !isFinite(n))) {
+			throw new BadRequestException('vector must be a comma-separated list of numbers');
+		}
+
 		const limit = limitStr !== undefined ? Number(limitStr) : DEFAULT_LIMIT;
-		return this.Items.findSimilar(vector, limit);
+		return this.items.findSimilar(vector, limit);
 	}
 
 	/**
@@ -70,6 +79,6 @@ export class ItemsController {
 		@Param('id') id: string,
 		@CurrentUser() _user: AppUser,
 	): Promise<void> {
-		await this.Items.deleteItem(id);
+		await this.items.deleteItem(id);
 	}
 }

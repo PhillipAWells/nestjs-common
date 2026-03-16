@@ -88,21 +88,21 @@ describe('GraphQL Service - Advanced Schema & Error Handling', () => {
 			const error = new Error('Authentication required');
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.AUTHENTICATION_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.UNAUTHENTICATED);
 		});
 
 		it('should format error with authorization code', () => {
 			const error = new Error('Authorization denied');
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.AUTHORIZATION_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.FORBIDDEN);
 		});
 
 		it('should format error with not found code', () => {
 			const error = new Error('Resource not found');
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.NOT_FOUND_ERROR);
+			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.NOT_FOUND);
 		});
 
 		it('should include stack trace when configured', () => {

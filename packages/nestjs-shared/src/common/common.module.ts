@@ -12,9 +12,9 @@ import { CSRFService } from './services/csrf.service.js';
 import { CSRFGuard } from './guards/csrf.guard.js';
 import { ErrorCategorizerService } from './services/error-categorizer.service.js';
 import { HttpClientService } from './services/http-client.service.js';
-import { MetricsRegistryService } from './services/metrics-registry.service.js';
 import { HealthCheckService } from './services/health-check.service.js';
 import { SetRequestPropertyDecoratorLogger } from './decorators/request-property.decorator.js';
+import { InstrumentationRegistryHolder } from './decorators/instrument.decorator.js';
 import { ConfigService } from '../config/index.js';
 import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
 
@@ -87,7 +87,6 @@ import { InstrumentationRegistry } from './registry/instrumentation-registry.js'
 		CSRFGuard,
 		ErrorCategorizerService,
 		HttpClientService,
-		MetricsRegistryService,
 		HealthCheckService,
 		InstrumentationRegistry,
 		Logger,
@@ -105,7 +104,6 @@ import { InstrumentationRegistry } from './registry/instrumentation-registry.js'
 		CSRFGuard,
 		ErrorCategorizerService,
 		HttpClientService,
-		MetricsRegistryService,
 		HealthCheckService,
 		InstrumentationRegistry,
 	],
@@ -115,6 +113,7 @@ export class CommonModule implements OnModuleInit {
 
 	constructor(
 		private readonly appLogger: AppLogger,
+		private readonly registry: InstrumentationRegistry,
 		private readonly moduleRef: ModuleRef,
 	) {}
 
@@ -127,6 +126,9 @@ export class CommonModule implements OnModuleInit {
 		// Initialize the RequestProperty decorator with the AppLogger instance
 		// This ensures structured logging is available before any route handlers are processed
 		SetRequestPropertyDecoratorLogger(this.appLogger);
+
+		// Set the InstrumentationRegistry instance in the holder for @Instrument() decorator access
+		InstrumentationRegistryHolder.setInstance(this.registry);
 
 		// Verify ConfigService is available to help developers catch import order issues early
 		this.verifyConfigServiceAvailable();

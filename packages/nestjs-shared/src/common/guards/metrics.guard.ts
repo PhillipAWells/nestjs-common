@@ -1,5 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
 import { ConfigService } from '../../config/config.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
@@ -48,6 +49,31 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 		return this.Config.get('METRICS_API_KEY');
 	}
 
+	/**
+	 * Timing-safe comparison of two strings to prevent timing attacks
+	 * @param a First string to compare
+	 * @param b Second string to compare
+	 * @returns true if strings are equal, false otherwise
+	 */
+	private timingSafeCompare(a: string, b: string | undefined): boolean {
+		if (!b) {
+			return false;
+		}
+
+		try {
+			const bufferA = Buffer.from(a);
+			const bufferB = Buffer.from(b);
+
+			if (bufferA.length !== bufferB.length) {
+				return false;
+			}
+
+			return timingSafeEqual(bufferA, bufferB);
+		} catch {
+			return false;
+		}
+	}
+
 	public canActivate(context: ExecutionContext): boolean {
 		// If no API key is configured, allow all requests
 		if (!this.metricsApiKey) {
@@ -60,7 +86,7 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 		const authHeader = request.headers.authorization;
 		if (authHeader) {
 			const [scheme, token] = authHeader.split(' ');
-			if (scheme?.toLowerCase() === 'bearer' && token === this.metricsApiKey) {
+			if (scheme?.toLowerCase() === 'bearer' && token && this.timingSafeCompare(token, this.metricsApiKey)) {
 				this.AuditLogger?.logSecurityEvent({
 					timestamp: new Date(),
 					action: 'metrics_access',
@@ -76,7 +102,7 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 
 		// Check X-API-Key header
 		const apiKeyHeader = request.headers['x-api-key'] as string | undefined;
-		if (apiKeyHeader === this.metricsApiKey) {
+		if (apiKeyHeader && this.timingSafeCompare(apiKeyHeader, this.metricsApiKey)) {
 			this.AuditLogger?.logSecurityEvent({
 				timestamp: new Date(),
 				action: 'metrics_access',

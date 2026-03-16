@@ -44,7 +44,7 @@ export const DEFAULT_QDRANT_CLIENT_NAME = 'default';
  * ```
  */
 export function getQdrantClientToken(name?: string): string {
-	return name ? `QDRANT_CLIENT:${name}` : QDRANT_CLIENT_TOKEN;
+	return (!name || name === DEFAULT_QDRANT_CLIENT_NAME) ? QDRANT_CLIENT_TOKEN : `QDRANT_CLIENT:${name}`;
 }
 
 /**
@@ -71,7 +71,7 @@ export function getQdrantClientToken(name?: string): string {
  * ```
  */
 export function getQdrantModuleOptionsToken(name?: string): string {
-	return name ? `QDRANT_MODULE_OPTIONS:${name}` : QDRANT_MODULE_OPTIONS;
+	return (!name || name === DEFAULT_QDRANT_CLIENT_NAME) ? QDRANT_MODULE_OPTIONS : `QDRANT_MODULE_OPTIONS:${name}`;
 }
 
 /**

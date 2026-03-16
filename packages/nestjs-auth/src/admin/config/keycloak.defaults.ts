@@ -26,7 +26,7 @@ export const KeycloakAdminDefaults: KeycloakAdminConfig = {
 	timeout: KEYCLOAK_TIMEOUT * KEYCLOAK_TIMEOUT_30_SECONDS_MULTIPLIER, // 30 seconds
 	retry: {
 		maxRetries: 3,
-		retryDelay: KEYCLOAK_TIMEOUT,
+		initialDelay: KEYCLOAK_TIMEOUT,
 	},
 };
 
@@ -54,7 +54,7 @@ export function ValidateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
 		timeout: Joi.number().min(KEYCLOAK_TIMEOUT).optional(),
 		retry: Joi.object({
 			maxRetries: Joi.number().min(0).required(),
-			retryDelay: Joi.number().min(0).required(),
+			initialDelay: Joi.number().min(0).required(),
 		}).optional(),
 		permissions: Joi.array()
 			.items(Joi.string().valid(...KEYCLOAK_ALL_SCOPES))

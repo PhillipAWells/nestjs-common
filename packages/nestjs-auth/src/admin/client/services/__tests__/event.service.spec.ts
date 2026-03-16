@@ -27,7 +27,7 @@ describe('EventService', () => {
 	describe('getAdminEvents', () => {
 		it('throws KeycloakAdminScopeError when events:read scope is not granted', async () => {
 			service = new EventService(mockAdminClient, noScopes);
-			await expect(service.getAdminEvents()).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.getAdminEvents('test-realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.realms.findAdminEvents).not.toHaveBeenCalled();
 		});
 
@@ -36,7 +36,7 @@ describe('EventService', () => {
 				{ id: 'event1', operation: 'CREATE' },
 			]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			const result = await service.getAdminEvents();
+			const result = await service.getAdminEvents('test-realm');
 			expect(result).toEqual([{ id: 'event1', operation: 'CREATE' }]);
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
@@ -46,14 +46,14 @@ describe('EventService', () => {
 		it('returns empty array when no events found', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			const result = await service.getAdminEvents();
+			const result = await service.getAdminEvents('test-realm');
 			expect(result).toEqual([]);
 		});
 
 		it('builds query with operation types', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ operationTypes: ['CREATE', 'UPDATE'] });
+			await service.getAdminEvents('test-realm', { operationTypes: ['CREATE', 'UPDATE'] });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				operationTypes: ['CREATE', 'UPDATE'],
@@ -63,7 +63,7 @@ describe('EventService', () => {
 		it('builds query with resource types', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ resourceTypes: ['USER', 'CLIENT'] });
+			await service.getAdminEvents('test-realm', { resourceTypes: ['USER', 'CLIENT'] });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				resourceTypes: ['USER', 'CLIENT'],
@@ -73,7 +73,7 @@ describe('EventService', () => {
 		it('builds query with resource path', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ resourcePath: 'users/123' });
+			await service.getAdminEvents('test-realm', { resourcePath: 'users/123' });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				resourcePath: 'users/123',
@@ -84,7 +84,7 @@ describe('EventService', () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const date = new Date('2024-01-01T00:00:00Z');
-			await service.getAdminEvents({ dateFrom: date });
+			await service.getAdminEvents('test-realm', { dateFrom: date });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				dateFrom: '2024-01-01T00:00:00.000Z',
@@ -95,7 +95,7 @@ describe('EventService', () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const date = new Date('2024-12-31T23:59:59Z');
-			await service.getAdminEvents({ dateTo: date });
+			await service.getAdminEvents('test-realm', { dateTo: date });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				dateTo: '2024-12-31T23:59:59.000Z',
@@ -105,7 +105,7 @@ describe('EventService', () => {
 		it('builds query with pagination parameters', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ first: 10, max: 50 });
+			await service.getAdminEvents('test-realm', { first: 10, max: 50 });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				first: 10,
@@ -118,7 +118,7 @@ describe('EventService', () => {
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const dateFrom = new Date('2024-01-01T00:00:00Z');
 			const dateTo = new Date('2024-12-31T23:59:59Z');
-			await service.getAdminEvents({
+			await service.getAdminEvents('test-realm', {
 				operationTypes: ['CREATE'],
 				resourceTypes: ['USER'],
 				resourcePath: 'users',
@@ -142,7 +142,7 @@ describe('EventService', () => {
 		it('ignores empty operation types array', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ operationTypes: [] });
+			await service.getAdminEvents('test-realm', { operationTypes: [] });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 			});
@@ -151,7 +151,7 @@ describe('EventService', () => {
 		it('ignores empty resource types array', async () => {
 			mockAdminClient.realms.findAdminEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAdminEvents({ resourceTypes: [] });
+			await service.getAdminEvents('test-realm', { resourceTypes: [] });
 			expect(mockAdminClient.realms.findAdminEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 			});
@@ -161,7 +161,7 @@ describe('EventService', () => {
 	describe('getAccessEvents', () => {
 		it('throws KeycloakAdminScopeError when events:read scope is not granted', async () => {
 			service = new EventService(mockAdminClient, noScopes);
-			await expect(service.getAccessEvents()).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.getAccessEvents('test-realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.realms.findEvents).not.toHaveBeenCalled();
 		});
 
@@ -170,7 +170,7 @@ describe('EventService', () => {
 				{ id: 'event1', type: 'LOGIN' },
 			]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			const result = await service.getAccessEvents();
+			const result = await service.getAccessEvents('test-realm');
 			expect(result).toEqual([{ id: 'event1', type: 'LOGIN' }]);
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
@@ -180,14 +180,14 @@ describe('EventService', () => {
 		it('returns empty array when no events found', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			const result = await service.getAccessEvents();
+			const result = await service.getAccessEvents('test-realm');
 			expect(result).toEqual([]);
 		});
 
 		it('builds query with event types', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAccessEvents({ type: ['LOGIN', 'LOGOUT'] });
+			await service.getAccessEvents('test-realm', { type: ['LOGIN', 'LOGOUT'] });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				type: ['LOGIN', 'LOGOUT'],
@@ -197,7 +197,7 @@ describe('EventService', () => {
 		it('builds query with client filter', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAccessEvents({ client: 'my-client' });
+			await service.getAccessEvents('test-realm', { client: 'my-client' });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				client: 'my-client',
@@ -207,7 +207,7 @@ describe('EventService', () => {
 		it('builds query with user filter', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAccessEvents({ user: 'user123' });
+			await service.getAccessEvents('test-realm', { user: 'user123' });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				user: 'user123',
@@ -218,7 +218,7 @@ describe('EventService', () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const date = new Date('2024-01-01T00:00:00Z');
-			await service.getAccessEvents({ dateFrom: date });
+			await service.getAccessEvents('test-realm', { dateFrom: date });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				dateFrom: '2024-01-01T00:00:00.000Z',
@@ -229,7 +229,7 @@ describe('EventService', () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const date = new Date('2024-12-31T23:59:59Z');
-			await service.getAccessEvents({ dateTo: date });
+			await service.getAccessEvents('test-realm', { dateTo: date });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				dateTo: '2024-12-31T23:59:59.000Z',
@@ -239,7 +239,7 @@ describe('EventService', () => {
 		it('builds query with pagination parameters', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAccessEvents({ first: 10, max: 50 });
+			await service.getAccessEvents('test-realm', { first: 10, max: 50 });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 				first: 10,
@@ -252,7 +252,7 @@ describe('EventService', () => {
 			service = new EventService(mockAdminClient, readOnlyScopes);
 			const dateFrom = new Date('2024-01-01T00:00:00Z');
 			const dateTo = new Date('2024-12-31T23:59:59Z');
-			await service.getAccessEvents({
+			await service.getAccessEvents('test-realm', {
 				type: ['LOGIN'],
 				client: 'my-client',
 				user: 'user123',
@@ -276,7 +276,7 @@ describe('EventService', () => {
 		it('ignores empty type array', async () => {
 			mockAdminClient.realms.findEvents.mockResolvedValue([]);
 			service = new EventService(mockAdminClient, readOnlyScopes);
-			await service.getAccessEvents({ type: [] });
+			await service.getAccessEvents('test-realm', { type: [] });
 			expect(mockAdminClient.realms.findEvents).toHaveBeenCalledWith({
 				realm: 'test-realm',
 			});

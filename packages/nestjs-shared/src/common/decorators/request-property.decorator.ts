@@ -65,14 +65,6 @@ function logWarning(message: string): void {
 }
 
 /**
- * Utility function to safely get nested properties using dot notation
- * @param obj - The object to extract from
- * @param path - Dot-notation path (e.g., 'user.profile.name')
- * @returns The extracted value or undefined if not found
- */
-// Removed - using ObjectGetPropertyByPath directly from @pawells/typescript-common
-
-/**
  * Generic Request Property Decorator Factory
  *
  * Extracts any property from the HTTP request object using dot notation paths.

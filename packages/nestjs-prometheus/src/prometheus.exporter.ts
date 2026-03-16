@@ -74,7 +74,6 @@ export class PrometheusExporter implements IMetricsExporter {
 
 	/**
 	 * Logger instance for warnings and errors
-	 * @private
 	 */
 	private readonly logger: Logger;
 
@@ -122,6 +121,11 @@ export class PrometheusExporter implements IMetricsExporter {
 	 */
 	public onDescriptorRegistered(descriptor: MetricDescriptor): void {
 		const { name, type, help, labelNames, buckets } = descriptor;
+
+		// Guard against duplicate registration
+		if (this.instruments.has(name)) {
+			return;
+		}
 
 		// Validate required fields
 		if (!name) {
@@ -264,19 +268,54 @@ export class PrometheusExporter implements IMetricsExporter {
 			}
 
 			// Record all pending values into the appropriate instrument
-			for (const metricValue of pendingValues) {
-				try {
-					if (instrument instanceof Counter) {
+			if (instrument instanceof Counter) {
+				// Counter: increment by value for each pending entry
+				for (const metricValue of pendingValues) {
+					try {
 						instrument.inc(metricValue.labels, metricValue.value);
-					} else if (instrument instanceof Histogram) {
-						instrument.observe(metricValue.labels, metricValue.value);
-					} else if (instrument instanceof Gauge) {
-						instrument.set(metricValue.labels, metricValue.value);
+					} catch (recordError) {
+						this.logger.warn(
+							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+						);
 					}
-				} catch (recordError) {
-					this.logger.warn(
-						`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
-					);
+				}
+			} else if (instrument instanceof Histogram) {
+				// Histogram: observe value for each pending entry
+				for (const metricValue of pendingValues) {
+					try {
+						instrument.observe(metricValue.labels, metricValue.value);
+					} catch (recordError) {
+						this.logger.warn(
+							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+						);
+					}
+				}
+			} else if (instrument instanceof Gauge) {
+				// Gauge and updown_counter: accumulate values per label set
+				const accumulatedValues = new Map<string, number>();
+
+				for (const metricValue of pendingValues) {
+					const labelKey = JSON.stringify(metricValue.labels);
+					const currentValue = accumulatedValues.get(labelKey) ?? 0;
+					accumulatedValues.set(labelKey, currentValue + metricValue.value);
+				}
+
+				// Apply accumulated values to the gauge
+				for (const metricValue of pendingValues) {
+					const labelKey = JSON.stringify(metricValue.labels);
+					const accumulatedValue = accumulatedValues.get(labelKey);
+
+					if (accumulatedValue !== undefined) {
+						try {
+							instrument.set(metricValue.labels, accumulatedValue);
+						} catch (recordError) {
+							this.logger.warn(
+								`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+							);
+						}
+						// Remove from map to avoid setting the same labels multiple times
+						accumulatedValues.delete(labelKey);
+					}
 				}
 			}
 		}

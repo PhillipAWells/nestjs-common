@@ -111,15 +111,10 @@ export class HealthCheckService implements LazyModuleRefService {
 	public getReadiness(checks?: Record<string, string>): IHealthCheck {
 		this.contextualLogger.debug('Readiness check requested');
 
-		const defaultChecks = {
-			database: HealthStatus.OK,
-			cache: HealthStatus.OK,
-		};
-
 		const response: IHealthCheck = {
 			status: HealthStatus.READY,
 			timestamp: new Date().toISOString(),
-			checks: checks ?? defaultChecks,
+			checks: checks ?? {},
 		};
 
 		this.contextualLogger.debug(`Readiness check response: ${JSON.stringify(response)}`);

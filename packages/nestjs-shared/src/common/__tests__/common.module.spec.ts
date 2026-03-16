@@ -54,7 +54,24 @@ describe('CommonModule', () => {
 				}),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 		});
 
 		it('should successfully initialize', () => {
@@ -98,7 +115,24 @@ describe('CommonModule', () => {
 				get: vi.fn(() => undefined), // ConfigService not available
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			expect(() => {
 				commonModule.onModuleInit();
@@ -110,7 +144,24 @@ describe('CommonModule', () => {
 				get: vi.fn(() => undefined),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			let errorMessage = '';
 			try {
@@ -128,7 +179,24 @@ describe('CommonModule', () => {
 				get: vi.fn(() => null),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			expect(() => {
 				commonModule.onModuleInit();
@@ -145,7 +213,24 @@ describe('CommonModule', () => {
 				}),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			expect(() => {
 				commonModule.onModuleInit();
@@ -160,7 +245,24 @@ describe('CommonModule', () => {
 				}),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			let caughtError: any;
 			try {
@@ -175,13 +277,30 @@ describe('CommonModule', () => {
 	});
 
 	describe('Constructor', () => {
-		it('should accept AppLogger and ModuleRef in constructor', () => {
+		it('should accept AppLogger, InstrumentationRegistry, and ModuleRef in constructor', () => {
 			mockModuleRef = {
 				get: vi.fn(() => ({})),
 			} as any;
 
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
 			expect(() => {
-				commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+				commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 			}).not.toThrow();
 
 			expect(commonModule).toBeDefined();
@@ -192,7 +311,24 @@ describe('CommonModule', () => {
 				get: vi.fn(),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			// Module should be able to call moduleRef methods
 			expect(commonModule).toHaveProperty('moduleRef');
@@ -207,7 +343,24 @@ describe('CommonModule', () => {
 				get: vi.fn(() => mockConfigService),
 			} as any;
 
-			commonModule = new CommonModule(mockAppLogger as AppLogger, mockModuleRef as ModuleRef);
+			const mockRegistry = {
+				descriptors: new Map(),
+				values: new Map(),
+				exporters: [],
+				listeners: new Map(),
+				registerDescriptor: vi.fn(),
+				recordMetric: vi.fn(),
+				getAllMetrics: vi.fn().mockReturnValue(new Map()),
+				getMetric: vi.fn().mockReturnValue([]),
+				on: vi.fn().mockReturnValue(() => {}),
+				registerExporter: vi.fn(),
+				shutdown: vi.fn().mockResolvedValue(undefined),
+				onModuleInit: vi.fn(),
+				Module: mockModuleRef,
+				AppLogger: mockAppLogger,
+			} as unknown as any;
+
+			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 		});
 
 		it('should not re-verify ConfigService on second init', () => {

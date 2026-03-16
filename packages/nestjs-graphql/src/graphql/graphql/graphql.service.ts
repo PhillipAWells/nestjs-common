@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GraphQLSchema } from 'graphql';
 import type { GraphQLConfigOptions } from './graphql-config.interface.js';
 import { Traced } from '@pawells/nestjs-open-telemetry';
-import { GraphQLErrorCode } from './types/graphql-safety.types.js';
+import { GraphQLErrorCode } from './error-codes.js';
 
 /**
  * Service for GraphQL module management and utilities
@@ -88,13 +88,13 @@ export class GraphQLService {
 			return GraphQLErrorCode.VALIDATION_ERROR;
 		}
 		if (errorMessage.includes('authentication')) {
-			return GraphQLErrorCode.AUTHENTICATION_ERROR;
+			return GraphQLErrorCode.UNAUTHENTICATED;
 		}
 		if (errorMessage.includes('authorization')) {
-			return GraphQLErrorCode.AUTHORIZATION_ERROR;
+			return GraphQLErrorCode.FORBIDDEN;
 		}
 		if (errorMessage.includes('not found')) {
-			return GraphQLErrorCode.NOT_FOUND_ERROR;
+			return GraphQLErrorCode.NOT_FOUND;
 		}
 
 		return GraphQLErrorCode.INTERNAL_ERROR;

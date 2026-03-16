@@ -5,8 +5,8 @@ import {
 	CallHandler,
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
@@ -59,6 +59,14 @@ export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService
 					`Request completed: ${method} ${url} - ${statusCode} - ${duration}ms`,
 					'LoggingInterceptor',
 				);
+			}),
+			catchError((error: unknown) => {
+				const duration = Date.now() - startTime;
+				this.Logger.error(
+					`Request failed: ${method} ${url} - ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
+					'LoggingInterceptor',
+				);
+				return throwError(() => error);
 			}),
 		);
 	}

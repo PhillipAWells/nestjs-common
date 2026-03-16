@@ -1,3 +1,5 @@
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { Auth, Public, Roles, CurrentUser, AuthToken } from './auth-decorators.js';
 
 /**
@@ -132,7 +134,12 @@ export const GraphQLAuthToken = (): ParameterDecorator => AuthToken({ contextTyp
  * }
  * ```
  */
-export const GraphQLContextParam = (): ParameterDecorator => CurrentUser(undefined, { contextType: 'graphql' });
+export const GraphQLContextParam = (): ParameterDecorator => createParamDecorator(
+	(_data: unknown, ctx: ExecutionContext) => {
+		const gqlCtx = GqlExecutionContext.create(ctx);
+		return gqlCtx.getContext();
+	},
+)();
 
 /**
  * GraphQL User alias for GraphQLCurrentUser

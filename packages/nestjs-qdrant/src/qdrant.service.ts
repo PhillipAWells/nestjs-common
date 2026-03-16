@@ -34,10 +34,10 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
  */
 @Injectable()
 export class QdrantService implements OnModuleDestroy {
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly moduleRef: ModuleRef) {}
 
 	private get Client(): QdrantClient {
-		const client = this.Module.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
+		const client = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
 		if (!client) {
 			throw new Error('QdrantService: Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}

@@ -18,6 +18,9 @@ import { GraphQLErrorInterceptor } from '../interceptors/graphql-error.intercept
 import { GraphQLPerformanceInterceptor } from '../interceptors/graphql-performance.interceptor.js';
 import { RateLimitService } from '../services/rate-limit.service.js';
 import { BsonSerializationService, BsonSerializationMiddleware, BsonResponseInterceptor } from './bson/index.js';
+import { ObjectIdScalar } from './scalars/object-id.scalar.js';
+import { DateTimeScalar } from './scalars/date-time.scalar.js';
+import { JSONScalar } from './scalars/json.scalar.js';
 
 /**
  * GraphQL module with Apollo Server 5.x integration
@@ -93,6 +96,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLLoggingInterceptor,
 			GraphQLErrorInterceptor,
 			GraphQLPerformanceInterceptor,
+			ObjectIdScalar,
+			DateTimeScalar,
+			JSONScalar,
 		];
 
 		// Add BSON service if enabled
@@ -120,6 +126,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLLoggingInterceptor,
 				GraphQLErrorInterceptor,
 				GraphQLPerformanceInterceptor,
+				ObjectIdScalar,
+				DateTimeScalar,
+				JSONScalar,
 				...(options.bson?.enabled ? [BsonSerializationService, BsonResponseInterceptor] : []),
 			],
 			global: true,
@@ -146,6 +155,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLPerformanceInterceptor,
 			// Always include BSON service in async mode for flexibility
 			BsonSerializationService,
+			ObjectIdScalar,
+			DateTimeScalar,
+			JSONScalar,
 		];
 
 		return {
@@ -173,6 +185,9 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLPerformanceInterceptor,
 				BsonSerializationService,
 				BsonResponseInterceptor,
+				ObjectIdScalar,
+				DateTimeScalar,
+				JSONScalar,
 			],
 			global: true,
 		};

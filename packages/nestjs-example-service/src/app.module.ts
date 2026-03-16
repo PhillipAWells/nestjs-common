@@ -81,7 +81,7 @@ import { ItemsModule } from './items/items.module.js';
 			validationMode: 'online',
 		}),
 
-		// ── 6b. Keycloak Admin (optional) ─────────────────────────────────────
+		// ── 7. Keycloak Admin (optional) ─────────────────────────────────────
 		// Provides KeycloakAdminService for user/role/group management via the
 		// Keycloak Admin REST API.  Set KEYCLOAK_ENABLED=true and supply
 		// credentials to activate.
@@ -96,7 +96,7 @@ import { ItemsModule } from './items/items.module.js';
 			},
 		}),
 
-		// ── 7. GraphQL (optional) ─────────────────────────────────────────────
+		// ── 8. GraphQL (optional) ─────────────────────────────────────────────
 		// Uncomment to enable Apollo Server with auto-generated schema.
 		// Import BEFORE AuthModule when token blacklisting via Redis is needed.
 		//
@@ -106,7 +106,7 @@ import { ItemsModule } from './items/items.module.js';
 		//   introspection: true,
 		// }),
 
-		// ── 8. Feature modules ────────────────────────────────────────────────
+		// ── 9. Feature modules ────────────────────────────────────────────────
 		ItemsModule,
 	],
 })
