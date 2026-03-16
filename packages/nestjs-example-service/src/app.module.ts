@@ -25,7 +25,7 @@ import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
 import { PrometheusModule } from '@pawells/nestjs-prometheus';
 import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 import { QdrantModule } from '@pawells/nestjs-qdrant';
-import { AuthModule } from '@pawells/nestjs-auth';
+import { AuthModule, KeycloakAdminModule } from '@pawells/nestjs-auth';
 import { ItemsModule } from './items/items.module.js';
 
 @Module({
@@ -55,6 +55,8 @@ import { ItemsModule } from './items/items.module.js';
 				applicationName: 'nestjs-example-service',
 				environment: process.env['NODE_ENV'] ?? 'development',
 				tags: { service: 'nestjs-example-service' },
+				basicAuthUser: process.env['PYROSCOPE_USER'],
+				basicAuthPassword: process.env['PYROSCOPE_PASSWORD'],
 			},
 		}),
 
@@ -73,13 +75,28 @@ import { ItemsModule } from './items/items.module.js';
 		// store in production.
 		AuthModule.forRoot({
 			jwtSecret: process.env['JWT_SECRET'] ?? 'dev-secret-change-in-production',
-			jwtExpiresIn: '15m',
+			jwtExpiresIn: process.env['JWT_EXPIRES_IN'] ?? '15m',
 			userLookupFn: (userId: string) => Promise.resolve({
 				id: userId,
 				email: `${userId}@example.com`,
 				roles: [],
 				permissions: [],
 			}),
+		}),
+
+		// ── 6b. Keycloak Admin (optional) ─────────────────────────────────────
+		// Provides KeycloakAdminService for user/role/group management via the
+		// Keycloak Admin REST API.  Set KEYCLOAK_ENABLED=true and supply
+		// credentials to activate.
+		KeycloakAdminModule.forRoot({
+			enabled: process.env['KEYCLOAK_ENABLED'] === 'true',
+			baseUrl: process.env['KEYCLOAK_SERVER_URL'] ?? 'http://localhost:8080',
+			realmName: process.env['KEYCLOAK_REALM'] ?? 'master',
+			credentials: {
+				type: 'password',
+				username: process.env['KEYCLOAK_USERNAME'] ?? '',
+				password: process.env['KEYCLOAK_PASSWORD'] ?? '',
+			},
 		}),
 
 		// ── 7. GraphQL (optional) ─────────────────────────────────────────────
