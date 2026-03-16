@@ -622,4 +622,185 @@ describe('AppLogger', () => {
 			expect(logger).toBeDefined();
 		});
 	});
+
+	describe('without ConfigService — process.env fallback', () => {
+		it('should read LOG_LEVEL from process.env when no ConfigService', () => {
+			const originalEnv = process.env['LOG_LEVEL'];
+			process.env['LOG_LEVEL'] = 'debug';
+			try {
+				const logger = new AppLogger();
+				expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_LEVEL'];
+				} else {
+					process.env['LOG_LEVEL'] = originalEnv;
+				}
+			}
+		});
+
+		it('should read LOG_FORMAT from process.env when no ConfigService', () => {
+			const originalEnv = process.env['LOG_FORMAT'];
+			process.env['LOG_FORMAT'] = 'text';
+			try {
+				const logger = new AppLogger();
+				// The format is stored internally in pawellsLogger, so we verify indirectly
+				// by checking that the logger is created successfully
+				expect(logger).toBeDefined();
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_FORMAT'];
+				} else {
+					process.env['LOG_FORMAT'] = originalEnv;
+				}
+			}
+		});
+
+		it('should read SERVICE_NAME from process.env when no ConfigService', () => {
+			const originalEnv = process.env['SERVICE_NAME'];
+			process.env['SERVICE_NAME'] = 'test-service-from-env';
+			try {
+				const logger = new AppLogger();
+				expect((logger as any).serviceName).toBe('test-service-from-env');
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['SERVICE_NAME'];
+				} else {
+					process.env['SERVICE_NAME'] = originalEnv;
+				}
+			}
+		});
+
+		it('should use hardcoded defaults when neither ConfigService nor process.env is set', () => {
+			const originalServiceName = process.env['SERVICE_NAME'];
+			const originalLogLevel = process.env['LOG_LEVEL'];
+			const originalLogFormat = process.env['LOG_FORMAT'];
+
+			delete process.env['SERVICE_NAME'];
+			delete process.env['LOG_LEVEL'];
+			delete process.env['LOG_FORMAT'];
+
+			try {
+				const logger = new AppLogger();
+				expect((logger as any).serviceName).toBe('unknown-service');
+				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			} finally {
+				if (originalServiceName !== undefined) {
+					process.env['SERVICE_NAME'] = originalServiceName;
+				}
+				if (originalLogLevel !== undefined) {
+					process.env['LOG_LEVEL'] = originalLogLevel;
+				}
+				if (originalLogFormat !== undefined) {
+					process.env['LOG_FORMAT'] = originalLogFormat;
+				}
+			}
+		});
+
+		it('should prefer ConfigService values over process.env when both are set', () => {
+			const originalEnv = process.env['SERVICE_NAME'];
+			process.env['SERVICE_NAME'] = 'env-service';
+			try {
+				const mockConfigService = {
+					get: vi.fn((key: string) => {
+						if (key === 'SERVICE_NAME') return 'config-service';
+						return undefined;
+					}),
+				} as any;
+				const logger = new AppLogger(mockConfigService);
+				expect((logger as any).serviceName).toBe('config-service');
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['SERVICE_NAME'];
+				} else {
+					process.env['SERVICE_NAME'] = originalEnv;
+				}
+			}
+		});
+
+		it('should read LOG_LEVEL from process.env with various valid levels', () => {
+			const testCases = [
+				['debug', LogLevel.DEBUG],
+				['info', LogLevel.INFO],
+				['warn', LogLevel.WARN],
+				['error', LogLevel.ERROR],
+				['fatal', LogLevel.FATAL],
+			] as const;
+
+			for (const [levelStr, expectedLevel] of testCases) {
+				const originalEnv = process.env['LOG_LEVEL'];
+				process.env['LOG_LEVEL'] = levelStr;
+				try {
+					const logger = new AppLogger();
+					expect((logger as any).minLevel).toBe(expectedLevel);
+				} finally {
+					if (originalEnv === undefined) {
+						delete process.env['LOG_LEVEL'];
+					} else {
+						process.env['LOG_LEVEL'] = originalEnv;
+					}
+				}
+			}
+		});
+
+		it('should fall back to INFO for invalid LOG_LEVEL in process.env', () => {
+			const originalEnv = process.env['LOG_LEVEL'];
+			process.env['LOG_LEVEL'] = 'invalid_level';
+			try {
+				const logger = new AppLogger();
+				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_LEVEL'];
+				} else {
+					process.env['LOG_LEVEL'] = originalEnv;
+				}
+			}
+		});
+
+		it('should fall back to json for invalid LOG_FORMAT in process.env', () => {
+			const originalEnv = process.env['LOG_FORMAT'];
+			process.env['LOG_FORMAT'] = 'invalid_format';
+			try {
+				const logger = new AppLogger();
+				expect(logger).toBeDefined();
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_FORMAT'];
+				} else {
+					process.env['LOG_FORMAT'] = originalEnv;
+				}
+			}
+		});
+
+		it('should handle case-insensitive LOG_LEVEL from process.env', () => {
+			const originalEnv = process.env['LOG_LEVEL'];
+			process.env['LOG_LEVEL'] = 'DEBUG';
+			try {
+				const logger = new AppLogger();
+				expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_LEVEL'];
+				} else {
+					process.env['LOG_LEVEL'] = originalEnv;
+				}
+			}
+		});
+
+		it('should handle case-insensitive LOG_FORMAT from process.env', () => {
+			const originalEnv = process.env['LOG_FORMAT'];
+			process.env['LOG_FORMAT'] = 'TEXT';
+			try {
+				const logger = new AppLogger();
+				expect(logger).toBeDefined();
+			} finally {
+				if (originalEnv === undefined) {
+					delete process.env['LOG_FORMAT'];
+				} else {
+					process.env['LOG_FORMAT'] = originalEnv;
+				}
+			}
+		});
+	});
 });

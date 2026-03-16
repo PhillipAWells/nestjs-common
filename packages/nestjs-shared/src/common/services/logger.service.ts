@@ -62,7 +62,7 @@ export class AppLogger implements IContextualLogger {
 		@Inject(ConfigService) @Optional() private readonly configService?: ConfigService,
 		@Optional() private readonly context: string = 'AppLogger',
 	) {
-		this.serviceName = this.configService?.get('SERVICE_NAME', 'unknown-service') ?? 'unknown-service';
+		this.serviceName = this.configService?.get<string>('SERVICE_NAME') ?? process.env['SERVICE_NAME'] ?? 'unknown-service';
 		this.minLevel = this.parseLogLevel();
 
 		// Create instance of @pawells/logger
@@ -80,10 +80,7 @@ export class AppLogger implements IContextualLogger {
 	 * @returns LogLevel enum value (numeric)
 	 */
 	private parseLogLevel(): number {
-		if (!this.configService) {
-			return LogLevel.INFO;
-		}
-		const level = this.configService.get<string>('LOG_LEVEL', 'info').toLowerCase();
+		const level = (this.configService?.get<string>('LOG_LEVEL') ?? process.env['LOG_LEVEL'] ?? 'info').toLowerCase();
 		const parsedLevel = LOG_LEVEL_FROM_STRING[level];
 
 		// Warn if the LOG_LEVEL value is invalid and log valid values
@@ -106,10 +103,7 @@ export class AppLogger implements IContextualLogger {
 	 * @returns Format type ('json' | 'text'), defaults to 'json'
 	 */
 	private parseLogFormat(): 'json' | 'text' {
-		if (!this.configService) {
-			return 'json';
-		}
-		const format = this.configService.get<string>('LOG_FORMAT', 'json').toLowerCase();
+		const format = (this.configService?.get<string>('LOG_FORMAT') ?? process.env['LOG_FORMAT'] ?? 'json').toLowerCase();
 
 		// Validate format is either 'json' or 'text'
 		if (format !== 'json' && format !== 'text') {

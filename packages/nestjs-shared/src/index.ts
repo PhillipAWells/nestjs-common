@@ -43,6 +43,7 @@ export {
 	ILogger,
 	IContextualLogger,
 	AppLogger,
+	NestLoggerAdapter,
 	AuditLoggerService,
 	ErrorSanitizerService,
 	ErrorCategorizerService,

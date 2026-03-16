@@ -24,6 +24,7 @@ export { CACHE_PROVIDER } from './interfaces/index.js';
 
 // Services
 export { AppLogger } from './services/logger.service.js';
+export { NestLoggerAdapter } from './services/nest-logger-adapter.service.js';
 export { AuditLoggerService } from './services/audit-logger.service.js';
 export { ErrorSanitizerService, ERROR_SANITIZER_OPTIONS, type ErrorSanitizerOptions } from './services/error-sanitizer.service.js';
 export { ErrorCategorizerService } from './services/error-categorizer.service.js';
