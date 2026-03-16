@@ -292,29 +292,31 @@ export class PrometheusExporter implements IMetricsExporter {
 				}
 			} else if (instrument instanceof Gauge) {
 				// Gauge and updown_counter: accumulate values per label set
-				const accumulatedValues = new Map<string, number>();
+				const accumulatedValues = new Map<string, { labels: Record<string, string | number>; value: number }>();
 
 				for (const metricValue of pendingValues) {
 					const labelKey = JSON.stringify(metricValue.labels);
-					const currentValue = accumulatedValues.get(labelKey) ?? 0;
-					accumulatedValues.set(labelKey, currentValue + metricValue.value);
+					if (accumulatedValues.has(labelKey)) {
+						const existing = accumulatedValues.get(labelKey);
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						existing!.value += metricValue.value;
+					} else {
+						accumulatedValues.set(labelKey, {
+							labels: metricValue.labels,
+							value: metricValue.value,
+						});
+					}
 				}
 
-				// Apply accumulated values to the gauge
-				for (const metricValue of pendingValues) {
-					const labelKey = JSON.stringify(metricValue.labels);
-					const accumulatedValue = accumulatedValues.get(labelKey);
-
-					if (accumulatedValue !== undefined) {
-						try {
-							instrument.set(metricValue.labels, accumulatedValue);
-						} catch (recordError) {
-							this.logger.warn(
-								`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
-							);
-						}
-						// Remove from map to avoid setting the same labels multiple times
-						accumulatedValues.delete(labelKey);
+				// Apply accumulated values to the gauge (iterate only through unique label sets)
+				for (const { labels, value: accumulatedValue } of accumulatedValues.values()) {
+					try {
+						// prom-client accepts Record<string, string | number> for labels
+						instrument.set(labels as Record<string, string>, accumulatedValue);
+					} catch (recordError) {
+						this.logger.warn(
+							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+						);
 					}
 				}
 			}

@@ -171,13 +171,13 @@ describe('PrometheusExporter', () => {
 			};
 
 			// Record MAX_PENDING_PER_METRIC + 100 values
-			 
+
 			for (let i = 0; i < 1100; i++) {
 				exporter.onMetricRecorded(metricValue);
 			}
 
 			// Should have at most MAX_PENDING_PER_METRIC items
-			 
+
 			expect(exporter['pending'].get('test_metric')).toHaveLength(1000);
 		});
 	});
