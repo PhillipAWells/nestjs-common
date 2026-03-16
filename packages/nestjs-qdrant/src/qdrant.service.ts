@@ -36,12 +36,12 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
 export class QdrantService implements OnModuleDestroy {
 	constructor(public readonly moduleRef: ModuleRef) {}
 
-	private get Client(): QdrantClient {
-		const client = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
-		if (!client) {
+	private get client(): QdrantClient {
+		const clientInstance = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
+		if (!clientInstance) {
 			throw new Error('QdrantService: Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}
-		return client;
+		return clientInstance;
 	}
 
 	/**
@@ -60,7 +60,7 @@ export class QdrantService implements OnModuleDestroy {
 	 * ```
 	 */
 	public getClient(): QdrantClient {
-		return this.Client;
+		return this.client;
 	}
 
 	/**
@@ -89,7 +89,7 @@ export class QdrantService implements OnModuleDestroy {
 		if (!collectionName || collectionName.length > MAX_COLLECTION_NAME_LENGTH || !/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName)) {
 			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
 		}
-		return new QdrantCollectionService(this.Client, collectionName);
+		return new QdrantCollectionService(this.client, collectionName);
 	}
 
 	/**
