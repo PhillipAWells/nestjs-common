@@ -211,14 +211,14 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	public startProfiling(context: IProfileContext): void {
 		if (!this.isEnabled()) return;
 
-		// Generate and store profile ID in context for later retrieval
-		const profileId = this.generateProfileId(context);
-		context.profileId = profileId;
-
-		// Set start time if not already set
+		// Set start time if not already set (must happen before generateProfileId)
 		if (!context.startTime) {
 			context.startTime = Date.now();
 		}
+
+		// Generate and store profile ID in context for later retrieval
+		const profileId = this.generateProfileId(context);
+		context.profileId = profileId;
 
 		this.activeProfiles.set(profileId, context);
 

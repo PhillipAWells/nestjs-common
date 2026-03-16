@@ -51,7 +51,7 @@ describe('GraphQLService', () => {
 			const error = { message: 'authentication failed' };
 			const formatted = service.formatError(error);
 
-			expect((formatted.extensions as any).code).toBe('AUTHENTICATION_ERROR');
+			expect((formatted.extensions as any).code).toBe('UNAUTHENTICATED');
 		});
 
 		it('should format unknown error as internal error', () => {
