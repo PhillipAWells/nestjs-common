@@ -14,7 +14,6 @@ import { ErrorCategorizerService } from './services/error-categorizer.service.js
 import { HttpClientService } from './services/http-client.service.js';
 import { MetricsRegistryService } from './services/metrics-registry.service.js';
 import { HealthCheckService } from './services/health-check.service.js';
-import { MetricsController } from './controllers/metrics.controller.js';
 import { SetRequestPropertyDecoratorLogger } from './decorators/request-property.decorator.js';
 import { ConfigService } from '../config/index.js';
 import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
@@ -54,7 +53,6 @@ import { InstrumentationRegistry } from './registry/instrumentation-registry.js'
 @Global()
 @Module({
 	// Note: PyroscopeModule is imported by TracingModule - do not duplicate here
-	controllers: [MetricsController],
 	providers: [
 		{
 			provide: APP_FILTER,
