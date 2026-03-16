@@ -1,32 +1,72 @@
 // ============================================================================
-// Auth Module Exports
+// Keycloak Module — Token Validation and JWT Authentication
 // ============================================================================
-export { AuthModule } from './auth/auth/auth.module.js';
-export type { AuthModuleOptions } from './auth/auth/auth.module.js';
-export { AuthService } from './auth/auth/auth.service.js';
-export { JWTStrategy } from './auth/auth/jwt.strategy.js';
-export { TokenBlacklistService } from './auth/auth/token-blacklist.service.js';
-export { AuthController } from './auth/auth/auth.controller.js';
-export { JWTAuthGuard } from './auth/auth/jwt-auth.guard.js';
+export { KeycloakModule } from './keycloak/keycloak.module.js';
+export { KeycloakTokenValidationService } from './keycloak/services/keycloak-token-validation.service.js';
+export type { TokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
+export type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from './keycloak/keycloak.types.js';
+export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 
-// Guards
-export { BaseAuthGuard } from './auth/guards/base-auth.guard.js';
-export { RoleGuard } from './auth/guards/role.guard.js';
-export { PermissionGuard } from './auth/guards/permission.guard.js';
+// ============================================================================
+// Keycloak Admin Module — Admin REST API
+// ============================================================================
+export { KeycloakAdminModule } from './admin/keycloak-admin.module.js';
+export { KeycloakAdminService } from './admin/services/keycloak-admin.service.js';
+export { KeycloakHealthIndicator } from './admin/health/keycloak.health.js';
+export type { KeycloakAdminConfig } from './admin/config/keycloak.config.js';
+export { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
+export { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './admin/keycloak.constants.js';
 
-// Auth Middleware
-export * from './auth/middleware/auth-middleware.js';
+// Keycloak Admin Permission Scopes
+export type { KeycloakAdminScope } from './admin/permissions/keycloak-admin.permissions.js';
+export { KEYCLOAK_DEFAULT_SCOPES, KEYCLOAK_ALL_SCOPES, KeycloakAdminScopeError } from './admin/permissions/keycloak-admin.permissions.js';
 
-// OAuth exports
-export { OAuthModule } from './auth/lib/oauth/oauth.module.js';
-export type { OAuthModuleOptions, OAuthProviderConfig, KeycloakConfig, OAuthUser, OAuthToken } from './auth/lib/oauth/types/oauth-config.types.js';
-export { OAuthService } from './auth/lib/oauth/oauth.service.js';
-export { KeycloakStrategy } from './auth/lib/oauth/strategies/keycloak.strategy.js';
-export { OIDCStrategy } from './auth/lib/oauth/strategies/oidc.strategy.js';
-export { OAuthGuard } from './auth/lib/oauth/guards/oauth.guard.js';
-export { GetOAuthUser, OAuthRoles, OAuthProvider } from './auth/lib/oauth/decorators/oauth.decorators.js';
+// Keycloak Admin Client
+export { KeycloakClient } from './admin/client/client.js';
 
-// Decorators
+// Keycloak Admin Services
+export { BaseService } from './admin/client/services/base-service.js';
+export { RealmService } from './admin/client/services/realm.service.js';
+export { UserService } from './admin/client/services/user.service.js';
+export { ClientService } from './admin/client/services/client.service.js';
+export { RoleService } from './admin/client/services/role.service.js';
+export { GroupService } from './admin/client/services/group.service.js';
+export { IdentityProviderService } from './admin/client/services/identity-provider.service.js';
+export { AuthenticationService } from './admin/client/services/authentication.service.js';
+export { FederatedIdentityService } from './admin/client/services/federated-identity.service.js';
+export type { FederatedIdentityLink } from './admin/client/services/federated-identity.service.js';
+export { EventService } from './admin/client/services/event.service.js';
+
+// Keycloak Admin Types
+export type { KeycloakClientConfig } from './admin/client/types/config.types.js';
+export type { AdminEventQuery, AccessEventQuery, KeycloakAdminEvent, KeycloakAccessEvent } from './admin/client/types/event.types.js';
+
+// Keycloak Admin Errors
+export {
+	KeycloakClientError,
+	AuthenticationError,
+	AuthorizationError,
+	NotFoundError,
+	ValidationError,
+	RateLimitError,
+	TimeoutError,
+	NetworkError,
+	ConflictError,
+} from './admin/client/errors/base-error.js';
+
+// Keycloak Admin Utils
+export { withRetry } from './admin/client/utils/retry.js';
+
+// ============================================================================
+// Guards — Authorization and JWT
+// ============================================================================
+export { JwtAuthGuard } from './guards/jwt-auth.guard.js';
+export { RoleGuard } from './guards/role.guard.js';
+export { PermissionGuard } from './guards/permission.guard.js';
+
+// ============================================================================
+// Decorators — Auth Context and Metadata
+// ============================================================================
 export {
 	Auth,
 	Public,
@@ -40,6 +80,11 @@ export {
 	detectContextType,
 	extractRequestFromContext,
 	extractUserFromContext,
+} from './decorators/auth-decorators.js';
+
+export type { ContextOptions } from './decorators/auth-decorators.js';
+
+export {
 	GraphQLPublic,
 	GraphQLAuth,
 	GraphQLRoles,
@@ -47,31 +92,6 @@ export {
 	GraphQLAuthToken,
 	GraphQLContextParam,
 	GraphQLUser,
-} from './auth/decorators/index.js';
+} from './decorators/graphql-auth-decorators.js';
 
-export type { ContextOptions } from './auth/decorators/index.js';
-
-// Keycloak Admin
-export * from './auth/lib/keycloak/index.js';
-
-// ============================================================================
-// Session Module Exports
-// ============================================================================
-export { SessionModule } from './session/session.module.js';
-export type { SessionModuleOptions } from './session/session.module.js';
-export type { Session, SessionDocument, SessionSchema } from './session/session.entity.js';
-export { SessionRepository } from './session/session.repository.js';
-export { SessionEventEmitter } from './session/session-event.emitter.js';
-export { SessionEventType } from './session/session.types.js';
-export { SessionService } from './session/session.service.js';
-export { SessionResolver } from './session/session.resolver.js';
-export {
-	SessionType,
-	SessionAuthPayload,
-	SessionEvent,
-	SessionDeviceInfo,
-	SessionUserProfile,
-	SessionLoginRecord,
-	SessionPreferencesInput,
-} from './session/session.graphql.js';
-export type { ISessionEvent, ISessionConfig, IDeviceInfo, IUserProfile } from './session/session.types.js';
+export { ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext, DetectContextType } from './decorators/context-utils.js';
