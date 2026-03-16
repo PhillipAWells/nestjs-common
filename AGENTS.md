@@ -39,7 +39,7 @@ NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cach
 | Package | Purpose |
 |---|---|
 | `nestjs-shared` | Foundation: filters, guards, interceptors, logging, CSRF, error handling, config, metrics, lazy loading |
-| `nestjs-auth` | JWT, sessions, OAuth/OIDC, Keycloak; depends on `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope` |
+| `nestjs-auth` | Keycloak integration library — token validation, admin API, guards, and federated identity; depends on `nestjs-shared` |
 | `nestjs-graphql` | GraphQL module with Redis cache, DataLoaders, subscriptions; depends on `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope` |
 | `nestjs-open-telemetry` | OTel tracing and metrics integration; depends on `nestjs-shared` |
 | `nestjs-prometheus` | Prometheus `/metrics` endpoint; depends on `nestjs-shared` |
@@ -57,7 +57,7 @@ All configurable modules use `Module.forRoot(options)` dynamic module pattern wi
 Each package has a single barrel `index.ts` entry point. `nestjs-shared` additionally exposes conditional exports for `./common` and `./common/utils/lazy-getter.types`.
 
 ### Lazy Loading
-`LazyGetter<T>` / `OptionalLazyGetter<T>` type aliases and `CreateMemoizedLazyGetter` / `CreateOptionalLazyGetter` factory functions in `nestjs-shared` defer dependency resolution via `ModuleRef` to avoid circular dependencies. Classes implement the `LazyModuleRefService` interface to use this pattern.
+`LazyGetter<T>` / `OptionalLazyGetter<T>` type aliases and `CreateMemoizedLazyGetter` / `CreateOptionalLazyGetter` factory functions in `nestjs-shared` defer dependency resolution via `ModuleRef` to avoid circular dependencies. Classes implement the `LazyModuleRefService` interface to use this pattern. In `nestjs-auth`, guards (`JwtAuthGuard`, `RoleGuard`, `PermissionGuard`) use standard NestJS constructor injection; lazy loading is retained only in `KeycloakAdminService`.
 
 ### Error Handling
 `BaseApplicationError` (in `nestjs-shared`) is the base for all custom errors. `ErrorCategorizerService` classifies errors; `ErrorSanitizerService` redacts sensitive data before logging. `GlobalExceptionFilter` maps errors to HTTP responses.
@@ -69,7 +69,7 @@ Each package has a single barrel `index.ts` entry point. `nestjs-shared` additio
 Most modules use Joi-validated config with service-specific interfaces. Environment variables are the source of truth. `nestjs-pyroscope` and `nestjs-qdrant` use plain typed interfaces without Joi.
 
 ### Security Defaults
-- **Token blacklist** (`nestjs-auth`): Fails closed — tokens are treated as blacklisted when the cache is unavailable.
+- **Token validation** (`nestjs-auth`): Defaults to online introspection via Keycloak's `/token/introspect` endpoint — active session check on every request. Offline JWKS validation is opt-in for services that accept the revocation risk window.
 - **WebSocket auth** (`nestjs-graphql`): Requires `JwtService` for cryptographic token signature verification. Without it, all WebSocket authentications fail.
 - **CSRF** (`nestjs-shared`): Per-IP token generation is serialized with a 30-second timeout (HTTP 503 on timeout). Maps are cleared on module destroy.
 - **CORS** (`nestjs-shared`): Localhost origin matching uses strict regex (`/^http:\/\/localhost(?::\d+)?$/`) to prevent subdomain bypass (e.g., `localhost.evil.com`).

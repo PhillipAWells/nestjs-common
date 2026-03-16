@@ -25,7 +25,7 @@ import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
 import { PrometheusModule } from '@pawells/nestjs-prometheus';
 import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 import { QdrantModule } from '@pawells/nestjs-qdrant';
-import { AuthModule, KeycloakAdminModule } from '@pawells/nestjs-auth';
+import { KeycloakModule, KeycloakAdminModule } from '@pawells/nestjs-auth';
 import { ItemsModule } from './items/items.module.js';
 
 @Module({
@@ -70,18 +70,15 @@ import { ItemsModule } from './items/items.module.js';
 		}),
 
 		// ── 6. Auth ───────────────────────────────────────────────────────────
-		// Omitting oauth: {} here; add OAuthModuleOptions when Keycloak / OIDC
-		// is available.  userLookupFn should resolve users from your own data
-		// store in production.
-		AuthModule.forRoot({
-			jwtSecret: process.env['JWT_SECRET'] ?? 'dev-secret-change-in-production',
-			jwtExpiresIn: process.env['JWT_EXPIRES_IN'] ?? '15m',
-			userLookupFn: (userId: string) => Promise.resolve({
-				id: userId,
-				email: `${userId}@example.com`,
-				roles: [],
-				permissions: [],
-			}),
+		// KeycloakModule handles JWT token validation via Keycloak's token
+		// introspection endpoint. Requires KEYCLOAK_SERVER_URL, KEYCLOAK_REALM,
+		// KEYCLOAK_CLIENT_ID, and KEYCLOAK_CLIENT_SECRET to be set.
+		KeycloakModule.forRoot({
+			authServerUrl: process.env['KEYCLOAK_SERVER_URL'] ?? 'http://localhost:8080',
+			realm: process.env['KEYCLOAK_REALM'] ?? 'master',
+			clientId: process.env['KEYCLOAK_CLIENT_ID'] ?? '',
+			clientSecret: process.env['KEYCLOAK_CLIENT_SECRET'] ?? '',
+			validationMode: 'online',
 		}),
 
 		// ── 6b. Keycloak Admin (optional) ─────────────────────────────────────

@@ -3,24 +3,23 @@
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-auth.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Comprehensive NestJS authentication module with JWT, sessions, OAuth/OIDC, and Keycloak integration. Provides role-based access control (RBAC), permission-based access control (PBAC), token blacklisting with Redis, concurrent session management, and multi-provider OAuth/OIDC support.
+Keycloak integration library for NestJS resource servers. Validates Keycloak-issued access tokens (online introspection by default; offline JWKS opt-in), enforces role and permission guards on HTTP and GraphQL routes, and provides a typed Admin REST API client for user management, federated identity, and event polling.
+
+This package does **not** issue tokens, manage passwords, or run login flows — those are Keycloak's responsibility.
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Requirements](#requirements)
-- [Core Features](#core-features)
 - [Quick Start](#quick-start)
-- [JWT Authentication](#jwt-authentication)
-- [Authorization Decorators](#authorization-decorators)
+- [KeycloakModule](#keycloakmodule)
+- [Token Validation Modes](#token-validation-modes)
 - [Guards](#guards)
-- [Token Blacklist](#token-blacklist)
-- [Session Management](#session-management)
-- [OAuth/OIDC Integration](#oauthoidc-integration)
-- [Keycloak Integration](#keycloak-integration)
-- [GraphQL Support](#graphql-support)
-- [Configuration Reference](#configuration-reference)
-- [API Reference](#api-reference)
+- [Decorators](#decorators)
+- [KeycloakAdminModule](#keycloakadminmodule)
+- [Federated Identity](#federated-identity)
+- [Event Polling](#event-polling)
+- [Keycloak Client Configuration](#keycloak-client-configuration)
+- [Security Notes](#security-notes)
 
 ## Installation
 
@@ -28,721 +27,388 @@ Comprehensive NestJS authentication module with JWT, sessions, OAuth/OIDC, and K
 yarn add @pawells/nestjs-auth
 ```
 
-## Requirements
+### Peer Dependencies
 
-- **Node.js**: >= 24.0.0
-- **NestJS**: >= 10.0.0
-- **@pawells/nestjs-shared**: same version as @pawells/nestjs-auth
-- **Redis** (optional): Required for token blacklisting and session tracking. Applications must import `CacheModule` from `@pawells/nestjs-graphql` before importing `AuthModule`.
-
-## Peer Dependencies
-
-```json
-{
-  "@nestjs/common": ">=10.0.0",
-  "@nestjs/core": ">=10.0.0",
-  "@nestjs/graphql": ">=12.0.0",
-  "@nestjs/jwt": ">=10.0.0",
-  "@nestjs/mongoose": ">=10.0.0",
-  "@nestjs/passport": ">=10.0.0",
-  "@nestjs/terminus": ">=10.0.0",
-  "axios": ">=1.0.0",
-  "bcryptjs": ">=2.0.0",
-  "ioredis": ">=5.0.0",
-  "joi": ">=17.0.0",
-  "jwk-to-pem": ">=2.0.0",
-  "mongoose": ">=8.0.0",
-  "passport-jwt": ">=4.0.0",
-  "passport-oauth2": ">=1.0.0",
-  "passport-openidconnect": ">=0.1.0",
-  "uuid": ">=9.0.0"
-}
-```
-
-## Core Features
-
-### Authentication
-- **JWT Strategy**: Passport JWT integration with configurable expiration and signing algorithms
-- **Token Blacklist**: Redis-backed token revocation with fail-closed behavior
-- **Concurrent Session Management**: Atomic Lua-based session tracking with per-user limits
-- **JWTAuthGuard**: Standalone guard protecting HTTP routes with JWT validation
-- **BaseAuthGuard**: Abstract guard supporting JWT, Keycloak, and OAuth strategies
-
-### Authorization
-- **Role-Based Access Control (RBAC)**: `@Roles` decorator with flexible role matching
-- **Permission-Based Access Control (PBAC)**: `@Permissions` decorator enforcing all required permissions
-- **RoleGuard**: Validates user roles against route requirements
-- **PermissionGuard**: Validates user permissions against route requirements
-
-### Sessions
-- **SessionModule**: MongoDB-backed session persistence with TTL management
-- **Session Events**: Track login, logout, token refresh, and session revocation
-- **Concurrent Session Limits**: Enforce maximum concurrent sessions per user with optional admin overrides
-- **Session Repository**: Direct MongoDB access with query builders
-- **GraphQL Resolver**: Query and mutate sessions via GraphQL
-
-### OAuth / OIDC
-- **Multi-Provider Support**: Google, GitHub, Keycloak, and any OIDC provider
-- **OAuthModule**: Dynamic configuration for OAuth2/OIDC flows
-- **OAuthService**: Token verification, refresh, and user info retrieval
-- **Keycloak Strategy**: Native Keycloak support with client credentials and password flows
-- **OIDC Strategy**: Generic OpenID Connect with standard claims
-- **Token Caching**: JWK caching with single-flight pattern for efficiency
-- **Decorators**: Extract provider, user, and roles from OAuth context
-
-### Keycloak Admin
-- **Keycloak Admin API Client**: User, role, and group management
-- **Credentials Support**: Password and client credentials authentication
-- **Health Checks**: Built-in health indicator for Keycloak server availability
-- **Retry Logic**: Exponential backoff for transient failures
+| Package | Version | Required |
+|---|---|---|
+| `@nestjs/common` | `>=10.0.0` | Yes |
+| `@nestjs/core` | `>=10.0.0` | Yes |
+| `@nestjs/jwt` | `>=10.0.0` | Yes |
+| `@nestjs/terminus` | `>=10.0.0` | Yes |
+| `joi` | `>=17.0.0` | Yes |
+| `@nestjs/graphql` | `>=12.0.0` | Yes — required to use GraphQL decorators |
+| `jwks-rsa` | `>=3.0.0` | No — required only for offline (JWKS) validation mode |
 
 ## Quick Start
 
-### Basic JWT Setup
-
 ```typescript
 import { Module } from '@nestjs/common';
-import { AuthModule } from '@pawells/nestjs-auth';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  KeycloakModule,
+  KeycloakAdminModule,
+  JwtAuthGuard,
+} from '@pawells/nestjs-auth';
 
 @Module({
   imports: [
-    AuthModule.forRoot({
-      jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
-      jwtExpiresIn: '15m',
-      userLookupFn: async (userId: string) => {
-        // Implement your user lookup logic
-        return userService.findById(userId);
-      },
+    KeycloakModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        authServerUrl: config.get('KEYCLOAK_AUTH_SERVER_URL'),
+        realm: config.get('KEYCLOAK_REALM'),
+        clientId: config.get('KEYCLOAK_CLIENT_ID'),
+        clientSecret: config.get('KEYCLOAK_CLIENT_SECRET'),
+      }),
     }),
+    KeycloakAdminModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        enabled: config.get('KEYCLOAK_ADMIN_ENABLED') === 'true',
+        baseUrl: config.get('KEYCLOAK_BASE_URL'),
+        realmName: config.get('KEYCLOAK_REALM'),
+        credentials: {
+          type: 'clientCredentials',
+          clientId: config.get('KEYCLOAK_ADMIN_CLIENT_ID'),
+          clientSecret: config.get('KEYCLOAK_ADMIN_CLIENT_SECRET'),
+        },
+      }),
+    }),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
 ```
 
-### Protecting Routes
+## KeycloakModule
+
+`KeycloakModule` configures token validation for the service. It provides `KeycloakTokenValidationService` to all modules via its exports.
+
+### Options
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `authServerUrl` | `string` | — | Keycloak realm base URL, e.g. `https://auth.example.com/realms/myrealm` |
+| `realm` | `string` | — | Keycloak realm name |
+| `clientId` | `string` | — | This service's Keycloak client ID — used for audience validation and client role extraction |
+| `validationMode` | `'online' \| 'offline'` | `'online'` | Token validation strategy — see [Token Validation Modes](#token-validation-modes) |
+| `clientSecret` | `string` | — | Client secret for the introspection endpoint. Required when `validationMode` is `'online'` (the default) |
+| `jwksCacheTtlMs` | `number` | `300000` | JWKS public key cache TTL in milliseconds. Used in offline mode only |
+| `issuer` | `string` | `authServerUrl` | Expected `iss` claim value. Must match exactly. Defaults to `authServerUrl` |
+
+### forRoot
 
 ```typescript
-import {
-  Auth,
-  Public,
-  Roles,
-  CurrentUser,
-  AuthToken,
-  JWTAuthGuard,
-} from '@pawells/nestjs-auth';
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
-
-@Controller('users')
-@UseGuards(JWTAuthGuard)
-export class UsersController {
-  @Public()
-  @Get('public')
-  getPublicData() {
-    return { data: 'public' };
-  }
-
-  @Auth()
-  @Get('profile')
-  getProfile(@CurrentUser() user: any) {
-    return { user };
-  }
-
-  @Roles('admin', 'moderator')
-  @Get('admin')
-  getAdminData() {
-    return { data: 'admin only' };
-  }
-
-  @Post('logout')
-  logout(@AuthToken() token: string) {
-    // Token will be blacklisted automatically
-    return { message: 'logged out' };
-  }
-}
+KeycloakModule.forRoot({
+  authServerUrl: 'https://auth.example.com/realms/myrealm',
+  realm: 'myrealm',
+  clientId: 'my-service',
+  clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+});
 ```
 
-## JWT Authentication
-
-### AuthModule Configuration
+### forRootAsync
 
 ```typescript
-import { AuthModule, AuthModuleOptions } from '@pawells/nestjs-auth';
-
-const authOptions: AuthModuleOptions = {
-  // JWT signing secret (required)
-  jwtSecret: process.env.JWT_SECRET || 'development-secret',
-
-  // JWT expiration time (default: '15m')
-  jwtExpiresIn: '15m',
-
-  // Function to look up users by ID (required)
-  userLookupFn: async (userId: string) => {
-    return userRepository.findById(userId);
-  },
-
-  // OAuth configuration (optional)
-  oauth: {
-    providers: {
-      keycloak: {
-        // provider config
-      },
-    },
-  },
-};
-
-@Module({
-  imports: [AuthModule.forRoot(authOptions)],
-})
-export class AppModule {}
+KeycloakModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    authServerUrl: config.get('KEYCLOAK_AUTH_SERVER_URL'),
+    realm: config.get('KEYCLOAK_REALM'),
+    clientId: config.get('KEYCLOAK_CLIENT_ID'),
+    clientSecret: config.get('KEYCLOAK_CLIENT_SECRET'),
+  }),
+});
 ```
 
-### AuthService
+## Token Validation Modes
 
-The `AuthService` handles user authentication and token management:
+### Online (default)
+
+Validates each token by calling Keycloak's introspection endpoint (`/protocol/openid-connect/token/introspect`). The introspection response is authoritative: it detects revoked tokens and expired sessions immediately.
+
+- Requires `clientSecret`
+- Adds a network round-trip per request
+- **Recommended for most deployments**
+
+### Offline (opt-in)
+
+Validates the JWT signature locally using Keycloak's JWKS endpoint. Public keys are fetched once and cached.
+
+- Does not detect revocation — a revoked token remains valid until its `exp` claim passes
+- No network hop after the initial key fetch
+- Validates `exp`, `iss`, and `aud` claims locally
+- Requires the `jwks-rsa` peer dependency
+- Set `validationMode: 'offline'` to enable
 
 ```typescript
-import { AuthService, User, AuthResponse } from '@pawells/nestjs-auth';
-import { Injectable } from '@nestjs/common';
-
-@Injectable()
-export class LoginService {
-  constructor(private authService: AuthService) {}
-
-  async loginUser(email: string, password: string): Promise<AuthResponse> {
-    // Validate user credentials
-    const user = await userRepository.findByEmail(email);
-    const validUser = await this.authService.validateUser(user, password);
-
-    if (!validUser) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Generate JWT tokens
-    const authResponse = this.authService.login(validUser);
-    return authResponse;
-  }
-
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<{ accessToken: string; expiresIn: number; tokenType: string }> {
-    return this.authService.refreshToken(refreshToken, userRepository.findById);
-  }
-}
+KeycloakModule.forRoot({
+  authServerUrl: 'https://auth.example.com/realms/myrealm',
+  realm: 'myrealm',
+  clientId: 'my-service',
+  validationMode: 'offline',
+  jwksCacheTtlMs: 600000, // 10 minutes
+});
 ```
 
-### JWT Claims Structure
-
-```typescript
-interface JWTPayload {
-  sub: string;           // User ID (subject)
-  email: string;         // User email
-  role: string;          // User role
-  type?: 'access' | 'refresh'; // Token type
-  iss?: string;          // Issuer
-  aud?: string;          // Audience
-  exp?: number;          // Expiration timestamp
-  iat?: number;          // Issued at timestamp
-}
-```
-
-## Authorization Decorators
-
-### @Auth and @Public
-
-Mark routes as requiring or explicitly allowing public access:
-
-```typescript
-@Controller('posts')
-@UseGuards(JWTAuthGuard)
-export class PostsController {
-  @Public()
-  @Get()
-  listPublicPosts() {
-    return [];
-  }
-
-  @Auth() // Explicitly require auth (redundant with guard, but semantic)
-  @Post()
-  createPost(@Body() dto: CreatePostDto, @CurrentUser() user: any) {
-    return { created: true };
-  }
-}
-```
-
-### @Roles - Role-Based Access Control
-
-Restrict access by user roles. User must have at least one of the specified roles:
-
-```typescript
-import { UseGuards } from '@nestjs/common';
-import { Roles, RoleGuard } from '@pawells/nestjs-auth';
-
-@Controller('admin')
-@UseGuards(JWTAuthGuard, RoleGuard)
-export class AdminController {
-  @Roles('admin')
-  @Delete('users/:id')
-  deleteUser(@Param('id') userId: string) {
-    return { deleted: true };
-  }
-
-  @Roles('admin', 'moderator')
-  @Post('ban-user')
-  banUser(@Param('id') userId: string) {
-    return { banned: true };
-  }
-}
-```
-
-### @Permissions - Permission-Based Access Control
-
-Restrict access by granular permissions. User must have ALL specified permissions:
-
-```typescript
-import { Permissions, PermissionGuard } from '@pawells/nestjs-auth';
-
-@Controller('resources')
-@UseGuards(JWTAuthGuard, PermissionGuard)
-export class ResourceController {
-  @Permissions('resource.create', 'resource.read')
-  @Post()
-  createResource(@Body() dto: CreateResourceDto) {
-    return { created: true };
-  }
-
-  @Permissions('resource.delete', 'audit.write')
-  @Delete(':id')
-  deleteResource(@Param('id') id: string) {
-    return { deleted: true };
-  }
-}
-```
-
-### @CurrentUser - Extract Authenticated User
-
-Inject the authenticated user into your controller methods:
-
-```typescript
-@Get('profile')
-getProfile(@CurrentUser() user: User) {
-  return user; // { id, email, role, firstName, lastName }
-}
-
-// Extract a specific property
-@Get('profile/id')
-getUserId(@CurrentUser('id') userId: string) {
-  return { userId };
-}
-
-// Nested property extraction
-@Get('profile/email')
-getUserEmail(@CurrentUser('profile.email') email: string) {
-  return { email };
-}
-```
-
-### @AuthToken - Extract Authorization Token
-
-Access the raw JWT token from the request:
-
-```typescript
-@Get('token-info')
-getTokenInfo(@AuthToken() token: string) {
-  const payload = this.authService.decodeToken(token);
-  return { expiresAt: new Date(payload.exp * 1000) };
-}
-```
+Use offline mode only when request throughput makes per-request introspection impractical and token lifetimes are short enough to bound the revocation window.
 
 ## Guards
 
-### JWTAuthGuard
+### JwtAuthGuard
 
-HTTP guard using JWT Passport strategy. Validates token signature and expiration:
+Validates the Keycloak access token on every incoming request. Extracts the `Bearer` token from the `Authorization` header, calls `KeycloakTokenValidationService.validateToken`, and attaches the resolved `KeycloakUser` to `request.user`.
+
+Routes decorated with `@Public()` bypass the guard entirely.
+
+**Register globally (recommended):**
 
 ```typescript
-import { UseGuards } from '@nestjs/common';
-import { JWTAuthGuard } from '@pawells/nestjs-auth';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from '@pawells/nestjs-auth';
 
-@Controller('protected')
-@UseGuards(JWTAuthGuard)
-export class ProtectedController {
-  @Get()
-  getData() {
-    return { data: 'protected' };
-  }
+// In your AppModule providers array:
+{
+  provide: APP_GUARD,
+  useClass: JwtAuthGuard,
 }
 ```
 
-### BaseAuthGuard
-
-Abstract base guard supporting JWT, Keycloak, and OAuth strategies. Extend this for custom context handling:
+**Per-route:**
 
 ```typescript
-import { BaseAuthGuard } from '@pawells/nestjs-auth';
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '@pawells/nestjs-auth';
 
-@Injectable()
-export class CustomAuthGuard extends BaseAuthGuard {
-  protected getContext(context: ExecutionContext): any {
-    return context.switchToHttp().getRequest();
-  }
-}
+@UseGuards(JwtAuthGuard)
+@Controller('profile')
+export class ProfileController {}
 ```
 
 ### RoleGuard
 
-Validates user roles against `@Roles` decorator metadata:
+Checks whether the authenticated user holds at least one of the roles listed in `@Roles()`. Roles are matched against the union of `realm_access.roles` and `resource_access[clientId].roles` from the token.
 
 ```typescript
 import { UseGuards } from '@nestjs/common';
-import { Roles, JWTAuthGuard, RoleGuard } from '@pawells/nestjs-auth';
+import { RoleGuard, Roles } from '@pawells/nestjs-auth';
 
+@UseGuards(RoleGuard)
 @Controller('admin')
-@UseGuards(JWTAuthGuard, RoleGuard)
 export class AdminController {
-  @Roles('admin')
-  @Get()
-  getAdminPanel() {
-    return { admin: true };
-  }
-}
-```
-
-Supports flexible role formats in the user object:
-- `role?: string` - Single role
-- `roles?: string[]` - Array of roles
-- `roles?: string` - Comma-separated roles
-
-### PermissionGuard
-
-Validates user permissions against `@Permissions` decorator metadata:
-
-```typescript
-import { UseGuards } from '@nestjs/common';
-import { Permissions, JWTAuthGuard, PermissionGuard } from '@pawells/nestjs-auth';
-
-@Controller('resources')
-@UseGuards(JWTAuthGuard, PermissionGuard)
-export class ResourceController {
-  @Permissions('resource.read', 'audit.read')
-  @Get()
-  listResources() {
+  @Roles('admin', 'moderator')
+  @Get('users')
+  listUsers() {
     return [];
   }
 }
 ```
 
-User must have `permissions` array or comma-separated string on the user object.
+### PermissionGuard
 
-## Token Blacklist
-
-### Overview
-
-Token blacklist provides fail-closed revocation using Redis. When the cache is unavailable, tokens are treated as blacklisted for security.
-
-### TokenBlacklistService
+Checks whether the authenticated user holds at least one of the values listed in `@Permissions()`, resolved against the same role arrays as `RoleGuard`.
 
 ```typescript
-import { TokenBlacklistService } from '@pawells/nestjs-auth';
+import { UseGuards } from '@nestjs/common';
+import { PermissionGuard, Permissions } from '@pawells/nestjs-auth';
 
-@Injectable()
-export class LogoutService {
-  constructor(private tokenBlacklist: TokenBlacklistService) {}
-
-  async revokeToken(token: string): Promise<void> {
-    const expiresInSeconds = 900; // Token expires in 15 minutes
-    await this.tokenBlacklist.blacklistToken(token, expiresInSeconds);
-  }
-
-  async checkTokenStatus(token: string): Promise<boolean> {
-    const isBlacklisted = await this.tokenBlacklist.isTokenBlacklisted(token);
-    return isBlacklisted;
-  }
-
-  async revokeAllUserTokens(userId: string): Promise<void> {
-    await this.tokenBlacklist.revokeUserTokens(userId);
+@UseGuards(PermissionGuard)
+@Controller('documents')
+export class DocumentsController {
+  @Permissions('document.write')
+  @Post()
+  createDocument(@Body() dto: CreateDocumentDto) {
+    return {};
   }
 }
 ```
 
-### Automatic Logout
+## Decorators
 
-The `/auth/logout` endpoint automatically blacklists the access token:
+### HTTP Decorators
 
-```bash
-curl -X POST http://localhost:3000/auth/logout \
-  -H "Authorization: Bearer <your-jwt-token>"
-```
-
-### Implementation Details
-
-- **Fail-Closed Behavior**: When Redis is unavailable, `isTokenBlacklisted()` returns `true`, rejecting all tokens
-- **TTL-Based Cleanup**: Redis handles automatic expiration; no manual cleanup required
-- **Rate Limiting**: Logout and refresh endpoints use throttling to prevent abuse
-- **Audit Logging**: All token operations are logged for security audit trails
-
-## Session Management
-
-### SessionModule Configuration
+| Decorator | Type | Description |
+|---|---|---|
+| `@Auth()` | Method | Marks the route as requiring authentication (sets `isPublic: false`) |
+| `@Public()` | Method | Marks the route as public — `JwtAuthGuard` skips validation |
+| `@Roles(...roles)` | Method | Specifies role requirements for `RoleGuard` |
+| `@Permissions(...permissions)` | Method | Specifies permission requirements for `PermissionGuard` |
+| `@CurrentUser(property?)` | Parameter | Injects the `KeycloakUser` from `request.user`, or a specific property if `property` is given |
+| `@AuthToken()` | Parameter | Injects the raw Bearer token string from the `Authorization` header |
 
 ```typescript
-import { SessionModule, SessionModuleOptions } from '@pawells/nestjs-auth';
-import Redis from 'ioredis';
+import { Controller, Get } from '@nestjs/common';
+import { Auth, Public, Roles, CurrentUser, AuthToken } from '@pawells/nestjs-auth';
+import type { KeycloakUser } from '@pawells/nestjs-auth';
 
-const sessionOptions: SessionModuleOptions = {
-  config: {
-    sessionTtlMinutes: 1440, // 24 hours
-    enforceSessionLimit: true,
-    defaultMaxConcurrentSessions: 5,
-  },
-  redisClient: new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-  }),
-};
-
-@Module({
-  imports: [SessionModule.forRoot(sessionOptions)],
-})
-export class AppModule {}
-```
-
-### SessionService
-
-```typescript
-import { SessionService, Session } from '@pawells/nestjs-auth';
-
-@Injectable()
-export class AuthFlowService {
-  constructor(private sessionService: SessionService) {}
-
-  async createSession(deviceInfo: IDeviceInfo): Promise<Session> {
-    return this.sessionService.CreateOrGetSession(deviceInfo);
+@Controller('me')
+export class ProfileController {
+  @Public()
+  @Get('ping')
+  ping() {
+    return 'pong';
   }
 
-  async authenticateSession(
-    sessionId: string,
-    userProfile: IUserProfile,
-    accessToken: string,
-    refreshToken: string,
-  ): Promise<Session> {
-    const now = new Date();
-    const accessTokenExpiry = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes
-    const refreshTokenExpiry = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000); // 3 days
-
-    return this.sessionService.AuthenticateSession(
-      sessionId,
-      userProfile,
-      accessToken,
-      refreshToken,
-      accessTokenExpiry,
-      refreshTokenExpiry,
-      deviceInfo,
-      'keycloak',
-    );
+  @Auth()
+  @Get()
+  getProfile(@CurrentUser() user: KeycloakUser) {
+    return user;
   }
 
-  async logout(sessionId: string): Promise<void> {
-    await this.sessionService.LogoutSession(sessionId);
+  @Roles('admin')
+  @Get('token')
+  getToken(@AuthToken() token: string) {
+    return { token };
   }
 
-  async getUserSessions(userId: string): Promise<Session[]> {
-    return this.sessionService.GetUserSessions(userId);
-  }
-
-  async revokeSession(sessionId: string): Promise<void> {
-    await this.sessionService.RevokeSession(sessionId);
+  @Get('id')
+  getId(@CurrentUser('id') userId: string) {
+    return { userId };
   }
 }
 ```
 
-### Concurrent Session Management
+### GraphQL Decorators
 
-Sessions are atomically tracked using Lua scripts (Redis) or fallback non-atomic tracking:
+The GraphQL variants are aliases of the HTTP decorators, pre-configured for the GraphQL execution context.
 
-```typescript
-const result = await this.authService.trackUserSession(
-  userId,
-  sessionId,
-  maxConcurrentSessions,
-);
-
-if (result.allowed) {
-  // Session allowed
-} else {
-  // Max sessions reached, oldest session was evicted
-}
-```
-
-## OAuth/OIDC Integration
-
-### OAuthModule Configuration
+| Decorator | Equivalent to | Notes |
+|---|---|---|
+| `@GraphQLAuth()` | `@Auth()` | Marks GraphQL resolver as requiring authentication |
+| `@GraphQLPublic()` | `@Public()` | Marks GraphQL resolver as public |
+| `@GraphQLRoles(...roles)` | `@Roles(...roles)` | Specifies role requirements |
+| `@GraphQLCurrentUser(property?)` | `@CurrentUser(property?, { contextType: 'graphql' })` | Injects user from GraphQL context |
+| `@GraphQLUser(property?)` | `@GraphQLCurrentUser(property?)` | Alias |
+| `@GraphQLAuthToken()` | `@AuthToken({ contextType: 'graphql' })` | Injects Bearer token from GraphQL context |
+| `@GraphQLContextParam()` | — | Injects the full GraphQL context object |
 
 ```typescript
-import { OAuthModule, OAuthModuleOptions } from '@pawells/nestjs-auth';
-
-const oauthOptions: OAuthModuleOptions = {
-  providers: {
-    keycloak: {
-      clientID: process.env.KEYCLOAK_CLIENT_ID,
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      authorizationURL: 'https://keycloak.example.com/auth/realms/my-realm/protocol/openid-connect/auth',
-      tokenURL: 'https://keycloak.example.com/auth/realms/my-realm/protocol/openid-connect/token',
-      userInfoURL: 'https://keycloak.example.com/auth/realms/my-realm/protocol/openid-connect/userinfo',
-    },
-    google: {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      authorizationURL: 'https://accounts.google.com/o/oauth2/v2/auth',
-      tokenURL: 'https://oauth2.googleapis.com/token',
-      userInfoURL: 'https://www.googleapis.com/oauth2/v2/userinfo',
-    },
-  },
-};
-
-@Module({
-  imports: [
-    AuthModule.forRoot({
-      jwtSecret: process.env.JWT_SECRET,
-      userLookupFn: userService.findById.bind(userService),
-      oauth: oauthOptions,
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### OAuthService
-
-Token verification, refresh, and user info retrieval:
-
-```typescript
-import { OAuthService } from '@pawells/nestjs-auth';
-
-@Injectable()
-export class ExternalAuthService {
-  constructor(private oauthService: OAuthService) {}
-
-  async verifyToken(token: string, provider: string): Promise<OAuthUser> {
-    return this.oauthService.verifyToken(token, provider);
-  }
-
-  async refreshToken(
-    refreshToken: string,
-    provider: string,
-  ): Promise<OAuthToken> {
-    return this.oauthService.refreshToken(refreshToken, provider);
-  }
-
-  async getUserInfo(accessToken: string, provider: string): Promise<OAuthUser> {
-    return this.oauthService.getUserInfo(accessToken, provider);
-  }
-
-  extractRolesFromToken(decoded: any): string[] {
-    return this.oauthService.extractRolesFromToken(decoded);
-  }
-}
-```
-
-### OAuth Strategies
-
-#### KeycloakStrategy
-
-Native Keycloak OAuth2 strategy:
-
-```typescript
-import { KeycloakStrategy } from '@pawells/nestjs-auth';
-
-@UseGuards(OAuthGuard)
-@Controller('auth/keycloak')
-export class KeycloakAuthController {
-  @Post('callback')
-  keycloakCallback(@GetOAuthUser() user: OAuthUser) {
-    return { user };
-  }
-}
-```
-
-#### OIDCStrategy
-
-Generic OpenID Connect strategy supporting any OIDC provider:
-
-```typescript
-import { OIDCStrategy, OAuthGuard } from '@pawells/nestjs-auth';
-
-@UseGuards(OAuthGuard)
-@Controller('auth/oidc')
-export class OIDCAuthController {
-  @Post('callback')
-  oidcCallback(@GetOAuthUser() user: OAuthUser) {
-    return { user };
-  }
-}
-```
-
-### OAuth Decorators
-
-```typescript
+import { Resolver, Query, Mutation } from '@nestjs/graphql';
 import {
-  GetOAuthUser,
-  OAuthProvider,
-  OAuthRoles,
-  OAuthGuard,
+  GraphQLAuth,
+  GraphQLPublic,
+  GraphQLRoles,
+  GraphQLCurrentUser,
+  GraphQLAuthToken,
 } from '@pawells/nestjs-auth';
+import type { KeycloakUser } from '@pawells/nestjs-auth';
 
-@UseGuards(OAuthGuard)
-@Controller('oauth')
-export class OAuthController {
-  @Get('profile')
-  getProfile(
-    @GetOAuthUser() user: OAuthUser,
-    @OAuthProvider() provider: string,
-    @OAuthRoles() roles: string[],
-  ) {
-    return { user, provider, roles };
+@Resolver()
+export class UserResolver {
+  @GraphQLPublic()
+  @Query(() => String)
+  async health(): Promise<string> {
+    return 'ok';
+  }
+
+  @GraphQLAuth()
+  @Query(() => String)
+  async me(@GraphQLCurrentUser() user: KeycloakUser): Promise<string> {
+    return user.id;
+  }
+
+  @GraphQLRoles('admin')
+  @Query(() => [String])
+  async listUsers(): Promise<string[]> {
+    return [];
+  }
+
+  @Mutation(() => Boolean)
+  async validateToken(@GraphQLAuthToken() token: string): Promise<boolean> {
+    return !!token;
   }
 }
 ```
 
-## Keycloak Integration
+## KeycloakAdminModule
 
-### KeycloakAdminModule
+`KeycloakAdminModule` provides a typed client for the Keycloak Admin REST API. It is registered as a global module — import it once in `AppModule` and inject `KeycloakAdminService` anywhere.
 
-Keycloak Admin API client for server-side user/role management:
+### Options (KeycloakAdminConfig)
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | `boolean` | `false` | When `false` the client is not initialized — useful for disabling in test environments |
+| `baseUrl` | `string` | `'http://localhost:8080'` | Keycloak server base URL (not realm-specific) |
+| `realmName` | `string` | `'master'` | Target realm for all Admin API calls |
+| `credentials.type` | `'password' \| 'clientCredentials'` | `'password'` | Authentication method |
+| `credentials.username` | `string` | — | Admin username (password auth only) |
+| `credentials.password` | `string` | — | Admin password (password auth only) |
+| `credentials.clientId` | `string` | — | Service account client ID (clientCredentials auth only) |
+| `credentials.clientSecret` | `string` | — | Service account client secret (clientCredentials auth only) |
+| `timeout` | `number` | `30000` | Request timeout in milliseconds |
+| `retry.maxRetries` | `number` | `3` | Maximum retry attempts on transient failures |
+| `retry.retryDelay` | `number` | `1000` | Delay between retries in milliseconds |
+
+### forRoot
 
 ```typescript
-import { KeycloakAdminModule } from '@pawells/nestjs-auth';
+KeycloakAdminModule.forRoot({
+  enabled: process.env.KEYCLOAK_ADMIN_ENABLED === 'true',
+  baseUrl: 'https://auth.example.com',
+  realmName: 'myrealm',
+  credentials: {
+    type: 'clientCredentials',
+    clientId: process.env.KEYCLOAK_ADMIN_CLIENT_ID,
+    clientSecret: process.env.KEYCLOAK_ADMIN_CLIENT_SECRET,
+  },
+});
+```
 
-@Module({
-  imports: [
-    KeycloakAdminModule.forRoot({
-      enabled: process.env.KEYCLOAK_ENABLED === 'true',
-      serverUrl: process.env.KEYCLOAK_SERVER_URL,
-      realm: process.env.KEYCLOAK_REALM,
-      credentials: {
-        type: 'clientCredentials',
-        clientId: process.env.KEYCLOAK_CLIENT_ID,
-        clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      },
-    }),
-  ],
-})
-export class AppModule {}
+### forRootAsync
+
+```typescript
+KeycloakAdminModule.forRootAsync({
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    enabled: config.get('KEYCLOAK_ADMIN_ENABLED') === 'true',
+    baseUrl: config.get('KEYCLOAK_BASE_URL'),
+    realmName: config.get('KEYCLOAK_REALM'),
+    credentials: {
+      type: 'clientCredentials',
+      clientId: config.get('KEYCLOAK_ADMIN_CLIENT_ID'),
+      clientSecret: config.get('KEYCLOAK_ADMIN_CLIENT_SECRET'),
+    },
+  }),
+});
 ```
 
 ### KeycloakAdminService
 
-User, role, and group management:
+Inject `KeycloakAdminService` and access the sub-services via its properties.
+
+| Property | Service | Responsibility |
+|---|---|---|
+| `.users` | `UserService` | Create, read, update, delete users; assign roles and groups |
+| `.roles` | `RoleService` | Manage realm and client roles |
+| `.realms` | `RealmService` | Realm-level configuration and queries |
+| `.clients` | `ClientService` | Manage clients and client scopes |
+| `.groups` | `GroupService` | Create and manage groups; add/remove members |
+| `.identityProviders` | `IdentityProviderService` | Manage identity provider configurations |
+| `.authentication` | `AuthenticationService` | Manage authentication flows |
+| `.federatedIdentity` | `FederatedIdentityService` | Link and unlink external provider identities — see [Federated Identity](#federated-identity) |
+| `.events` | `EventService` | Query admin and access events — see [Event Polling](#event-polling) |
 
 ```typescript
+import { Injectable } from '@nestjs/common';
 import { KeycloakAdminService } from '@pawells/nestjs-auth';
 
 @Injectable()
 export class UserManagementService {
-  constructor(private keycloak: KeycloakAdminService) {}
+  constructor(private readonly keycloak: KeycloakAdminService) {}
 
-  async createUser(email: string, firstName: string): Promise<any> {
-    return this.keycloak.users.create({
+  async createUser(email: string, firstName: string): Promise<void> {
+    await this.keycloak.users.create({
       email,
       firstName,
       enabled: true,
@@ -752,259 +418,180 @@ export class UserManagementService {
   async assignRole(userId: string, roleName: string): Promise<void> {
     await this.keycloak.users.assignRole(userId, roleName);
   }
-
-  async getRoles(): Promise<any[]> {
-    return this.keycloak.roles.list();
-  }
-
-  async createGroup(name: string): Promise<any> {
-    return this.keycloak.groups.create({ name });
-  }
 }
 ```
 
-### Keycloak Configuration Options
+Call `keycloakAdminService.isEnabled()` before calling sub-services if the module may be disabled in the current environment.
+
+## Federated Identity
+
+`KeycloakAdminService.federatedIdentity` manages links between Keycloak user accounts and external identity providers.
+
+| Method | Signature | Description |
+|---|---|---|
+| `list` | `(userId: string) => Promise<FederatedIdentityLink[]>` | Returns all provider links for a user |
+| `link` | `(userId: string, provider: string, link: { userId: string; userName: string }) => Promise<void>` | Links an external provider identity to a Keycloak user |
+| `unlink` | `(userId: string, provider: string) => Promise<void>` | Removes a provider link from a Keycloak user |
+
+`link` performs a pre-flight `list` check and throws `ConflictError` if a link for the same provider and external user ID already exists. This is a workaround for [Keycloak issue #34608](https://github.com/keycloak/keycloak/issues/34608), which can create duplicate federated identity records.
 
 ```typescript
-interface KeycloakAdminConfig {
-  enabled: boolean;
-  serverUrl: string;
-  realm: string;
-  clientId: string;
-  clientSecret: string;
-  username?: string; // For password credentials
-  password?: string; // For password credentials
-  retryAttempts?: number; // Default: 3
-  retryDelay?: number; // Default: 1000ms
+import { Injectable } from '@nestjs/common';
+import { KeycloakAdminService, ConflictError } from '@pawells/nestjs-auth';
+
+@Injectable()
+export class IdentityLinkingService {
+  constructor(private readonly keycloak: KeycloakAdminService) {}
+
+  async linkGoogleAccount(
+    keycloakUserId: string,
+    googleUserId: string,
+    googleEmail: string,
+  ): Promise<void> {
+    try {
+      await this.keycloak.federatedIdentity.link(keycloakUserId, 'google', {
+        userId: googleUserId,
+        userName: googleEmail,
+      });
+    } catch (error) {
+      if (error instanceof ConflictError) {
+        // Already linked — treat as a no-op or surface to the caller
+        return;
+      }
+      throw error;
+    }
+  }
+
+  async listLinks(keycloakUserId: string) {
+    return this.keycloak.federatedIdentity.list(keycloakUserId);
+  }
 }
 ```
 
-## GraphQL Support
+## Event Polling
 
-### GraphQL Auth Decorators
+`KeycloakAdminService.events` queries Keycloak's event log for both admin (resource mutation) and access (login, logout, token) events.
 
-GraphQL-specific versions of auth decorators with automatic context handling:
+### Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `getAdminEvents` | `(query?: AdminEventQuery) => Promise<KeycloakAdminEvent[]>` | Returns admin events matching the query |
+| `getAccessEvents` | `(query?: AccessEventQuery) => Promise<KeycloakAccessEvent[]>` | Returns access events matching the query |
+
+### AdminEventQuery Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `operationTypes` | `('CREATE' \| 'UPDATE' \| 'DELETE' \| 'ACTION')[]` | Filter by operation type |
+| `resourceTypes` | `string[]` | Filter by resource type (e.g. `['USER']`) |
+| `resourcePath` | `string` | Filter by resource path prefix |
+| `dateFrom` | `Date` | Earliest event timestamp (inclusive) |
+| `dateTo` | `Date` | Latest event timestamp (inclusive) |
+| `first` | `number` | Pagination offset |
+| `max` | `number` | Maximum results to return |
+
+`AccessEventQuery` supports the same date and pagination fields plus `type` (string array), `client`, and `user`.
+
+### KeycloakAdminEvent Fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `time` | `number` | Unix timestamp in milliseconds |
+| `realmId` | `string` | Realm identifier |
+| `operationType` | `'CREATE' \| 'UPDATE' \| 'DELETE' \| 'ACTION'` | Type of operation |
+| `resourceType` | `string` | Resource category, e.g. `USER`, `GROUP` |
+| `resourcePath` | `string` | Path to the affected resource |
+| `representation` | `string \| undefined` | JSON-encoded resource snapshot. Present on CREATE and UPDATE only. Must be parsed with `JSON.parse()` before use |
+| `authDetails` | `object \| undefined` | Actor details: `realmId`, `clientId`, `userId`, `ipAddress` |
+
+### Checkpoint Cursor Pattern
+
+Keycloak does not provide a persistent event cursor. To avoid re-processing events or missing events between polls, track the `time` of the most recently processed event and pass it as `dateFrom` on subsequent polls. Use a page size (`max`) that fits within your Keycloak event retention window — events older than the retention period are purged and will be lost if polling falls behind.
 
 ```typescript
-import {
-  GraphQLAuth,
-  GraphQLPublic,
-  GraphQLRoles,
-  GraphQLCurrentUser,
-  GraphQLAuthToken,
-  GraphQLContextParam,
-  GraphQLUser,
-} from '@pawells/nestjs-auth';
-import { Resolver, Query, Mutation } from '@nestjs/graphql';
+import { Injectable } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { KeycloakAdminService } from '@pawells/nestjs-auth';
 
-@Resolver(() => User)
-export class UserResolver {
-  @Query(() => User)
-  @GraphQLPublic()
-  async publicUser(): Promise<User> {
-    return { id: '1', email: 'public@example.com' };
+@Injectable()
+export class EventSyncService {
+  private lastProcessedTime: Date = new Date(Date.now() - 60_000);
+
+  constructor(private readonly keycloak: KeycloakAdminService) {}
+
+  @Cron('*/30 * * * * *') // every 30 seconds
+  async pollAdminEvents(): Promise<void> {
+    const events = await this.keycloak.events.getAdminEvents({
+      dateFrom: this.lastProcessedTime,
+      operationTypes: ['CREATE', 'UPDATE', 'DELETE'],
+      resourceTypes: ['USER'],
+      max: 100,
+    });
+
+    for (const event of events) {
+      await this.processEvent(event);
+      const eventTime = new Date(event.time);
+      if (eventTime > this.lastProcessedTime) {
+        this.lastProcessedTime = eventTime;
+      }
+    }
   }
 
-  @Query(() => User)
-  @GraphQLAuth()
-  async currentUser(@GraphQLCurrentUser() user: User): Promise<User> {
-    return user;
-  }
-
-  @Query(() => [User])
-  @GraphQLRoles('admin')
-  async allUsers(@GraphQLContextParam() context: any): Promise<User[]> {
-    return [];
-  }
-
-  @Mutation(() => Boolean)
-  async validateToken(@GraphQLAuthToken() token: string): Promise<boolean> {
-    return !!token;
-  }
-
-  @Query(() => String)
-  async getUserId(@GraphQLCurrentUser('id') userId: string): Promise<string> {
-    return userId;
-  }
-
-  // Alias: @GraphQLUser === @GraphQLCurrentUser
-  @Query(() => User)
-  async me(@GraphQLUser() user: User): Promise<User> {
-    return user;
+  private async processEvent(event: any): Promise<void> {
+    // Handle the event
   }
 }
 ```
 
-### GraphQL Context Integration
+## Keycloak Client Configuration
 
-The context utilities automatically detect GraphQL vs HTTP context:
+Three Keycloak clients are typically required when using this package.
 
-```typescript
-// In GraphQL resolver
-@Query(() => User)
-async me(@CurrentUser() user: User): Promise<User> {
-  // Works automatically in GraphQL context
-  return user;
-}
+### React SPA (public client)
 
-// Explicit context type
-@Query(() => User)
-async getUserExplicit(
-  @CurrentUser(undefined, { contextType: 'graphql' }) user: User,
-): Promise<User> {
-  return user;
-}
-```
+- **Client type**: Public
+- **Authentication flow**: Standard flow enabled
+- **PKCE**: Required — set Code Challenge Method to `S256`
+- **Valid redirect URIs**: Your frontend origin(s)
 
-## Configuration Reference
+### NestJS resource server (confidential client)
 
-### AuthModuleOptions
+This is the client whose `clientId` and `clientSecret` you provide to `KeycloakModule`. It is not used to authenticate users — it authenticates the service itself for introspection calls.
 
-```typescript
-interface AuthModuleOptions {
-  // JWT secret for signing tokens (required)
-  jwtSecret: string;
+- **Client type**: Confidential
+- **Service accounts**: Not required
+- **Client authentication**: Enabled
+- Introspection requires a client secret — keep `validationMode: 'online'` unless you have a specific reason to use offline mode
 
-  // JWT expiration time (default: '15m')
-  jwtExpiresIn?: string;
+If you are using offline (JWKS) validation exclusively, a confidential client is not required for token validation. The JWKS endpoint is public.
 
-  // Function to lookup user by ID (required)
-  userLookupFn: (userId: string) => Promise<User | null>;
+### Admin API caller (confidential service account)
 
-  // OAuth configuration (optional)
-  oauth?: OAuthModuleOptions;
-}
-```
+This is the client whose credentials you provide to `KeycloakAdminModule`.
 
-### SessionModuleOptions
+- **Client type**: Confidential
+- **Service accounts**: Enabled
+- **Required service account roles** (assigned in the `realm-management` client):
+  - `manage-users` — create, update, delete users and assign roles
+  - `manage-identity-providers` — link and unlink federated identities
+  - `view-events` — read admin and access events
 
-```typescript
-interface SessionModuleOptions {
-  // Session configuration
-  config: ISessionConfig;
+## Security Notes
 
-  // Redis client instance for session tracking
-  redisClient: Redis;
-}
+**Online introspection is the recommended validation mode.** It is authoritative: a revoked Keycloak session is rejected immediately, regardless of token expiry.
 
-interface ISessionConfig {
-  // Session TTL in minutes (default: 1440 = 24 hours)
-  sessionTtlMinutes: number;
+**Offline JWKS validation does not detect revocation.** A token that has been revoked in Keycloak (e.g. by logging out or disabling the user) continues to pass offline validation until its `exp` claim expires. Only use offline mode when throughput requirements make per-request introspection impractical, and mitigate the revocation window by setting short token lifetimes in Keycloak (5 minutes or less).
 
-  // Enforce maximum concurrent sessions per user
-  enforceSessionLimit: boolean;
+**Federated identity deduplication (Keycloak #34608).** Keycloak's Admin API can create duplicate federated identity records if `addToFederatedIdentity` is called concurrently for the same user and provider. The `FederatedIdentityService.link` method guards against this with a pre-flight check, but the check is not atomic. Under high concurrency, implement external coordination (e.g. a distributed lock) if duplicate links are not tolerable.
 
-  // Maximum concurrent sessions per user
-  defaultMaxConcurrentSessions?: number;
-}
-```
-
-### OAuthModuleOptions
-
-```typescript
-interface OAuthModuleOptions {
-  // OAuth provider configurations
-  providers: {
-    [name: string]: OAuthProviderConfig;
-  };
-}
-
-interface OAuthProviderConfig {
-  clientID: string;
-  clientSecret: string;
-  authorizationURL: string;
-  tokenURL: string;
-  userInfoURL: string;
-}
-```
-
-## API Reference
-
-### Classes & Services
-
-- **AuthService**: Core authentication service with user validation, JWT generation, and token management
-- **TokenBlacklistService**: Redis-backed token revocation with fail-closed behavior
-- **SessionService**: Session lifecycle management with MongoDB persistence
-- **SessionRepository**: MongoDB session data access layer
-- **SessionEventEmitter**: Event publication for session state changes
-- **OAuthService**: OAuth token verification, refresh, and user info retrieval
-- **KeycloakAdminService**: Keycloak Admin API client for user/role/group management
-
-### Guards
-
-- **JWTAuthGuard**: HTTP guard for JWT validation
-- **BaseAuthGuard**: Abstract base for custom auth guards
-- **RoleGuard**: Role-based authorization guard
-- **PermissionGuard**: Permission-based authorization guard
-- **OAuthGuard**: OAuth strategy guard
-
-### Decorators (HTTP/GraphQL)
-
-- **@Auth()**: Require authentication
-- **@Public()**: Allow public access
-- **@Roles(...roles)**: Require one of specified roles
-- **@Permissions(...permissions)**: Require all specified permissions
-- **@CurrentUser(property?)**: Inject current user (or property)
-- **@AuthToken()**: Inject authorization token
-- **@ContextOptions**: Specify context detection options
-
-### GraphQL Decorators
-
-- **@GraphQLAuth()**: GraphQL require authentication
-- **@GraphQLPublic()**: GraphQL allow public access
-- **@GraphQLRoles(...roles)**: GraphQL role-based authorization
-- **@GraphQLCurrentUser(property?)**: Inject user in GraphQL context
-- **@GraphQLAuthToken()**: Inject token in GraphQL context
-- **@GraphQLContextParam()**: Inject GraphQL context
-- **@GraphQLUser(property?)**: Alias for @GraphQLCurrentUser
-
-### OAuth Decorators
-
-- **@GetOAuthUser()**: Extract OAuth user from context
-- **@OAuthProvider()**: Extract OAuth provider name
-- **@OAuthRoles()**: Extract roles from OAuth token
-
-### Types & Interfaces
-
-- **User**: User object with email, role, firstName, lastName, isActive
-- **AuthResponse**: Login response with accessToken, refreshToken, expiresIn
-- **JWTPayload**: JWT claims structure
-- **OAuthUser**: OAuth provider user information
-- **OAuthToken**: OAuth access/refresh token pair
-- **Session**: Session document with user, device, and token info
-- **SessionEventType**: Session lifecycle event enum
-
-## Security Considerations
-
-### Token Blacklist
-
-- **Fail-Closed**: When Redis is unavailable, all tokens are treated as blacklisted
-- **TTL-Based**: Blacklist entries automatically expire using Redis TTL
-- **Rate-Limited**: Logout endpoint has throttling to prevent abuse
-
-### Session Management
-
-- **Atomic Tracking**: Uses Lua scripts to atomically update session lists under high concurrency
-- **TOCTOU Protection**: Single-flight requests prevent race conditions
-- **Max Session Limits**: Enforces per-user session limits with automatic oldest-session eviction
-
-### Password Security
-
-- **Bcrypt**: Passwords are hashed with bcryptjs before storage
-- **Comparison**: Password validation uses bcrypt.compare() for timing-attack resistance
-- **Never Logged**: Password hashes are never logged or exposed in responses
-
-### Keycloak
-
-- **Credential Types**: Supports both password and client credentials authentication
-- **Token Validation**: JWK-based signature verification with caching
-- **Retry Logic**: Exponential backoff for transient failures
+**Event polling and retention windows.** Keycloak purges events based on a configurable retention period. If your poll interval exceeds the retention window — or if polling stops and then resumes — events will be permanently lost. Poll at a frequency significantly shorter than the retention window, and align the retention window with your operational requirements in the Keycloak realm settings (`Admin Console > Realm Settings > Events`).
 
 ## Related Packages
 
-- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation library with filters, guards, interceptors, logging, CSRF, error handling
-- **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** - GraphQL module with Redis cache, DataLoaders, subscriptions
-- **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - OpenTelemetry tracing and metrics integration
+- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** — Foundation: filters, guards, interceptors, logging, CSRF, error handling
+- **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** — GraphQL module with Redis subscriptions, DataLoaders, and WebSocket auth
+- **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** — OpenTelemetry tracing and metrics integration
 
 ## License
 
