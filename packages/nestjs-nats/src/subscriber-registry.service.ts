@@ -1,0 +1,86 @@
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+import type { Msg } from '@nats-io/transport-node';
+import { NATS_SUBSCRIBE_METADATA } from './nats.constants.js';
+import type { NatsSubscribeOptions } from './decorators/subscribe.decorator.js';
+import { NatsService } from './nats.service.js';
+
+/** Minimal interface for provider/controller wrappers returned by DiscoveryService. */
+interface ProviderWrapper {
+	instance: unknown;
+}
+
+/**
+ * Auto-discovers NestJS providers and controllers decorated with @Subscribe
+ * and registers them as NATS subscription handlers via NatsService.
+ *
+ * This service runs during module initialization (after NatsService connects).
+ * It uses NestJS DiscoveryService and MetadataScanner to find all methods
+ * decorated with @Subscribe and registers them.
+ *
+ * Note: NestJS calls OnModuleInit hooks in dependency order.
+ * NatsService.onModuleInit() (connection) is guaranteed to run before
+ * NatsSubscriberRegistry.onModuleInit() (handler registration).
+ */
+@Injectable()
+export class NatsSubscriberRegistry implements OnModuleInit {
+	private readonly logger = new Logger(NatsSubscriberRegistry.name);
+
+	constructor(
+		private readonly discoveryService: DiscoveryService,
+		private readonly metadataScanner: MetadataScanner,
+		private readonly reflector: Reflector,
+		private readonly natsService: NatsService,
+	) {}
+
+	public onModuleInit(): void {
+		const wrappers: ProviderWrapper[] = [
+			...this.discoveryService.getProviders(),
+			...this.discoveryService.getControllers(),
+		];
+
+		for (const wrapper of wrappers) {
+			const { instance } = wrapper;
+			if (instance === null || instance === undefined || typeof instance !== 'object') {
+				continue;
+			}
+
+			const prototype = Object.getPrototypeOf(instance) as Record<string, unknown>;
+			const methodNames = this.metadataScanner.getAllMethodNames(prototype);
+
+			for (const methodName of methodNames) {
+				const handler = prototype[methodName];
+				if (typeof handler !== 'function') {
+					continue;
+				}
+
+				const meta = this.reflector.get<NatsSubscribeOptions | undefined>(
+					NATS_SUBSCRIBE_METADATA,
+					handler as (...args: unknown[]) => unknown,
+				);
+
+				if (meta !== null && meta !== undefined) {
+					this.registerHandler(
+						instance as Record<string, (...args: unknown[]) => unknown>,
+						methodName,
+						meta,
+					);
+				}
+			}
+		}
+	}
+
+	private registerHandler(
+		instance: Record<string, (...args: unknown[]) => unknown>,
+		methodName: string,
+		options: NatsSubscribeOptions,
+	): void {
+		const boundHandler = instance[methodName].bind(instance) as (msg: Msg) => Promise<void> | void;
+		this.natsService.subscribe(options.subject, boundHandler, {
+			queue: options.queue,
+		});
+		this.logger.log(
+			`Registered handler "${methodName}" for NATS subject "${options.subject}"${options.queue !== undefined ? ` [queue: ${options.queue}]` : ''}`,
+		);
+	}
+}

@@ -1,0 +1,48 @@
+{
+	"name": "@pawells/nestjs-nats",
+	"displayName": "@pawells/nestjs-nats",
+	"version": "1.0.0",
+	"description": "NestJS NATS pub/sub integration module",
+	"type": "module",
+	"main": "./build/index.js",
+	"types": "./build/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./build/index.d.ts",
+			"import": "./build/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint src/",
+		"lint:fix": "eslint src/ --fix",
+		"test": "vitest run",
+		"test:coverage": "vitest --coverage",
+		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
+	},
+	"peerDependencies": {
+		"@nats-io/jetstream": ">=3.0.0",
+		"@nats-io/transport-node": ">=3.0.0",
+		"@nestjs/common": ">=10.0.0",
+		"@nestjs/core": ">=10.0.0"
+	},
+	"devDependencies": {
+		"@nats-io/jetstream": "^3.3.1",
+		"@nats-io/transport-node": "^3.3.1"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	},
+	"packageManager": "yarn@4.12.0",
+	"author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
+	"license": "MIT",
+	"files": [
+		"build/",
+		"README.md",
+		"LICENSE"
+	],
+	"publishConfig": {
+		"access": "public"
+	}
+}

@@ -3236,6 +3236,52 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nats-io/jetstream@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "@nats-io/jetstream@npm:3.3.1"
+  dependencies:
+    "@nats-io/nats-core": "npm:3.3.1"
+  checksum: 10c0/ece4b053a370941f8a2dc882fd646505468b3d88449626d50aa8c87cc12d8184f90ddaa5476a8c8605e367d1b6cdb306e808a24452261e7f2844b0e087572429
+  languageName: node
+  linkType: hard
+
+"@nats-io/nats-core@npm:3.3.1":
+  version: 3.3.1
+  resolution: "@nats-io/nats-core@npm:3.3.1"
+  dependencies:
+    "@nats-io/nkeys": "npm:2.0.3"
+    "@nats-io/nuid": "npm:2.0.3"
+  checksum: 10c0/e1ed1e69a21f89797855a1bb18b587bd8e705607d4680b75d97bb5d8cebce4a144f3e1550cf77c78087a7c524e14adf8024dc04075137cc3c7dc024275832b6c
+  languageName: node
+  linkType: hard
+
+"@nats-io/nkeys@npm:2.0.3":
+  version: 2.0.3
+  resolution: "@nats-io/nkeys@npm:2.0.3"
+  dependencies:
+    tweetnacl: "npm:^1.0.3"
+  checksum: 10c0/51b80313573d3378f6af57eaad2af34d2974425951fabd42abc0a1e10c5d04ce06ed26bef8c8bf6eb7803eb233d8b0c6b44ccefb1d26168ef249545879c93426
+  languageName: node
+  linkType: hard
+
+"@nats-io/nuid@npm:2.0.3":
+  version: 2.0.3
+  resolution: "@nats-io/nuid@npm:2.0.3"
+  checksum: 10c0/9868aa38c6fefcc476f69c72b7689890ebb08742ad1c0eea39f5d46237434eb038f9a259d382a0ee219a08c126432bfb7a4ab4efd500d3afd51df9dfca49a97f
+  languageName: node
+  linkType: hard
+
+"@nats-io/transport-node@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "@nats-io/transport-node@npm:3.3.1"
+  dependencies:
+    "@nats-io/nats-core": "npm:3.3.1"
+    "@nats-io/nkeys": "npm:2.0.3"
+    "@nats-io/nuid": "npm:2.0.3"
+  checksum: 10c0/22978b40b26c978d67a35ddc279951d06acd815de9fa457bd871384c939d1e44005f5ad22f2f8219884b1726a84238040e620c1832b3a283a2c20082c872e5cc
+  languageName: node
+  linkType: hard
+
 "@nestjs/apollo@npm:^12.2.0":
   version: 12.2.2
   resolution: "@nestjs/apollo@npm:12.2.2"
@@ -4178,6 +4224,20 @@ __metadata:
       optional: true
     ws:
       optional: true
+  languageName: unknown
+  linkType: soft
+
+"@pawells/nestjs-nats@workspace:packages/nestjs-nats":
+  version: 0.0.0-use.local
+  resolution: "@pawells/nestjs-nats@workspace:packages/nestjs-nats"
+  dependencies:
+    "@nats-io/jetstream": "npm:^3.3.1"
+    "@nats-io/transport-node": "npm:^3.3.1"
+  peerDependencies:
+    "@nats-io/jetstream": ">=3.0.0"
+    "@nats-io/transport-node": ">=3.0.0"
+    "@nestjs/common": ">=10.0.0"
+    "@nestjs/core": ">=10.0.0"
   languageName: unknown
   linkType: soft
 
@@ -14259,6 +14319,13 @@ __metadata:
   version: 1.0.6
   resolution: "tsscmp@npm:1.0.6"
   checksum: 10c0/2f79a9455e7e3e8071995f98cdf3487ccfc91b760bec21a9abb4d90519557eafaa37246e87c92fa8bf3fef8fd30cfd0cc3c4212bb929baa9fb62494bfa4d24b2
+  languageName: node
+  linkType: hard
+
+"tweetnacl@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: 10c0/069d9df51e8ad4a89fbe6f9806c68e06c65be3c7d42f0701cc43dba5f0d6064686b238bbff206c5addef8854e3ce00c643bff59432ea2f2c639feab0ee1a93f9
   languageName: node
   linkType: hard
 
