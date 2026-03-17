@@ -1,6 +1,6 @@
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
 import type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from '../keycloak.types.js';
 import { JwksCacheService } from './jwks-cache.service.js';
@@ -85,7 +85,7 @@ export class KeycloakTokenValidationService {
 			}
 			return await this.validateTokenOnline(token);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			const errorMessage = getErrorMessage(error);
 			this.log('warn', `Token validation failed unexpectedly: ${errorMessage}`);
 			return { valid: false, error: 'validation_error' };
 		}
@@ -131,7 +131,7 @@ export class KeycloakTokenValidationService {
 
 			return { valid: true, claims: introspectionResult as KeycloakTokenClaims };
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			const errorMessage = getErrorMessage(error);
 			this.log('warn', `Introspection error: ${errorMessage}`);
 			return { valid: false, error: 'introspection_failed' };
 		}
@@ -158,7 +158,7 @@ export class KeycloakTokenValidationService {
 			try {
 				publicKey = await this.jwksCacheService.getKey(decoded.header.kid);
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+				const errorMessage = getErrorMessage(error);
 				this.log('warn', `Failed to get signing key: ${errorMessage}`);
 				return { valid: false, error: 'unknown_signing_key' };
 			}
@@ -171,7 +171,7 @@ export class KeycloakTokenValidationService {
 					algorithms: ['RS256'],
 				}) as KeycloakTokenClaims;
 			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+				const errorMessage = getErrorMessage(error);
 				this.log('warn', `JWT verification failed: ${errorMessage}`);
 				return { valid: false, error: 'jwt_verification_failed' };
 			}
@@ -196,7 +196,7 @@ export class KeycloakTokenValidationService {
 
 			return { valid: true, claims };
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			const errorMessage = getErrorMessage(error);
 			this.log('warn', `Offline validation error: ${errorMessage}`);
 			return { valid: false, error: 'validation_failed' };
 		}

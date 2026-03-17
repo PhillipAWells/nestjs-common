@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Inject, UnauthorizedException } from '@nestjs/common';
 import { createPublicKey } from 'node:crypto';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
 import type { KeycloakModuleOptions } from '../keycloak.types.js';
 
@@ -106,7 +106,7 @@ export class JwksCacheService implements OnModuleInit {
 		try {
 			await this.fetchJwks();
 		} catch (error) {
-			this.log('warn', `Failed to re-fetch JWKS during key lookup: ${String(error)}`);
+			this.log('warn', `Failed to re-fetch JWKS during key lookup: ${getErrorMessage(error)}`);
 		}
 
 		// Check cache again after re-fetch — only return if cache is still valid
@@ -157,7 +157,7 @@ export class JwksCacheService implements OnModuleInit {
 			const ttlMs = this.options.jwksCacheTtlMs ?? DEFAULT_JWKS_CACHE_TTL_MS;
 			this.cacheExpiresAt = Date.now() + ttlMs;
 		} catch (error) {
-			this.log('warn', `Failed to fetch JWKS: ${String(error)}`);
+			this.log('warn', `Failed to fetch JWKS: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
