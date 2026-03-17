@@ -21,6 +21,9 @@
 		"test:coverage": "vitest --coverage",
 		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
 	},
+	"dependencies": {
+		"@pawells/nestjs-shared": "workspace:*"
+	},
 	"peerDependencies": {
 		"@nestjs/common": ">=10.0.0",
 		"@qdrant/js-client-rest": ">=1.0.0"

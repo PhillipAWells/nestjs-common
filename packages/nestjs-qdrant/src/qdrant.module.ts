@@ -166,5 +166,4 @@ export class QdrantModule {
 			exports: [QdrantService, clientToken],
 		};
 	}
-
 }
