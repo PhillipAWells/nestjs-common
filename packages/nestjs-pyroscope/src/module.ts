@@ -86,7 +86,7 @@ export class PyroscopeModule {
 		];
 
 		const controllers = config.enableHealthChecks !== false ? [HealthController] : [];
-		const exports = [PyroscopeService, ProfilingHealthIndicator];
+		const exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
 
 		return {
 			module: PyroscopeModule,
@@ -152,7 +152,7 @@ export class PyroscopeModule {
 			healthIndicatorProvider,
 		];
 
-		const exports = [PyroscopeService, ProfilingHealthIndicator];
+		const exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
 		const controllers = options.enableHealthChecks !== false ? [HealthController] : [];
 
 		const dynamicModule: DynamicModule = {
