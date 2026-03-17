@@ -1,4 +1,5 @@
 import { trace, context, SpanStatusCode, type Span, type Tracer, type SpanOptions, type Context } from '@opentelemetry/api';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { OTEL_NAMESPACE } from './constants.js';
 
 /**
@@ -122,7 +123,7 @@ export async function withSpan<T>(
 		return result;
 	} catch (error) {
 		span.recordException(error as Error);
-		const message = error instanceof Error ? error.message : String(error);
+		const message = getErrorMessage(error);
 		span.setStatus({ code: SpanStatusCode.ERROR, message });
 		throw error;
 	} finally {
