@@ -4,7 +4,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, catchError, throwError } from 'rxjs';
 import { GraphQLError } from 'graphql';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@pawells/nestjs-shared/common';
+import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Error Interceptor
@@ -54,7 +54,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefSe
 			catchError((error) => {
 				// Log the error with context
 				this.logger?.error(
-					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${error instanceof Error ? error.message : String(error)}`,
+					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${getErrorMessage(error)}`,
 				);
 
 				// Format the error for GraphQL response
@@ -100,8 +100,8 @@ export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefSe
 			},
 			timestamp: new Date().toISOString(),
 			// Include stack trace in development
-			...(process.env['NODE_ENV'] !== 'production' && error instanceof Error
-				? { stacktrace: error.stack }
+			...(process.env['NODE_ENV'] !== 'production'
+				? { stacktrace: getErrorStack(error) }
 				: {}),
 		};
 

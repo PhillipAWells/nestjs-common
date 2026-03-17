@@ -2,6 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
 // Status code for client errors
@@ -66,7 +67,7 @@ export class BsonSerializationMiddleware implements NestMiddleware, LazyModuleRe
 								message: 'Failed to parse BSON body',
 								extensions: {
 									code: 'BAD_REQUEST',
-									details: error instanceof Error ? error.message : String(error),
+									details: getErrorMessage(error),
 								},
 							},
 						],

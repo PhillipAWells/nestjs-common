@@ -1,8 +1,9 @@
 import { Injectable, ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { Reflector , ModuleRef } from '@nestjs/core';
+import { Reflector, ModuleRef } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { BaseCacheInterceptor, CacheKeyGenerator, CacheMetadataExtractor, CacheContextHandler } from '../../cache/interceptors/base-cache.interceptor.js';
 import { GraphQLCacheService } from '../services/cache.service.js';
 import { CACHEABLE_METADATA, CacheableOptions } from '../decorators/cacheable.decorator.js';
@@ -158,7 +159,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 				await this.GraphQLCacheService?.invalidatePattern(pattern);
 				this.logger?.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
 			} catch (error) {
-				this.logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
+				this.logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${getErrorMessage(error)}`);
 			}
 		}
 	}

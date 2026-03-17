@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Connection parameters for WebSocket authentication
@@ -90,7 +90,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 			};
 		} catch (error: unknown) {
 			this.logger?.error(
-				`WebSocket authentication error: ${error instanceof Error ? error.message : String(error)}`,
+				`WebSocket authentication error: ${getErrorMessage(error)}`,
 				error instanceof Error ? error.stack : undefined,
 			);
 			return {
@@ -126,7 +126,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 
 			return payload.sub;
 		} catch (error: unknown) {
-			this.logger?.info(`Token validation error: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger?.info(`Token validation error: ${getErrorMessage(error)}`);
 			return null;
 		}
 	}

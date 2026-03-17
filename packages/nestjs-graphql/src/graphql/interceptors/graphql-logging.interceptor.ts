@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const RESULT_SUMMARY_MAX_KEYS = 3;
 
@@ -86,7 +86,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRef
 				error: (error) => {
 					const duration = Date.now() - startTime;
 					this.logger?.error(
-						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
+						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${getErrorMessage(error)}`,
 					);
 				},
 			}),

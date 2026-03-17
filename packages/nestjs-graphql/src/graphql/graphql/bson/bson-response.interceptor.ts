@@ -4,7 +4,7 @@ import { Observable, from, EMPTY } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
 /**
@@ -57,7 +57,7 @@ export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefSe
 						(error: unknown) => {
 							// Log error but fall through to JSON response
 							this.logger.error(
-								`Failed to serialize BSON response: ${error instanceof Error ? error.message : String(error)}`,
+								`Failed to serialize BSON response: ${getErrorMessage(error)}`,
 							);
 
 							// Set content type to JSON as fallback

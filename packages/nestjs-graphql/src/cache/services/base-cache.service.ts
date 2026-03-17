@@ -9,7 +9,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ModuleRef } from '@nestjs/core';
 import type { Cache } from 'cache-manager';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { PyroscopeService , ProfileMethod } from '@pawells/nestjs-pyroscope';
 import {
@@ -401,7 +401,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.logger.info('Cache cleared successfully');
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error('Cache clear error', error instanceof Error ? error.message : String(error));
+			this.logger.error('Cache clear error', getErrorMessage(error));
 			throw error;
 		}
 	}
@@ -419,7 +419,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			return value !== null && value !== undefined;
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error(`Cache exists error for key ${key}`, error instanceof Error ? error.message : String(error));
+			this.logger.error(`Cache exists error for key ${key}`, getErrorMessage(error));
 			return false;
 		}
 	}
@@ -455,7 +455,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.logger.debug(`Factory result cached for key: ${key}`);
 			return value;
 		} catch (error) {
-			this.logger.error(`Factory function error for key ${key}`, error instanceof Error ? error.message : String(error));
+			this.logger.error(`Factory function error for key ${key}`, getErrorMessage(error));
 			throw error;
 		}
 	}

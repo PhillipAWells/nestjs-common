@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Service for BSON serialization and deserialization
@@ -61,7 +62,7 @@ export class BsonSerializationService {
 			return Buffer.from(bson.serialize(data));
 		} catch (error) {
 			throw new Error(
-				`Failed to serialize to BSON: ${error instanceof Error ? error.message : String(error)}`,
+				`Failed to serialize to BSON: ${getErrorMessage(error)}`,
 				{ cause: error },
 			);
 		}
@@ -80,7 +81,7 @@ export class BsonSerializationService {
 			return bson.deserialize(buffer);
 		} catch (error) {
 			throw new Error(
-				`Failed to deserialize BSON: ${error instanceof Error ? error.message : String(error)}`,
+				`Failed to deserialize BSON: ${getErrorMessage(error)}`,
 				{ cause: error },
 			);
 		}

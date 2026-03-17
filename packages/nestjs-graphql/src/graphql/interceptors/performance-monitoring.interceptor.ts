@@ -4,7 +4,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { GraphQLPerformanceService } from '../services/performance.service.js';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
 
@@ -91,13 +91,13 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 						args: gqlContext.getArgs(),
 						userId: gqlContext.getContext().user?.id,
 						duration,
-						error: error instanceof Error ? error.message : String(error),
+						error: getErrorMessage(error),
 					},
 				).catch((err) => {
 					this.logger?.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
 				});
 
-				this.logger?.error(`GraphQL operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
+				this.logger?.error(`GraphQL operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
 
 				throw error;
 			}),
