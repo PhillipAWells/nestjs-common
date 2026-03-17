@@ -45,7 +45,7 @@ import { NatsLogger } from './logger.js';
  */
 @Injectable()
 export class NatsService implements OnModuleInit, OnApplicationShutdown {
-	private readonly logger: NatsLogger = new NatsLogger(NatsService.name);
+	private readonly logger: NatsLogger;
 	private readonly options: NatsModuleOptions;
 	private connection: NatsConnection | null = null;
 
@@ -53,6 +53,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		@Inject(NATS_MODULE_OPTIONS_RAW)
 		options: NatsModuleOptions,
 	) {
+		this.logger = new NatsLogger(NatsService.name);
 		this.options = options;
 	}
 

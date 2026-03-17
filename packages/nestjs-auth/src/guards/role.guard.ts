@@ -31,7 +31,11 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  */
 @Injectable()
 export class RoleGuard implements CanActivate {
-	constructor(private readonly reflector: Reflector) {}
+	private readonly reflector: Reflector;
+
+	constructor(reflector: Reflector) {
+		this.reflector = reflector;
+	}
 
 	public canActivate(context: ExecutionContext): boolean {
 		const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);

@@ -35,7 +35,11 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  */
 @Injectable()
 export class PermissionGuard implements CanActivate {
-	constructor(private readonly reflector: Reflector) {}
+	private readonly reflector: Reflector;
+
+	constructor(reflector: Reflector) {
+		this.reflector = reflector;
+	}
 
 	public canActivate(context: ExecutionContext): boolean {
 		const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);

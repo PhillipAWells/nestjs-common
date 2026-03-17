@@ -40,10 +40,17 @@ import type { KeycloakUser, KeycloakTokenClaims } from '../keycloak/keycloak.typ
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+	private readonly reflector: Reflector;
+
+	private readonly tokenValidation: KeycloakTokenValidationService;
+
 	constructor(
-		private readonly reflector: Reflector,
-		private readonly tokenValidation: KeycloakTokenValidationService,
-	) {}
+		reflector: Reflector,
+		tokenValidation: KeycloakTokenValidationService,
+	) {
+		this.reflector = reflector;
+		this.tokenValidation = tokenValidation;
+	}
 
 	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		// Check for @Public() decorator — if true, allow access without authentication
