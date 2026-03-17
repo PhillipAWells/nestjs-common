@@ -1,9 +1,9 @@
-import { Global, Module, Logger, DynamicModule, Provider } from '@nestjs/common';
+import { Global, Module, DynamicModule, Provider } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheService } from './cache.service.js';
 import { getRedisConnectionOptions } from './redis.config.js';
-import { CommonModule, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
+import { CommonModule, CACHE_PROVIDER, AppLogger } from '@pawells/nestjs-shared/common';
 
 // Default TTL for cache entries (1 hour in seconds)
 const CACHE_DEFAULT_TTL_SECONDS = 3_600;
@@ -34,11 +34,11 @@ export class CacheModule {
 			imports: [
 				CommonModule,
 				NestCacheModule.registerAsync({
-					useFactory: () => {
-						const logger = new Logger('CacheModuleFactory');
+					useFactory: (appLogger: AppLogger) => {
+						const logger = appLogger.createContextualLogger('CacheModuleFactory');
 						try {
 							const redisOptions = getRedisConnectionOptions();
-							logger.log('Redis connection initialized', JSON.stringify({
+							logger.info('Redis connection initialized', JSON.stringify({
 								host: redisOptions.host,
 								port: redisOptions.port,
 								database: redisOptions.db,
@@ -64,7 +64,7 @@ export class CacheModule {
 							};
 
 							// Event listeners will be attached lazily on first cache operation to respect lazyConnect=true
-							 
+
 							return config as any;
 						} catch (error) {
 							logger.error('Failed to initialize Redis cache store', JSON.stringify({
@@ -73,7 +73,7 @@ export class CacheModule {
 							throw error; // Fail fast instead of falling back to memory
 						}
 					},
-					inject: [],
+					inject: [AppLogger],
 					isGlobal: true,
 				}),
 			],

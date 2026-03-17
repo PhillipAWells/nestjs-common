@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * Connection parameters for WebSocket authentication
@@ -21,7 +22,21 @@ const BEARER_PREFIX_LENGTH = 7; // 'Bearer '.length
  */
 @Injectable()
 export class WebSocketAuthService implements LazyModuleRefService {
-	private readonly logger = new Logger(WebSocketAuthService.name);
+	private get AppLogger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	private get logger(): AppLogger | undefined {
+		try {
+			return this.AppLogger?.createContextualLogger(WebSocketAuthService.name);
+		} catch {
+			return undefined;
+		}
+	}
 
 	private get jwtService(): JwtService | undefined {
 		try {
@@ -44,7 +59,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 		error?: string;
 	}> {
 		try {
-			this.logger.debug('Authenticating WebSocket connection');
+			this.logger?.debug('Authenticating WebSocket connection');
 
 			// Extract token from connection parameters
 			const token = this.extractToken(connectionParams);
@@ -68,13 +83,13 @@ export class WebSocketAuthService implements LazyModuleRefService {
 
 			const USER_ID_MASK_LENGTH = 8;
 			const maskedUserId = userId && userId.length > USER_ID_MASK_LENGTH ? `${userId.substring(0, USER_ID_MASK_LENGTH)}...` : userId;
-			this.logger.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
+			this.logger?.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
 			return {
 				authenticated: true,
 				userId,
 			};
 		} catch (error: unknown) {
-			this.logger.error(
+			this.logger?.error(
 				`WebSocket authentication error: ${error instanceof Error ? error.message : String(error)}`,
 				error instanceof Error ? error.stack : undefined,
 			);
@@ -95,7 +110,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 			const { jwtService } = this;
 			if (!jwtService) {
 				// JwtService is required for signature verification — fail closed per security policy
-				this.logger.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
+				this.logger?.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
 				return null;
 			}
 
@@ -111,7 +126,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 
 			return payload.sub;
 		} catch (error: unknown) {
-			this.logger.warn(`Token validation error: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger?.info(`Token validation error: ${error instanceof Error ? error.message : String(error)}`);
 			return null;
 		}
 	}
