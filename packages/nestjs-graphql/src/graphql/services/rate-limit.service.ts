@@ -7,7 +7,7 @@ declare global {
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const MS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
@@ -212,7 +212,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 				current,
 			};
 		} catch (error) {
-			this.logger.error(`Storage rate limit check failed for ${clientId}:`, error instanceof Error ? error.message : String(error));
+			this.logger.error(`Storage rate limit check failed for ${clientId}:`, getErrorMessage(error));
 			// Fall back to in-memory on storage error
 			return this.checkLimitInMemory(clientId, config);
 		}
@@ -285,7 +285,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 			try {
 				await this.storage.reset(clientId);
 			} catch (error) {
-				this.logger.error(`Failed to reset rate limit in storage for ${clientId}:`, error instanceof Error ? error.message : String(error));
+				this.logger.error(`Failed to reset rate limit in storage for ${clientId}:`, getErrorMessage(error));
 			}
 		}
 		this.logger.info(`Reset rate limit for client: ${clientId}`);
@@ -316,7 +316,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 					};
 				}
 			} catch (error) {
-				this.logger.error(`Storage status check failed for ${clientId}:`, error instanceof Error ? error.message : String(error));
+				this.logger.error(`Storage status check failed for ${clientId}:`, getErrorMessage(error));
 				// Fall back to in-memory
 			}
 		}
@@ -349,7 +349,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 			try {
 				await storage.cleanup();
 			} catch (error) {
-				this.logger.error('Storage cleanup failed:', error instanceof Error ? error.message : String(error));
+				this.logger.error('Storage cleanup failed:', getErrorMessage(error));
 			}
 		}
 

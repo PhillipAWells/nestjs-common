@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import {
 	SLOW_OPERATION_THRESHOLD_MS,
@@ -116,11 +116,11 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 				startTime,
 				endTime,
 				success: false,
-				error: error instanceof Error ? error.message : String(error),
+				error: getErrorMessage(error),
 				metadata,
 			});
 
-			this.logger.error(`Operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
+			this.logger.error(`Operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
 			throw error;
 		}
 	}

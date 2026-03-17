@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -79,7 +79,7 @@ export class CommentLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(commentId);
 		} catch (error) {
-			this.logger.error(`Failed to load comment ${commentId}${error instanceof Error ? `: ${error.message}` : ''}`);
+			this.logger.error(`Failed to load comment ${commentId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -94,7 +94,7 @@ export class CommentLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(commentIds);
 		} catch (error) {
-			this.logger.error(`Failed to load comments ${commentIds}${error instanceof Error ? `: ${error.message}` : ''}`);
+			this.logger.error(`Failed to load comments ${commentIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return commentIds.map(() => error as Error);
 		}
 	}

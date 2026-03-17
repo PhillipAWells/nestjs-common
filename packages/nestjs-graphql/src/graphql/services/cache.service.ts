@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Cache statistics interface
@@ -108,7 +108,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			await this.CacheManager.set(key, value, cacheTtl);
 			this.logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
 		} catch (error) {
-			this.logger.error(`Failed to cache value for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed to cache value for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -131,7 +131,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			this.logger.debug(`Cache miss for key: ${key}`);
 			return undefined;
 		} catch (error) {
-			this.logger.error(`Failed to get cached value for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed to get cached value for key ${key}: ${getErrorMessage(error)}`);
 			return undefined;
 		}
 	}
@@ -156,7 +156,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			await this.set(key, value, ttl);
 			return value;
 		} catch (error) {
-			this.logger.error(`Failed in getOrSet for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed in getOrSet for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -172,7 +172,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			await this.CacheManager.del(key);
 			this.logger.debug(`Deleted cache entry for key: ${key}`);
 		} catch (error) {
-			this.logger.error(`Failed to delete cache entry for key ${key}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed to delete cache entry for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -194,7 +194,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 				this.logger.warn('Cache clear not supported by current store, skipping');
 			}
 		} catch (error) {
-			this.logger.error(`Failed to clear cache: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed to clear cache: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -236,7 +236,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			}
 			this.logger.warn(`Pattern invalidation not supported for this cache store. Pattern: ${pattern}`);
 		} catch (error) {
-			this.logger.error(`Failed to invalidate pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger.error(`Failed to invalidate pattern ${pattern}: ${getErrorMessage(error)}`);
 		}
 	}
 

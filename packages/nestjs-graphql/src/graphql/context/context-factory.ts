@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { GraphQLContext, WebSocketContext, ContextFactoryOptions } from './graphql-context.interface.js';
 import type { IWebSocketConnection } from '../graphql/types/graphql-safety.types.js';
 
@@ -134,7 +134,7 @@ export class GraphQLContextFactory {
 				await enhancer(context);
 			} catch (error) {
 				this.logger?.error(
-					`Context enhancer failed: ${error instanceof Error ? error.message : String(error)}`,
+					`Context enhancer failed: ${getErrorMessage(error)}`,
 				);
 				// Continue with other enhancers even if one fails
 			}

@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -79,7 +79,7 @@ export class OrderLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(orderId);
 		} catch (error) {
-			this.logger.error(`Failed to load order ${orderId}${error instanceof Error ? `: ${error.message}` : ''}`);
+			this.logger.error(`Failed to load order ${orderId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -94,7 +94,7 @@ export class OrderLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(orderIds);
 		} catch (error) {
-			this.logger.error(`Failed to load orders ${orderIds}${error instanceof Error ? `: ${error.message}` : ''}`);
+			this.logger.error(`Failed to load orders ${orderIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return orderIds.map(() => error as Error);
 		}
 	}
