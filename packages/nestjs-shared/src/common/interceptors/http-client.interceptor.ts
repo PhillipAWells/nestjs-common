@@ -7,7 +7,10 @@ import { AppLogger } from '../services/logger.service.js';
 export class HttpClientInterceptor implements NestInterceptor {
 	private readonly contextualLogger: AppLogger;
 
-	constructor(private readonly logger: AppLogger) {
+	private readonly logger: AppLogger;
+
+	constructor(logger: AppLogger) {
+		this.logger = logger;
 		this.contextualLogger = this.logger.createContextualLogger(HttpClientInterceptor.name);
 	}
 
