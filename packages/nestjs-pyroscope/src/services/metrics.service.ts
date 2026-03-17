@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
 	METRICS_STATUS_CLIENT_ERROR_MIN,
 	PROFILING_RESPONSE_TIME_PRECISION,
 } from '../constants/profiling.constants.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * Metrics response interface for profiling data.
@@ -56,7 +57,7 @@ export interface MetricsResponse {
  */
 @Injectable()
 export class MetricsService {
-	private readonly logger: Logger = new Logger(MetricsService.name);
+	private readonly logger = new AppLogger(undefined, MetricsService.name);
 
 	// CPU metrics
 	private cpuSamples = 0;
