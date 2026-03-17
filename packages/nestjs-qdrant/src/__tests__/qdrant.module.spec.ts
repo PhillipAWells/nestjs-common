@@ -200,7 +200,7 @@ describe('QdrantModule', () => {
 		it('should throw error for invalid async options', () => {
 			expect(() => {
 				QdrantModule.forRootAsync({} as any);
-			}).toThrow('Invalid QdrantModuleAsyncOptions: must provide useFactory, useClass, or useExisting');
+			}).toThrow('Invalid async module options: must specify useFactory, useClass, or useExisting.');
 		});
 	});
 

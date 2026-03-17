@@ -3,9 +3,9 @@
  * Integrates Qdrant vector database client with NestJS dependency injection
  */
 
-import { DynamicModule, Module, Provider } from '@nestjs/common';
-import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { createAsyncProviders } from '@pawells/nestjs-shared/common';
 import { getQdrantClientToken, getQdrantModuleOptionsToken } from './qdrant.constants.js';
 import type { QdrantModuleAsyncOptions, QdrantModuleOptions, QdrantOptionsFactory } from './qdrant.interfaces.js';
 import { QdrantService } from './qdrant.service.js';
@@ -127,7 +127,12 @@ export class QdrantModule {
 		// Internal token for raw (unsanitized) options — includes apiKey for client creation
 		const rawOptionsToken = Symbol('QDRANT_RAW_OPTIONS');
 
-		const rawProviders = QdrantModule.createAsyncProviders(options, rawOptionsToken);
+		const rawProviders = createAsyncProviders(
+			options,
+			rawOptionsToken,
+			(factory: QdrantOptionsFactory): QdrantModuleOptions | Promise<QdrantModuleOptions> =>
+				factory.createQdrantOptions(),
+		);
 
 		return {
 			module: QdrantModule,
@@ -162,71 +167,4 @@ export class QdrantModule {
 		};
 	}
 
-	/**
-	 * Create providers for async configuration
-	 * Internal method that constructs the appropriate provider array based on the configuration strategy.
-	 *
-	 * @param options - Async configuration options (useFactory, useClass, or useExisting)
-	 * @param token - Symbol token to provide the options under (internal raw options token)
-	 * @returns Array of providers for async setup
-	 * @throws Error - If options do not specify useFactory, useClass, or useExisting
-	 * @private
-	 */
-	private static createAsyncProviders(options: QdrantModuleAsyncOptions, token: symbol): Provider[] {
-		if (options.useExisting || options.useFactory) {
-			return [QdrantModule.createAsyncOptionsProvider(options, token)];
-		}
-		if (options.useClass) {
-			return [
-				QdrantModule.createAsyncOptionsProvider(options, token),
-				{ provide: options.useClass, useClass: options.useClass },
-			];
-		}
-		throw new Error('Invalid QdrantModuleAsyncOptions: must provide useFactory, useClass, or useExisting');
-	}
-
-	/**
-	 * Create the async options provider
-	 * Internal method that constructs a single provider for the given configuration strategy.
-	 * Handles useFactory, useClass, and useExisting patterns with proper error handling.
-	 *
-	 * @param options - Async configuration options
-	 * @param token - Symbol token to provide the options under (internal raw options token)
-	 * @returns Provider for module options that resolves asynchronously
-	 * @private
-	 */
-	private static createAsyncOptionsProvider(options: QdrantModuleAsyncOptions, token: symbol): Provider {
-		if (options.useFactory) {
-			const factory = options.useFactory;
-			return {
-				provide: token,
-				useFactory: async (...args: unknown[]) => {
-					try {
-						const opts = await factory(...args);
-						return opts;
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						throw new Error(`QdrantModule async factory failed: ${errorMessage}`, { cause: error });
-					}
-				},
-				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
-			};
-		}
-		// At this point, useExisting or useClass is guaranteed to be set by createAsyncProviders
-		const factoryClass = options.useExisting ?? options.useClass;
-		return {
-			provide: token,
-			// The factory receives a QdrantOptionsFactory instance which may be async
-			useFactory: async (factory: QdrantOptionsFactory) => {
-				try {
-					const opts = await factory.createQdrantOptions();
-					return opts;
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					throw new Error(`QdrantModule async factory failed: ${errorMessage}`, { cause: error });
-				}
-			},
-			inject: factoryClass ? [factoryClass] : [],
-		};
-	}
 }
