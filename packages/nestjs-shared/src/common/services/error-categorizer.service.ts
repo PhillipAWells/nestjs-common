@@ -64,7 +64,11 @@ export interface ErrorCategory {
 export class ErrorCategorizerService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	/**
 	 * Get contextual logger for error categorizer

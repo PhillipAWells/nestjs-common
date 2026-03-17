@@ -43,7 +43,11 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  */
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Logger(): AppLogger {
 		return this.Module.get(AppLogger);

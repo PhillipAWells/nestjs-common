@@ -86,8 +86,11 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 	private _logger: AppLogger | undefined;
 	private _errorSanitizer: ErrorSanitizerService | undefined;
 	private _errorCategorizer: ErrorCategorizerService | undefined;
+	public readonly Module: ModuleRef;
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Logger(): AppLogger {
 		this._logger ??= this.Module.get(AppLogger);

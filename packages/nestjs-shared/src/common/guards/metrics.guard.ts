@@ -31,7 +31,11 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  */
 @Injectable()
 export class MetricsGuard implements CanActivate, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Config(): ConfigService {
 		return this.Module.get(ConfigService);

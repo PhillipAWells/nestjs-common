@@ -13,7 +13,11 @@ import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 export class ValidationService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get logger(): AppLogger {
 		if (!this._contextualLogger) {

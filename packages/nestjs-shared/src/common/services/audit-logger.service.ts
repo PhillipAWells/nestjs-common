@@ -54,7 +54,11 @@ export interface AuditLogEntry {
 export class AuditLoggerService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	public get Logger(): AppLogger {
 		if (!this._contextualLogger) {

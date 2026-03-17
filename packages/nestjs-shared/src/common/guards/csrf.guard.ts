@@ -40,7 +40,11 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 @Injectable()
 export class CSRFGuard implements CanActivate, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get CsrfService(): CSRFService {
 		return this.Module.get(CSRFService);

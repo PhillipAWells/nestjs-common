@@ -88,7 +88,11 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 		return this._logger;
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger);

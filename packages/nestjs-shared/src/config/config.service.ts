@@ -46,7 +46,11 @@ export interface ConfigSchemaDefinition {
 export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModuleDestroy {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	public onModuleInit(): void {
 		Logger.log('Configuration service initialized', ConfigService.name);

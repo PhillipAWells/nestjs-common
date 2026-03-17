@@ -65,7 +65,11 @@ export interface IHealthCheck {
 export class HealthCheckService implements LazyModuleRefService {
 	private _contextualLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Logger(): AppLogger {
 		if (!this._contextualLogger) {

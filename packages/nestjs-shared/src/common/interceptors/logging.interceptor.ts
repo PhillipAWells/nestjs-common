@@ -25,7 +25,11 @@ import { escapeNewlines } from '../utils/sanitization.utils.js';
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Logger(): AppLogger {
 		return this.Module.get(AppLogger);

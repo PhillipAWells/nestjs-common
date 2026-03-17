@@ -287,7 +287,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 
 		const ip = this.extractClientIp(req as Request);
 		if (!ip) {
-		// Log warning — do not silently fall through to 'unknown'
+			// Log warning — do not silently fall through to 'unknown'
 			this.logger.warn(
 				'CSRF session identifier unavailable: no session and no IP. ' +
 				'Using fixed fallback bucket to enforce rate limiting on anonymous requests.',

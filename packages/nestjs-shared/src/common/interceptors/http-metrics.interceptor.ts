@@ -31,7 +31,11 @@ const DEFAULT_ERROR_STATUS_CODE = 500;
 
 @Injectable()
 export class HTTPMetricsInterceptor implements NestInterceptor, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get MetricsService(): MetricsRegistryService {
 		return this.Module.get(MetricsRegistryService);

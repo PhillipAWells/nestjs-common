@@ -55,8 +55,10 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	private readonly httpRequestTotal: Counter<string> | null = null;
 
 	private readonly httpRequestSize: Histogram<string> | null = null;
+	public readonly Module: ModuleRef;
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(module: ModuleRef) {
+		this.Module = module;
 		this.registry = new Registry();
 		this.enabled = process.env['METRICS_ENABLED'] !== 'false';
 

@@ -41,7 +41,11 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  */
 @Injectable()
 export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModuleRefService {
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Registry(): InstrumentationRegistry {
 		return this.Module.get(InstrumentationRegistry);

@@ -132,7 +132,11 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		'pin',
 	];
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
 
 	private get Options(): ErrorSanitizerOptions | undefined {
 		try {
