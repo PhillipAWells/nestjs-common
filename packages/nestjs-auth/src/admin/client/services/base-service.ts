@@ -27,12 +27,24 @@ const HTTP_STATUS_REQUEST_TIMEOUT = 408;
 export abstract class BaseService {
 	private readonly logger: AppLogger;
 
+	protected adminClient: KcAdminClient;
+
+	protected grantedScopes: ReadonlySet<KeycloakAdminScope>;
+
+	protected loggerConfig?: Logger;
+
+	protected retryConfig?: RetryConfig;
+
 	constructor(
-		protected adminClient: KcAdminClient,
-		protected grantedScopes: ReadonlySet<KeycloakAdminScope>,
-		protected loggerConfig?: Logger,
-		protected retryConfig?: RetryConfig,
+		adminClient: KcAdminClient,
+		grantedScopes: ReadonlySet<KeycloakAdminScope>,
+		loggerConfig?: Logger,
+		retryConfig?: RetryConfig,
 	) {
+		this.adminClient = adminClient;
+		this.grantedScopes = grantedScopes;
+		this.loggerConfig = loggerConfig;
+		this.retryConfig = retryConfig;
 		this.logger = new AppLogger(undefined, this.constructor.name);
 	}
 
