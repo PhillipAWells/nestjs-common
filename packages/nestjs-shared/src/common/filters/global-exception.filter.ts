@@ -27,6 +27,11 @@ export interface ErrorResponseBody {
 }
 
 /**
+ * Development environments where stack traces and full error details are shown
+ */
+const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
+
+/**
  * Global Exception Filter.
  * Catches all unhandled exceptions except HttpException (which is handled by HttpExceptionFilter).
  * Standardizes error responses with consistent structure and logs all errors with categorization.
@@ -108,7 +113,6 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 		const response = ctx.getResponse<Response>();
 		const request = ctx.getRequest<Request>();
 
-		const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
 		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
 		const isDevelopment = !isProduction;
 

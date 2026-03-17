@@ -57,6 +57,10 @@ export class DataLoaderFactory {
 						while (results.length < keys.length) {
 							results.push(new Error('Batch load function returned insufficient results'));
 						}
+						// DataLoader requires results[i] to correspond to keys[i] with exactly keys.length results
+						if (results.length > keys.length) {
+							results.length = keys.length;
+						}
 					}
 
 					return results;

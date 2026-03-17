@@ -299,12 +299,12 @@ function detectAndRedactPII(value: string): string {
 		},
 		{
 			type: 'phone',
-			regex: /(\+\d{1,2}\s?)?1?[-.|\s]?\(?\d{3}\)?[\s.-]?\d{3}[\s-]?\d{4}/gu,
+			regex: /(\+\d{1,2}\s?)?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s-]?\d{4}/gu,
 			label: 'PHONE',
 		},
 		{
 			type: 'ssn',
-			regex: /\b\d{3}[-]?\d{2}[-]?\d{4}\b/gu,
+			regex: /\b\d{3}-\d{2}-\d{4}\b/gu,
 			label: 'SSN',
 		},
 		{

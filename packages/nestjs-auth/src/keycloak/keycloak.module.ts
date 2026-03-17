@@ -1,9 +1,16 @@
-import { Module, DynamicModule } from '@nestjs/common';
+import { Module, DynamicModule, ModuleMetadata } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
 import { KEYCLOAK_MODULE_OPTIONS } from './keycloak.constants.js';
 import type { KeycloakModuleOptions } from './keycloak.types.js';
 import { JwksCacheService } from './services/jwks-cache.service.js';
 import { KeycloakTokenValidationService } from './services/keycloak-token-validation.service.js';
+
+export interface KeycloakModuleAsyncOptions {
+	imports?: ModuleMetadata['imports'];
+	useFactory: (...args: unknown[]) => Promise<KeycloakModuleOptions> | KeycloakModuleOptions;
+	inject?: Array<InjectionToken | OptionalFactoryDependency>;
+}
 
 /**
  * Keycloak Token Validation Module
@@ -42,17 +49,19 @@ export class KeycloakModule {
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
 	 */
 	public static forRoot(options: KeycloakModuleOptions): DynamicModule {
+		const providers = [
+			{
+				provide: KEYCLOAK_MODULE_OPTIONS,
+				useValue: options,
+			},
+			KeycloakTokenValidationService,
+			...(options.validationMode === 'offline' ? [JwksCacheService] : []),
+		];
+
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({})],
-			providers: [
-				{
-					provide: KEYCLOAK_MODULE_OPTIONS,
-					useValue: options,
-				},
-				JwksCacheService,
-				KeycloakTokenValidationService,
-			],
+			providers,
 			exports: [KeycloakTokenValidationService, JwksCacheService, KEYCLOAK_MODULE_OPTIONS],
 		};
 	}
@@ -69,11 +78,7 @@ export class KeycloakModule {
 	 * @param options.imports - Optional array of modules to import for dependency injection
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
 	 */
-	public static forRootAsync(options: {
-		useFactory: (...args: any[]) => Promise<KeycloakModuleOptions> | KeycloakModuleOptions;
-		inject?: any[];
-		imports?: any[];
-	}): DynamicModule {
+	public static forRootAsync(options: KeycloakModuleAsyncOptions): DynamicModule {
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({}), ...(options.imports ?? [])],

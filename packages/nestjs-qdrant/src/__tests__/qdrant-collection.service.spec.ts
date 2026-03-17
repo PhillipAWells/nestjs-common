@@ -42,13 +42,15 @@ describe('QdrantCollectionService', () => {
 			expect(result).toEqual(expectedResult);
 		});
 
-		it('should pass through client errors', async () => {
+		it('should wrap errors with collection context', async () => {
 			const params = { query: [0.1, 0.2, 0.3], limit: 10 };
 			const error = new Error('Search failed');
 
 			(mockClient.search as any).mockRejectedValue(error);
 
-			await expect(service.search(params as any)).rejects.toThrow('Search failed');
+			await expect(service.search(params as any)).rejects.toThrow(
+				`Qdrant search failed on collection "${collectionName}": Search failed`,
+			);
 		});
 	});
 

@@ -30,7 +30,7 @@ export const KeycloakAdminDefaults: KeycloakAdminConfig = {
 	},
 };
 
-export function ValidateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
+export function validateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
 	const schema = Joi.object({
 		enabled: Joi.boolean().required(),
 		baseUrl: Joi.string()
@@ -66,8 +66,3 @@ export function ValidateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
 		throw new Error(`Keycloak configuration validation failed: ${error.details.map((d) => d.message).join(', ')}`);
 	}
 }
-
-/**
- * Backwards compatibility alias - exported functions use PascalCase per project conventions
- */
-export const validateKeycloakAdminConfig = ValidateKeycloakAdminConfig;

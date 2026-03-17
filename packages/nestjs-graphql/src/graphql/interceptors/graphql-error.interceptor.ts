@@ -133,7 +133,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 
 		if (error.name === 'UnauthorizedError' || error.status === HTTP_STATUS_UNAUTHORIZED) {
 			return {
-				code: 'AUTHENTICATION_REQUIRED',
+				code: 'UNAUTHENTICATED',
 				message: 'Authentication required',
 				statusCode: HTTP_STATUS_UNAUTHORIZED,
 			};
@@ -141,7 +141,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 
 		if (error.name === 'ForbiddenError' || error.status === HTTP_STATUS_FORBIDDEN) {
 			return {
-				code: 'AUTHORIZATION_FAILED',
+				code: 'FORBIDDEN',
 				message: 'Access denied',
 				statusCode: HTTP_STATUS_FORBIDDEN,
 			};

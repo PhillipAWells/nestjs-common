@@ -44,7 +44,7 @@ const DEFAULT_JWKS_CACHE_TTL_MS = 300_000;
 export class JwksCacheService implements OnModuleInit {
 	private readonly keyCache: Map<string, string> = new Map();
 	private cacheExpiresAt: number = 0;
-	private isFetching: boolean = false;
+	private fetchPromise: Promise<void> | null = null;
 	private logger?: AppLogger;
 
 	constructor(
@@ -62,6 +62,10 @@ export class JwksCacheService implements OnModuleInit {
 	}
 
 	public async onModuleInit(): Promise<void> {
+		// Only fetch JWKS if in offline validation mode
+		if (this.options.validationMode !== 'offline') {
+			return;
+		}
 		await this.fetchJwks();
 	}
 
@@ -117,12 +121,18 @@ export class JwksCacheService implements OnModuleInit {
 	}
 
 	private async fetchJwks(): Promise<void> {
-		// Prevent concurrent fetches
-		if (this.isFetching) {
-			return;
+		// If a fetch is already in-flight, await it instead of making another request
+		if (this.fetchPromise !== null) {
+			return this.fetchPromise;
 		}
 
-		this.isFetching = true;
+		this.fetchPromise = this.doFetch().finally(() => {
+			this.fetchPromise = null;
+		});
+		return this.fetchPromise;
+	}
+
+	private async doFetch(): Promise<void> {
 		try {
 			const jwksUrl = `${this.options.authServerUrl}/realms/${this.options.realm}/protocol/openid-connect/certs`;
 			const response = await fetch(jwksUrl);
@@ -148,8 +158,6 @@ export class JwksCacheService implements OnModuleInit {
 		} catch (error) {
 			this.log('warn', `Failed to fetch JWKS: ${String(error)}`);
 			throw error;
-		} finally {
-			this.isFetching = false;
 		}
 	}
 

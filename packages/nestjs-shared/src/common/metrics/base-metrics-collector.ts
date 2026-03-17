@@ -30,7 +30,7 @@ export abstract class BaseMetricsCollector {
 
 	constructor(metricsRegistry: MetricsRegistryService) {
 		this.metricsRegistry = metricsRegistry;
-		this.InitializeMetrics();
+		this.initializeMetrics();
 		this.logger.log(`${this.constructor.name} initialized with ${this.metrics.size} metrics`);
 	}
 
@@ -39,12 +39,12 @@ export abstract class BaseMetricsCollector {
 	 * Subclasses must implement this method to register their custom metrics.
 	 *
 	 * @example
-	 * protected InitializeMetrics(): void {
-	 *   this.RegisterCounter('events_processed', 'Total events processed');
-	 *   this.RegisterGauge('queue_depth', 'Current queue depth');
+	 * protected initializeMetrics(): void {
+	 *   this.registerCounter('events_processed', 'Total events processed');
+	 *   this.registerGauge('queue_depth', 'Current queue depth');
 	 * }
 	 */
-	protected abstract InitializeMetrics(): void;
+	protected abstract initializeMetrics(): void;
 
 	/**
 	 * Register a counter metric.
@@ -54,7 +54,7 @@ export abstract class BaseMetricsCollector {
 	 * @param labelNames - Optional label names for the metric
 	 * @returns The registered counter metric
 	 */
-	protected RegisterCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
+	protected registerCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
 		const counter = this.metricsRegistry.createCounter(name, help, labelNames);
 		this.metrics.set(name, counter);
 		return counter;
@@ -68,7 +68,7 @@ export abstract class BaseMetricsCollector {
 	 * @param labelNames - Optional label names for the metric
 	 * @returns The registered gauge metric
 	 */
-	protected RegisterGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
+	protected registerGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
 		const gauge = this.metricsRegistry.createGauge(name, help, labelNames);
 		this.metrics.set(name, gauge);
 		return gauge;
@@ -83,7 +83,7 @@ export abstract class BaseMetricsCollector {
 	 * @param buckets - Optional bucket boundaries for the histogram
 	 * @returns The registered histogram metric
 	 */
-	protected RegisterHistogram(
+	protected registerHistogram(
 		name: string,
 		help: string,
 		labelNames: string[] = [],
@@ -100,7 +100,7 @@ export abstract class BaseMetricsCollector {
 	 * @param name - The metric name
 	 * @returns The metric instance, or undefined if not found
 	 */
-	public GetMetric(name: string): Counter<string> | Gauge<string> | Histogram<string> | undefined {
+	public getMetric(name: string): Counter<string> | Gauge<string> | Histogram<string> | undefined {
 		return this.metrics.get(name);
 	}
 
@@ -109,7 +109,7 @@ export abstract class BaseMetricsCollector {
 	 *
 	 * @returns A Map of all registered metrics keyed by name
 	 */
-	public GetAllMetrics(): Map<string, Counter<string> | Gauge<string> | Histogram<string>> {
+	public getAllMetrics(): Map<string, Counter<string> | Gauge<string> | Histogram<string>> {
 		return new Map(this.metrics);
 	}
 }

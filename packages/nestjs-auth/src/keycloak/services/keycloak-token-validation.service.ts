@@ -85,7 +85,8 @@ export class KeycloakTokenValidationService {
 			}
 			return await this.validateTokenOnline(token);
 		} catch (error) {
-			this.log('warn', `Token validation failed unexpectedly: ${String(error)}`);
+			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			this.log('warn', `Token validation failed unexpectedly: ${errorMessage}`);
 			return { valid: false, error: 'validation_error' };
 		}
 	}
@@ -120,9 +121,18 @@ export class KeycloakTokenValidationService {
 				return { valid: false, error: 'token_inactive' };
 			}
 
+			// Validate audience claim — must match our clientId
+			const audiences = Array.isArray(introspectionResult.aud)
+				? introspectionResult.aud
+				: [introspectionResult.aud].filter(Boolean);
+			if (!audiences.includes(this.options.clientId)) {
+				return { valid: false, error: 'invalid_audience' };
+			}
+
 			return { valid: true, claims: introspectionResult as KeycloakTokenClaims };
 		} catch (error) {
-			this.log('warn', `Introspection error: ${String(error)}`);
+			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			this.log('warn', `Introspection error: ${errorMessage}`);
 			return { valid: false, error: 'introspection_failed' };
 		}
 	}
@@ -148,7 +158,8 @@ export class KeycloakTokenValidationService {
 			try {
 				publicKey = await this.jwksCacheService.getKey(decoded.header.kid);
 			} catch (error) {
-				this.log('warn', `Failed to get signing key: ${String(error)}`);
+				const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+				this.log('warn', `Failed to get signing key: ${errorMessage}`);
 				return { valid: false, error: 'unknown_signing_key' };
 			}
 
@@ -160,7 +171,8 @@ export class KeycloakTokenValidationService {
 					algorithms: ['RS256'],
 				}) as KeycloakTokenClaims;
 			} catch (error) {
-				this.log('warn', `JWT verification failed: ${String(error)}`);
+				const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+				this.log('warn', `JWT verification failed: ${errorMessage}`);
 				return { valid: false, error: 'jwt_verification_failed' };
 			}
 
@@ -184,7 +196,8 @@ export class KeycloakTokenValidationService {
 
 			return { valid: true, claims };
 		} catch (error) {
-			this.log('warn', `Offline validation error: ${String(error)}`);
+			const errorMessage = error instanceof Error ? error.message : 'unexpected error type';
+			this.log('warn', `Offline validation error: ${errorMessage}`);
 			return { valid: false, error: 'validation_failed' };
 		}
 	}

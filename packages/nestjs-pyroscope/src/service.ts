@@ -14,8 +14,7 @@ import {
 	PROFILING_MAX_METRICS_HISTORY,
 	PROFILING_MAX_ACTIVE_PROFILES,
 	PROFILING_RESPONSE_TIME_PRECISION,
-	PROFILING_ID_RADIX,
-	PROFILING_ID_SUBSTR_END,
+	PROFILING_STALE_PROFILE_TIMEOUT_MS,
 } from './constants/profiling.constants.js';
 
 interface IPyroscopeClient {
@@ -85,8 +84,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	/**
 	 * Maximum age (ms) for an active profile before it is considered stale and evicted
 	 */
-	// eslint-disable-next-line no-magic-numbers
-	private readonly STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+	private readonly STALE_PROFILE_TIMEOUT_MS = PROFILING_STALE_PROFILE_TIMEOUT_MS;
 
 	constructor(private readonly moduleRef: ModuleRef) {}
 
@@ -212,9 +210,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		if (!this.isEnabled()) return;
 
 		// Set start time if not already set (must happen before generateProfileId)
-		if (!context.startTime) {
-			context.startTime = Date.now();
-		}
+		// Use nullish coalescing to handle startTime: 0 edge case
+		context.startTime ??= Date.now();
 
 		// Generate and store profile ID in context for later retrieval
 		const profileId = this.generateProfileId(context);
@@ -529,7 +526,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Generate unique profile ID for tracking
 	 */
 	private generateProfileId(context: IProfileContext): string {
-		return `${context.functionName}_${context.startTime}_${Math.random().toString(PROFILING_ID_RADIX).substring(2, PROFILING_ID_SUBSTR_END)}`;
+		const uniquePart = crypto.randomUUID().replace(/-/g, '').substring(0, 9);
+		return `${context.functionName}_${context.startTime}_${uniquePart}`;
 	}
 
 	/**

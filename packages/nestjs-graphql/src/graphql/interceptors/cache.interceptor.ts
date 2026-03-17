@@ -155,10 +155,10 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		// Invalidate each pattern
 		for (const pattern of patterns) {
 			try {
-				await this.GraphQLCacheService.invalidatePattern(pattern);
-				this.logger.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
+				await this.GraphQLCacheService?.invalidatePattern(pattern);
+				this.logger?.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
 			} catch (error) {
-				this.logger.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
+				this.logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
 			}
 		}
 	}

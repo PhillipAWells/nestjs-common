@@ -202,17 +202,39 @@ export class GraphQLCacheService implements LazyModuleRefService {
 	 * @param pattern - Pattern to match (e.g., 'graphql:user|id:*')
 	 * @returns Promise<void>
 	 */
-	public invalidatePattern(pattern: string): void {
-		// Note: This is a simplified implementation
-		// In a real Redis setup, you would use SCAN or KEYS
-		// For now, we'll log the intent
-		this.logger.debug(`Invalidating cache pattern: ${pattern}`);
-
-		// In a production implementation, you would:
-		// 1. Use Redis SCAN to find keys matching the pattern
-		// 2. Delete matching keys
-		// For this implementation, we'll log the intent
-		this.logger.warn(`Pattern invalidation requested for: ${pattern} (not implemented in this cache store)`);
+	public async invalidatePattern(pattern: string): Promise<void> {
+		try {
+			const cacheManager = this.CacheManager as any;
+			// Check if store is Redis-like with scan capabilities
+			if (cacheManager?.store?.getClient && typeof cacheManager.store.getClient === 'function') {
+				const client = cacheManager.store.getClient();
+				if (client && typeof client.scan === 'function') {
+					// Use Redis SCAN to find and delete matching keys
+					let cursor = '0';
+					let totalDeleted = 0;
+					do {
+						const result = await client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+						cursor = result[0];
+						const keys = result[1];
+						if (keys.length > 0) {
+							await client.del(...keys);
+							totalDeleted += keys.length;
+						}
+					} while (cursor !== '0');
+					this.logger.debug(`Invalidated ${totalDeleted} cache entries matching pattern: ${pattern}`);
+					return;
+				}
+			}
+			// Fallback: try store-specific methods
+			if (typeof (cacheManager as any).reset === 'function') {
+				await (cacheManager as any).reset();
+				this.logger.warn(`Pattern invalidation for '${pattern}' fell back to clearing entire cache`);
+				return;
+			}
+			this.logger.warn(`Pattern invalidation not supported for this cache store. Pattern: ${pattern}`);
+		} catch (error) {
+			this.logger.error(`Failed to invalidate pattern ${pattern}: ${error instanceof Error ? error.message : String(error)}`);
+		}
 	}
 
 	/**

@@ -164,3 +164,12 @@ export function addAttributes(
 		span.setAttribute(key, value);
 	});
 }
+
+/**
+ * Reset tracer namespace to default.
+ * Used for test isolation and cleanup.
+ * @internal
+ */
+export function resetTracerNamespace(): void {
+	currentNamespace = OTEL_NAMESPACE;
+}

@@ -133,20 +133,12 @@ export class SharedThrottlerModule {
 						const limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
 
 						if (config?.redis) {
-							SharedThrottlerModule.logger.log(
-								`Initializing SharedThrottlerModule with Redis backend (${config.redis.host}:${config.redis.port})`,
-							);
-
-							// For Redis backend, you would typically use @nestjs-throttler-storage-redis
-							// or configure a custom storage. The standard @nestjs/throttler.ThrottlerStorageRedisService
-							// may be available in newer versions.
-							// For now, we log the intent but use in-memory as fallback.
-							// Users can configure Redis storage manually if needed.
-						} else {
-							SharedThrottlerModule.logger.log(
-								`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
-							);
+							throw new Error('Redis backend for SharedThrottlerModule is not yet implemented. Remove the redis config or wait for the implementation.');
 						}
+
+						SharedThrottlerModule.logger.log(
+							`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
+						);
 
 						return {
 							throttlers: [{ ttl: Math.round(ttl / SharedThrottlerModule.MS_PER_SECOND), limit }],

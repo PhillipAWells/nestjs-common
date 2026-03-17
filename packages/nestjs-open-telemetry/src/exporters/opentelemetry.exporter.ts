@@ -169,7 +169,10 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				// between the new absolute value and the last known value to emulate
 				// gauge (set) semantics.
 				const sortedLabels = value.labels
-					? Object.keys(value.labels).sort().map(k => `${k}=${(value.labels as Record<string, unknown>)[k]}`).join(',')
+					? Object.entries(value.labels as Record<string, unknown>)
+						.sort(([a], [b]) => a.localeCompare(b))
+						.map(([k, v]) => `${k}=${v}`)
+						.join(',')
 					: '';
 				const gaugeKey = `${value.descriptor.name}:${sortedLabels}`;
 				const previous = this.gaugeValues.get(gaugeKey) ?? 0;

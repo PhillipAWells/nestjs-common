@@ -372,7 +372,7 @@ describe('PyroscopeService', () => {
 			expect(metrics.duration).toBe(0);
 		});
 
-		it('should return metrics for active profiling session (lines 136-165)', () => {
+		it('should return metrics for active profiling session (lines 136-165)', async () => {
 			const mockLogger2 = {
 				log: vi.fn(),
 				error: vi.fn(),
@@ -399,15 +399,14 @@ describe('PyroscopeService', () => {
 			serviceEnabled.startProfiling(context);
 
 			// Wait a bit and then stop
-			setTimeout(() => {
-				const metrics = serviceEnabled.stopProfiling(context);
+			await new Promise(resolve => setTimeout(resolve, 15));
+			const metrics = serviceEnabled.stopProfiling(context);
 
-				expect(metrics).toBeDefined();
-				expect(metrics.duration).toBeGreaterThan(0);
-				expect(metrics.timestamp).toBeDefined();
-				expect(metrics.cpuTime).toBe(0); // Not tracked in basic implementation
-				expect(metrics.memoryUsage).toBe(0); // Not tracked in basic implementation
-			}, 10);
+			expect(metrics).toBeDefined();
+			expect(metrics.duration).toBeGreaterThan(0);
+			expect(metrics.timestamp).toBeDefined();
+			expect(metrics.cpuTime).toBe(0); // Not tracked in basic implementation
+			expect(metrics.memoryUsage).toBe(0); // Not tracked in basic implementation
 		});
 
 		it('should merge tags from start and stop contexts', () => {

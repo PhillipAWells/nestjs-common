@@ -142,6 +142,58 @@ describe('QdrantModule', () => {
 		});
 	});
 
+	describe('forRootAsync with useExisting', () => {
+		class TestOptionsFactory {
+			public createQdrantOptions(): QdrantModuleOptions {
+				return mockQdrantOptions;
+			}
+		}
+
+		let module: TestingModule;
+
+		beforeEach(async () => {
+			module = await Test.createTestingModule({
+				providers: [
+					{
+						provide: TestOptionsFactory,
+						useValue: new TestOptionsFactory(),
+					},
+				],
+				imports: [
+					QdrantModule.forRootAsync({
+						useExisting: TestOptionsFactory,
+					}),
+				],
+			}).compile();
+		});
+
+		afterEach(async () => {
+			await module.close();
+		});
+
+		it('should create the module with useExisting', () => {
+			expect(module).toBeDefined();
+		});
+
+		it('should provide QDRANT_MODULE_OPTIONS from existing provider', () => {
+			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+			// Note: apiKey is stripped for security when storing options
+			expect(options).toEqual({ url: 'http://localhost:6333' });
+		});
+
+		it('should provide QDRANT_CLIENT_TOKEN from existing provider', () => {
+			const client = module.get<QdrantClient>(QDRANT_CLIENT_TOKEN);
+			expect(client).toBeDefined();
+			expect(client).toBeInstanceOf(QdrantClient);
+		});
+
+		it('should provide QdrantService', () => {
+			const service = module.get<QdrantService>(QdrantService);
+			expect(service).toBeDefined();
+			expect(service).toBeInstanceOf(QdrantService);
+		});
+	});
+
 	describe('error handling', () => {
 		it('should throw error for invalid async options', () => {
 			expect(() => {

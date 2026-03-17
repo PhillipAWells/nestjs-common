@@ -65,6 +65,13 @@ export class PrometheusExporter implements IMetricsExporter {
 	private readonly pending: Map<string, MetricValue[]>;
 
 	/**
+	 * Running totals for updown_counter metrics (persistent across scrapes)
+	 * Keyed by metric name, then by normalized label key
+	 * @private
+	 */
+	private readonly gaugeValues: Map<string, Map<string, number>>;
+
+	/**
 	 * Maximum number of pending metric values per metric before culling oldest entries
 	 * Prevents unbounded memory growth if metrics are recorded much faster than pulled
 	 * @private
@@ -78,6 +85,15 @@ export class PrometheusExporter implements IMetricsExporter {
 	private readonly logger: Logger;
 
 	/**
+	 * Normalize label keys to handle consistent ordering regardless of insertion order
+	 * @private
+	 */
+	private static normalizeLabelKey(labels: Record<string, string | number>): string {
+		const sortedEntries = Object.entries(labels).sort(([a], [b]) => a.localeCompare(b));
+		return JSON.stringify(Object.fromEntries(sortedEntries));
+	}
+
+	/**
 	 * Create a new PrometheusExporter instance
 	 *
 	 * Initializes a prom-client Registry and starts collecting Node.js default metrics
@@ -87,6 +103,7 @@ export class PrometheusExporter implements IMetricsExporter {
 		this.registry = new Registry();
 		this.instruments = new Map();
 		this.pending = new Map();
+		this.gaugeValues = new Map();
 		this.logger = new Logger(PrometheusExporter.name);
 
 		// Collect Node.js default metrics into our registry
@@ -169,6 +186,10 @@ export class PrometheusExporter implements IMetricsExporter {
 					labelNames,
 					registers: [this.registry],
 				});
+				// Initialize running totals map for this metric
+				if (type === 'updown_counter') {
+					this.gaugeValues.set(name, new Map());
+				}
 				break;
 
 			default:
@@ -291,11 +312,12 @@ export class PrometheusExporter implements IMetricsExporter {
 					}
 				}
 			} else if (instrument instanceof Gauge) {
-				// Gauge and updown_counter: accumulate values per label set
+				// Gauge: set values directly per label set
+				// updown_counter: accumulate values per label set and maintain running total
 				const accumulatedValues = new Map<string, { labels: Record<string, string | number>; value: number }>();
 
 				for (const metricValue of pendingValues) {
-					const labelKey = JSON.stringify(metricValue.labels);
+					const labelKey = PrometheusExporter.normalizeLabelKey(metricValue.labels);
 					if (accumulatedValues.has(labelKey)) {
 						const existing = accumulatedValues.get(labelKey);
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -308,11 +330,29 @@ export class PrometheusExporter implements IMetricsExporter {
 					}
 				}
 
+				// Get running totals map for this metric (if it exists, it's an updown_counter)
+				const runningTotals = this.gaugeValues.get(metricName);
+
 				// Apply accumulated values to the gauge (iterate only through unique label sets)
 				for (const { labels, value: accumulatedValue } of accumulatedValues.values()) {
 					try {
-						// prom-client accepts Record<string, string | number> for labels
-						instrument.set(labels as Record<string, string>, accumulatedValue);
+						let finalValue = accumulatedValue;
+
+						// For updown_counters, add to running total; for regular gauges, use value directly
+						if (runningTotals) {
+							const normalizedKey = PrometheusExporter.normalizeLabelKey(labels);
+							const currentTotal = runningTotals.get(normalizedKey) ?? 0;
+							finalValue = currentTotal + accumulatedValue;
+							runningTotals.set(normalizedKey, finalValue);
+						}
+
+						// Convert number values to strings if needed for prom-client
+						const labelsForProm: Record<string, string> = {};
+						for (const [key, val] of Object.entries(labels)) {
+							labelsForProm[key] = String(val);
+						}
+
+						instrument.set(labelsForProm, finalValue);
 					} catch (recordError) {
 						this.logger.warn(
 							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
@@ -354,5 +394,6 @@ export class PrometheusExporter implements IMetricsExporter {
 		this.registry.clear();
 		this.instruments.clear();
 		this.pending.clear();
+		this.gaugeValues.clear();
 	}
 }

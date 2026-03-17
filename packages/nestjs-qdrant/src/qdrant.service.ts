@@ -34,7 +34,7 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
  */
 @Injectable()
 export class QdrantService implements OnModuleDestroy {
-	constructor(public readonly moduleRef: ModuleRef) {}
+	constructor(private readonly moduleRef: ModuleRef) {}
 
 	private get client(): QdrantClient {
 		const clientInstance = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });

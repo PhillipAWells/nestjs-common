@@ -35,7 +35,7 @@ describe('MetricsModule', () => {
 		});
 
 		it('should handle custom options with useFactory', () => {
-			const customOption = { useFactory: () => ({}) };
+			const customOption = { useFactory: () => ({}), imports: [] };
 			const result = MetricsModule.forRootAsync(customOption);
 
 			expect(result).toBeDefined();

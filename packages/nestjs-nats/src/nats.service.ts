@@ -149,6 +149,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 * @returns The reply message
 	 * @throws Error if connection not established, no responders, or timeout
 	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public request(
 		subject: string,
 		data?: Uint8Array | string,
@@ -198,7 +199,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	private assertConnected(): void {
 		if (this.connection === null || this.connection.isClosed()) {
 			throw new Error(
-				'NATS connection is not established. Ensure NatsModule is initialized and app.enableShutdownHooks() is called.',
+				'NATS connection is not established. Ensure NatsModule is imported and the application has fully initialized.',
 			);
 		}
 	}
@@ -228,10 +229,10 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	private monitorStatus(): void {
-		if (this.connection === null) {
+		if (!this.connection) {
 			return;
 		}
-		const connection = this.connection;
+		const { connection } = this;
 		void (async (): Promise<void> => {
 			for await (const status of connection.status()) {
 				switch (status.type) {
@@ -245,7 +246,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 						this.logger.warn('NATS reconnecting...');
 						break;
 					case 'error':
-						this.logger.error('NATS async error', status);
+						this.logger.error('NATS async error', (status as { error?: Error }).error?.stack ?? String(status));
 						break;
 					case 'ldm':
 						this.logger.warn('NATS server entering lame duck mode');

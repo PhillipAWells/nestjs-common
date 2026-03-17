@@ -56,16 +56,25 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 	/**
 	 * Subscribe to a topic
 	 * @param topic Topic to subscribe to
-	 * @returns AsyncIterator for the topic
+	 * @returns AsyncIterable for the topic
 	 * @throws Error if subscribe fails
 	 */
-	public subscribe(topic: string): AsyncIterator<any> {
+	public subscribe(topic: string): AsyncIterable<unknown> {
 		try {
 			this.logger.debug(`Subscribing to topic: ${topic}`);
 			if (!this.pubSub) {
 				throw new Error('PubSub instance not configured');
 			}
-			return this.pubSub.asyncIterator(topic);
+			const iterator = this.pubSub.asyncIterator(topic);
+			// Ensure the returned object implements Symbol.asyncIterator
+			if (!iterator[Symbol.asyncIterator]) {
+				return {
+					[Symbol.asyncIterator](): AsyncIterator<unknown> {
+						return iterator;
+					},
+				};
+			}
+			return iterator;
 		} catch (error) {
 			this.logger.error(
 				`Failed to subscribe to topic ${topic}: ${(error as Error).message}`,

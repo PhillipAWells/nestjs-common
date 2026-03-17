@@ -11,8 +11,3 @@ export { KEYCLOAK_DEFAULT_SCOPES, KEYCLOAK_ALL_SCOPES, KeycloakAdminScopeError }
 
 // Keycloak Client exports
 export * from './client/index.js';
-
-// Explicitly export new services and types
-export { FederatedIdentityService, type FederatedIdentityLink } from './client/services/federated-identity.service.js';
-export { EventService } from './client/services/event.service.js';
-export type { AdminEventQuery, AccessEventQuery, KeycloakAdminEvent, KeycloakAccessEvent } from './client/types/event.types.js';

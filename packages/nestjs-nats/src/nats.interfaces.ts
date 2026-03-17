@@ -1,8 +1,8 @@
 import type { InjectionToken, ModuleMetadata, OptionalFactoryDependency, Type } from '@nestjs/common';
-import type { ConnectionOptions } from '@nats-io/transport-node';
+import type { NodeConnectionOptions } from '@nats-io/transport-node';
 
-/** Options for configuring the NATS client connection. Extends the native nats ConnectionOptions. */
-export type NatsModuleOptions = ConnectionOptions;
+/** Options for configuring the NATS client connection. Extends the native nats NodeConnectionOptions. */
+export type NatsModuleOptions = NodeConnectionOptions;
 
 /** Factory interface for creating NATS module options asynchronously. */
 export interface NatsOptionsFactory {

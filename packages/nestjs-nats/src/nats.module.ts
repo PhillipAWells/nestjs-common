@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
-import { DiscoveryModule, Reflector } from '@nestjs/core';
+import { DiscoveryModule } from '@nestjs/core';
 import { NatsService } from './nats.service.js';
 import { NatsSubscriberRegistry } from './subscriber-registry.service.js';
 import { NATS_MODULE_OPTIONS, NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
@@ -64,9 +64,8 @@ export class NatsModule {
 				{ provide: NATS_MODULE_OPTIONS, useValue: sanitizeOptions(options) },
 				NatsService,
 				NatsSubscriberRegistry,
-				Reflector,
 			],
-			exports: [NatsService, NATS_MODULE_OPTIONS],
+			exports: [NatsService, NatsSubscriberRegistry, NATS_MODULE_OPTIONS],
 		};
 	}
 
@@ -91,9 +90,8 @@ export class NatsModule {
 				},
 				NatsService,
 				NatsSubscriberRegistry,
-				Reflector,
 			],
-			exports: [NatsService, NATS_MODULE_OPTIONS],
+			exports: [NatsService, NatsSubscriberRegistry, NATS_MODULE_OPTIONS],
 		};
 	}
 

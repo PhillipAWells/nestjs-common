@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { GraphQLContext, WebSocketContext, ContextFactoryOptions } from './graphql-context.interface.js';
 import type { IWebSocketConnection } from '../graphql/types/graphql-safety.types.js';
 
@@ -73,7 +73,7 @@ export class GraphQLContextFactory {
 			requestId,
 			startTime,
 			connection: {
-				id: connection.id ?? uuidv4(),
+				id: connection.id ?? randomUUID(),
 				connectedAt: new Date(),
 				params: connection.params ?? {},
 			},
@@ -100,7 +100,7 @@ export class GraphQLContextFactory {
 			return options.requestIdGenerator();
 		}
 
-		return uuidv4();
+		return randomUUID();
 	}
 
 	/**

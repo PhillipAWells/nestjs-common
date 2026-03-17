@@ -10,6 +10,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { escapeNewlines } from '../utils/sanitization.utils.js';
 
 /**
  * Logging Interceptor.
@@ -47,7 +48,7 @@ export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService
 		// Use static tags in config during initialization instead
 
 		const logFn = isHealthOrMetrics ? this.Logger.debug.bind(this.Logger) : this.Logger.info.bind(this.Logger);
-		logFn(`Incoming request: ${method} ${url} from ${ip}`, 'LoggingInterceptor');
+		logFn(`Incoming request: ${escapeNewlines(method)} ${escapeNewlines(url)} from ${escapeNewlines(ip ?? 'unknown')}`, 'LoggingInterceptor');
 
 		return next.handle().pipe(
 			tap(() => {
@@ -56,14 +57,14 @@ export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService
 				const { statusCode } = response;
 
 				logFn(
-					`Request completed: ${method} ${url} - ${statusCode} - ${duration}ms`,
+					`Request completed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${statusCode} - ${duration}ms`,
 					'LoggingInterceptor',
 				);
 			}),
 			catchError((error: unknown) => {
 				const duration = Date.now() - startTime;
 				this.Logger.error(
-					`Request failed: ${method} ${url} - ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
+					`Request failed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
 					'LoggingInterceptor',
 				);
 				return throwError(() => error);

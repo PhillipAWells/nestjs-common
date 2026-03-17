@@ -74,6 +74,10 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 				'Failed to initialize Keycloak admin client',
 				error instanceof Error ? error.stack : String(error),
 			);
+			// Re-throw if Keycloak is enabled, so startup fails loudly instead of silently
+			if (this.Config.enabled) {
+				throw error;
+			}
 		}
 	}
 

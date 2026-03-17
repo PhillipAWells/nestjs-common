@@ -72,3 +72,9 @@ export const PROFILING_DURATION_SECONDS_THRESHOLD = 1000;
  * Used in metric aggregation calculations.
  */
 export const PROFILING_PERCENTILE_DIVISOR = 100;
+
+/**
+ * Maximum age (milliseconds) for an active profile before it is considered stale and evicted.
+ * Prevents unbounded memory growth from profiles that are started but never stopped (30 minutes).
+ */
+export const PROFILING_STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000;

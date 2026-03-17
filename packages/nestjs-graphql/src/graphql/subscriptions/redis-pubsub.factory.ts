@@ -19,9 +19,9 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 
 	private pubSubInstances: RedisPubSub[] = [];
 
-	private publisherClient?: any;
+	private readonly publisherClients: any[] = [];
 
-	private subscriberClient?: any;
+	private readonly subscriberClients: any[] = [];
 
 	// eslint-disable-next-line no-undef
 	private healthCheckInterval?: NodeJS.Timeout;
@@ -39,8 +39,8 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		const subscriber = this.createRedisClient(config);
 
 		// Store clients for cleanup
-		this.publisherClient = publisher;
-		this.subscriberClient = subscriber;
+		this.publisherClients.push(publisher);
+		this.subscriberClients.push(subscriber);
 
 		const pubSub = new RedisPubSub({
 			publisher,
@@ -111,11 +111,11 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		this.healthCheckInterval = setInterval(() => {
 			const checks: Promise<void>[] = [];
 
-			if (this.publisherClient) {
-				checks.push(this.checkClientHealth(this.publisherClient, 'publisher'));
+			for (const client of this.publisherClients) {
+				checks.push(this.checkClientHealth(client, 'publisher'));
 			}
-			if (this.subscriberClient) {
-				checks.push(this.checkClientHealth(this.subscriberClient, 'subscriber'));
+			for (const client of this.subscriberClients) {
+				checks.push(this.checkClientHealth(client, 'subscriber'));
 			}
 
 			Promise.all(checks).catch((error: unknown) => {
@@ -166,8 +166,8 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		};
 
 		try {
-			if (this.publisherClient) {
-				await this.checkClientHealth(this.publisherClient, 'publisher');
+			for (const client of this.publisherClients) {
+				await this.checkClientHealth(client, 'publisher');
 				status.publisher = true;
 			}
 		} catch (error) {
@@ -176,8 +176,8 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		}
 
 		try {
-			if (this.subscriberClient) {
-				await this.checkClientHealth(this.subscriberClient, 'subscriber');
+			for (const client of this.subscriberClients) {
+				await this.checkClientHealth(client, 'subscriber');
 				status.subscriber = true;
 			}
 		} catch (error) {
@@ -211,13 +211,26 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 
 		this.pubSubInstances = [];
 
-		// Close Redis clients
-		if (this.publisherClient) {
-			this.publisherClient.quit();
+		// Close all Redis clients
+		for (const client of this.publisherClients) {
+			try {
+				await client.quit();
+			} catch (error) {
+				const err = error as Error;
+				this.logger.error(`Error closing publisher client: ${err.message}`, err.stack);
+			}
 		}
-		if (this.subscriberClient) {
-			this.subscriberClient.quit();
+		for (const client of this.subscriberClients) {
+			try {
+				await client.quit();
+			} catch (error) {
+				const err = error as Error;
+				this.logger.error(`Error closing subscriber client: ${err.message}`, err.stack);
+			}
 		}
+
+		this.publisherClients.length = 0;
+		this.subscriberClients.length = 0;
 
 		this.logger.log('Redis PubSub factory destroyed');
 	}

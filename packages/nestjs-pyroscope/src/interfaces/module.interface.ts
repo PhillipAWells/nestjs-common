@@ -63,7 +63,7 @@ export interface IPyroscopeModuleAsyncOptions extends Pick<ModuleMetadata, 'impo
 	 * Factory function to create the configuration asynchronously.
 	 * Dependencies listed in inject will be passed as arguments.
 	 */
-	useFactory: (...args: unknown[]) => IPyroscopeConfig;
+	useFactory: (...args: unknown[]) => IPyroscopeConfig | Promise<IPyroscopeConfig>;
 
 	/**
 	 * Injection tokens for dependencies to pass to useFactory.

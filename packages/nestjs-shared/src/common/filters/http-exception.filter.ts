@@ -12,6 +12,11 @@ import { ErrorCategorizerService } from '../services/error-categorizer.service.j
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
+ * Development environments where stack traces and full error details are shown
+ */
+const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
+
+/**
  * HTTP Exception Filter.
  * Handles all HTTP exceptions (400, 401, 403, 404, etc.) and formats error responses consistently.
  * Complements GlobalExceptionFilter by handling NestJS built-in and thrown HTTP exceptions.
@@ -58,7 +63,6 @@ export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefServic
 		const response = ctx.getResponse<Response>();
 		const status = exception.getStatus();
 
-		const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
 		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
 		const isDevelopment = !isProduction;
 

@@ -1,13 +1,21 @@
-import { Global, Module, Logger } from '@nestjs/common';
+import { Global, Module, Logger, DynamicModule, Provider } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheService } from './cache.service.js';
 import { getRedisConnectionOptions } from './redis.config.js';
 import { CommonModule, CACHE_PROVIDER } from '@pawells/nestjs-shared/common';
-import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 
 // Default TTL for cache entries (1 hour in seconds)
 const CACHE_DEFAULT_TTL_SECONDS = 3_600;
+
+/**
+ * Async options for CacheModule configuration
+ */
+export interface CacheModuleAsyncOptions {
+	imports?: any[];
+	useFactory: (...args: any[]) => any | Promise<any>;
+	inject?: any[];
+}
 
 /**
  * Cache module providing Redis-based caching functionality
@@ -25,19 +33,6 @@ export class CacheModule {
 			module: CacheModule,
 			imports: [
 				CommonModule,
-				// PyroscopeModule explicitly registered for profiling support
-				PyroscopeModule.forRoot({
-					config: {
-						enabled: true,
-						serverAddress: process.env['PYROSCOPE_SERVER_URL'] ?? 'http://localhost:4040',
-						applicationName: 'nestjs-cache',
-						environment: process.env['NODE_ENV'] ?? 'development',
-						tags: {
-							env: process.env['NODE_ENV'] ?? 'development',
-							package: 'nestjs-cache',
-						},
-					},
-				}),
 				NestCacheModule.registerAsync({
 					useFactory: () => {
 						const logger = new Logger('CacheModuleFactory');
@@ -92,6 +87,37 @@ export class CacheModule {
 				},
 			],
 			exports: [CacheService, NestCacheModule, CACHE_PROVIDER],
+		};
+	}
+
+	/**
+	 * Configure the Cache module asynchronously
+	 * @param options Async configuration options
+	 * @returns Dynamic module configuration
+	 */
+	public static forRootAsync(options: CacheModuleAsyncOptions): DynamicModule {
+		const providers: Provider[] = [
+			CacheService,
+			{
+				provide: CACHE_PROVIDER,
+				useExisting: CacheService,
+			},
+		];
+
+		return {
+			module: CacheModule,
+			imports: [
+				CommonModule,
+				NestCacheModule.registerAsync({
+					useFactory: options.useFactory,
+					...(options.inject ? { inject: options.inject } : {}),
+					isGlobal: true,
+				}),
+				...(options.imports ?? []),
+			],
+			providers,
+			exports: [CacheService, NestCacheModule, CACHE_PROVIDER],
+			global: true,
 		};
 	}
 }

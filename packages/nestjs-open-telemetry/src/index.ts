@@ -26,8 +26,11 @@ export {
 	createSpan,
 	withSpan,
 	addAttributes,
+	setTracerNamespace,
+	resetTracerNamespace,
 } from './lib/tracing.js';
 export {
 	recordHttpMetrics,
 	trackActiveRequests,
+	resetHttpMetrics,
 } from './lib/metrics.js';

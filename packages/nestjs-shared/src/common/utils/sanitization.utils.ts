@@ -8,6 +8,30 @@ import xss from 'xss';
 export const MAX_SANITIZE_DEPTH = 20;
 
 /**
+ * Escapes newline characters and other special characters that could be used for log injection attacks.
+ * Replaces newlines with \n literal strings to prevent log forging where an attacker might inject
+ * a newline to create fake log entries.
+ *
+ * @param str The string to escape
+ * @returns String with newlines and carriage returns escaped
+ *
+ * @example
+ * ```typescript
+ * escapeNewlines('Hello\nWorld') // Returns: 'Hello\\nWorld'
+ * escapeNewlines('foo\rbar') // Returns: 'foo\\rbar'
+ * ```
+ */
+export function escapeNewlines(str: string): string {
+	if (typeof str !== 'string') {
+		return String(str);
+	}
+	return str
+		.replace(/\n/g, '\\n')
+		.replace(/\r/g, '\\r')
+		.replace(/\t/g, '\\t');
+}
+
+/**
  * Recursively sanitizes object keys to prevent MongoDB injection attacks.
  * This function only sanitizes keys (property names), not values, to prevent
  * destruction of legitimate data like email addresses or S3 paths.

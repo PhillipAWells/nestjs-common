@@ -86,7 +86,7 @@ describe('NatsSubscriberRegistry', () => {
 			() => Promise<void>,
 			unknown,
 		][];
-		const [, firstHandler] = calls[0];
+		const [, firstHandler] = calls[0] as [string, () => Promise<void>, unknown];
 		await expect(firstHandler()).resolves.toBeUndefined();
 	});
 

@@ -105,8 +105,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 * Memoized for performance
 	 */
 	private get Logger(): AppLogger {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-		this._contextualLogger ||= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
+		this._contextualLogger ??= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
 		return this._contextualLogger;
 	}
 

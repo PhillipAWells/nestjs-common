@@ -204,3 +204,12 @@ export function trackActiveRequests(delta: number, attributes?: Attributes): voi
 	const httpMetrics = getHttpMetrics();
 	httpMetrics.activeRequests.add(delta, attributes);
 }
+
+/**
+ * Reset cached HTTP metrics to null.
+ * Used for test isolation and cleanup.
+ * @internal
+ */
+export function resetHttpMetrics(): void {
+	cachedHttpMetrics = null;
+}

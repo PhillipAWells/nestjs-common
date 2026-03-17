@@ -44,7 +44,7 @@ export interface CacheContextHandler {
  */
 @Injectable()
 export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModuleRefService {
-	protected logger!: AppLogger;
+	protected logger: AppLogger | null = null;
 
 	public get CacheManager(): Cache {
 		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
@@ -54,9 +54,12 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
-		this.logger = this.AppLogger.createContextualLogger(BaseCacheInterceptor.name);
+	protected getLogger(): AppLogger {
+		this.logger ??= this.AppLogger.createContextualLogger(BaseCacheInterceptor.name);
+		return this.logger;
 	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Abstract method to get cache key generator
@@ -106,12 +109,12 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 		return from(this.CacheManager.get(cacheKey)).pipe(
 			switchMap((cachedResponse) => {
 				if (cachedResponse !== null && cachedResponse !== undefined) {
-					this.logger.debug(`Cache hit for ${cacheKey}`);
+					this.getLogger().debug(`Cache hit for ${cacheKey}`);
 					contextHandler.setCacheHeaders(context, true, ttl);
 					return of(cachedResponse);
 				}
 
-				this.logger.debug(`Cache miss for ${cacheKey}`);
+				this.getLogger().debug(`Cache miss for ${cacheKey}`);
 				contextHandler.setCacheHeaders(context, false);
 
 				// Execute handler and cache response
@@ -119,9 +122,9 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 					tap(async (data) => {
 						try {
 							await this.CacheManager.set(cacheKey, data, ttl);
-							this.logger.debug(`Cached response for ${cacheKey} (TTL: ${ttl}s)`);
+							this.getLogger().debug(`Cached response for ${cacheKey} (TTL: ${ttl}s)`);
 						} catch (error) {
-							this.logger.error(`Failed to cache response for ${cacheKey}:`, error as string);
+							this.getLogger().error(`Failed to cache response for ${cacheKey}:`, error as string);
 						}
 					}),
 				);

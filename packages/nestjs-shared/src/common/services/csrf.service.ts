@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger, HttpException, HttpS
 import { ConfigService } from '@nestjs/config';
 import { doubleCsrf, type DoubleCsrfUtilities } from 'csrf-csrf';
 import { Request, Response, NextFunction } from 'express';
+import { escapeNewlines } from '../utils/sanitization.utils.js';
 
 /**
  * Configuration options for CSRF protection.
@@ -467,7 +468,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		timestamps = timestamps.filter(ts => now - ts < CSRFService.RATE_LIMIT_WINDOW_MS);
 
 		if (timestamps.length >= CSRFService.RATE_LIMIT_COUNT) {
-			this.logger.warn(`CSRF token rate limit exceeded for IP: ${ip}`);
+			this.logger.warn(`CSRF token rate limit exceeded for IP: ${escapeNewlines(ip)}`);
 			throw new HttpException(
 				'Rate limit exceeded for CSRF token generation',
 				HttpStatus.TOO_MANY_REQUESTS,

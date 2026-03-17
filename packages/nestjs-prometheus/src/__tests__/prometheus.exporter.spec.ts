@@ -414,4 +414,116 @@ describe('PrometheusExporter', () => {
 			expect(exporter['pending'].size).toBe(0);
 		});
 	});
+
+	describe('updown_counter accumulation across scrapes', () => {
+		it('should accumulate updown_counter values across multiple scrapes', async () => {
+			const descriptor = {
+				name: 'test_updown',
+				type: 'updown_counter' as const,
+				help: 'Test updown counter',
+				labelNames: ['request_id'],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// First batch: record +10
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 10,
+				labels: { request_id: 'req1' },
+				timestamp: Date.now(),
+			});
+
+			// First flush
+			await exporter.getMetrics();
+			expect(mockGauge.set).toHaveBeenLastCalledWith({ request_id: 'req1' }, 10);
+
+			mockGauge.set.mockClear();
+
+			// Second batch: record +5 (should accumulate to 15)
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 5,
+				labels: { request_id: 'req1' },
+				timestamp: Date.now(),
+			});
+
+			// Second flush
+			await exporter.getMetrics();
+			expect(mockGauge.set).toHaveBeenLastCalledWith({ request_id: 'req1' }, 15);
+		});
+
+		it('should handle negative values in updown_counter', async () => {
+			const descriptor = {
+				name: 'test_updown_neg',
+				type: 'updown_counter' as const,
+				help: 'Test updown counter with negatives',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// First: +20
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 20,
+				labels: {},
+				timestamp: Date.now(),
+			});
+
+			await exporter.getMetrics();
+			expect(mockGauge.set).toHaveBeenLastCalledWith({}, 20);
+
+			mockGauge.set.mockClear();
+
+			// Second: -5 (should give 15)
+			exporter.onMetricRecorded({
+				descriptor,
+				value: -5,
+				labels: {},
+				timestamp: Date.now(),
+			});
+
+			await exporter.getMetrics();
+			expect(mockGauge.set).toHaveBeenLastCalledWith({}, 15);
+		});
+	});
+
+	describe('label ordering consistency', () => {
+		it('should treat labels with same key-value pairs as same regardless of insertion order', async () => {
+			const descriptor = {
+				name: 'test_order',
+				type: 'updown_counter' as const,
+				help: 'Test label ordering',
+				labelNames: ['a', 'b'],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// First metric: {a: '1', b: '2'}
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 10,
+				labels: { a: '1', b: '2' },
+				timestamp: Date.now(),
+			});
+
+			await exporter.getMetrics();
+			expect(mockGauge.set).toHaveBeenLastCalledWith({ a: '1', b: '2' }, 10);
+
+			mockGauge.set.mockClear();
+
+			// Second metric: {b: '2', a: '1'} (different order, same labels)
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 5,
+				labels: { b: '2', a: '1' },
+				timestamp: Date.now(),
+			});
+
+			await exporter.getMetrics();
+			// Should accumulate with first batch, giving 15
+			expect(mockGauge.set).toHaveBeenLastCalledWith({ b: '2', a: '1' }, 15);
+		});
+	});
 });

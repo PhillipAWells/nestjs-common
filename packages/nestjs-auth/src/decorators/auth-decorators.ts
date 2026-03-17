@@ -130,8 +130,9 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * Decorator to specify required permissions for routes/resolvers
  *
  * This decorator sets the PERMISSIONS_KEY metadata with an array of required permissions.
- * Permission guards will check that the authenticated user has all of the specified
- * permissions before allowing access.
+ * Permission guards check that the authenticated user has at least one of the specified
+ * permissions (OR logic). Uses roles-as-permissions semantics — permission strings are
+ * matched against user role names.
  *
  * @param permissions - Array of permission names required for access
  * @returns Method decorator that specifies permission requirements
@@ -141,7 +142,7 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * @Permissions('user.create', 'user.update')
  * @Post('users')
  * createUser(@Body() data: CreateUserDto) {
- *   // Only users with both 'user.create' AND 'user.update' permissions can access
+ *   // Only users with 'user.create' OR 'user.update' role can access (roles-as-permissions)
  * }
  * ```
  *
@@ -150,7 +151,7 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * @Permissions('user.delete')
  * @Mutation(() => Boolean)
  * async deleteUser(@Args('id') id: string): Promise<boolean> {
- *   // Only users with 'user.delete' permission can delete users
+ *   // Only users with 'user.delete' role can delete users
  * }
  * ```
  */

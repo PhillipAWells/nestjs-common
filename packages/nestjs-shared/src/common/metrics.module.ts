@@ -7,17 +7,7 @@ import { MetricsController } from './controllers/metrics.controller.js';
 /**
  * Async options for MetricsModule
  */
-export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-	/**
-	 * Optional factory function to configure metrics module options
-	 */
-	useFactory?: (...args: any[]) => any | Promise<any>;
-
-	/**
-	 * Dependencies to inject into the factory function
-	 */
-	inject?: any[];
-}
+export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {}
 
 /**
  * Metrics Module.

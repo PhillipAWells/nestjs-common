@@ -15,6 +15,11 @@ import { OpenTelemetryExporter } from './exporters/index.js';
  * @pawells/nestjs-shared, which records into the InstrumentationRegistry. This
  * module simply connects the exporter to the registry.
  *
+ * IMPORTANT: This module requires `InstrumentationRegistry` from `@pawells/nestjs-shared`
+ * to be available in the dependency injection container. You MUST import `CommonModule`
+ * from `@pawells/nestjs-shared` in the same module or a parent module. If this dependency
+ * is not provided, the module will throw an error during initialization.
+ *
  * @example
  * ```typescript
  * import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
@@ -48,8 +53,15 @@ export class OpenTelemetryModule implements OnModuleInit {
 	/**
 	 * Called after module initialization.
 	 * Registers the OpenTelemetry exporter with the instrumentation registry.
+	 * Throws an error if InstrumentationRegistry was not properly injected.
 	 */
 	public onModuleInit(): void {
+		if (!this.registry) {
+			throw new Error(
+				'OpenTelemetryModule initialization failed: InstrumentationRegistry not found. ' +
+				'Ensure that CommonModule from @pawells/nestjs-shared is imported in your module or a parent module.',
+			);
+		}
 		this.registry.registerExporter(this.exporter);
 	}
 

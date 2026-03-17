@@ -5,6 +5,7 @@ import {
 	jetstream as createJetStream,
 	jetstreamManager as createJetStreamManager,
 } from '@nats-io/jetstream';
+import type { NatsConnection } from '@nats-io/transport-node';
 import { NatsService } from '../nats.service.js';
 import { NATS_MODULE_OPTIONS_RAW } from '../nats.constants.js';
 
@@ -173,6 +174,49 @@ describe('NatsService', () => {
 			service.subscribe('test.subject', handler, { queue: 'worker-pool' });
 			expect(mockConnection.subscribe).toHaveBeenCalledWith('test.subject', { queue: 'worker-pool' });
 		});
+
+		it('should call the handler when a message arrives', async () => {
+			const handler = vi.fn();
+			const mockMessage = { json: vi.fn().mockReturnValue({ test: 'data' }) };
+
+			mockConnection.subscribe.mockReturnValue({
+				async *[Symbol.asyncIterator]() {
+					yield mockMessage;
+				},
+				unsubscribe: vi.fn(),
+			});
+
+			service.subscribe('test.subject', handler);
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(handler).toHaveBeenCalledWith(mockMessage);
+		});
+
+		it('should log handler errors without crashing the subscription', async () => {
+			const error = new Error('Handler error');
+			const handler = vi.fn().mockRejectedValue(error);
+			const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
+
+			mockConnection.subscribe.mockReturnValue({
+				async *[Symbol.asyncIterator]() {
+					yield { json: vi.fn() };
+				},
+				unsubscribe: vi.fn(),
+			});
+
+			service.subscribe('test.subject', handler);
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Handler error on subject "test.subject"'),
+				expect.any(String),
+			);
+			loggerErrorSpy.mockRestore();
+		});
 	});
 
 	describe('request', () => {
@@ -218,6 +262,109 @@ describe('NatsService', () => {
 			(createJetStreamManager as Mock).mockResolvedValue(mockJsm);
 			await expect(service.jetstreamManager()).resolves.toBe(mockJsm);
 			expect(createJetStreamManager).toHaveBeenCalledWith(mockConnection);
+		});
+	});
+
+	describe('monitorStatus', () => {
+		it('should log disconnect status events', async () => {
+			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
+			const statusIterator = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'disconnect' };
+				},
+			};
+			mockConnection.status.mockReturnValue(statusIterator);
+
+			const newService = new NatsService(mockOptions);
+			newService['connection'] = mockConnection as unknown as NatsConnection;
+			newService['monitorStatus']();
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS disconnected');
+			loggerWarnSpy.mockRestore();
+		});
+
+		it('should log reconnecting status events', async () => {
+			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
+			const statusIterator = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'reconnecting' };
+				},
+			};
+			mockConnection.status.mockReturnValue(statusIterator);
+
+			const newService = new NatsService(mockOptions);
+			newService['connection'] = mockConnection as unknown as NatsConnection;
+			newService['monitorStatus']();
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS reconnecting...');
+			loggerWarnSpy.mockRestore();
+		});
+
+		it('should log reconnect status events', async () => {
+			const loggerLogSpy = vi.spyOn(service['logger'], 'log');
+			const statusIterator = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'reconnect' };
+				},
+			};
+			mockConnection.status.mockReturnValue(statusIterator);
+
+			const newService = new NatsService(mockOptions);
+			newService['connection'] = mockConnection as unknown as NatsConnection;
+			newService['monitorStatus']();
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerLogSpy).toHaveBeenCalledWith('NATS reconnected');
+			loggerLogSpy.mockRestore();
+		});
+
+		it('should log error status events with error details', async () => {
+			const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
+			const testError = new Error('Connection error');
+			const statusIterator = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'error', error: testError };
+				},
+			};
+			mockConnection.status.mockReturnValue(statusIterator);
+
+			const newService = new NatsService(mockOptions);
+			newService['connection'] = mockConnection as unknown as NatsConnection;
+			newService['monitorStatus']();
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerErrorSpy).toHaveBeenCalledWith('NATS async error', expect.stringContaining('Error'));
+			loggerErrorSpy.mockRestore();
+		});
+
+		it('should log ldm status events', async () => {
+			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
+			const statusIterator = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'ldm' };
+				},
+			};
+			mockConnection.status.mockReturnValue(statusIterator);
+
+			const newService = new NatsService(mockOptions);
+			newService['connection'] = mockConnection as unknown as NatsConnection;
+			newService['monitorStatus']();
+
+			// Give the async iterator time to process
+			await new Promise(resolve => setTimeout(resolve, 10));
+
+			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS server entering lame duck mode');
+			loggerWarnSpy.mockRestore();
 		});
 	});
 });

@@ -114,7 +114,21 @@ export function ExtractRequestFromContext(
 
 		case 'websocket': {
 			const wsCtx = ctx.switchToWs();
-			return wsCtx.getClient();
+			const client = wsCtx.getClient();
+
+			// Socket.IO provides handshake data with headers; raw WebSockets use upgradeReq
+			// Attempt to return an object with headers for header-based auth extraction
+			if (client?.handshake) {
+				// Socket.IO client — has handshake with headers
+				return { headers: client.handshake.headers, ...client };
+			}
+			if (client?.upgradeReq?.headers) {
+				// Raw WS — has upgradeReq with headers
+				return { headers: client.upgradeReq.headers, ...client };
+			}
+
+			// Fallback to raw client if no headers available
+			return client;
 		}
 
 		default:

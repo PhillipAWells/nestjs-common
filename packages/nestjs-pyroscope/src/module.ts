@@ -83,19 +83,12 @@ export class PyroscopeModule {
 			inject: [ModuleRef],
 		};
 
-		const healthControllerProvider: Provider = {
-			provide: HealthController,
-			useFactory: (moduleRef: ModuleRef) => new HealthController(moduleRef),
-			inject: [ModuleRef],
-		};
-
 		const providers: Provider[] = [
 			configProvider,
 			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,
-			...(config.enableHealthChecks !== false ? [healthControllerProvider] : []),
 		];
 
 		const controllers = config.enableHealthChecks !== false ? [HealthController] : [];
@@ -163,19 +156,12 @@ export class PyroscopeModule {
 			inject: [ModuleRef],
 		};
 
-		const healthControllerProvider: Provider = {
-			provide: HealthController,
-			useFactory: (moduleRef: ModuleRef) => new HealthController(moduleRef),
-			inject: [ModuleRef],
-		};
-
 		const providers: Provider[] = [
 			configProvider,
 			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,
-			...(options.enableHealthChecks !== false ? [healthControllerProvider] : []),
 		];
 
 		const exports = [PyroscopeService, ProfilingHealthIndicator];

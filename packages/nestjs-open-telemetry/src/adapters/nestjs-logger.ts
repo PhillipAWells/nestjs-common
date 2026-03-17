@@ -69,6 +69,8 @@ export class OpenTelemetryLogger implements LoggerService {
 
 	/**
 	 * Log a verbose message (mapped to debug).
+	 * Intentional downgrade: NestJS verbose is the most verbose level, but AppLogger
+	 * has no verbose level, so verbose messages are mapped to debug level.
 	 */
 	public verbose(message: any, context?: string): void {
 		this.debug(message, context);

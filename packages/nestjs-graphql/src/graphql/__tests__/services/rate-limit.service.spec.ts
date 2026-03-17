@@ -166,7 +166,7 @@ describe('RateLimitService', () => {
 			await service.checkLimit(clientId);
 			await service.checkLimit(clientId);
 
-			const result = service.getStatus(clientId);
+			const result = await service.getStatus(clientId);
 
 			expect(result).not.toBeNull();
 			expect(result!.allowed).toBe(true);
@@ -182,7 +182,7 @@ describe('RateLimitService', () => {
 			// Advance time past reset
 			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
-			const result = service.getStatus(clientId);
+			const result = await service.getStatus(clientId);
 			expect(result!.allowed).toBe(false); // Entry exists but expired
 		});
 	});

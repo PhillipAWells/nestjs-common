@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ExtractRequestFromContext } from '../decorators/context-utils.js';
 import { ROLES_KEY } from '../decorators/auth-decorators.js';
@@ -45,7 +45,7 @@ export class RoleGuard implements CanActivate {
 		const user = request.user as KeycloakUser | undefined;
 
 		if (!user) {
-			throw new ForbiddenException('User not authenticated');
+			throw new UnauthorizedException('User not authenticated');
 		}
 
 		// Check if user has any of the required roles in realmRoles or clientRoles
@@ -53,7 +53,7 @@ export class RoleGuard implements CanActivate {
 		const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
 
 		if (!hasRequiredRole) {
-			throw new ForbiddenException(`Insufficient permissions. Required roles: ${requiredRoles.join(', ')}`);
+			throw new ForbiddenException('Insufficient permissions');
 		}
 
 		return true;

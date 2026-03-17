@@ -23,10 +23,10 @@ import {
  * Demonstrates how subclasses extend the base class to define domain-specific metrics
  */
 class TestMetricsCollector extends BaseMetricsCollector {
-	protected InitializeMetrics(): void {
-		this.RegisterCounter('test_ops_total', 'Test operations completed', ['type', 'status']);
-		this.RegisterGauge('test_active', 'Number of active tests', ['environment']);
-		this.RegisterHistogram('test_duration_seconds', 'Test execution duration', ['suite']);
+	protected initializeMetrics(): void {
+		this.registerCounter('test_ops_total', 'Test operations completed', ['type', 'status']);
+		this.registerGauge('test_active', 'Number of active tests', ['environment']);
+		this.registerHistogram('test_duration_seconds', 'Test execution duration', ['suite']);
 	}
 }
 
@@ -89,32 +89,32 @@ describe('nestjs-shared Integration Tests', () => {
 
 		it('should register multiple metric types during initialization', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			expect(collector['GetMetric']('test_ops_total')).toBeDefined();
-			expect(collector['GetMetric']('test_active')).toBeDefined();
-			expect(collector['GetMetric']('test_duration_seconds')).toBeDefined();
+			expect(collector['getMetric']('test_ops_total')).toBeDefined();
+			expect(collector['getMetric']('test_active')).toBeDefined();
+			expect(collector['getMetric']('test_duration_seconds')).toBeDefined();
 		});
 
 		it('should register counter metrics with labels', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const counterMetric = collector['GetMetric']('test_ops_total');
+			const counterMetric = collector['getMetric']('test_ops_total');
 			expect(counterMetric).toBeDefined();
 		});
 
 		it('should register gauge metrics with labels', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const gaugeMetric = collector['GetMetric']('test_active');
+			const gaugeMetric = collector['getMetric']('test_active');
 			expect(gaugeMetric).toBeDefined();
 		});
 
 		it('should register histogram metrics with buckets', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const histogramMetric = collector['GetMetric']('test_duration_seconds');
+			const histogramMetric = collector['getMetric']('test_duration_seconds');
 			expect(histogramMetric).toBeDefined();
 		});
 
 		it('should retrieve all registered metrics', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const allMetrics = collector['GetAllMetrics']();
+			const allMetrics = collector['getAllMetrics']();
 			expect(allMetrics.size).toBeGreaterThan(0);
 			expect(allMetrics.has('test_ops_total')).toBe(true);
 			expect(allMetrics.has('test_active')).toBe(true);
@@ -330,7 +330,7 @@ describe('nestjs-shared Integration Tests', () => {
 		it('should allow using BaseMetricsCollector with MetricsRegistryService', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
 			expect(collector).toBeDefined();
-			expect(collector['GetMetric']('test_ops_total')).toBeDefined();
+			expect(collector['getMetric']('test_ops_total')).toBeDefined();
 		});
 
 		it('should allow using HealthCheckService for Kubernetes probes', () => {
@@ -383,7 +383,7 @@ describe('nestjs-shared Integration Tests', () => {
 
 			// Verify all are available and functional
 			expect(collector).toBeDefined();
-			expect(collector['GetAllMetrics']().size).toBeGreaterThan(0);
+			expect(collector['getAllMetrics']().size).toBeGreaterThan(0);
 			expect(health.status).toBe('ok');
 			expect(readiness.status).toBe('ready');
 			expect(appUseCallCount).toBeGreaterThan(0);
@@ -397,9 +397,9 @@ describe('nestjs-shared Integration Tests', () => {
 
 			// Create a second collector with different metric names to avoid conflicts
 			class TestMetricsCollector2 extends BaseMetricsCollector {
-				protected InitializeMetrics(): void {
-					this.RegisterCounter('test_ops_total_2', 'Test operations completed', ['type', 'status']);
-					this.RegisterGauge('test_active_2', 'Number of active tests', ['environment']);
+				protected initializeMetrics(): void {
+					this.registerCounter('test_ops_total_2', 'Test operations completed', ['type', 'status']);
+					this.registerGauge('test_active_2', 'Number of active tests', ['environment']);
 				}
 			}
 			const collector2 = new TestMetricsCollector2(metricsRegistry);
@@ -407,8 +407,8 @@ describe('nestjs-shared Integration Tests', () => {
 			expect(collector1).toBeDefined();
 			expect(collector2).toBeDefined();
 			// Both should have access to their respective metrics
-			expect(collector1['GetMetric']('test_ops_total')).toBeDefined();
-			expect(collector2['GetMetric']('test_ops_total_2')).toBeDefined();
+			expect(collector1['getMetric']('test_ops_total')).toBeDefined();
+			expect(collector2['getMetric']('test_ops_total_2')).toBeDefined();
 		});
 
 		it('should work with different environment configurations', () => {
@@ -460,8 +460,8 @@ describe('nestjs-shared Integration Tests', () => {
 			class CustomMetricsCollector extends BaseMetricsCollector {
 				private operationCount = 0;
 
-				protected InitializeMetrics(): void {
-					this.RegisterCounter('custom_ops', 'Custom operations');
+				protected initializeMetrics(): void {
+					this.registerCounter('custom_ops', 'Custom operations');
 				}
 
 				public RecordOperation(): void {
@@ -478,27 +478,27 @@ describe('nestjs-shared Integration Tests', () => {
 			customCollector.RecordOperation();
 
 			expect(customCollector.GetOperationCount()).toBe(2);
-			expect(customCollector['GetMetric']('custom_ops')).toBeDefined();
+			expect(customCollector['getMetric']('custom_ops')).toBeDefined();
 		});
 
 		it('should properly isolate metrics from different collectors', () => {
 			class CollectorA extends BaseMetricsCollector {
-				protected InitializeMetrics(): void {
-					this.RegisterCounter('collector_a_metric', 'Collector A metric');
+				protected initializeMetrics(): void {
+					this.registerCounter('collector_a_metric', 'Collector A metric');
 				}
 			}
 
 			class CollectorB extends BaseMetricsCollector {
-				protected InitializeMetrics(): void {
-					this.RegisterCounter('collector_b_metric', 'Collector B metric');
+				protected initializeMetrics(): void {
+					this.registerCounter('collector_b_metric', 'Collector B metric');
 				}
 			}
 
 			const collectorA = new CollectorA(metricsRegistry);
 			const collectorB = new CollectorB(metricsRegistry);
 
-			const metricsA = collectorA['GetAllMetrics']();
-			const metricsB = collectorB['GetAllMetrics']();
+			const metricsA = collectorA['getAllMetrics']();
+			const metricsB = collectorB['getAllMetrics']();
 
 			expect(metricsA.has('collector_a_metric')).toBe(true);
 			expect(metricsB.has('collector_b_metric')).toBe(true);

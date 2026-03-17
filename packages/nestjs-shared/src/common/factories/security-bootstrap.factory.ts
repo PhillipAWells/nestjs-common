@@ -1,3 +1,4 @@
+
 /**
  * Security Bootstrap Factory
  *
@@ -11,6 +12,7 @@
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
+import express, { Request, Response, NextFunction } from 'express';
 import { sanitizeObject, sanitizeXss } from '../utils/sanitization.utils.js';
 
 export interface SecurityBootstrapOptions {
@@ -105,16 +107,9 @@ export function ApplySecurityMiddleware(
 	const DEFAULT_COMPRESSION_THRESHOLD = 1024;
 
 	// Step 0: Apply request body size limits
-	// Get express from the adapter
-	try {
-		const express = require('express') as any;
-		app.use(express.json({ limit: maxBodySize }));
-		app.use(express.urlencoded({ extended: true, limit: maxBodySize }));
-		logger.log('Request body size limits applied');
-	} catch {
-		// express not available; body size limits will use default
-		logger.log('Express not available for body size limit configuration');
-	}
+	app.use(express.json({ limit: maxBodySize }));
+	app.use(express.urlencoded({ extended: true, limit: maxBodySize }));
+	logger.log('Request body size limits applied');
 
 	// Step 1: Apply compression middleware
 	if (compressionEnabled) {
@@ -122,7 +117,7 @@ export function ApplySecurityMiddleware(
 			compression({
 				level: DEFAULT_COMPRESSION_LEVEL,
 				threshold: DEFAULT_COMPRESSION_THRESHOLD,
-				filter: (req: any, res: any) => {
+				filter: (req: Request, res: Response) => {
 					// Don't compress responses with this request header
 					if (req.headers['x-no-compression']) {
 						return false;
@@ -137,7 +132,7 @@ export function ApplySecurityMiddleware(
 
 	// Step 2: Apply MongoDB injection prevention middleware
 	if (mongoDbInjectionPreventionEnabled) {
-		app.use((req: any, _res: any, next: any) => {
+		app.use((req: Request, _res: Response, next: NextFunction) => {
 			if (req.body) {
 				req.body = sanitizeObject(req.body, 0, logger);
 			}
@@ -154,15 +149,15 @@ export function ApplySecurityMiddleware(
 
 	// Step 3: Apply XSS protection middleware
 	if (xssEnabled) {
-		app.use((req: any, _res: any, next: any) => {
+		app.use((req: Request, _res: Response, next: NextFunction) => {
 			if (req.body) {
 				req.body = sanitizeXss(req.body, logger);
 			}
 			if (req.query) {
-				req.query = sanitizeXss(req.query, logger);
+				req.query = sanitizeXss(req.query as any, logger) as any;
 			}
 			if (req.params) {
-				req.params = sanitizeXss(req.params, logger);
+				req.params = sanitizeXss(req.params as any, logger) as any;
 			}
 			next();
 		});

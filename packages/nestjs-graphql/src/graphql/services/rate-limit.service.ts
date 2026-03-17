@@ -278,8 +278,16 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 *
 	 * @param clientId - Client identifier to reset
 	 */
-	public resetLimit(clientId: string): void {
+	public async resetLimit(clientId: string): Promise<void> {
 		this.store.delete(clientId);
+		// Also reset in storage backend if available
+		if (this.storage) {
+			try {
+				await this.storage.reset(clientId);
+			} catch (error) {
+				this.logger.error(`Failed to reset rate limit in storage for ${clientId}:`, error instanceof Error ? error.message : String(error));
+			}
+		}
 		this.logger.info(`Reset rate limit for client: ${clientId}`);
 	}
 
@@ -290,8 +298,30 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 * @param operation - Optional operation name
 	 * @returns RateLimitResult | null - Current status or null if no record
 	 */
-	public getStatus(clientId: string, operation?: string): RateLimitResult | null {
+	public async getStatus(clientId: string, operation?: string): Promise<RateLimitResult | null> {
 		const config = operation ? this.getConfigForOperation(operation) : this.defaultConfig;
+
+		// Check storage backend first if available
+		if (this.storage) {
+			try {
+				const count = await this.storage.get(clientId);
+				if (count > 0) {
+					const remaining = Math.max(0, config.maxRequests - count);
+					return {
+						allowed: count < config.maxRequests,
+						remaining,
+						limit: config.maxRequests,
+						resetTime: Date.now() + config.windowMs,
+						current: count,
+					};
+				}
+			} catch (error) {
+				this.logger.error(`Storage status check failed for ${clientId}:`, error instanceof Error ? error.message : String(error));
+				// Fall back to in-memory
+			}
+		}
+
+		// Fall back to in-memory store
 		const entry = this.store.get(clientId);
 
 		if (!entry) {

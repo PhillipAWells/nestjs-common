@@ -16,6 +16,8 @@ import { GraphQLRolesGuard } from '../guards/graphql-roles.guard.js';
 import { GraphQLLoggingInterceptor } from '../interceptors/graphql-logging.interceptor.js';
 import { GraphQLErrorInterceptor } from '../interceptors/graphql-error.interceptor.js';
 import { GraphQLPerformanceInterceptor } from '../interceptors/graphql-performance.interceptor.js';
+import { GraphQLPerformanceMonitoringInterceptor } from '../interceptors/performance-monitoring.interceptor.js';
+import { GraphQLPerformanceService } from '../services/performance.service.js';
 import { RateLimitService } from '../services/rate-limit.service.js';
 import { BsonSerializationService, BsonSerializationMiddleware, BsonResponseInterceptor } from './bson/index.js';
 import { ObjectIdScalar } from './scalars/object-id.scalar.js';
@@ -96,6 +98,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLLoggingInterceptor,
 			GraphQLErrorInterceptor,
 			GraphQLPerformanceInterceptor,
+			GraphQLPerformanceMonitoringInterceptor,
+			GraphQLPerformanceService,
 			ObjectIdScalar,
 			DateTimeScalar,
 			JSONScalar,
@@ -126,6 +130,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLLoggingInterceptor,
 				GraphQLErrorInterceptor,
 				GraphQLPerformanceInterceptor,
+				GraphQLPerformanceMonitoringInterceptor,
+				GraphQLPerformanceService,
 				ObjectIdScalar,
 				DateTimeScalar,
 				JSONScalar,
@@ -153,6 +159,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			GraphQLLoggingInterceptor,
 			GraphQLErrorInterceptor,
 			GraphQLPerformanceInterceptor,
+			GraphQLPerformanceMonitoringInterceptor,
+			GraphQLPerformanceService,
 			// Always include BSON service in async mode for flexibility
 			BsonSerializationService,
 			ObjectIdScalar,
@@ -183,6 +191,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				GraphQLLoggingInterceptor,
 				GraphQLErrorInterceptor,
 				GraphQLPerformanceInterceptor,
+				GraphQLPerformanceMonitoringInterceptor,
+				GraphQLPerformanceService,
 				BsonSerializationService,
 				BsonResponseInterceptor,
 				ObjectIdScalar,

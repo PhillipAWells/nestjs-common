@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ExtractRequestFromContext } from '../decorators/context-utils.js';
 import { PERMISSIONS_KEY } from '../decorators/auth-decorators.js';
@@ -8,12 +8,16 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  * Permission-based Authorization Guard
  *
  * Authorizes access based on user permissions specified by the `@Permissions()` decorator.
- * Checks permissions against user roles (realm roles and client roles combined).
+ * Uses roles-as-permissions semantics: checks that the authenticated user has at least one
+ * role whose name matches a required permission string. Permission strings are matched directly
+ * against Keycloak role names (both realm-level and client-specific roles are checked).
  *
- * Uses OR logic — access is granted if the user has ANY of the required permissions.
+ * Uses OR logic — access is granted if the user has ANY of the required permissions (i.e., if
+ * any user role name matches any required permission string).
  * If no permissions are specified via `@Permissions()`, access is allowed by default.
  *
- * Throws `ForbiddenException` if the user lacks all required permissions.
+ * Throws `UnauthorizedException` if the user is not authenticated (missing from request).
+ * Throws `ForbiddenException` if the user is authenticated but lacks all required permissions.
  *
  * @example
  * ```typescript
@@ -23,7 +27,7 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  *   @Permissions('read:data', 'write:data')
  *   @Get(':id')
  *   getData(@Param('id') id: string) {
- *     // User must have 'read:data' OR 'write:data' permission
+ *     // User must have a role named 'read:data' OR 'write:data' (roles-as-permissions)
  *     return {};
  *   }
  * }
@@ -45,7 +49,7 @@ export class PermissionGuard implements CanActivate {
 		const user = request.user as KeycloakUser | undefined;
 
 		if (!user) {
-			throw new ForbiddenException('User not authenticated');
+			throw new UnauthorizedException('User not authenticated');
 		}
 
 		// Check if user has any of the required permissions in realmRoles or clientRoles
@@ -53,9 +57,7 @@ export class PermissionGuard implements CanActivate {
 		const hasRequiredPermission = requiredPermissions.some(permission => userRoles.includes(permission));
 
 		if (!hasRequiredPermission) {
-			// Log only the missing permissions, not the full required set
-			const missingPermissions = requiredPermissions.filter(permission => !userRoles.includes(permission));
-			throw new ForbiddenException(`Insufficient permissions. Missing: ${missingPermissions.join(', ')}`);
+			throw new ForbiddenException('Insufficient permissions');
 		}
 
 		return true;

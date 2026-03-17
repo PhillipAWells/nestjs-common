@@ -42,6 +42,14 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 @Injectable()
 export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefService {
 	/**
+	 * Maximum number of metric values to store per metric.
+	 * Prevents unbounded memory growth when recording values continuously.
+	 * Older values are discarded in a rolling window approach.
+	 */
+	// eslint-disable-next-line no-magic-numbers
+	private static readonly MAX_VALUES_PER_METRIC = 1000;
+
+	/**
 	 * Map of metric descriptors by name
 	 * @private
 	 */
@@ -229,10 +237,14 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 			timestamp: performance.now(),
 		};
 
-		// Store in-memory values
+		// Store in-memory values with rolling window
 		const valuesArray = this.values.get(name);
 		if (valuesArray) {
 			valuesArray.push(metricValue);
+			// Enforce rolling window: discard oldest values if we exceed the limit
+			if (valuesArray.length > InstrumentationRegistry.MAX_VALUES_PER_METRIC) {
+				valuesArray.shift();
+			}
 		}
 
 		// Notify event-based exporters

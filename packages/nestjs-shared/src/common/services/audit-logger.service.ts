@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
+import { escapeNewlines } from '../utils/sanitization.utils.js';
 
 /**
  * Audit log entry for security events.
@@ -81,7 +82,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Authentication ${success ? 'SUCCESS' : 'FAILURE'}: ${email}${reason ? ` - ${reason}` : ''} | ${JSON.stringify(auditData)}`,
+			`Authentication ${success ? 'SUCCESS' : 'FAILURE'}: ${escapeNewlines(email)}${reason ? ` - ${escapeNewlines(reason)}` : ''} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -104,7 +105,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`Authorization FAILURE: User ${userId} attempted ${action} on ${resource} | ${JSON.stringify(auditData)}`,
+			`Authorization FAILURE: User ${escapeNewlines(userId)} attempted ${escapeNewlines(action)} on ${escapeNewlines(resource)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -120,7 +121,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Token GENERATED: ${tokenType} token for user ${userId} | ${JSON.stringify(auditData)}`,
+			`Token GENERATED: ${tokenType} token for user ${escapeNewlines(userId)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -136,7 +137,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Token REVOCATION: User ${userId} - ${reason} | ${JSON.stringify(auditData)}`,
+			`Token REVOCATION: User ${escapeNewlines(userId)} - ${escapeNewlines(reason)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -157,7 +158,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`Rate LIMIT VIOLATION: ${endpoint} from ${ipAddress} (limit: ${limit}/min) | ${JSON.stringify(auditData)}`,
+			`Rate LIMIT VIOLATION: ${escapeNewlines(endpoint)} from ${escapeNewlines(ipAddress)} (limit: ${limit}/min) | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -173,7 +174,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`CSRF VIOLATION: ${endpoint} from ${ipAddress} | ${JSON.stringify(auditData)}`,
+			`CSRF VIOLATION: ${escapeNewlines(endpoint)} from ${escapeNewlines(ipAddress)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -196,7 +197,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Configuration CHANGE: ${config} modified by ${userId} | ${JSON.stringify(auditData)}`,
+			`Configuration CHANGE: ${escapeNewlines(config)} modified by ${escapeNewlines(userId)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -213,7 +214,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Data ACCESS: User ${userId} ${action} ${resource} | ${JSON.stringify(auditData)}`,
+			`Data ACCESS: User ${escapeNewlines(userId)} ${escapeNewlines(action)} ${escapeNewlines(resource)} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -227,7 +228,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Security EVENT: ${entry.action} on ${entry.resource} - ${entry.result} | ${JSON.stringify(auditData)}`,
+			`Security EVENT: ${escapeNewlines(entry.action)} on ${escapeNewlines(entry.resource)} - ${entry.result} | ${JSON.stringify(auditData)}`,
 			'AuditLogger',
 		);
 	}

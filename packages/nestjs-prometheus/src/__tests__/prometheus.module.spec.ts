@@ -65,4 +65,14 @@ describe('PrometheusModule', () => {
 			expect(mockRegistry2.registerExporter).toHaveBeenCalledWith(exporter);
 		});
 	});
+
+	describe('onApplicationShutdown', () => {
+		it('should call exporter shutdown on onApplicationShutdown', async () => {
+			const shutdownSpy = vi.spyOn(exporter, 'shutdown');
+
+			await module.onApplicationShutdown();
+
+			expect(shutdownSpy).toHaveBeenCalled();
+		});
+	});
 });

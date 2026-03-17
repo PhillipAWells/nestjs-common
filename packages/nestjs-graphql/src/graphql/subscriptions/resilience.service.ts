@@ -166,7 +166,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		// Set shutdown timeout
 		this.shutdownTimeout = setTimeout(() => {
 			this.logger.error('Graceful shutdown timeout exceeded, forcing shutdown');
-			throw new Error('GraphQL WebSocket server failed to shut down gracefully within the timeout period');
+			process.exit(1);
 		}, this.SubscriptionConfig.resilience.shutdown.timeout);
 
 		try {
