@@ -40,7 +40,8 @@ import { PrometheusExporter } from '../prometheus.exporter.js';
 export class MetricsController {
 	private readonly exporter: PrometheusExporter;
 
-	constructor(exporter: PrometheusExporter) {
+	constructor(exporter: PrometheusExporter,
+	) {
 		this.exporter = exporter;
 	}
 

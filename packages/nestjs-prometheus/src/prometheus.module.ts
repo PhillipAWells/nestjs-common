@@ -70,7 +70,10 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 		};
 	}
 
-	constructor(exporter: PrometheusExporter, registry: InstrumentationRegistry) {
+	constructor(
+		exporter: PrometheusExporter,
+		registry: InstrumentationRegistry,
+	) {
 		this.exporter = exporter;
 		this.registry = registry;
 	}
