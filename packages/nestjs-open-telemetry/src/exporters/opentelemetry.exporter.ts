@@ -53,7 +53,6 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	/**
 	 * Cache of created OpenTelemetry instruments, keyed by metric name.
 	 * Stores Counter, Histogram, ObservableGauge, and UpDownCounter instances.
-	 * @private
 	 */
 	private readonly instruments: Map<
 		string,
@@ -64,13 +63,11 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 * Tracks the last recorded absolute value for gauge metrics, keyed by
 	 * a composite of metric name and serialized labels.
 	 * Used to compute the delta for UpDownCounter when emulating gauge semantics.
-	 * @private
 	 */
 	private readonly gaugeValues: Map<string, number>;
 
 	/**
 	 * NestJS Logger instance for diagnostics and error reporting.
-	 * @private
 	 */
 	private readonly logger: Logger = new Logger(OpenTelemetryExporter.name);
 
