@@ -1,6 +1,6 @@
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage, escapeNewlines } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
 import type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from '../keycloak.types.js';
 import { JwksCacheService } from './jwks-cache.service.js';
@@ -193,13 +193,13 @@ export class KeycloakTokenValidationService {
 
 			const expectedIssuer = this.options.issuer ?? this.options.authServerUrl;
 			if (claims.iss !== expectedIssuer) {
-				this.log('warn', `Issuer mismatch: expected ${expectedIssuer}, got ${claims.iss}`);
+				this.log('warn', `Issuer mismatch: expected ${escapeNewlines(expectedIssuer)}, got ${escapeNewlines(claims.iss)}`);
 				return { valid: false, error: 'invalid_issuer' };
 			}
 
 			const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
 			if (!audience.includes(this.options.clientId)) {
-				this.log('warn', `Audience mismatch: clientId ${this.options.clientId} not in ${audience.join(',')}`);
+				this.log('warn', `Audience mismatch: clientId ${this.options.clientId} not in ${escapeNewlines(audience.join(','))}`);
 				return { valid: false, error: 'invalid_audience' };
 			}
 
