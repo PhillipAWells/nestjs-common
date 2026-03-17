@@ -28,7 +28,11 @@ const DEFAULT_SEARCH_LIMIT = 10;
 export class ItemsService {
 	private static readonly COLLECTION = 'items';
 
-	constructor(public readonly moduleRef: ModuleRef) {}
+	private readonly moduleRef: ModuleRef;
+
+	constructor(moduleRef: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private get qdrant(): QdrantService {
 		return this.moduleRef.get(QdrantService, { strict: false });
