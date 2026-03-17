@@ -54,10 +54,10 @@ export class NatsModule {
 	 * @param options - NATS connection options (extends nats ConnectionOptions)
 	 * @param isGlobal - Register as a global module (default: false)
 	 */
-	public static forRoot(options: NatsModuleOptions, isGlobal: boolean = false): DynamicModule {
+	public static forRoot(options: NatsModuleOptions, isGlobal?: boolean): DynamicModule {
 		return {
 			module: NatsModule,
-			global: isGlobal,
+			global: isGlobal ?? false,
 			imports: [DiscoveryModule],
 			providers: [
 				{ provide: NATS_MODULE_OPTIONS_RAW, useValue: options },
@@ -74,11 +74,11 @@ export class NatsModule {
 	 * @param options - Async configuration strategy (useFactory, useClass, or useExisting)
 	 * @param isGlobal - Register as a global module (default: false)
 	 */
-	public static forRootAsync(options: NatsModuleAsyncOptions, isGlobal: boolean = false): DynamicModule {
+	public static forRootAsync(options: NatsModuleAsyncOptions, isGlobal?: boolean): DynamicModule {
 		const asyncProviders = NatsModule.createAsyncProviders(options);
 		return {
 			module: NatsModule,
-			global: isGlobal,
+			global: isGlobal ?? false,
 			imports: [DiscoveryModule, ...(options.imports ?? [])],
 			providers: [
 				...asyncProviders,
@@ -95,7 +95,7 @@ export class NatsModule {
 		};
 	}
 
-	private static createAsyncProviders(options: NatsModuleAsyncOptions): Provider[] {
+	private static createAsyncProviders(options: NatsModuleAsyncOptions): readonly Provider[] {
 		if (options.useExisting !== undefined || options.useFactory !== undefined) {
 			return [NatsModule.createAsyncOptionsProvider(options)];
 		}
@@ -110,7 +110,7 @@ export class NatsModule {
 		);
 	}
 
-	private static createAsyncOptionsProvider(options: NatsModuleAsyncOptions): Provider {
+	private static createAsyncOptionsProvider(options: NatsModuleAsyncOptions): Provider<unknown> {
 		if (options.useFactory !== undefined) {
 			return {
 				provide: NATS_MODULE_OPTIONS_RAW,
@@ -126,10 +126,8 @@ export class NatsModule {
 		}
 		return {
 			provide: NATS_MODULE_OPTIONS_RAW,
-			useFactory: async (factory: NatsOptionsFactory): Promise<NatsModuleOptions> => {
-				const opts = await factory.createNatsOptions();
-				return opts;
-			},
+			useFactory: (factory: NatsOptionsFactory): NatsModuleOptions | Promise<NatsModuleOptions> =>
+				factory.createNatsOptions(),
 			inject: [factoryToken],
 		};
 	}
