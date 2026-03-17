@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { getComplexity, simpleEstimator, fieldExtensionsEstimator } from 'graphql-query-complexity';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 import { QUERY_COMPLEXITY_THRESHOLD, QUERY_DEPTH_LIMIT, QUERY_COMPLEXITY_SCALAR_WEIGHT, QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } from '../constants/complexity.constants.js';
 
 /**
@@ -67,7 +67,7 @@ export function calculateQueryComplexity(
 	} catch (error) {
 		// If complexity calculation fails, return a high complexity to be safe
 		const logger = new AppLogger(undefined, 'QueryComplexity');
-		logger.warn('Failed to calculate query complexity:', error instanceof Error ? error.stack : String(error));
+		logger.warn('Failed to calculate query complexity:', getErrorStack(error));
 		return config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
 	}
 }

@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * Options for @Cacheable decorator
@@ -98,7 +98,7 @@ export function Cacheable(options: CacheableOptions = {}) {
 
 				return result;
 			} catch (error) {
-				logger.error(`Cache error for ${cacheKey}:`, error instanceof Error ? error.stack : String(error));
+				logger.error(`Cache error for ${cacheKey}:`, getErrorStack(error));
 				// Fallback to original method
 				return originalMethod.apply(this, args);
 			}

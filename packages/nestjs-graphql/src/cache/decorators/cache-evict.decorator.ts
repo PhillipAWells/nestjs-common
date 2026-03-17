@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * Options for @CacheEvict decorator
@@ -81,12 +81,12 @@ export function CacheEvict(options: CacheEvictOptions) {
 						logger.warn(`Store does not support pattern-based eviction for pattern: ${options.pattern}`);
 					}
 				} catch (error) {
-					logger.error(`Failed to evict cache pattern ${options.pattern}:`, error instanceof Error ? error.stack : String(error));
+					logger.error(`Failed to evict cache pattern ${options.pattern}:`, getErrorStack(error));
 				}
 
 				return result;
 			} catch (error) {
-				logger.error(`Method execution error for ${propertyKey}:`, error instanceof Error ? error.stack : String(error));
+				logger.error(`Method execution error for ${propertyKey}:`, getErrorStack(error));
 				throw error;
 			}
 		};

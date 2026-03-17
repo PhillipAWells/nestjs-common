@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * Options for @CacheInvalidate decorator
@@ -87,13 +87,13 @@ export function CacheInvalidate(options: CacheInvalidateOptions) {
 						await cacheManager.del(key);
 						logger.debug(`Invalidated cache key: ${key}`);
 					} catch (error) {
-						logger.error(`Failed to invalidate cache key ${key}:`, error instanceof Error ? error.stack : String(error));
+						logger.error(`Failed to invalidate cache key ${key}:`, getErrorStack(error));
 					}
 				}
 
 				return result;
 			} catch (error) {
-				logger.error(`Method execution error for ${propertyKey}:`, error instanceof Error ? error.stack : String(error));
+				logger.error(`Method execution error for ${propertyKey}:`, getErrorStack(error));
 				throw error;
 			}
 		};

@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -81,7 +81,7 @@ export class UserLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(userId);
 		} catch (error) {
-			this.logger.error(`Failed to load user ${userId}`, error instanceof Error ? error.stack : String(error));
+			this.logger.error(`Failed to load user ${userId}`, getErrorStack(error));
 			return undefined;
 		}
 	}
@@ -96,7 +96,7 @@ export class UserLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(userIds);
 		} catch (error) {
-			this.logger.error(`Failed to load users ${userIds}`, error instanceof Error ? error.stack : String(error));
+			this.logger.error(`Failed to load users ${userIds}`, getErrorStack(error));
 			return userIds.map(() => error as Error);
 		}
 	}
