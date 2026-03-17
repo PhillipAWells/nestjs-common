@@ -110,7 +110,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Format message to string.
 	 */
-	private readonly formatMessage = (message: unknown): string => {
+	private formatMessage(message: unknown): string {
 		if (typeof message === 'string') {
 			return message;
 		}
@@ -118,5 +118,5 @@ export class OpenTelemetryLogger implements LoggerService {
 			return message.message;
 		}
 		return JSON.stringify(message);
-	};
+	}
 }

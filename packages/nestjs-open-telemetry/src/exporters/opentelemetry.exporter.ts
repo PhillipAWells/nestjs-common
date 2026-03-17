@@ -12,7 +12,7 @@ import {
 	MetricDescriptor,
 	MetricValue,
 } from '@pawells/nestjs-shared';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * OpenTelemetry metrics exporter implementation.
@@ -134,7 +134,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 
 			this.instruments.set(descriptor.name, instrument);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorMessage = getErrorMessage(error);
 			this.logger.warn(`Failed to register descriptor "${descriptor.name}": ${errorMessage}`);
 			return;
 		}

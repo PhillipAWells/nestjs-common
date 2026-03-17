@@ -1,4 +1,5 @@
 import { trace, SpanStatusCode, context, SpanKind } from '@opentelemetry/api';
+import { getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { OTEL_NAMESPACE } from '../lib/constants.js';
 
 /**
@@ -182,15 +183,16 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 								// Record exception and set error status
 								const errorInstance = error instanceof Error ? error : new Error(String(error));
 								span.recordException(errorInstance);
-								const message = error instanceof Error ? error.message : String(error);
+								const message = getErrorMessage(error);
 								span.setStatus({ code: SpanStatusCode.ERROR, message });
 
 								// Add error attributes
 								if (error instanceof Error) {
 									span.setAttribute('error.type', error.name);
 									span.setAttribute('error.message', error.message);
-									if (error.stack) {
-										span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+									const stack = getErrorStack(error);
+									if (stack) {
+										span.setAttribute('error.stack', truncateString(stack, TRUNCATE_STACK_LENGTH));
 									}
 								}
 							} finally {
@@ -225,15 +227,16 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 				try {
 					const errorInstance = error instanceof Error ? error : new Error(String(error));
 					span.recordException(errorInstance);
-					const message = error instanceof Error ? error.message : String(error);
+					const message = getErrorMessage(error);
 					span.setStatus({ code: SpanStatusCode.ERROR, message });
 
 					// Add error attributes
 					if (error instanceof Error) {
 						span.setAttribute('error.type', error.name);
 						span.setAttribute('error.message', error.message);
-						if (error.stack) {
-							span.setAttribute('error.stack', truncateString(error.stack, TRUNCATE_STACK_LENGTH));
+						const stack = getErrorStack(error);
+						if (stack) {
+							span.setAttribute('error.stack', truncateString(stack, TRUNCATE_STACK_LENGTH));
 						}
 					}
 				} finally {

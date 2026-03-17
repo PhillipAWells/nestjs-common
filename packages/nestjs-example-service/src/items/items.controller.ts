@@ -25,10 +25,14 @@ interface AppUser {
  */
 @Controller('items')
 export class ItemsController {
-	constructor(public readonly moduleRef: ModuleRef) {}
+	private readonly moduleRef: ModuleRef;
+
+	constructor(moduleRef: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private get items(): ItemsService {
-		return this.moduleRef.get(ItemsService);
+		return this.moduleRef.get(ItemsService) as ItemsService;
 	}
 
 	/**

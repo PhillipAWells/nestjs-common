@@ -35,7 +35,7 @@ export class ItemsService {
 	}
 
 	private get qdrant(): QdrantService {
-		return this.moduleRef.get(QdrantService, { strict: false });
+		return this.moduleRef.get(QdrantService, { strict: false }) as QdrantService;
 	}
 
 	/**
