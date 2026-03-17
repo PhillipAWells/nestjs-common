@@ -43,13 +43,19 @@ const DEFAULT_JWKS_CACHE_TTL_MS = 300_000;
 @Injectable()
 export class JwksCacheService implements OnModuleInit {
 	private readonly keyCache: Map<string, string> = new Map();
+
 	private cacheExpiresAt: number = 0;
+
 	private fetchPromise: Promise<void> | null = null;
+
 	private logger?: AppLogger;
 
+	private readonly options: KeycloakModuleOptions;
+
 	constructor(
-		@Inject(KEYCLOAK_MODULE_OPTIONS) private readonly options: KeycloakModuleOptions,
+		@Inject(KEYCLOAK_MODULE_OPTIONS) options: KeycloakModuleOptions,
 	) {
+		this.options = options;
 		this.initializeLogger();
 	}
 

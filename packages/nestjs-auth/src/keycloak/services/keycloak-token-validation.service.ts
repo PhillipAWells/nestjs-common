@@ -38,11 +38,20 @@ const MS_PER_SECOND = 1000;
 export class KeycloakTokenValidationService {
 	private logger?: AppLogger;
 
+	private readonly options: KeycloakModuleOptions;
+
+	private readonly jwtService: JwtService;
+
+	private readonly jwksCacheService?: JwksCacheService;
+
 	constructor(
-		@Inject(KEYCLOAK_MODULE_OPTIONS) private readonly options: KeycloakModuleOptions,
-		private readonly jwtService: JwtService,
-		@Optional() private readonly jwksCacheService?: JwksCacheService,
+		@Inject(KEYCLOAK_MODULE_OPTIONS) options: KeycloakModuleOptions,
+		jwtService: JwtService,
+		@Optional() jwksCacheService?: JwksCacheService,
 	) {
+		this.options = options;
+		this.jwtService = jwtService;
+		this.jwksCacheService = jwksCacheService;
 		this.initializeLogger();
 	}
 
