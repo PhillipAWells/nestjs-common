@@ -1,9 +1,10 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { PyroscopeConfig } from '@pyroscope/nodejs';
 import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
 import { MetricsService } from './services/metrics.service.js';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { MetricsResponse } from './services/metrics.service.js';
 import {
 	PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
@@ -72,7 +73,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly metrics: IProfileMetrics[] = [];
 
-	private readonly logger: Logger = new Logger(PyroscopeService.name);
+	private readonly logger = new AppLogger(undefined, PyroscopeService.name);
 
 	/**
 	 * Maximum number of metrics to keep in memory to prevent unbounded growth
