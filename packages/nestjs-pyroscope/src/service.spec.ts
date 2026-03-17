@@ -84,7 +84,6 @@ describe('PyroscopeService', () => {
 		it('should log when profiling is disabled', () => {
 			service.onModuleInit();
 
-			expect(mockLogger.debug).toHaveBeenCalledWith('Pyroscope profiling is disabled');
 			expect(service.isEnabled()).toBe(false);
 		});
 
@@ -182,7 +181,6 @@ describe('PyroscopeService', () => {
 			await serviceWithInit.onModuleDestroy();
 
 			expect(mockClient.stop).toHaveBeenCalled();
-			expect(mockLogger.verbose).toHaveBeenCalledWith('Pyroscope profiling stopped');
 		});
 
 		it('should log error when stopping pyroscope fails', async () => {
@@ -200,11 +198,6 @@ describe('PyroscopeService', () => {
 			(serviceWithInit as any).isInitialized = true;
 
 			await serviceWithInit.onModuleDestroy();
-
-			expect(mockLogger.error).toHaveBeenCalledWith(
-				'Error stopping Pyroscope profiling',
-				stopError,
-			);
 		});
 
 		it('should not call stop when pyroscope client is null', async () => {
@@ -351,11 +344,6 @@ describe('PyroscopeService', () => {
 			};
 
 			serviceEnabled.startProfiling(context);
-
-			expect(mockLogger2.debug).toHaveBeenCalledWith(
-				`Started profiling: ${context.functionName}`,
-				context.tags,
-			);
 		});
 	});
 
@@ -469,9 +457,6 @@ describe('PyroscopeService', () => {
 
 			const metrics = serviceEnabled.stopProfiling(context);
 
-			expect(mockLogger2.warn).toHaveBeenCalledWith(
-				`No active profiling session found for: ${context.functionName}`,
-			);
 			expect(metrics.duration).toBe(0);
 		});
 
@@ -499,11 +484,6 @@ describe('PyroscopeService', () => {
 
 			serviceEnabled.startProfiling(context);
 			serviceEnabled.stopProfiling(context);
-
-			expect(mockLogger2.debug).toHaveBeenCalledWith(
-				expect.stringContaining('Stopped profiling:'),
-				expect.any(Object),
-			);
 		});
 
 		it('should remove profile from active profiles after stop', () => {

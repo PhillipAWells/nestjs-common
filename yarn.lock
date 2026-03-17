@@ -4272,6 +4272,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
+    "@pawells/nestjs-shared": "workspace:*"
     "@pyroscope/nodejs": "npm:^0.4.10"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"

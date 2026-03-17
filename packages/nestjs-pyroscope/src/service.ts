@@ -1,5 +1,6 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { PyroscopeConfig } from '@pyroscope/nodejs';
 import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './interfaces/profiling.interface.js';
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
@@ -72,6 +73,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly metrics: IProfileMetrics[] = [];
 
+	private readonly logger: AppLogger;
+
 	/**
 	 * Maximum number of metrics to keep in memory to prevent unbounded growth
 	 */
@@ -87,7 +90,9 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private readonly STALE_PROFILE_TIMEOUT_MS = PROFILING_STALE_PROFILE_TIMEOUT_MS;
 
-	constructor(private readonly moduleRef: ModuleRef) {}
+	constructor(private readonly moduleRef: ModuleRef) {
+		this.logger = new AppLogger(undefined, PyroscopeService.name);
+	}
 
 	private get config(): IPyroscopeConfig {
 		const cfg = this.moduleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
@@ -95,10 +100,6 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			throw new Error('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
 		}
 		return cfg;
-	}
-
-	private get logger(): Logger {
-		return this.moduleRef.get(Logger, { strict: false }) ?? new Logger(PyroscopeService.name);
 	}
 
 	private get metricsService(): MetricsService | undefined {
@@ -152,7 +153,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			this.pyroscopeClient = Pyroscope;
 			this.isInitialized = true;
 
-			this.logger.verbose(`Pyroscope profiling initialized for ${this.config.applicationName}`);
+			this.logger.debug(`Pyroscope profiling initialized for ${this.config.applicationName}`);
 			this.logger.debug('Profiling configuration:', {
 				degradedActiveProfilesThreshold: this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
 				retryBaseDelayMs: this.config.retryBaseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS,
@@ -161,7 +162,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 				tagMaxLength: this.config.tagMaxLength ?? PROFILING_TAG_MAX_LENGTH,
 			});
 		} catch (error) {
-			this.logger.error('Failed to initialize Pyroscope profiling', error);
+			this.logger.error('Failed to initialize Pyroscope profiling', (error as Error).stack ?? String(error));
 			// Graceful degradation - continue without profiling
 		}
 	}
@@ -176,9 +177,9 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		if (this.pyroscopeClient && this.isInitialized) {
 			try {
 				await this.pyroscopeClient.stop();
-				this.logger.verbose('Pyroscope profiling stopped');
+				this.logger.debug('Pyroscope profiling stopped');
 			} catch (error) {
-				this.logger.error('Error stopping Pyroscope profiling', error);
+				this.logger.error('Error stopping Pyroscope profiling', (error as Error).stack ?? String(error));
 			}
 		}
 	}

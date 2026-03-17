@@ -1,4 +1,4 @@
-import { DynamicModule, Global, Logger, Provider } from '@nestjs/common';
+import { DynamicModule, Global, Provider } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from './service.js';
 import { MetricsService } from './services/metrics.service.js';
@@ -60,11 +60,6 @@ export class PyroscopeModule {
 			useValue: config,
 		};
 
-		const loggerProvider: Provider = {
-			provide: Logger,
-			useValue: new Logger(PyroscopeService.name),
-		};
-
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
 			useFactory: () => new MetricsService(),
@@ -85,7 +80,6 @@ export class PyroscopeModule {
 
 		const providers: Provider[] = [
 			configProvider,
-			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,
@@ -133,11 +127,6 @@ export class PyroscopeModule {
 			inject: options.inject ?? [],
 		};
 
-		const loggerProvider: Provider = {
-			provide: Logger,
-			useValue: new Logger(PyroscopeService.name),
-		};
-
 		const metricsServiceProvider: Provider = {
 			provide: MetricsService,
 			useFactory: () => new MetricsService(),
@@ -158,7 +147,6 @@ export class PyroscopeModule {
 
 		const providers: Provider[] = [
 			configProvider,
-			loggerProvider,
 			metricsServiceProvider,
 			serviceProvider,
 			healthIndicatorProvider,
