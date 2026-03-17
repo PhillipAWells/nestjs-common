@@ -32,10 +32,14 @@ import { QdrantClient } from '@qdrant/js-client-rest';
  * ```
  */
 export class QdrantCollectionService {
-	constructor(
-		private readonly client: QdrantClient,
-		public readonly collectionName: string,
-	) {}
+	private readonly client: QdrantClient;
+
+	public readonly collectionName: string;
+
+	constructor(client: QdrantClient, collectionName: string) {
+		this.client = client;
+		this.collectionName = collectionName;
+	}
 
 	/**
 	 * Search for points in the collection using vector similarity.
