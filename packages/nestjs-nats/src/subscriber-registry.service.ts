@@ -18,9 +18,11 @@ interface ProviderWrapper {
  * It uses NestJS DiscoveryService and MetadataScanner to find all methods
  * decorated with @Subscribe and registers them.
  *
- * Note: NestJS calls OnModuleInit hooks in dependency order.
- * NatsService.onModuleInit() (connection) is guaranteed to run before
- * NatsSubscriberRegistry.onModuleInit() (handler registration).
+ * Note: NestJS initializes providers in constructor-dependency order.
+ * Because NatsSubscriberRegistry takes NatsService as a constructor argument,
+ * NestJS creates and initializes NatsService first — so NatsService.onModuleInit()
+ * (which establishes the connection) is guaranteed to complete before
+ * NatsSubscriberRegistry.onModuleInit() (which registers handlers) runs.
  */
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {

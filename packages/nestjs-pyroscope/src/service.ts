@@ -15,6 +15,7 @@ import {
 	PROFILING_MAX_ACTIVE_PROFILES,
 	PROFILING_RESPONSE_TIME_PRECISION,
 	PROFILING_STALE_PROFILE_TIMEOUT_MS,
+	PROFILING_ID_UUID_LENGTH,
 } from './constants/profiling.constants.js';
 
 interface IPyroscopeClient {
@@ -526,7 +527,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Generate unique profile ID for tracking
 	 */
 	private generateProfileId(context: IProfileContext): string {
-		const uniquePart = crypto.randomUUID().replace(/-/g, '').substring(0, 9);
+		const uniquePart = crypto.randomUUID().replace(/-/g, '').substring(0, PROFILING_ID_UUID_LENGTH);
 		return `${context.functionName}_${context.startTime}_${uniquePart}`;
 	}
 

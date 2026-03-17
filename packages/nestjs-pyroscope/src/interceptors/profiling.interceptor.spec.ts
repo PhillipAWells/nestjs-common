@@ -56,6 +56,29 @@ describe('ProfilingInterceptor', () => {
 	});
 
 	describe('intercept', () => {
+		it('should gracefully degrade when PyroscopeService is not available', () => {
+			const mockModuleRef = {
+				get: vi.fn().mockImplementation(() => {
+					throw new Error('Provider not found');
+				}),
+			} as unknown as ModuleRef;
+
+			const degradedInterceptor = new ProfilingInterceptor(mockModuleRef);
+
+			mockCallHandler.handle.mockReturnValue(of('response data'));
+
+			return new Promise<void>((resolve) => {
+				degradedInterceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
+					next: (data) => {
+						expect(data).toBe('response data');
+						// Should not attempt to profile
+						expect(mockCallHandler.handle).toHaveBeenCalled();
+						resolve();
+					},
+				});
+			});
+		});
+
 		it('should profile HTTP requests', () => {
 			mockCallHandler.handle.mockReturnValue(of('response data'));
 

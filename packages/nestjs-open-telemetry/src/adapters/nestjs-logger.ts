@@ -77,6 +77,14 @@ export class OpenTelemetryLogger implements LoggerService {
 	}
 
 	/**
+	 * Log a fatal error message.
+	 */
+	public fatal(message: any, context?: string): void {
+		const metadata = this.buildMetadata(context);
+		this.logger.fatal(this.formatMessage(message), metadata);
+	}
+
+	/**
 	 * Build metadata with trace context and NestJS context.
 	 */
 	private buildMetadata(context?: string): Record<string, string | number> {

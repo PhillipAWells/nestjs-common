@@ -109,8 +109,8 @@ export class JwksCacheService implements OnModuleInit {
 			this.log('warn', `Failed to re-fetch JWKS during key lookup: ${String(error)}`);
 		}
 
-		// Check cache again after re-fetch
-		if (this.keyCache.has(kid)) {
+		// Check cache again after re-fetch — only return if cache is still valid
+		if (this.keyCache.has(kid) && Date.now() < this.cacheExpiresAt) {
 			const key = this.keyCache.get(kid);
 			if (key) {
 				return key;
@@ -123,13 +123,14 @@ export class JwksCacheService implements OnModuleInit {
 	private async fetchJwks(): Promise<void> {
 		// If a fetch is already in-flight, await it instead of making another request
 		if (this.fetchPromise !== null) {
-			return this.fetchPromise;
+			await this.fetchPromise;
+			return;
 		}
 
 		this.fetchPromise = this.doFetch().finally(() => {
 			this.fetchPromise = null;
 		});
-		return this.fetchPromise;
+		await this.fetchPromise;
 	}
 
 	private async doFetch(): Promise<void> {

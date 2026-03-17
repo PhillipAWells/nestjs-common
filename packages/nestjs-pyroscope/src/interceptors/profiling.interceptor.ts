@@ -58,12 +58,17 @@ interface HttpResponse {
 export class ProfilingInterceptor implements NestInterceptor {
 	constructor(private readonly moduleRef: ModuleRef) {}
 
-	private get pyroscopeService(): PyroscopeService {
-		return this.moduleRef.get(PyroscopeService, { strict: false });
+	private get pyroscopeService(): PyroscopeService | null {
+		try {
+			return this.moduleRef.get(PyroscopeService, { strict: false });
+		} catch {
+			return null;
+		}
 	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-		if (!this.pyroscopeService.isEnabled()) {
+		const service = this.pyroscopeService;
+		if (!service?.isEnabled()) {
 			return next.handle();
 		}
 
@@ -80,7 +85,7 @@ export class ProfilingInterceptor implements NestInterceptor {
 			},
 		};
 
-		this.pyroscopeService.startProfiling(profileContext);
+		service.startProfiling(profileContext);
 
 		return next.handle().pipe(
 			tap(() => {
@@ -90,7 +95,7 @@ export class ProfilingInterceptor implements NestInterceptor {
 					statusCode: response.statusCode?.toString() ?? 'unknown',
 					success: 'true',
 				};
-				this.pyroscopeService.stopProfiling(profileContext);
+				service.stopProfiling(profileContext);
 			}),
 			catchError((error: unknown) => {
 				// Error case - do not expose error message in tags
@@ -102,7 +107,7 @@ export class ProfilingInterceptor implements NestInterceptor {
 					error: 'unknown',
 				};
 				profileContext.error = error as Error;
-				this.pyroscopeService.stopProfiling(profileContext);
+				service.stopProfiling(profileContext);
 				throw error;
 			}),
 		);

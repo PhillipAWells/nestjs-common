@@ -66,7 +66,8 @@ export class WebSocketAuthService implements LazyModuleRefService {
 				};
 			}
 
-			const maskedUserId = userId && userId.length > 8 ? `${userId.substring(0, 8)}...` : userId;
+			const USER_ID_MASK_LENGTH = 8;
+			const maskedUserId = userId && userId.length > USER_ID_MASK_LENGTH ? `${userId.substring(0, USER_ID_MASK_LENGTH)}...` : userId;
 			this.logger.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
 			return {
 				authenticated: true,

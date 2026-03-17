@@ -119,7 +119,7 @@ describe('NatsService', () => {
 		it('should throw if the connection is not established', () => {
 			const uninitializedService = new NatsService(mockOptions);
 			expect(() => uninitializedService.getConnection()).toThrow(
-				'NATS connection is not established',
+				'NATS connection is not established or is draining',
 			);
 		});
 	});
@@ -144,7 +144,14 @@ describe('NatsService', () => {
 		it('should throw if the connection is not established', () => {
 			const uninitializedService = new NatsService(mockOptions);
 			expect(() => uninitializedService.publish('test.subject', 'data')).toThrow(
-				'NATS connection is not established',
+				'NATS connection is not established or is draining',
+			);
+		});
+
+		it('should throw if the connection is draining', () => {
+			mockConnection.isDraining.mockReturnValue(true);
+			expect(() => service.publish('test.subject', 'data')).toThrow(
+				'NATS connection is not established or is draining',
 			);
 		});
 	});

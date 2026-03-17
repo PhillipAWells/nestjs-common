@@ -1,11 +1,11 @@
 /**
  * HTTP status codes used for request classification.
  *
- * Successful requests: 200-299
- * Redirects and above: 300+
+ * Successful requests: 200-399 (2xx success + 3xx redirects)
+ * Client/server errors: 400+
  */
 export const METRICS_STATUS_OK = 200;
-export const METRICS_STATUS_REDIRECT_MIN = 300;
+export const METRICS_STATUS_CLIENT_ERROR_MIN = 400;
 
 /**
  * Utility constants for profiling utilities.
@@ -62,6 +62,13 @@ export const PROFILING_ID_RADIX = 36;
 export const PROFILING_ID_SUBSTR_END = 11;
 
 /**
+ * Length of the UUID-based unique portion of a profile ID.
+ * crypto.randomUUID() produces a 32-char hex string (after removing dashes);
+ * we take the first 9 characters for a compact unique suffix.
+ */
+export const PROFILING_ID_UUID_LENGTH = 9;
+
+/**
  * Duration formatting threshold in milliseconds.
  * Durations >= 1000ms are formatted as seconds instead of milliseconds.
  */
@@ -77,4 +84,5 @@ export const PROFILING_PERCENTILE_DIVISOR = 100;
  * Maximum age (milliseconds) for an active profile before it is considered stale and evicted.
  * Prevents unbounded memory growth from profiles that are started but never stopped (30 minutes).
  */
+// eslint-disable-next-line no-magic-numbers
 export const PROFILING_STALE_PROFILE_TIMEOUT_MS = 30 * 60 * 1000;

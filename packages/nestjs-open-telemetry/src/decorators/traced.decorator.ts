@@ -242,6 +242,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 				throw error;
 			}
 		};
+		Object.defineProperty(descriptor.value, 'name', { value: methodName, configurable: true });
 
 		return descriptor;
 	};

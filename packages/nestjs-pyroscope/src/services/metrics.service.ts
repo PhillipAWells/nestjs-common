@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
-	METRICS_STATUS_REDIRECT_MIN,
+	METRICS_STATUS_CLIENT_ERROR_MIN,
 	PROFILING_RESPONSE_TIME_PRECISION,
 } from '../constants/profiling.constants.js';
 
@@ -121,7 +121,7 @@ export class MetricsService {
 		this.totalRequests++;
 		this.totalResponseTime += duration;
 
-		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_REDIRECT_MIN) {
+		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_CLIENT_ERROR_MIN) {
 			this.successfulRequests++;
 		} else {
 			this.failedRequests++;

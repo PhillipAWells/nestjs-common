@@ -197,9 +197,9 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	private assertConnected(): void {
-		if (this.connection === null || this.connection.isClosed()) {
+		if (this.connection === null || this.connection.isClosed() || this.connection.isDraining()) {
 			throw new Error(
-				'NATS connection is not established. Ensure NatsModule is imported and the application has fully initialized.',
+				'NATS connection is not established or is draining. Ensure NatsModule is imported and the application has fully initialized.',
 			);
 		}
 	}

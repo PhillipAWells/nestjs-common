@@ -3,6 +3,7 @@
 // ============================================================================
 export { KeycloakModule } from './keycloak/keycloak.module.js';
 export { KeycloakTokenValidationService } from './keycloak/services/keycloak-token-validation.service.js';
+export { JwksCacheService } from './keycloak/services/jwks-cache.service.js';
 export type { TokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
 export type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from './keycloak/keycloak.types.js';
 export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';

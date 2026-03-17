@@ -157,6 +157,19 @@ describe('MetricsService', () => {
 			expect(metrics.requests.total).toBe(4);
 		});
 
+		it('should classify redirects as successful requests', () => {
+			service.recordRequest(200, 0);
+			service.recordRequest(301, 0);
+			service.recordRequest(302, 0);
+			service.recordRequest(307, 0);
+			service.recordRequest(404, 0);
+
+			const metrics = service.getMetrics();
+			expect(metrics.requests.successful).toBe(4);
+			expect(metrics.requests.failed).toBe(1);
+			expect(metrics.requests.total).toBe(5);
+		});
+
 		it('should handle edge case of no requests', () => {
 			const metrics = service.getMetrics();
 

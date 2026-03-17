@@ -52,6 +52,8 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		misses: 0,
 	};
 
+	private readonly logger: AppLogger;
+
 	public get CacheManager(): Cache {
 		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
 	}
@@ -60,11 +62,9 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
-		return this.AppLogger.createContextualLogger(GraphQLCacheService.name);
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = this.AppLogger.createContextualLogger(GraphQLCacheService.name);
 	}
-
-	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Generates a cache key for GraphQL operations
@@ -186,10 +186,13 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		try {
 			if (typeof (this.CacheManager as any).clear === 'function') {
 				await (this.CacheManager as any).clear();
+				this.logger.debug('Cache cleared successfully');
 			} else if (typeof (this.CacheManager as any).reset === 'function') {
 				await (this.CacheManager as any).reset();
+				this.logger.debug('Cache cleared successfully');
+			} else {
+				this.logger.warn('Cache clear not supported by current store, skipping');
 			}
-			this.logger.debug('Cache cleared successfully');
 		} catch (error) {
 			this.logger.error(`Failed to clear cache: ${error instanceof Error ? error.message : String(error)}`);
 			throw error;
@@ -210,12 +213,12 @@ export class GraphQLCacheService implements LazyModuleRefService {
 				const client = cacheManager.store.getClient();
 				if (client && typeof client.scan === 'function') {
 					// Use Redis SCAN to find and delete matching keys
+					const REDIS_SCAN_COUNT = 100;
 					let cursor = '0';
 					let totalDeleted = 0;
 					do {
-						const result = await client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
-						cursor = result[0];
-						const keys = result[1];
+						const [nextCursor, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', REDIS_SCAN_COUNT) as [string, string[]];
+						cursor = nextCursor;
 						if (keys.length > 0) {
 							await client.del(...keys);
 							totalDeleted += keys.length;

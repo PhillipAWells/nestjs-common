@@ -49,20 +49,25 @@ export class KeycloakModule {
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
 	 */
 	public static forRoot(options: KeycloakModuleOptions): DynamicModule {
+		const isOffline = options.validationMode === 'offline';
 		const providers = [
 			{
 				provide: KEYCLOAK_MODULE_OPTIONS,
 				useValue: options,
 			},
 			KeycloakTokenValidationService,
-			...(options.validationMode === 'offline' ? [JwksCacheService] : []),
+			...(isOffline ? [JwksCacheService] : []),
 		];
 
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({})],
 			providers,
-			exports: [KeycloakTokenValidationService, JwksCacheService, KEYCLOAK_MODULE_OPTIONS],
+			exports: [
+				KeycloakTokenValidationService,
+				...(isOffline ? [JwksCacheService] : []),
+				KEYCLOAK_MODULE_OPTIONS,
+			],
 		};
 	}
 
@@ -76,7 +81,9 @@ export class KeycloakModule {
 	 * @param options.useFactory - Function that returns KeycloakModuleOptions or a promise that resolves to it
 	 * @param options.inject - Optional array of providers to inject into the factory function
 	 * @param options.imports - Optional array of modules to import for dependency injection
-	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
+	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService.
+	 *   Note: JwksCacheService is always provided in async mode (validationMode is not known at
+	 *   module definition time). In online mode, it initializes but skips the JWKS fetch.
 	 */
 	public static forRootAsync(options: KeycloakModuleAsyncOptions): DynamicModule {
 		return {
