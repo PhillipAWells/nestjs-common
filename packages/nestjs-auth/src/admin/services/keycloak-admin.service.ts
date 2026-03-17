@@ -62,7 +62,7 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 				{
 					baseUrl: this.Config.baseUrl,
 					realmName: this.Config.realmName,
-					credentials: credentialsWithoutType as any,
+					credentials: credentialsWithoutType as unknown as typeof this.Config.credentials,
 					timeout: this.Config.timeout,
 					retry: this.Config.retry,
 				},
