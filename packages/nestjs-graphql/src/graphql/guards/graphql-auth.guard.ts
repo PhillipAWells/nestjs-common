@@ -1,5 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException, CanActivate, Logger } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException, CanActivate } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Authentication Guard
@@ -18,8 +21,24 @@ import { GqlExecutionContext } from '@nestjs/graphql';
  * ```
  */
 @Injectable()
-export class GraphQLAuthGuard implements CanActivate {
-	private readonly logger = new Logger(GraphQLAuthGuard.name);
+export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
+	private get AppLogger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	private get logger(): AppLogger | undefined {
+		try {
+			return this.AppLogger?.createContextualLogger(GraphQLAuthGuard.name);
+		} catch {
+			return undefined;
+		}
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Determines if the current request can proceed
@@ -36,14 +55,14 @@ export class GraphQLAuthGuard implements CanActivate {
 		const token = this.extractTokenFromHeader(request);
 
 		if (!token) {
-			this.logger.warn('No authentication token provided');
+			this.logger?.warn('No authentication token provided');
 			throw new UnauthorizedException('Authentication required');
 		}
 
 		// Verify request.user is populated (set by a Passport strategy upstream)
 		const { user } = request;
 		if (!user) {
-			this.logger.warn('Authentication token invalid: user not found on request');
+			this.logger?.warn('Authentication token invalid: user not found on request');
 			throw new UnauthorizedException('Invalid authentication token');
 		}
 

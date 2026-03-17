@@ -1,7 +1,8 @@
 import DataLoader from 'dataloader';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
@@ -18,7 +19,13 @@ export interface Product {
  */
 @Injectable()
 export class ProductLoader implements LazyModuleRefService {
-	private readonly logger = new Logger(ProductLoader.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(ProductLoader.name);
+	}
 
 	public get DataLoaderRegistry(): DataLoaderRegistry {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
@@ -73,7 +80,7 @@ export class ProductLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(productId);
 		} catch (error) {
-			this.logger.error(`Failed to load product ${productId}`, error);
+			this.logger.error(`Failed to load product ${productId}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return undefined;
 		}
 	}
@@ -88,7 +95,7 @@ export class ProductLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(productIds);
 		} catch (error) {
-			this.logger.error(`Failed to load products ${productIds}`, error);
+			this.logger.error(`Failed to load products ${productIds}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return productIds.map(() => error as Error);
 		}
 	}

@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { ValidationError } from 'class-validator';
-import { BaseValidationPipe } from '@pawells/nestjs-shared/common';
+import { AppLogger, BaseValidationPipe } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Validation Pipe
@@ -19,7 +20,21 @@ import { BaseValidationPipe } from '@pawells/nestjs-shared/common';
  */
 @Injectable()
 export class GraphQLValidationPipe extends BaseValidationPipe {
-	private readonly logger = new Logger(GraphQLValidationPipe.name);
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly
+	private moduleRef?: ModuleRef;
+
+	private get AppLogger(): AppLogger | undefined {
+		return this.moduleRef?.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger | undefined {
+		return this.AppLogger?.createContextualLogger(GraphQLValidationPipe.name);
+	}
+
+	constructor(moduleRef?: ModuleRef) {
+		super();
+		this.moduleRef = moduleRef;
+	}
 
 	/**
 	 * Gets validation options with GraphQL-specific settings
@@ -41,7 +56,7 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 	 */
 	protected override handleValidationErrors(errors: ValidationError[]): void {
 		const formattedErrors = this.formatValidationErrors(errors);
-		this.logger.warn(`Validation failed: ${JSON.stringify(formattedErrors)}`);
+		this.logger?.warn(`Validation failed: ${JSON.stringify(formattedErrors)}`);
 	}
 
 	/**

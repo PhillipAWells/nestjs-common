@@ -1,8 +1,10 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, catchError, throwError } from 'rxjs';
 import { GraphQLError } from 'graphql';
-import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@pawells/nestjs-shared/common';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Error Interceptor
@@ -20,8 +22,16 @@ import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDE
  * ```
  */
 @Injectable()
-export class GraphQLErrorInterceptor implements NestInterceptor {
-	private readonly logger = new Logger(GraphQLErrorInterceptor.name);
+export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefService {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLErrorInterceptor.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	/**
 	 * Intercepts GraphQL operations for error handling
@@ -43,7 +53,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor {
 		return next.handle().pipe(
 			catchError((error) => {
 				// Log the error with context
-				this.logger.error(
+				this.logger?.error(
 					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${error instanceof Error ? error.message : String(error)}`,
 				);
 

@@ -1,6 +1,8 @@
-import { Injectable, PipeTransform, ArgumentMetadata, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Input Validation Pipe
@@ -20,7 +22,20 @@ import { plainToClass } from 'class-transformer';
  */
 @Injectable()
 export class GraphQLInputValidationPipe implements PipeTransform<any> {
-	private readonly logger = new Logger(GraphQLInputValidationPipe.name);
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly
+	private moduleRef?: ModuleRef;
+
+	private get AppLogger(): AppLogger | undefined {
+		return this.moduleRef?.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger | undefined {
+		return this.AppLogger?.createContextualLogger(GraphQLInputValidationPipe.name);
+	}
+
+	constructor(moduleRef?: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 	 
 	// Maximum allowed JSON-serialized input size in characters (approx. 100KB)
 	// eslint-disable-next-line no-magic-numbers
@@ -66,7 +81,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 
 		if (errors.length > 0) {
 			const formattedErrors = this.formatDetailedErrors(errors);
-			this.logger.warn(`Input validation failed: ${JSON.stringify(formattedErrors)}`);
+			this.logger?.warn(`Input validation failed: ${JSON.stringify(formattedErrors)}`);
 
 			throw new BadRequestException({
 				message: 'Input validation failed',
@@ -88,7 +103,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 		// Check input size
 		const inputSize = JSON.stringify(value).length;
 		if (inputSize > this.MAX_INPUT_SIZE) {
-			this.logger.warn(`Input size ${inputSize} exceeds maximum of ${this.MAX_INPUT_SIZE}`);
+			this.logger?.warn(`Input size ${inputSize} exceeds maximum of ${this.MAX_INPUT_SIZE}`);
 			throw new BadRequestException({
 				message: 'Input data exceeds maximum size limit',
 				code: 'INPUT_SIZE_EXCEEDED',
@@ -108,7 +123,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			if (typeof obj === 'string') {
 				for (const pattern of this.XSS_PATTERNS) {
 					if (pattern.test(obj)) {
-						this.logger.warn(`Potential XSS attack detected at ${path}`);
+						this.logger?.warn(`Potential XSS attack detected at ${path}`);
 						throw new BadRequestException({
 							message: 'Invalid characters or patterns detected in input',
 							code: 'XSS_DETECTED',
@@ -127,7 +142,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 				if (typeof value === 'string') {
 					for (const pattern of this.XSS_PATTERNS) {
 						if (pattern.test(value)) {
-							this.logger.warn(`Potential XSS attack detected at ${currentPath}`);
+							this.logger?.warn(`Potential XSS attack detected at ${currentPath}`);
 							throw new BadRequestException({
 								message: 'Invalid characters or patterns detected in input',
 								code: 'XSS_DETECTED',

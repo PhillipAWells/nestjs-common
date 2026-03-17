@@ -25,7 +25,7 @@
  *     CacheModule.forRoot(),
  *     GraphQLModule.forRoot({
  *       autoSchemaFile: 'schema.gql',
- *       playground: true,
+ *       playground: false,
  *     }),
  *   ],
  * })

@@ -1,7 +1,8 @@
 import DataLoader from 'dataloader';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { Comment } from './comment.loader.js';
 
@@ -11,7 +12,13 @@ import { Comment } from './comment.loader.js';
  */
 @Injectable()
 export class CommentsByPostLoader implements LazyModuleRefService {
-	private readonly logger = new Logger(CommentsByPostLoader.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(CommentsByPostLoader.name);
+	}
 
 	public get DataLoaderRegistry(): DataLoaderRegistry {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
@@ -65,7 +72,7 @@ export class CommentsByPostLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(postId);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for post ${postId}`, error);
+			this.logger.error(`Failed to load comments for post ${postId}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return undefined;
 		}
 	}
@@ -80,7 +87,7 @@ export class CommentsByPostLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(postIds);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for posts ${postIds}`, error);
+			this.logger.error(`Failed to load comments for posts ${postIds}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return postIds.map(() => error as Error);
 		}
 	}

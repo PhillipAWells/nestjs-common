@@ -1,8 +1,11 @@
-import { Injectable, NestInterceptor, Logger } from '@nestjs/common';
+import { Injectable, NestInterceptor } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
 
 /**
@@ -21,8 +24,16 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceInterceptor implements NestInterceptor {
-	private readonly logger = new Logger(GraphQLPerformanceInterceptor.name);
+export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModuleRefService {
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(GraphQLPerformanceInterceptor.name);
+	}
+
+	constructor(public readonly Module: ModuleRef) {}
 
 	private readonly slowOperationThreshold = SLOW_OPERATION_THRESHOLD_MS; // 1 second
 
@@ -61,7 +72,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 				},
 				error: () => {
 					const duration = Date.now() - startTime;
-					this.logger.warn(
+					this.logger?.warn(
 						`GraphQL ${operationType} failed after ${duration}ms: ${operationName}.${fieldName}`,
 					);
 				},
@@ -84,7 +95,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 		duration: number,
 	): void {
 		// Log performance data for monitoring
-		this.logger.debug(
+		this.logger?.debug(
 			`GraphQL ${operationType} performance: ${operationName}.${fieldName} took ${duration}ms`,
 		);
 
@@ -107,11 +118,11 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor {
 		duration: number,
 	): void {
 		if (duration >= this.verySlowOperationThreshold) {
-			this.logger.error(
+			this.logger?.error(
 				`VERY SLOW GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.verySlowOperationThreshold}ms)`,
 			);
 		} else if (duration >= this.slowOperationThreshold) {
-			this.logger.warn(
+			this.logger?.warn(
 				`Slow GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.slowOperationThreshold}ms)`,
 			);
 		}

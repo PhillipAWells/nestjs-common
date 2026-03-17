@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { GraphQLSchema } from 'graphql';
 import type { GraphQLConfigOptions } from './graphql-config.interface.js';
 import { Traced } from '@pawells/nestjs-open-telemetry';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLErrorCode } from './error-codes.js';
 
 /**
@@ -10,7 +12,20 @@ import { GraphQLErrorCode } from './error-codes.js';
  */
 @Injectable()
 export class GraphQLService {
-	private readonly logger = new Logger(GraphQLService.name);
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly
+	private moduleRef?: ModuleRef;
+
+	private get AppLogger(): AppLogger | undefined {
+		return this.moduleRef?.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger | undefined {
+		return this.AppLogger?.createContextualLogger(GraphQLService.name);
+	}
+
+	constructor(moduleRef?: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private schema: GraphQLSchema | null = null;
 
@@ -31,7 +46,7 @@ export class GraphQLService {
 		}
 
 		this.schema = schema;
-		this.logger.log('GraphQL schema validated successfully');
+		this.logger?.info('GraphQL schema validated successfully');
 	}
 
 	/**

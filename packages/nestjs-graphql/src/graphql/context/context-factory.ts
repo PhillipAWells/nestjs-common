@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLContext, WebSocketContext, ContextFactoryOptions } from './graphql-context.interface.js';
 import type { IWebSocketConnection } from '../graphql/types/graphql-safety.types.js';
 
@@ -12,7 +14,20 @@ import type { IWebSocketConnection } from '../graphql/types/graphql-safety.types
  */
 @Injectable()
 export class GraphQLContextFactory {
-	private readonly logger = new Logger(GraphQLContextFactory.name);
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly
+	private moduleRef?: ModuleRef;
+
+	private get AppLogger(): AppLogger | undefined {
+		return this.moduleRef?.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger | undefined {
+		return this.AppLogger?.createContextualLogger(GraphQLContextFactory.name);
+	}
+
+	constructor(moduleRef?: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	/**
 	 * Creates GraphQL context for HTTP requests
@@ -45,7 +60,7 @@ export class GraphQLContextFactory {
 		// Apply context enhancers
 		await this.applyContextEnhancers(context, options);
 
-		this.logger.debug(`Created HTTP GraphQL context: ${requestId}`);
+		this.logger?.debug(`Created HTTP GraphQL context: ${requestId}`);
 
 		return context;
 	}
@@ -87,7 +102,7 @@ export class GraphQLContextFactory {
 		// Apply context enhancers
 		await this.applyContextEnhancers(context, options);
 
-		this.logger.debug(`Created WebSocket GraphQL context: ${requestId}`);
+		this.logger?.debug(`Created WebSocket GraphQL context: ${requestId}`);
 
 		return context;
 	}
@@ -118,9 +133,8 @@ export class GraphQLContextFactory {
 			try {
 				await enhancer(context);
 			} catch (error) {
-				this.logger.error(
+				this.logger?.error(
 					`Context enhancer failed: ${error instanceof Error ? error.message : String(error)}`,
-					error instanceof Error ? error.stack : undefined,
 				);
 				// Continue with other enhancers even if one fails
 			}
@@ -137,7 +151,7 @@ export class GraphQLContextFactory {
 		createHttpContext: (req: Request, res: Response) => Promise<GraphQLContext>;
 		createWebSocketContext: (connection: IWebSocketConnection) => Promise<GraphQLContext>;
 	} {
-		const factory = new GraphQLContextFactory();
+		const factory = new GraphQLContextFactory(undefined);
 
 		return {
 			createHttpContext: (req: Request, res: Response): Promise<GraphQLContext> =>

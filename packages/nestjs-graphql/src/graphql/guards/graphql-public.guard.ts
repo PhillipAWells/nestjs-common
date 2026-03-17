@@ -27,12 +27,20 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		return this.Module.get(Reflector, { strict: false });
 	}
 
-	public get AppLogger(): AppLogger {
-		return this.Module.get(AppLogger, { strict: false });
+	private get AppLogger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
 	}
 
-	private get logger(): AppLogger {
-		return this.AppLogger.createContextualLogger(GraphQLPublicGuard.name);
+	private get logger(): AppLogger | undefined {
+		try {
+			return this.AppLogger?.createContextualLogger(GraphQLPublicGuard.name);
+		} catch {
+			return undefined;
+		}
 	}
 
 	constructor(public readonly Module: ModuleRef) {}
@@ -51,7 +59,7 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		]);
 
 		if (isPublic) {
-			this.logger.debug('Public resolver accessed');
+			this.logger?.debug('Public resolver accessed');
 			return true;
 		}
 
@@ -60,11 +68,11 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		const { user } = gqlContext.getContext();
 
 		if (!user) {
-			this.logger.warn('Non-public resolver accessed without authentication');
+			this.logger?.warn('Non-public resolver accessed without authentication');
 			return false;
 		}
 
-		this.logger.debug(`Authenticated user accessing protected resolver: ${user.id ?? user.sub ?? 'unknown'}`);
+		this.logger?.debug(`Authenticated user accessing protected resolver: ${user.id ?? user.sub ?? 'unknown'}`);
 		return true;
 	}
 }

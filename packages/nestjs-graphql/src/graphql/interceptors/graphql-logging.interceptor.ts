@@ -59,33 +59,33 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRef
 		const userId = user?.id ?? user?.sub ?? 'anonymous';
 
 		// Log operation start
-		this.logger.info(
+		this.logger?.info(
 			`GraphQL ${operationType} started: ${operationName}.${fieldName} by user ${userId}`,
 		);
 
 		// Log variables in debug mode (avoid logging sensitive data in production)
 		if (process.env['NODE_ENV'] !== 'production' && args) {
 			const safeArgs = this.sanitizeArgs(args);
-			this.logger.debug(`Operation variables: ${JSON.stringify(safeArgs)}`);
+			this.logger?.debug(`Operation variables: ${JSON.stringify(safeArgs)}`);
 		}
 
 		return next.handle().pipe(
 			tap({
 				next: (result) => {
 					const duration = Date.now() - startTime;
-					this.logger.info(
+					this.logger?.info(
 						`GraphQL ${operationType} completed: ${operationName}.${fieldName} in ${duration}ms`,
 					);
 
 					// Log result summary in debug mode
 					if (process.env['NODE_ENV'] !== 'production') {
 						const resultSummary = this.summarizeResult(result);
-						this.logger.debug(`Operation result: ${resultSummary}`);
+						this.logger?.debug(`Operation result: ${resultSummary}`);
 					}
 				},
 				error: (error) => {
 					const duration = Date.now() - startTime;
-					this.logger.error(
+					this.logger?.error(
 						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
 					);
 				},

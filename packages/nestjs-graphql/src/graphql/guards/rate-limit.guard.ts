@@ -1,7 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { RateLimitService } from '../services/rate-limit.service.js';
 
 const MS_PER_SECOND = 1000;
@@ -23,7 +24,21 @@ const MS_PER_SECOND = 1000;
  */
 @Injectable()
 export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService {
-	private readonly logger = new Logger(GraphQLRateLimitGuard.name);
+	private get AppLogger(): AppLogger | undefined {
+		try {
+			return this.Module.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
+	}
+
+	private get logger(): AppLogger | undefined {
+		try {
+			return this.AppLogger?.createContextualLogger(GraphQLRateLimitGuard.name);
+		} catch {
+			return undefined;
+		}
+	}
 
 	public get RateLimitService(): RateLimitService {
 		return this.Module.get(RateLimitService, { strict: false });
@@ -50,7 +65,7 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 			const result = await this.RateLimitService.checkLimit(clientId);
 
 			if (!result.allowed) {
-				this.logger.warn(
+				this.logger?.warn(
 					`Rate limit exceeded for client ${clientId}. Reset in ${result.resetTime - Date.now()}ms`,
 				);
 
@@ -78,7 +93,7 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 				throw error;
 			}
 
-			this.logger.error(`Rate limit check failed for client ${clientId}: ${error instanceof Error ? error.message : String(error)}`);
+			this.logger?.error(`Rate limit check failed for client ${clientId}: ${error instanceof Error ? error.message : String(error)}`);
 			throw new HttpException('Rate limit service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}

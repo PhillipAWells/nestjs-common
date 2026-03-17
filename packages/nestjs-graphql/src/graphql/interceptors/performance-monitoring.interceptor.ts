@@ -66,14 +66,14 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 					userId: gqlContext.getContext().user?.id,
 					duration,
 				}).catch((err) => {
-					this.logger.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
+					this.logger?.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
 				});
 
 				// Log performance warnings
 				if (duration > PERFORMANCE_WARNING_THRESHOLD_MS) { // > 5 seconds
-					this.logger.warn(`Very slow GraphQL operation: ${operation} took ${duration}ms`);
+					this.logger?.warn(`Very slow GraphQL operation: ${operation} took ${duration}ms`);
 				} else if (duration > SLOW_OPERATION_THRESHOLD_MS) { // > 1 second
-					this.logger.debug(`Slow GraphQL operation: ${operation} took ${duration}ms`);
+					this.logger?.debug(`Slow GraphQL operation: ${operation} took ${duration}ms`);
 				}
 			}),
 			catchError((error) => {
@@ -94,10 +94,10 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 						error: error instanceof Error ? error.message : String(error),
 					},
 				).catch((err) => {
-					this.logger.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
+					this.logger?.error(`Failed to record performance metrics: ${err instanceof Error ? err.message : String(err)}`);
 				});
 
-				this.logger.error(`GraphQL operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
+				this.logger?.error(`GraphQL operation failed: ${operation} took ${duration}ms`, error instanceof Error ? error.stack : String(error));
 
 				throw error;
 			}),

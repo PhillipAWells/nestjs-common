@@ -1,7 +1,8 @@
 import DataLoader from 'dataloader';
-import { Injectable, Logger, Scope } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { DataLoaderFactory, BatchLoadFn, DataLoaderOptions } from './dataloader.factory.js';
 
 /**
@@ -10,7 +11,13 @@ import { DataLoaderFactory, BatchLoadFn, DataLoaderOptions } from './dataloader.
  */
 @Injectable({ scope: Scope.REQUEST })
 export class DataLoaderRegistry implements LazyModuleRefService {
-	private readonly logger = new Logger(DataLoaderRegistry.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(DataLoaderRegistry.name);
+	}
 
 	private readonly loaders = new Map<string, DataLoader<any, any>>();
 

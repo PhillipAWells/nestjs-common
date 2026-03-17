@@ -1,7 +1,8 @@
 import DataLoader from 'dataloader';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { Order } from './order.loader.js';
 
@@ -11,7 +12,13 @@ import { Order } from './order.loader.js';
  */
 @Injectable()
 export class OrdersByUserLoader implements LazyModuleRefService {
-	private readonly logger = new Logger(OrdersByUserLoader.name);
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(OrdersByUserLoader.name);
+	}
 
 	public get DataLoaderRegistry(): DataLoaderRegistry {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
@@ -65,7 +72,7 @@ export class OrdersByUserLoader implements LazyModuleRefService {
 		try {
 			return await loader.load(userId);
 		} catch (error) {
-			this.logger.error(`Failed to load orders for user ${userId}`, error);
+			this.logger.error(`Failed to load orders for user ${userId}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return undefined;
 		}
 	}
@@ -80,7 +87,7 @@ export class OrdersByUserLoader implements LazyModuleRefService {
 		try {
 			return await loader.loadMany(userIds);
 		} catch (error) {
-			this.logger.error(`Failed to load orders for users ${userIds}`, error);
+			this.logger.error(`Failed to load orders for users ${userIds}${error instanceof Error ? `: ${error.message}` : ''}`);
 			return userIds.map(() => error as Error);
 		}
 	}
