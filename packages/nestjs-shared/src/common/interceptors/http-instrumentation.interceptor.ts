@@ -71,7 +71,6 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModu
 		const start = performance.now();
 		const { method } = request;
 		const contentLength = this.getContentLength(request);
-		 
 		const millisecondsPerSecond = 1000;
 
 		return next.handle().pipe(

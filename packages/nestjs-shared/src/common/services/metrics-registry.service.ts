@@ -167,8 +167,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 				this.Logger.warn(`Gauge metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : String(error);
-			this.Logger.error(`Failed to record gauge '${name}': ${errorMsg}`);
+			this.Logger.error(`Failed to record gauge '${name}': ${getErrorMessage(error)}`);
 		}
 	}
 
@@ -185,8 +184,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 				this.Logger.warn(`Histogram metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : String(error);
-			this.Logger.error(`Failed to record histogram '${name}': ${errorMsg}`);
+			this.Logger.error(`Failed to record histogram '${name}': ${getErrorMessage(error)}`);
 		}
 	}
 
