@@ -66,7 +66,7 @@ export class OpenTelemetryModule implements OnModuleInit {
 	}
 
 	/**
-	 * Create a global OpenTelemetryModule for root application
+	 * Create a global OpenTelemetryModule for root application.
 	 * @returns DynamicModule configured as global
 	 *
 	 * @example

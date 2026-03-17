@@ -95,7 +95,7 @@ let cachedHttpMetrics: {
 } | null = null;
 
 /**
- * Get or initialize HTTP metrics
+ * Get or initialize HTTP metrics.
  */
 function getHttpMetrics(): {
 	requests: Counter;
