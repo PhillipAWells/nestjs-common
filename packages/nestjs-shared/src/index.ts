@@ -91,6 +91,11 @@ export {
 	IsLazyModuleRefService as isLazyModuleRefService,
 	LazyGetterNamingConventions,
 	type IHealthCheck,
+	getErrorStack,
+	getErrorMessage,
+	AsyncModuleOptions,
+	createAsyncOptionsProvider,
+	createAsyncProviders,
 } from './common/index.js';
 
 // ============================================================================
