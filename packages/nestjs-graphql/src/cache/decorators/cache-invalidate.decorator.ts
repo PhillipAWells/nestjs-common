@@ -1,6 +1,6 @@
-import { Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * Options for @CacheInvalidate decorator
@@ -55,7 +55,7 @@ export interface CacheInvalidateOptions {
  * - Uses del() method which safely handles non-existent keys
  */
 export function CacheInvalidate(options: CacheInvalidateOptions) {
-	const logger = new Logger('CacheInvalidateDecorator');
+	const logger = new AppLogger(undefined, 'CacheInvalidateDecorator');
 
 	return function(
 		_target: any,
@@ -87,13 +87,13 @@ export function CacheInvalidate(options: CacheInvalidateOptions) {
 						await cacheManager.del(key);
 						logger.debug(`Invalidated cache key: ${key}`);
 					} catch (error) {
-						logger.error(`Failed to invalidate cache key ${key}:`, error);
+						logger.error(`Failed to invalidate cache key ${key}:`, error instanceof Error ? error.stack : String(error));
 					}
 				}
 
 				return result;
 			} catch (error) {
-				logger.error(`Method execution error for ${propertyKey}:`, error);
+				logger.error(`Method execution error for ${propertyKey}:`, error instanceof Error ? error.stack : String(error));
 				throw error;
 			}
 		};

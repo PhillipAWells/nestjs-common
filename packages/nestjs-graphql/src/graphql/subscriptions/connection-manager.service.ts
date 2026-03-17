@@ -4,9 +4,10 @@ declare global {
 	}
 }
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.js';
 
@@ -15,7 +16,7 @@ import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.
  */
 @Injectable()
 export class ConnectionManagerService implements LazyModuleRefService {
-	private readonly logger = new Logger(ConnectionManagerService.name);
+	private readonly logger: AppLogger;
 
 	private readonly connections = new Map<string, Set<any>>();
 
@@ -32,7 +33,9 @@ export class ConnectionManagerService implements LazyModuleRefService {
 		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = new AppLogger(undefined, ConnectionManagerService.name);
+	}
 
 	/**
 	 * Generate a unique key for a connection based on userId and the ws object
@@ -253,7 +256,7 @@ export class ConnectionManagerService implements LazyModuleRefService {
    * Cleanup method called when module is destroyed
    */
 	public onModuleDestroy(): void {
-		this.logger.log('Destroying connection manager');
+		this.logger.info('Destroying connection manager');
 
 		// Clear all timers
 		for (const timer of this.connectionTimers.values()) {
@@ -265,6 +268,6 @@ export class ConnectionManagerService implements LazyModuleRefService {
 		this.connections.clear();
 		this.subscriptions.clear();
 
-		this.logger.log('Connection manager destroyed');
+		this.logger.info('Connection manager destroyed');
 	}
 }

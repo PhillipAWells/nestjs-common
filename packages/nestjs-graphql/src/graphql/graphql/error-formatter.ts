@@ -1,5 +1,5 @@
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { Logger } from '@nestjs/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLErrorCode } from './error-codes.js';
 
 /**
@@ -9,7 +9,7 @@ import { GraphQLErrorCode } from './error-codes.js';
  * Removes sensitive internal information and provides user-friendly messages.
  */
 export class GraphQLErrorFormatter {
-	private static readonly logger = new Logger(GraphQLErrorFormatter.name);
+	private static readonly logger: AppLogger = new AppLogger(undefined, GraphQLErrorFormatter.name);
 
 	/**
 	 * Formats a GraphQL error for client response

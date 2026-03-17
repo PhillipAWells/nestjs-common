@@ -1,9 +1,10 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Observable, from, EMPTY } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
 /**
@@ -12,13 +13,15 @@ import { BsonSerializationService } from './bson-serialization.service.js';
  */
 @Injectable()
 export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefService {
-	private readonly logger = new Logger(BsonResponseInterceptor.name);
+	private readonly logger: AppLogger;
 
 	public get BsonSerializationService(): BsonSerializationService {
 		return this.Module.get(BsonSerializationService, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = new AppLogger(undefined, BsonResponseInterceptor.name);
+	}
 
 	/**
 	 * Intercept GraphQL response and serialize to BSON if requested

@@ -1,6 +1,6 @@
-import { Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * Options for @Cacheable decorator
@@ -59,7 +59,7 @@ export interface CacheableOptions {
  * - Async-safe; works with async/await methods
  */
 export function Cacheable(options: CacheableOptions = {}) {
-	const logger = new Logger('CacheableDecorator');
+	const logger = new AppLogger(undefined, 'CacheableDecorator');
 
 	return function(
 		target: any,
@@ -98,7 +98,7 @@ export function Cacheable(options: CacheableOptions = {}) {
 
 				return result;
 			} catch (error) {
-				logger.error(`Cache error for ${cacheKey}:`, error);
+				logger.error(`Cache error for ${cacheKey}:`, error instanceof Error ? error.stack : String(error));
 				// Fallback to original method
 				return originalMethod.apply(this, args);
 			}

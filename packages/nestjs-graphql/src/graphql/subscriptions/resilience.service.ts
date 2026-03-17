@@ -4,9 +4,10 @@ declare global {
 	}
 }
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { SubscriptionConfig } from './subscription-config.interface.js';
 import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.constants.js';
 
@@ -15,7 +16,7 @@ import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.consta
  */
 @Injectable()
 export class ResilienceService implements OnModuleDestroy, LazyModuleRefService {
-	private readonly logger = new Logger(ResilienceService.name);
+	private readonly logger: AppLogger;
 
 	// eslint-disable-next-line no-undef
 	private readonly keepaliveTimers = new Map<string, NodeJS.Timeout>();
@@ -30,7 +31,9 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = new AppLogger(undefined, ResilienceService.name);
+	}
 
 	/**
    * Starts keepalive for a connection
@@ -92,7 +95,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		const timer = setTimeout(async () => {
 			try {
 				await callback();
-				this.logger.log(`Reconnection successful for connection: ${connectionId}`);
+				this.logger.info(`Reconnection successful for connection: ${connectionId}`);
 			} catch (error: unknown) {
 				this.logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${error instanceof Error ? error.message : String(error)}`);
 				// Schedule next attempt
@@ -145,7 +148,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 			try {
 				await new Promise(resolve => setTimeout(resolve, this.SubscriptionConfig.resilience.errorRecovery.retryDelay));
 				await recoveryCallback();
-				this.logger.log(`Error recovery successful for connection: ${connectionId}`);
+				this.logger.info(`Error recovery successful for connection: ${connectionId}`);
 				return;
 			} catch (recoveryError: unknown) {
 				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`);
@@ -161,7 +164,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @param shutdownCallback Shutdown callback function
    */
 	public async gracefulShutdown(shutdownCallback: () => Promise<void>): Promise<void> {
-		this.logger.log('Initiating graceful shutdown');
+		this.logger.info('Initiating graceful shutdown');
 
 		// Set shutdown timeout
 		this.shutdownTimeout = setTimeout(() => {
@@ -171,7 +174,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 
 		try {
 			await shutdownCallback();
-			this.logger.log('Graceful shutdown completed');
+			this.logger.info('Graceful shutdown completed');
 		} catch (error: unknown) {
 			this.logger.error(`Shutdown error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
 		} finally {
@@ -216,7 +219,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * Cleanup method called when module is destroyed
    */
 	public onModuleDestroy(): void {
-		this.logger.log('Destroying resilience service');
+		this.logger.info('Destroying resilience service');
 
 		// Clear all timers
 		for (const timer of this.keepaliveTimers.values()) {
@@ -233,6 +236,6 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 			clearTimeout(this.shutdownTimeout);
 		}
 
-		this.logger.log('Resilience service destroyed');
+		this.logger.info('Resilience service destroyed');
 	}
 }

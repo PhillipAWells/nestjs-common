@@ -1,9 +1,10 @@
-import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { HttpAdapterHost , ModuleRef } from '@nestjs/core';
 import { GraphQLSchemaHost } from '@nestjs/graphql';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { WebSocketAuthService } from './websocket-auth.service.js';
 import type { WebSocketServerConfig } from './websocket-config.interface.js';
 
@@ -31,12 +32,14 @@ import type { WebSocketServerConfig } from './websocket-config.interface.js';
  */
 @Injectable()
 export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleDestroy, LazyModuleRefService {
-	private readonly logger = new Logger(GraphQLWebSocketServer.name);
+	private readonly logger: AppLogger;
 	private wsServer: WebSocketServer | null = null;
 	private disposeServer: (() => Promise<void>) | null = null;
 	private serverConfig: WebSocketServerConfig | null = null;
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = new AppLogger(undefined, GraphQLWebSocketServer.name);
+	}
 
 	private get httpAdapterHost(): HttpAdapterHost | undefined {
 		try {
@@ -135,7 +138,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		this.disposeServer = async () => {
 			await cleanup.dispose();
 		};
-		this.logger.log(`GraphQL WebSocket server listening at ${config.path}`);
+		this.logger.info(`GraphQL WebSocket server listening at ${config.path}`);
 	}
 
 	/**
