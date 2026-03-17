@@ -44,6 +44,7 @@ describe('PyroscopeService', () => {
 			error: vi.fn(),
 			warn: vi.fn(),
 			debug: vi.fn(),
+			verbose: vi.fn(),
 		} as unknown as Logger;
 
 		mockMetricsService = {
@@ -83,7 +84,7 @@ describe('PyroscopeService', () => {
 		it('should log when profiling is disabled', () => {
 			service.onModuleInit();
 
-			expect(mockLogger.log).toHaveBeenCalledWith('Pyroscope profiling is disabled');
+			expect(mockLogger.debug).toHaveBeenCalledWith('Pyroscope profiling is disabled');
 			expect(service.isEnabled()).toBe(false);
 		});
 
@@ -181,7 +182,7 @@ describe('PyroscopeService', () => {
 			await serviceWithInit.onModuleDestroy();
 
 			expect(mockClient.stop).toHaveBeenCalled();
-			expect(mockLogger.log).toHaveBeenCalledWith('Pyroscope profiling stopped');
+			expect(mockLogger.verbose).toHaveBeenCalledWith('Pyroscope profiling stopped');
 		});
 
 		it('should log error when stopping pyroscope fails', async () => {

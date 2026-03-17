@@ -58,8 +58,6 @@ export interface MetricsResponse {
 export class MetricsService {
 	private readonly logger: Logger = new Logger(MetricsService.name);
 
-	constructor() {}
-
 	// CPU metrics
 	private cpuSamples = 0;
 

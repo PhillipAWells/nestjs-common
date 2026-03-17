@@ -26,6 +26,17 @@ vi.mock('prom-client', () => ({
 	collectDefaultMetrics: vi.fn(),
 }));
 
+vi.mock('@pawells/nestjs-shared/common', () => ({
+	AppLogger: class {
+		constructor() {}
+		warn = vi.fn();
+		error = vi.fn();
+		info = vi.fn();
+		debug = vi.fn();
+		fatal = vi.fn();
+	},
+}));
+
 import { PrometheusExporter } from '../prometheus.exporter.js';
 
 describe('PrometheusExporter', () => {

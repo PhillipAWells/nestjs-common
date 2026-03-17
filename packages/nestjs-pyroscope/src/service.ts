@@ -115,7 +115,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 */
 	public onModuleInit(): void {
 		if (!this.config.enabled) {
-			this.logger.log('Pyroscope profiling is disabled');
+			this.logger.debug('Pyroscope profiling is disabled');
 			return;
 		}
 
@@ -152,7 +152,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			this.pyroscopeClient = Pyroscope;
 			this.isInitialized = true;
 
-			this.logger.log(`Pyroscope profiling initialized for ${this.config.applicationName}`);
+			this.logger.verbose(`Pyroscope profiling initialized for ${this.config.applicationName}`);
 			this.logger.debug('Profiling configuration:', {
 				degradedActiveProfilesThreshold: this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
 				retryBaseDelayMs: this.config.retryBaseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS,
@@ -176,7 +176,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		if (this.pyroscopeClient && this.isInitialized) {
 			try {
 				await this.pyroscopeClient.stop();
-				this.logger.log('Pyroscope profiling stopped');
+				this.logger.verbose('Pyroscope profiling stopped');
 			} catch (error) {
 				this.logger.error('Error stopping Pyroscope profiling', error);
 			}

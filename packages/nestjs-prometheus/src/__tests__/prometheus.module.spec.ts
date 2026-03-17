@@ -32,6 +32,17 @@ vi.mock('@pawells/nestjs-shared', () => ({
 	},
 }));
 
+vi.mock('@pawells/nestjs-shared/common', () => ({
+	AppLogger: class {
+		constructor() {}
+		warn = vi.fn();
+		error = vi.fn();
+		info = vi.fn();
+		debug = vi.fn();
+		fatal = vi.fn();
+	},
+}));
+
 import { PrometheusModule } from '../prometheus.module.js';
 import { PrometheusExporter } from '../prometheus.exporter.js';
 import { InstrumentationRegistry } from '@pawells/nestjs-shared';

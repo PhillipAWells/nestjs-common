@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/nestjs-shared';
 
 /**
@@ -82,7 +83,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	/**
 	 * Logger instance for warnings and errors
 	 */
-	private readonly logger: Logger;
+	private readonly logger: AppLogger;
 
 	/**
 	 * Normalize label keys to handle consistent ordering regardless of insertion order
@@ -104,7 +105,7 @@ export class PrometheusExporter implements IMetricsExporter {
 		this.instruments = new Map();
 		this.pending = new Map();
 		this.gaugeValues = new Map();
-		this.logger = new Logger(PrometheusExporter.name);
+		this.logger = new AppLogger(undefined, PrometheusExporter.name);
 
 		// Collect Node.js default metrics into our registry
 		collectDefaultMetrics({ register: this.registry });
