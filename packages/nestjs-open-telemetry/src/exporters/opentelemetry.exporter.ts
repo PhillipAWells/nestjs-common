@@ -11,8 +11,8 @@ import {
 	IMetricsExporter,
 	MetricDescriptor,
 	MetricValue,
-	AppLogger,
 } from '@pawells/nestjs-shared';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * OpenTelemetry metrics exporter implementation.
@@ -75,8 +75,8 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	/**
 	 * Initialize the exporter with an empty instrument cache.
 	 */
-	constructor(logger: AppLogger) {
-		this.logger = logger;
+	constructor() {
+		this.logger = new AppLogger(undefined, OpenTelemetryExporter.name);
 		this.instruments = new Map();
 		this.gaugeValues = new Map();
 	}

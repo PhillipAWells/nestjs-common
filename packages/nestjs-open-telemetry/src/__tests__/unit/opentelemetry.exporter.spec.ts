@@ -16,18 +16,23 @@ vi.mock('@opentelemetry/api', () => ({
 			getMeter: vi.fn(() => mockMeter),
 		})),
 	},
+	context: {
+		active: vi.fn(() => ({})),
+		with: vi.fn((ctx, fn) => fn()),
+	},
+	trace: {
+		getSpan: vi.fn(() => null),
+	},
 }));
 
 import { OpenTelemetryExporter } from '../../exporters/opentelemetry.exporter.js';
 
 describe('OpenTelemetryExporter', () => {
 	let exporter: OpenTelemetryExporter;
-	let mockLogger: any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockLogger = { warn: vi.fn() };
-		exporter = new OpenTelemetryExporter(mockLogger);
+		exporter = new OpenTelemetryExporter();
 	});
 
 	afterEach(() => {
