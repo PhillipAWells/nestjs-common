@@ -47,6 +47,9 @@ export class ItemsController {
 	/**
 	 * GET /items/similar?vector=0.1,0.2,0.3&limit=5
 	 * Find the nearest items for a query vector. Public — no auth required.
+	 *
+	 * This method validates parameters synchronously before returning the promise,
+	 * so it does not need to be async.
 	 */
 	@Get('similar')
 	@Public()
