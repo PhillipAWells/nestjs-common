@@ -127,7 +127,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				}
 				default: {
 					// Exhaustiveness check — this block is unreachable if all types are handled
-					const _exhaustive: never = descriptor.type;
+					const _exhaustive: never = descriptor.type as never;
 					throw new Error(`Unhandled metric type: ${_exhaustive}`);
 				}
 			}
@@ -185,7 +185,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				break;
 			default: {
 				// Exhaustiveness check — this block is unreachable if all types are handled
-				const _exhaustive: never = value.descriptor.type;
+				const _exhaustive: never = value.descriptor.type as never;
 				this.logger.warn(`Unhandled metric type: ${_exhaustive}`);
 				break;
 			}
