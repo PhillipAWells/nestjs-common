@@ -14,7 +14,11 @@ import { CACHE_INVALIDATE_METADATA, CacheInvalidateOptions } from '../decorators
  */
 @Injectable()
 export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
-	constructor(private readonly cacheService: GraphQLCacheService) {}
+	private readonly cacheService: GraphQLCacheService;
+
+	constructor(cacheService: GraphQLCacheService) {
+		this.cacheService = cacheService;
+	}
 
 	public generate(_context: ExecutionContext, options?: CacheableOptions): string {
 		const gqlContext = GqlExecutionContext.create(_context);
@@ -36,7 +40,11 @@ export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
  */
 @Injectable()
 export class GraphQLCacheMetadataExtractor implements CacheMetadataExtractor {
-	constructor(private readonly reflector: Reflector) {}
+	private readonly reflector: Reflector;
+
+	constructor(reflector: Reflector) {
+		this.reflector = reflector;
+	}
 
 	public getCacheDisabled(_context: ExecutionContext): boolean {
 		// GraphQL doesn't have a direct equivalent to "cache-disabled"

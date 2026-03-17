@@ -66,7 +66,12 @@ export class GraphQLService {
 	@Traced({ name: 'graphql.formatError' })
 	public formatError(error: Error | Record<string, unknown>, config?: GraphQLConfigOptions): Record<string, unknown> {
 		const errorRecord = error as Record<string, unknown>;
-		const message = error instanceof Error ? error.message : errorRecord['message'] ?? 'Unknown error';
+		let message: string;
+		if (error instanceof Error) {
+			message = error.message;
+		} else {
+			message = (errorRecord['message'] as string | undefined) ?? 'Unknown error';
+		}
 		const extensions = error instanceof Error ? {} : (errorRecord['extensions'] as Record<string, unknown> ?? {});
 
 		const formattedError: Record<string, unknown> = {
