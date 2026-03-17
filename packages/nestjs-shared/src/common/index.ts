@@ -57,7 +57,7 @@ export type { RateLimitConfig, RateLimitDescriptor } from './factories/rate-limi
 
 // Utils - Lazy Module Ref Pattern
 export * from './utils/lazy-getter.types.js';
-export { sanitizeObject, sanitizeXss, MAX_SANITIZE_DEPTH } from './utils/sanitization.utils.js';
+export { escapeNewlines, sanitizeObject, sanitizeXss, MAX_SANITIZE_DEPTH } from './utils/sanitization.utils.js';
 export { getErrorStack, getErrorMessage } from './utils/error.utils.js';
 export { AsyncModuleOptions, createAsyncOptionsProvider, createAsyncProviders } from './utils/module.utils.js';
 
