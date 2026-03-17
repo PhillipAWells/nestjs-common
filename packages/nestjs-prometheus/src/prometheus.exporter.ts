@@ -319,10 +319,9 @@ export class PrometheusExporter implements IMetricsExporter {
 
 				for (const metricValue of pendingValues) {
 					const labelKey = PrometheusExporter.normalizeLabelKey(metricValue.labels);
-					if (accumulatedValues.has(labelKey)) {
-						const existing = accumulatedValues.get(labelKey);
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						existing!.value += metricValue.value;
+					const existing = accumulatedValues.get(labelKey);
+					if (existing) {
+						existing.value += metricValue.value;
 					} else {
 						accumulatedValues.set(labelKey, {
 							labels: metricValue.labels,
