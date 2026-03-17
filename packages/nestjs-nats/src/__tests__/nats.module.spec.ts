@@ -212,7 +212,7 @@ describe('NatsModule', () => {
 		it('should throw for invalid async options (no strategy provided)', () => {
 			expect(() => {
 				NatsModule.forRootAsync({} as NatsModuleAsyncOptions);
-			}).toThrow('Invalid NatsModuleAsyncOptions');
+			}).toThrow('Invalid async module options');
 		});
 	});
 });

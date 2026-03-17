@@ -19,7 +19,7 @@ import {
 	type JetStreamClient,
 	type JetStreamManager,
 } from '@nats-io/jetstream';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
 import type { NatsModuleOptions } from './nats.interfaces.js';
 
@@ -218,14 +218,14 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 				} catch (err) {
 					this.logger.error(
 						`Handler error on subject "${subject}"`,
-						err instanceof Error ? err.stack : String(err),
+						getErrorStack(err),
 					);
 				}
 			}
 		})().catch((err: unknown): void => {
 			this.logger.error(
 				`Subscription iterator closed for subject "${subject}"`,
-				err instanceof Error ? err.stack : String(err),
+				getErrorStack(err),
 			);
 		});
 	}
@@ -248,7 +248,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 						this.logger.warn('NATS reconnecting...');
 						break;
 					case 'error':
-						this.logger.error('NATS async error', (status as { error?: Error }).error?.stack ?? String(status));
+						this.logger.error('NATS async error', getErrorStack((status as { error?: Error }).error ?? status));
 						break;
 					case 'ldm':
 						this.logger.warn('NATS server entering lame duck mode');
@@ -260,7 +260,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		})().catch((err: unknown): void => {
 			this.logger.debug(
 				'NATS status monitor closed',
-				err instanceof Error ? err.message : String(err),
+				getErrorMessage(err),
 			);
 		});
 	}

@@ -1,6 +1,6 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
-import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
+import { createAsyncProviders } from '@pawells/nestjs-shared/common';
 import { NatsService } from './nats.service.js';
 import { NatsSubscriberRegistry } from './subscriber-registry.service.js';
 import { NATS_MODULE_OPTIONS, NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
@@ -75,7 +75,12 @@ export class NatsModule {
 	 * @param isGlobal - Register as a global module (default: false)
 	 */
 	public static forRootAsync(options: NatsModuleAsyncOptions, isGlobal?: boolean): DynamicModule {
-		const asyncProviders = NatsModule.createAsyncProviders(options);
+		const asyncProviders = createAsyncProviders(
+			options,
+			NATS_MODULE_OPTIONS_RAW,
+			(factory: NatsOptionsFactory): NatsModuleOptions | Promise<NatsModuleOptions> =>
+				factory.createNatsOptions(),
+		);
 		return {
 			module: NatsModule,
 			global: isGlobal ?? false,
@@ -92,43 +97,6 @@ export class NatsModule {
 				NatsSubscriberRegistry,
 			],
 			exports: [NatsService, NatsSubscriberRegistry, NATS_MODULE_OPTIONS],
-		};
-	}
-
-	private static createAsyncProviders(options: NatsModuleAsyncOptions): readonly Provider[] {
-		if (options.useExisting !== undefined || options.useFactory !== undefined) {
-			return [NatsModule.createAsyncOptionsProvider(options)];
-		}
-		if (options.useClass !== undefined) {
-			return [
-				NatsModule.createAsyncOptionsProvider(options),
-				{ provide: options.useClass, useClass: options.useClass },
-			];
-		}
-		throw new Error(
-			'Invalid NatsModuleAsyncOptions: must provide useFactory, useClass, or useExisting.',
-		);
-	}
-
-	private static createAsyncOptionsProvider(options: NatsModuleAsyncOptions): Provider<unknown> {
-		if (options.useFactory !== undefined) {
-			return {
-				provide: NATS_MODULE_OPTIONS_RAW,
-				useFactory: options.useFactory,
-				inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
-			};
-		}
-		const factoryToken = options.useExisting ?? options.useClass;
-		if (factoryToken === undefined) {
-			throw new Error(
-				'Invalid NatsModuleAsyncOptions: must provide useFactory, useClass, or useExisting.',
-			);
-		}
-		return {
-			provide: NATS_MODULE_OPTIONS_RAW,
-			useFactory: (factory: NatsOptionsFactory): NatsModuleOptions | Promise<NatsModuleOptions> =>
-				factory.createNatsOptions(),
-			inject: [factoryToken],
 		};
 	}
 }
