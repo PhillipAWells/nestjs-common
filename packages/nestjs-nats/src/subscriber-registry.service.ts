@@ -1,10 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { Msg } from '@nats-io/transport-node';
-import { AppLogger } from '@pawells/nestjs-shared/common';
 import { NATS_SUBSCRIBE_METADATA } from './nats.constants.js';
 import type { NatsSubscribeOptions } from './decorators/subscribe.decorator.js';
 import { NatsService } from './nats.service.js';
+import { NatsLogger } from './logger.js';
 
 /** Minimal interface for provider/controller wrappers returned by DiscoveryService. */
 interface ProviderWrapper {
@@ -27,7 +27,7 @@ interface ProviderWrapper {
  */
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {
-	private readonly logger: AppLogger;
+	private readonly logger: NatsLogger = new NatsLogger(NatsSubscriberRegistry.name);
 	private readonly discoveryService: DiscoveryService;
 	private readonly metadataScanner: MetadataScanner;
 	private readonly reflector: Reflector;
@@ -43,7 +43,6 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 		this.metadataScanner = metadataScanner;
 		this.reflector = reflector;
 		this.natsService = natsService;
-		this.logger = new AppLogger(undefined, NatsSubscriberRegistry.name);
 	}
 
 	public onModuleInit(): void {

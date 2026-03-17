@@ -19,9 +19,9 @@ import {
 	type JetStreamClient,
 	type JetStreamManager,
 } from '@nats-io/jetstream';
-import { AppLogger, getErrorStack, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
 import type { NatsModuleOptions } from './nats.interfaces.js';
+import { NatsLogger } from './logger.js';
 
 /**
  * Injectable service that manages the NATS connection lifecycle and provides
@@ -45,7 +45,7 @@ import type { NatsModuleOptions } from './nats.interfaces.js';
  */
 @Injectable()
 export class NatsService implements OnModuleInit, OnApplicationShutdown {
-	private readonly logger: AppLogger;
+	private readonly logger: NatsLogger = new NatsLogger(NatsService.name);
 	private readonly options: NatsModuleOptions;
 	private connection: NatsConnection | null = null;
 
@@ -54,7 +54,6 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		options: NatsModuleOptions,
 	) {
 		this.options = options;
-		this.logger = new AppLogger(undefined, NatsService.name);
 	}
 
 	/**
@@ -220,14 +219,14 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 				} catch (err) {
 					this.logger.error(
 						`Handler error on subject "${subject}"`,
-						getErrorStack(err),
+						err instanceof Error ? err.stack : String(err),
 					);
 				}
 			}
 		})().catch((err: unknown): void => {
 			this.logger.error(
 				`Subscription iterator closed for subject "${subject}"`,
-				getErrorStack(err),
+				err instanceof Error ? err.stack : String(err),
 			);
 		});
 	}
@@ -251,7 +250,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 						break;
 					case 'error': {
 						const errorStatus = status as { error?: Error };
-						this.logger.error('NATS async error', getErrorStack(errorStatus.error ?? status));
+						this.logger.error('NATS async error', errorStatus.error instanceof Error ? errorStatus.error.stack : String(errorStatus.error ?? status));
 						break;
 					}
 					case 'ldm':
@@ -266,7 +265,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		})().catch((err: unknown): void => {
 			this.logger.debug(
 				'NATS status monitor closed',
-				getErrorMessage(err),
+				err instanceof Error ? err.message : String(err),
 			);
 		});
 	}

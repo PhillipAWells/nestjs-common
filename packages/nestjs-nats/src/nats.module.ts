@@ -1,6 +1,6 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import type { DynamicModule, InjectionToken, OptionalFactoryDependency, Provider, Type } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
-import { createAsyncProviders } from '@pawells/nestjs-shared/common';
 import { NatsService } from './nats.service.js';
 import { NatsSubscriberRegistry } from './subscriber-registry.service.js';
 import { NATS_MODULE_OPTIONS, NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
@@ -18,6 +18,60 @@ function sanitizeOptions(options: NatsModuleOptions): Partial<NatsModuleOptions>
 	return Object.fromEntries(
 		Object.entries(options).filter(([key]) => !SENSITIVE_OPTION_KEYS.includes(key as keyof NatsModuleOptions)),
 	) as Partial<NatsModuleOptions>;
+}
+
+/** Generic shape for forRootAsync() options. */
+interface AsyncModuleOptions<T, F = unknown> {
+	useFactory?: (...args: unknown[]) => T | Promise<T>;
+	useClass?: Type<F>;
+	useExisting?: Type<F>;
+	inject?: Array<InjectionToken | OptionalFactoryDependency>;
+}
+
+/** Creates the single async options provider for a forRootAsync() module. */
+function createAsyncOptionsProvider<T, F>(
+	options: AsyncModuleOptions<T, F>,
+	token: InjectionToken,
+	factoryFn: (factory: F) => T | Promise<T>,
+): Provider<T> {
+	if (options.useFactory !== undefined) {
+		return {
+			provide: token,
+			useFactory: options.useFactory,
+			inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
+		};
+	}
+	const factoryToken = options.useExisting ?? options.useClass;
+	if (factoryToken === undefined) {
+		throw new Error(
+			'Invalid async module options: must specify useFactory, useClass, or useExisting.',
+		);
+	}
+	return {
+		provide: token,
+		useFactory: factoryFn,
+		inject: [factoryToken],
+	};
+}
+
+/** Creates the full provider array for a forRootAsync() module. */
+function createAsyncProviders<T, F>(
+	options: AsyncModuleOptions<T, F>,
+	token: InjectionToken,
+	factoryFn: (factory: F) => T | Promise<T>,
+): Provider[] {
+	if (options.useExisting !== undefined || options.useFactory !== undefined) {
+		return [createAsyncOptionsProvider(options, token, factoryFn)];
+	}
+	if (options.useClass !== undefined) {
+		return [
+			createAsyncOptionsProvider(options, token, factoryFn),
+			{ provide: options.useClass, useClass: options.useClass },
+		];
+	}
+	throw new Error(
+		'Invalid async module options: must specify useFactory, useClass, or useExisting.',
+	);
 }
 
 /**
