@@ -28,10 +28,10 @@ const DEFAULT_SEARCH_LIMIT = 10;
 export class ItemsService {
 	private static readonly COLLECTION = 'items';
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(private readonly moduleRef: ModuleRef) {}
 
-	private get Qdrant(): QdrantService {
-		return this.Module.get(QdrantService, { strict: false });
+	private get qdrant(): QdrantService {
+		return this.moduleRef.get(QdrantService, { strict: false });
 	}
 
 	/**
@@ -40,7 +40,7 @@ export class ItemsService {
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'findSimilar' } })
 	public async findSimilar(vector: number[], limit = DEFAULT_SEARCH_LIMIT): Promise<Item[]> {
-		const results = await this.Qdrant
+		const results = await this.qdrant
 			.collection(ItemsService.COLLECTION)
 			.search({ vector, limit, with_payload: true });
 
@@ -56,7 +56,7 @@ export class ItemsService {
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'upsertItem' } })
 	public async upsertItem(item: StoredItem): Promise<void> {
-		await this.Qdrant
+		await this.qdrant
 			.collection(ItemsService.COLLECTION)
 			.upsert({
 				points: [{
@@ -73,7 +73,7 @@ export class ItemsService {
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'deleteItem' } })
 	public async deleteItem(id: string): Promise<void> {
-		await this.Qdrant
+		await this.qdrant
 			.collection(ItemsService.COLLECTION)
 			.delete({ points: [id] });
 	}
