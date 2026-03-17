@@ -267,7 +267,6 @@ describe('NatsService', () => {
 
 	describe('monitorStatus', () => {
 		it('should log disconnect status events', async () => {
-			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
 			const statusIterator = {
 				async *[Symbol.asyncIterator]() {
 					yield { type: 'disconnect' };
@@ -277,17 +276,17 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
-			await new Promise(resolve => setTimeout(resolve, 10));
+			await new Promise(resolve => setImmediate(resolve));
 
 			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS disconnected');
 			loggerWarnSpy.mockRestore();
 		});
 
 		it('should log reconnecting status events', async () => {
-			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
 			const statusIterator = {
 				async *[Symbol.asyncIterator]() {
 					yield { type: 'reconnecting' };
@@ -297,17 +296,17 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
-			await new Promise(resolve => setTimeout(resolve, 10));
+			await new Promise(resolve => setImmediate(resolve));
 
 			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS reconnecting...');
 			loggerWarnSpy.mockRestore();
 		});
 
 		it('should log reconnect status events', async () => {
-			const loggerLogSpy = vi.spyOn(service['logger'], 'log');
 			const statusIterator = {
 				async *[Symbol.asyncIterator]() {
 					yield { type: 'reconnect' };
@@ -317,17 +316,17 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
+			const loggerLogSpy = vi.spyOn(newService['logger'], 'log');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
-			await new Promise(resolve => setTimeout(resolve, 10));
+			await new Promise(resolve => setImmediate(resolve));
 
 			expect(loggerLogSpy).toHaveBeenCalledWith('NATS reconnected');
 			loggerLogSpy.mockRestore();
 		});
 
 		it('should log error status events with error details', async () => {
-			const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
 			const testError = new Error('Connection error');
 			const statusIterator = {
 				async *[Symbol.asyncIterator]() {
@@ -338,17 +337,17 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
+			const loggerErrorSpy = vi.spyOn(newService['logger'], 'error');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
-			await new Promise(resolve => setTimeout(resolve, 10));
+			await new Promise(resolve => setImmediate(resolve));
 
 			expect(loggerErrorSpy).toHaveBeenCalledWith('NATS async error', expect.stringContaining('Error'));
 			loggerErrorSpy.mockRestore();
 		});
 
 		it('should log ldm status events', async () => {
-			const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
 			const statusIterator = {
 				async *[Symbol.asyncIterator]() {
 					yield { type: 'ldm' };
@@ -358,10 +357,11 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
-			await new Promise(resolve => setTimeout(resolve, 10));
+			await new Promise(resolve => setImmediate(resolve));
 
 			expect(loggerWarnSpy).toHaveBeenCalledWith('NATS server entering lame duck mode');
 			loggerWarnSpy.mockRestore();

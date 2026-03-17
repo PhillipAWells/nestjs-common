@@ -3,11 +3,12 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { QdrantModule } from '../qdrant.module.js';
 import { QdrantService } from '../qdrant.service.js';
 import { QDRANT_CLIENT_TOKEN, QDRANT_MODULE_OPTIONS, getQdrantClientToken, getQdrantModuleOptionsToken } from '../qdrant.constants.js';
-import type { QdrantModuleOptions } from '../qdrant.interfaces.js';
+import type { QdrantModuleOptions, QdrantOptionsFactory } from '../qdrant.interfaces.js';
 
 describe('QdrantModule', () => {
 	const mockQdrantOptions: QdrantModuleOptions = {
@@ -143,24 +144,25 @@ describe('QdrantModule', () => {
 	});
 
 	describe('forRootAsync with useExisting', () => {
-		class TestOptionsFactory {
+		class TestOptionsFactory implements QdrantOptionsFactory {
 			public createQdrantOptions(): QdrantModuleOptions {
 				return mockQdrantOptions;
 			}
 		}
 
+		@Module({
+			providers: [TestOptionsFactory],
+			exports: [TestOptionsFactory],
+		})
+		class TestOptionsModule {}
+
 		let module: TestingModule;
 
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				providers: [
-					{
-						provide: TestOptionsFactory,
-						useValue: new TestOptionsFactory(),
-					},
-				],
 				imports: [
 					QdrantModule.forRootAsync({
+						imports: [TestOptionsModule],
 						useExisting: TestOptionsFactory,
 					}),
 				],

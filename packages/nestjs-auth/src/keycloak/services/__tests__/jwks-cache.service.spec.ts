@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwksCacheService } from '../jwks-cache.service.js';
 import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak.constants.js';

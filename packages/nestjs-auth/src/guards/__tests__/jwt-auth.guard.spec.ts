@@ -1,4 +1,3 @@
-import { Test } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -20,24 +19,11 @@ describe('JwtAuthGuard', () => {
 		mockReflector = {
 			getAllAndOverride: vi.fn(),
 		};
-	});
 
-	beforeEach(async () => {
-		const module = await Test.createTestingModule({
-			providers: [
-				JwtAuthGuard,
-				{
-					provide: KeycloakTokenValidationService,
-					useValue: mockTokenValidationService,
-				},
-				{
-					provide: Reflector,
-					useValue: mockReflector,
-				},
-			],
-		}).compile();
-
-		guard = module.get(JwtAuthGuard);
+		guard = new JwtAuthGuard(
+			mockReflector as Reflector,
+			mockTokenValidationService as KeycloakTokenValidationService,
+		);
 	});
 
 	describe('canActivate', () => {
@@ -47,6 +33,10 @@ describe('JwtAuthGuard', () => {
 			mockContext = {
 				getHandler: vi.fn(),
 				getClass: vi.fn(),
+				getType: vi.fn().mockReturnValue('http'),
+				switchToHttp: vi.fn().mockReturnValue({
+					getRequest: vi.fn().mockReturnValue({}),
+				}),
 			};
 		});
 

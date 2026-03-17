@@ -121,7 +121,7 @@ describe('RateLimitService', () => {
 	});
 
 	describe('setOperationConfig', () => {
-		it('should set custom config for operation', () => {
+		it('should set custom config for operation', async () => {
 			const operation = 'mutation';
 			const config = {
 				windowMs: 30000,
@@ -131,7 +131,7 @@ describe('RateLimitService', () => {
 			service.setOperationConfig(operation, config);
 
 			// Verify by checking limit
-			const result = service.getStatus('test', operation);
+			const result = await service.getStatus('test', operation);
 			expect(result).toBeNull(); // No requests made yet
 		});
 	});
@@ -155,8 +155,8 @@ describe('RateLimitService', () => {
 	});
 
 	describe('getStatus', () => {
-		it('should return null for unknown client', () => {
-			const result = service.getStatus('unknown');
+		it('should return null for unknown client', async () => {
+			const result = await service.getStatus('unknown');
 			expect(result).toBeNull();
 		});
 

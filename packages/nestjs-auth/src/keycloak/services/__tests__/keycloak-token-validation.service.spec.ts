@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { JwtService } from '@nestjs/jwt';
 import { KeycloakTokenValidationService } from '../keycloak-token-validation.service.js';
 import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak.constants.js';
@@ -66,6 +66,10 @@ describe('KeycloakTokenValidationService', () => {
 		}).compile();
 
 		service = module.get(KeycloakTokenValidationService);
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('validateToken - Online mode', () => {
@@ -140,8 +144,23 @@ describe('KeycloakTokenValidationService', () => {
 	});
 
 	describe('validateToken - Offline mode', () => {
+		let offlineService: KeycloakTokenValidationService;
+
 		beforeEach(() => {
-			options.validationMode = 'offline';
+			const offlineOptions: KeycloakModuleOptions = {
+				authServerUrl: 'http://keycloak:8080',
+				realm: 'myrealm',
+				clientId: 'my-client',
+				clientSecret: 'secret',
+				validationMode: 'offline',
+				issuer: 'http://keycloak:8080/realms/myrealm',
+			};
+
+			offlineService = new KeycloakTokenValidationService(
+				offlineOptions,
+				mockJwtService as JwtService,
+				mockJwksCacheService as JwksCacheService,
+			);
 		});
 
 		it('should return valid result for valid JWT with correct issuer and audience', async () => {
@@ -157,7 +176,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			(mockJwtService.verify as Mock).mockReturnValue(claims);
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(true);
 			expect(result.claims).toEqual(claims);
@@ -178,7 +197,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			(mockJwtService.verify as Mock).mockReturnValue(expiredClaims);
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('token_expired');
@@ -199,7 +218,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			(mockJwtService.verify as Mock).mockReturnValue(badClaims);
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('invalid_issuer');
@@ -220,7 +239,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			(mockJwtService.verify as Mock).mockReturnValue(badClaims);
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('invalid_audience');
@@ -240,7 +259,7 @@ describe('KeycloakTokenValidationService', () => {
 				throw new Error('Invalid signature');
 			});
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('jwt_verification_failed');
@@ -254,7 +273,7 @@ describe('KeycloakTokenValidationService', () => {
 				payload: createTestClaims(),
 			});
 
-			const result = await service.validateToken(token);
+			const result = await offlineService.validateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('missing_kid');

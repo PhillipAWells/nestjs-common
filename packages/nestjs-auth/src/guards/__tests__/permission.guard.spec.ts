@@ -1,4 +1,3 @@
-import { Test } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -9,22 +8,12 @@ describe('PermissionGuard', () => {
 	let guard: PermissionGuard;
 	let mockReflector: Partial<Reflector>;
 
-	beforeEach(async () => {
+	beforeEach(() => {
 		mockReflector = {
 			getAllAndOverride: vi.fn(),
 		};
 
-		const module = await Test.createTestingModule({
-			providers: [
-				PermissionGuard,
-				{
-					provide: Reflector,
-					useValue: mockReflector,
-				},
-			],
-		}).compile();
-
-		guard = module.get(PermissionGuard);
+		guard = new PermissionGuard(mockReflector as Reflector);
 	});
 
 	describe('canActivate', () => {
@@ -34,6 +23,10 @@ describe('PermissionGuard', () => {
 			mockContext = {
 				getHandler: vi.fn(),
 				getClass: vi.fn(),
+				getType: vi.fn().mockReturnValue('http'),
+				switchToHttp: vi.fn().mockReturnValue({
+					getRequest: vi.fn().mockReturnValue({}),
+				}),
 			};
 		});
 
