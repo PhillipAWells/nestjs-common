@@ -78,7 +78,7 @@ export interface IProfileContext {
 	functionName: string;
 	className?: string;
 	methodName?: string;
-	startTime: number;
+	startTime?: number;
 	endTime?: number;
 	duration?: number;
 	error?: Error;

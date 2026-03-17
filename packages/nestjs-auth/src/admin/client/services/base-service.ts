@@ -1,6 +1,6 @@
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import type { Logger } from '@pawells/logger';
-import { Logger as NestLogger } from '@nestjs/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import type { RetryConfig } from '../utils/index.js';
 import { withRetry } from '../utils/index.js';
 import {
@@ -25,15 +25,15 @@ const HTTP_STATUS_REQUEST_TIMEOUT = 408;
  * Base service class for Keycloak client services
  */
 export abstract class BaseService {
-	private readonly nestLogger: NestLogger;
+	private readonly logger: AppLogger;
 
 	constructor(
 		protected adminClient: KcAdminClient,
 		protected grantedScopes: ReadonlySet<KeycloakAdminScope>,
-		protected logger?: Logger,
+		protected loggerConfig?: Logger,
 		protected retryConfig?: RetryConfig,
 	) {
-		this.nestLogger = new NestLogger(this.constructor.name);
+		this.logger = new AppLogger(undefined, this.constructor.name);
 	}
 
 	/**
@@ -44,18 +44,12 @@ export abstract class BaseService {
 	 */
 	protected requireScope(scope: KeycloakAdminScope): void {
 		if (!this.grantedScopes.has(scope)) {
-			this.nestLogger.warn(
-				`Keycloak admin scope blocked: '${scope}' not granted`,
-				{ scope, granted: [...this.grantedScopes] },
-			);
+			this.logger.warn(`Keycloak admin scope blocked: '${scope}' not granted`);
 			throw new KeycloakAdminScopeError(scope);
 		}
 
 		if (scope.endsWith(':write')) {
-			this.nestLogger.log(
-				`Keycloak admin mutation: scope '${scope}' invoked`,
-				{ scope },
-			);
+			this.logger.info(`Keycloak admin mutation: scope '${scope}' invoked`);
 		}
 	}
 
@@ -69,7 +63,7 @@ export abstract class BaseService {
 		const config = {
 			...this.retryConfig,
 			...options,
-			...(this.logger && { logger: this.logger }),
+			...(this.loggerConfig && { logger: this.loggerConfig }),
 		};
 
 		const result = await withRetry(fn, config);

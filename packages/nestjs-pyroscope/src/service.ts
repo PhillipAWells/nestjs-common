@@ -276,7 +276,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		context.endTime = Date.now();
-		context.duration = context.endTime - startContext.startTime;
+		context.duration = context.endTime - (startContext.startTime ?? context.endTime);
 
 		// Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs
 
