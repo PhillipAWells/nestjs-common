@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
-import { Logger } from '@nestjs/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { BaseService } from '../base-service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
 import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
@@ -41,8 +41,8 @@ describe('BaseService', () => {
 		);
 
 		// Spy on the logger to verify calls
-		vi.spyOn(Logger.prototype, 'warn');
-		vi.spyOn(Logger.prototype, 'log');
+		vi.spyOn(AppLogger.prototype, 'warn');
+		vi.spyOn(AppLogger.prototype, 'info');
 	});
 
 	describe('requireScope', () => {
@@ -69,7 +69,7 @@ describe('BaseService', () => {
 		});
 
 		it('should log a warning when scope check fails', () => {
-			const warnSpy = vi.spyOn(Logger.prototype, 'warn');
+			const warnSpy = vi.spyOn(AppLogger.prototype, 'warn');
 			try {
 				service.testRequireScope('roles:write');
 			} catch {
@@ -79,22 +79,20 @@ describe('BaseService', () => {
 		});
 
 		it('should log an audit message for write scopes', () => {
-			const logSpy = vi.spyOn(Logger.prototype, 'log');
+			const infoSpy = vi.spyOn(AppLogger.prototype, 'info');
 			service.testRequireScope('users:write');
-			expect(logSpy).toHaveBeenCalledWith(
+			expect(infoSpy).toHaveBeenCalledWith(
 				expect.stringContaining('Keycloak admin mutation'),
-				expect.any(Object),
 			);
 		});
 
 		it('should not log an audit message for read scopes', () => {
-			const logSpy = vi.spyOn(Logger.prototype, 'log');
-			logSpy.mockClear();
+			const infoSpy = vi.spyOn(AppLogger.prototype, 'info');
+			infoSpy.mockClear();
 			service.testRequireScope('users:read');
-			// Read scope check should not log
-			expect(logSpy).not.toHaveBeenCalledWith(
+			// Read scope check should not log audit message
+			expect(infoSpy).not.toHaveBeenCalledWith(
 				expect.stringContaining('Keycloak admin mutation'),
-				expect.any(Object),
 			);
 		});
 	});

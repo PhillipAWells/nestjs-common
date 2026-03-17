@@ -36,7 +36,7 @@ export const DEFAULT_CONTEXT_OPTIONS: ContextOptions = {
  *
  * @example
  * ```typescript
- * const contextType = detectContextType(ctx);
+ * const contextType = DetectContextType(ctx);
  * if (contextType === 'graphql') {
  *   // Handle GraphQL context
  * }
