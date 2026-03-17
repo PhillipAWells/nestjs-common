@@ -6,6 +6,18 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 
 /**
+ * Extract error message from unknown error type.
+ * Handles both Error instances and non-Error types consistently.
+ *
+ * @internal
+ * @param error - The error to extract a message from
+ * @returns The error message as a string
+ */
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+/**
  * Non-injectable service that wraps a QdrantClient and pre-binds a collection name.
  *
  * This service is not directly injectable; instead, obtain instances via
@@ -32,9 +44,9 @@ import { QdrantClient } from '@qdrant/js-client-rest';
  * ```
  */
 export class QdrantCollectionService {
-	private readonly client: QdrantClient;
+	private readonly client!: QdrantClient;
 
-	public readonly collectionName: string;
+	public readonly collectionName!: string;
 
 	constructor(client: QdrantClient, collectionName: string) {
 		this.client = client;
@@ -69,8 +81,7 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.search(this.collectionName, params);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			throw new Error(`Qdrant search failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
+			throw new Error(`Qdrant search failed on collection "${this.collectionName}": ${getErrorMessage(error)}`, { cause: error });
 		}
 	}
 
@@ -103,8 +114,7 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.upsert(this.collectionName, params);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			throw new Error(`Qdrant upsert failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
+			throw new Error(`Qdrant upsert failed on collection "${this.collectionName}": ${getErrorMessage(error)}`, { cause: error });
 		}
 	}
 
@@ -135,8 +145,7 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.delete(this.collectionName, params);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			throw new Error(`Qdrant delete failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
+			throw new Error(`Qdrant delete failed on collection "${this.collectionName}": ${getErrorMessage(error)}`, { cause: error });
 		}
 	}
 
@@ -158,8 +167,7 @@ export class QdrantCollectionService {
 		try {
 			return await this.client.getCollection(this.collectionName);
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			throw new Error(`Qdrant getCollection failed on collection "${this.collectionName}": ${errorMessage}`, { cause: error });
+			throw new Error(`Qdrant getCollection failed on collection "${this.collectionName}": ${getErrorMessage(error)}`, { cause: error });
 		}
 	}
 }
