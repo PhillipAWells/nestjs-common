@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Interface for DataLoader batch loading functions
@@ -76,7 +76,7 @@ export class DataLoaderFactory implements LazyModuleRefService {
 
 					return results;
 				} catch (error) {
-					this.logger.error(`Batch loading failed${error instanceof Error ? `: ${error.message}` : ''}`);
+					this.logger.error(`Batch loading failed: ${getErrorMessage(error)}`);
 					// Return errors for all keys
 					return keys.map(() => error as Error);
 				}
