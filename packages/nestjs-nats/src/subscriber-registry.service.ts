@@ -27,7 +27,7 @@ interface ProviderWrapper {
  */
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {
-	private readonly logger: NatsLogger = new NatsLogger(NatsSubscriberRegistry.name);
+	private readonly logger: NatsLogger;
 	private readonly discoveryService: DiscoveryService;
 	private readonly metadataScanner: MetadataScanner;
 	private readonly reflector: Reflector;
@@ -39,6 +39,7 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 		reflector: Reflector,
 		natsService: NatsService,
 	) {
+		this.logger = new NatsLogger(NatsSubscriberRegistry.name);
 		this.discoveryService = discoveryService;
 		this.metadataScanner = metadataScanner;
 		this.reflector = reflector;
