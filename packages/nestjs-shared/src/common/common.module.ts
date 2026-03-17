@@ -17,6 +17,7 @@ import { SetRequestPropertyDecoratorLogger } from './decorators/request-property
 import { InstrumentationRegistryHolder } from './decorators/instrument.decorator.js';
 import { ConfigService } from '../config/index.js';
 import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
+import { getErrorMessage } from './utils/error.utils.js';
 
 /**
  * Common Module.
@@ -157,7 +158,7 @@ Ensure your AppModule imports ConfigModule before CommonModule:
   export class AppModule {}
 
 Importing in the wrong order will cause services to fail during initialization.
-Error details: ${error instanceof Error ? error.message : String(error)}
+Error details: ${getErrorMessage(error)}
 			`.trim();
 
 			throw new Error(errorMessage, { cause: error });

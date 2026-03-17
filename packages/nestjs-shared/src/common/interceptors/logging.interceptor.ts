@@ -11,6 +11,7 @@ import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { escapeNewlines } from '../utils/sanitization.utils.js';
+import { getErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Logging Interceptor.
@@ -68,7 +69,7 @@ export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService
 			catchError((error: unknown) => {
 				const duration = Date.now() - startTime;
 				this.Logger.error(
-					`Request failed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${duration}ms - ${error instanceof Error ? error.message : String(error)}`,
+					`Request failed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${duration}ms - ${getErrorMessage(error)}`,
 					'LoggingInterceptor',
 				);
 				return throwError(() => error);
