@@ -9,6 +9,8 @@ import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 @Injectable()
 export class KeycloakHealthIndicator extends HealthIndicator implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get KeycloakAdminService(): KeycloakAdminService {
 		return this.Module.get(KeycloakAdminService);
 	}
@@ -17,8 +19,9 @@ export class KeycloakHealthIndicator extends HealthIndicator implements LazyModu
 		return this.Module.get(KEYCLOAK_ADMIN_CONFIG_TOKEN, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(module: ModuleRef) {
 		super();
+		this.Module = module;
 	}
 
 	public check(key: string): HealthIndicatorResult {

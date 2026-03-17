@@ -25,6 +25,8 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 
 	private grantedScopes: ReadonlySet<KeycloakAdminScope> = new Set(KEYCLOAK_DEFAULT_SCOPES) as ReadonlySet<KeycloakAdminScope>;
 
+	public readonly Module: ModuleRef;
+
 	public get Config(): KeycloakAdminConfig {
 		return this.Module.get(KEYCLOAK_ADMIN_CONFIG_TOKEN, { strict: false });
 	}
@@ -33,7 +35,8 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 		return this.Module.get(AppLogger);
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(module: ModuleRef) {
+		this.Module = module;
 		this.logger = new AppLogger(undefined, KeycloakAdminService.name);
 	}
 
