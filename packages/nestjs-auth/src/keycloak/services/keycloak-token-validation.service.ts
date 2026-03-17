@@ -93,7 +93,7 @@ export class KeycloakTokenValidationService {
 
 	private async validateTokenOnline(token: string): Promise<TokenValidationResult> {
 		try {
-			const introspectionUrl = `${this.options.authServerUrl}/protocol/openid-connect/token/introspect`;
+			const introspectionUrl = `${this.options.authServerUrl}/realms/${this.options.realm}/protocol/openid-connect/token/introspect`;
 
 			const body = new URLSearchParams({
 				token,
