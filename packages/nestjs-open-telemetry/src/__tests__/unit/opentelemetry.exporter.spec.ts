@@ -22,10 +22,12 @@ import { OpenTelemetryExporter } from '../../exporters/opentelemetry.exporter.js
 
 describe('OpenTelemetryExporter', () => {
 	let exporter: OpenTelemetryExporter;
+	let mockLogger: any;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		exporter = new OpenTelemetryExporter();
+		mockLogger = { warn: vi.fn() };
+		exporter = new OpenTelemetryExporter(mockLogger);
 	});
 
 	afterEach(() => {

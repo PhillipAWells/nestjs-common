@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
 	Counter,
 	Histogram,
@@ -11,6 +11,7 @@ import {
 	IMetricsExporter,
 	MetricDescriptor,
 	MetricValue,
+	AppLogger,
 } from '@pawells/nestjs-shared';
 
 /**
@@ -67,14 +68,15 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	private readonly gaugeValues: Map<string, number>;
 
 	/**
-	 * NestJS Logger instance for diagnostics and error reporting.
+	 * Application logger instance for diagnostics and error reporting.
 	 */
-	private readonly logger: Logger = new Logger(OpenTelemetryExporter.name);
+	private readonly logger: AppLogger;
 
 	/**
 	 * Initialize the exporter with an empty instrument cache.
 	 */
-	constructor() {
+	constructor(logger: AppLogger) {
+		this.logger = logger;
 		this.instruments = new Map();
 		this.gaugeValues = new Map();
 	}
