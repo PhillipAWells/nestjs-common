@@ -43,6 +43,10 @@ import { MetricsController } from './controllers/metrics.controller.js';
 	controllers: [MetricsController],
 })
 export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
+	private readonly exporter: PrometheusExporter;
+
+	private readonly registry: InstrumentationRegistry;
+
 	/**
 	 * Create a global PrometheusModule with automatic registration
 	 *
@@ -66,10 +70,10 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 		};
 	}
 
-	constructor(
-		private readonly exporter: PrometheusExporter,
-		private readonly registry: InstrumentationRegistry,
-	) {}
+	constructor(exporter: PrometheusExporter, registry: InstrumentationRegistry) {
+		this.exporter = exporter;
+		this.registry = registry;
+	}
 
 	/**
 	 * Initialize the module and register the Prometheus exporter
