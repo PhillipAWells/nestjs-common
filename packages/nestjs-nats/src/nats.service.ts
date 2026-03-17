@@ -46,12 +46,14 @@ import type { NatsModuleOptions } from './nats.interfaces.js';
 @Injectable()
 export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	private readonly logger: AppLogger;
+	private readonly options: NatsModuleOptions;
 	private connection: NatsConnection | null = null;
 
 	constructor(
 		@Inject(NATS_MODULE_OPTIONS_RAW)
-		private readonly options: NatsModuleOptions,
+		options: NatsModuleOptions,
 	) {
+		this.options = options;
 		this.logger = new AppLogger(undefined, NatsService.name);
 	}
 
@@ -247,14 +249,18 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 					case 'reconnecting':
 						this.logger.warn('NATS reconnecting...');
 						break;
-					case 'error':
-						this.logger.error('NATS async error', getErrorStack((status as { error?: Error }).error ?? status));
+					case 'error': {
+						const errorStatus = status as { error?: Error };
+						this.logger.error('NATS async error', getErrorStack(errorStatus.error ?? status));
 						break;
+					}
 					case 'ldm':
 						this.logger.warn('NATS server entering lame duck mode');
 						break;
-					default:
-						this.logger.debug(`NATS status: ${(status as { type: string; }).type}`);
+					default: {
+						const defaultStatus = status as Record<string, unknown>;
+						this.logger.debug(`NATS status: ${defaultStatus.type}`);
+					}
 				}
 			}
 		})().catch((err: unknown): void => {

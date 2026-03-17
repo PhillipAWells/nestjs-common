@@ -28,13 +28,21 @@ interface ProviderWrapper {
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {
 	private readonly logger: AppLogger;
+	private readonly discoveryService: DiscoveryService;
+	private readonly metadataScanner: MetadataScanner;
+	private readonly reflector: Reflector;
+	private readonly natsService: NatsService;
 
 	constructor(
-		private readonly discoveryService: DiscoveryService,
-		private readonly metadataScanner: MetadataScanner,
-		private readonly reflector: Reflector,
-		private readonly natsService: NatsService,
+		discoveryService: DiscoveryService,
+		metadataScanner: MetadataScanner,
+		reflector: Reflector,
+		natsService: NatsService,
 	) {
+		this.discoveryService = discoveryService;
+		this.metadataScanner = metadataScanner;
+		this.reflector = reflector;
+		this.natsService = natsService;
 		this.logger = new AppLogger(undefined, NatsSubscriberRegistry.name);
 	}
 

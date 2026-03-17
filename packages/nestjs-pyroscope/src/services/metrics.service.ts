@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
 	METRICS_STATUS_CLIENT_ERROR_MIN,
@@ -57,7 +56,7 @@ export interface MetricsResponse {
  */
 @Injectable()
 export class MetricsService {
-	private readonly logger: AppLogger;
+	private readonly logger: Logger;
 
 	// CPU metrics
 	private cpuSamples = 0;
@@ -79,7 +78,7 @@ export class MetricsService {
 	private totalResponseTime = 0;
 
 	constructor() {
-		this.logger = new AppLogger(undefined, MetricsService.name);
+		this.logger = new Logger(MetricsService.name);
 	}
 
 	/**

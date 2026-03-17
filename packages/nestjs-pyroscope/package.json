@@ -27,7 +27,6 @@
 		"rxjs": ">=7.0.0"
 	},
 	"dependencies": {
-		"@pawells/nestjs-shared": "workspace:*",
 		"@pyroscope/nodejs": "^0.4.10"
 	},
 	"engines": {
