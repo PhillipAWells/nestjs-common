@@ -84,7 +84,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Check if an error is retryable
 	 */
-	public isRetryable(error: any): boolean {
+	public isRetryable(error: unknown): boolean {
 		const category = this.categorizeError(error);
 		return category.retryable;
 	}
@@ -92,9 +92,10 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Categorize an error and determine recovery strategy
 	 */
-	public categorizeError(error: any): ErrorCategory {
-		const errorMessage = error?.message ?? String(error);
-		const errorCode = error?.code ?? error?.status;
+	public categorizeError(error: unknown): ErrorCategory {
+		const err = error as Record<string, any>;
+		const errorMessage = err?.message ?? String(error);
+		const errorCode = err?.code ?? err?.status;
 
 		// Node.js network error codes are always transient (checked first before pattern matching)
 		const NODE_TRANSIENT_CODES = new Set(['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN']);
@@ -277,7 +278,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log error recovery attempt
 	 */
-	public logRecoveryAttempt(error: any, attempt: number, maxAttempts: number): void {
+	public logRecoveryAttempt(error: unknown, attempt: number, maxAttempts: number): void {
 		const category = this.categorizeError(error);
 		this.Logger.info('Error recovery attempt', {
 			attempt,
@@ -285,84 +286,95 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 			errorType: category.type,
 			strategy: category.strategy,
 			backoffMs: category.backoffMs,
-			error: error?.message ?? String(error),
+			error: (error as Record<string, any>)?.message ?? String(error),
 		});
 	}
 
 	/**
 	 * Log successful recovery
 	 */
-	public logRecoverySuccess(error: any, attempts: number): void {
+	public logRecoverySuccess(error: unknown, attempts: number): void {
 		this.Logger.info('Error recovery successful', {
 			attempts,
-			error: error?.message ?? String(error),
+			error: (error as Record<string, any>)?.message ?? String(error),
 		});
 	}
 
 	/**
 	 * Log failed recovery
 	 */
-	public logRecoveryFailed(error: any, attempts: number): void {
+	public logRecoveryFailed(error: unknown, attempts: number): void {
+		const err = error as Record<string, any>;
 		const category = this.categorizeError(error);
 		this.Logger.error('Error recovery failed', undefined, undefined, {
 			attempts,
 			errorType: category.type,
 			retryable: category.retryable,
-			error: error?.message ?? String(error),
+			error: err?.message ?? String(error),
 		});
 	}
 
-	private isNetworkError(error: any): boolean {
+	private isNetworkError(error: unknown): boolean {
+		const err = error as Record<string, any>;
 		const networkCodes = ['ECONNREFUSED', 'ENOTFOUND', 'ECONNRESET', 'EPIPE'];
-		return networkCodes.includes(error?.code) || /\bnetwork\b/i.test(error?.message) || /\bconnection\b/i.test(error?.message);
+		return networkCodes.includes(err?.code) || /\bnetwork\b/i.test(err?.message) || /\bconnection\b/i.test(err?.message);
 	}
 
-	private isTimeoutError(error: any): boolean {
-		return error?.code === 'ETIMEDOUT' ||
-			/\btimeout\b|\btimed out\b/i.test(error?.message);
+	private isTimeoutError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.code === 'ETIMEDOUT' ||
+			/\btimeout\b|\btimed out\b/i.test(err?.message);
 	}
 
-	private isDatabaseError(error: any): boolean {
-		return /\bconnection\b/i.test(error?.message) &&
+	private isDatabaseError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return /\bconnection\b/i.test(err?.message) &&
 			(
-				/\bdatabase\b/i.test(error?.message) ||
-				/\bmongodb\b/i.test(error?.message) ||
-				/\bredis\b/i.test(error?.message)
+				/\bdatabase\b/i.test(err?.message) ||
+				/\bmongodb\b/i.test(err?.message) ||
+				/\bredis\b/i.test(err?.message)
 			);
 	}
 
-	private isBadRequestError(error: any): boolean {
-		return error?.status === HTTP_STATUS_BAD_REQUEST ||
-			error?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY;
+	private isBadRequestError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_BAD_REQUEST ||
+			err?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY;
 	}
 
-	private isValidationError(error: any): boolean {
-		return /\bvalidation\b/i.test(error?.message) ||
-			error?.name === 'ValidationError';
+	private isValidationError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return /\bvalidation\b/i.test(err?.message) ||
+			err?.name === 'ValidationError';
 	}
 
-	private isAuthError(error: any): boolean {
-		return error?.status === HTTP_STATUS_UNAUTHORIZED || /\bunauthorized\b/i.test(error?.message) ||
-			/\bauthentication\b/i.test(error?.message);
+	private isAuthError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_UNAUTHORIZED || /\bunauthorized\b/i.test(err?.message) ||
+			/\bauthentication\b/i.test(err?.message);
 	}
 
-	private isAuthzError(error: any): boolean {
-		return error?.status === HTTP_STATUS_FORBIDDEN || /\bforbidden\b/i.test(error?.message) ||
-			/\bauthorization\b/i.test(error?.message);
+	private isAuthzError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_FORBIDDEN || /\bforbidden\b/i.test(err?.message) ||
+			/\bauthorization\b/i.test(err?.message);
 	}
 
-	private isNotFoundError(error: any): boolean {
-		return error?.status === HTTP_STATUS_NOT_FOUND || /\bnot found\b/i.test(error?.message);
+	private isNotFoundError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_NOT_FOUND || /\bnot found\b/i.test(err?.message);
 	}
 
-	private isServerError(error: any): boolean {
-		return error?.status === HTTP_STATUS_BAD_GATEWAY ||
-			error?.status === HTTP_STATUS_SERVICE_UNAVAILABLE ||
-			error?.status === HTTP_STATUS_GATEWAY_TIMEOUT;
+	private isServerError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_BAD_GATEWAY ||
+			err?.status === HTTP_STATUS_SERVICE_UNAVAILABLE ||
+			err?.status === HTTP_STATUS_GATEWAY_TIMEOUT;
 	}
 
-	private isRateLimitError(error: any): boolean {
-		return error?.status === HTTP_STATUS_TOO_MANY_REQUESTS || /\brate limit\b/i.test(error?.message) ||
-			/\btoo many requests\b/i.test(error?.message);
+	private isRateLimitError(error: unknown): boolean {
+		const err = error as Record<string, any>;
+		return err?.status === HTTP_STATUS_TOO_MANY_REQUESTS || /\brate limit\b/i.test(err?.message) ||
+			/\btoo many requests\b/i.test(err?.message);
 	}
 }

@@ -150,8 +150,8 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * Sanitize error response for client
 	 * Removes sensitive information like stack traces, file paths, etc.
 	 */
-	public sanitizeErrorResponse(error: any, isDevelopment: boolean = false): any {
-		const sanitized: any = {
+	public sanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
+		const sanitized: Record<string, any> = {
 			message: this.sanitizeMessage(error.message),
 			statusCode: error.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
 			timestamp: new Date().toISOString(),
@@ -254,12 +254,13 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 */
 	private sanitizeContext(context: Record<string, any>): Record<string, any> {
 		const seen = new Set<object>();
-		return this.serializeWithDepthLimit(
+		const result = this.serializeWithDepthLimit(
 			context,
 			ErrorSanitizerService.MAX_CONTEXT_DEPTH,
 			0,
 			seen,
 		);
+		return (result as Record<string, any>) ?? {};
 	}
 
 	/**
@@ -273,11 +274,11 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * @returns Serialized object with sensitive fields redacted
 	 */
 	private serializeWithDepthLimit(
-		obj: any,
+		obj: unknown,
 		maxDepth: number,
 		currentDepth: number,
 		seen: Set<object>,
-	): any {
+	): unknown {
 		// Return non-object values as-is
 		if (typeof obj !== 'object' || obj === null) {
 			if (typeof obj === 'string') {

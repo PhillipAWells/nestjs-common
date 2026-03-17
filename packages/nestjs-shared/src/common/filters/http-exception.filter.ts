@@ -70,9 +70,15 @@ export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefServic
 		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
 		const isDevelopment = !isProduction;
 
+		// Normalize response to object for sanitization
+		const exceptionResponse = exception.getResponse();
+		const errorObj = typeof exceptionResponse === 'string'
+			? { message: exceptionResponse, statusCode: status }
+			: exceptionResponse;
+
 		// Sanitize error response
 		const sanitizedError = this.ErrorSanitizer.sanitizeErrorResponse(
-			exception.getResponse(),
+			errorObj as Record<string, any>,
 			isDevelopment,
 		);
 
