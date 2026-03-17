@@ -323,14 +323,14 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerLogSpy = vi.spyOn(newService['logger'], 'log');
+			const loggerInfoSpy = vi.spyOn(newService['logger'], 'info');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));
 
-			expect(loggerLogSpy).toHaveBeenCalledWith('NATS reconnected');
-			loggerLogSpy.mockRestore();
+			expect(loggerInfoSpy).toHaveBeenCalledWith('NATS reconnected');
+			loggerInfoSpy.mockRestore();
 		});
 
 		it('should log error status events with error details', async () => {

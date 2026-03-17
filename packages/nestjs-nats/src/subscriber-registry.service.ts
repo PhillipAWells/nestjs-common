@@ -1,6 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { Msg } from '@nats-io/transport-node';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { NATS_SUBSCRIBE_METADATA } from './nats.constants.js';
 import type { NatsSubscribeOptions } from './decorators/subscribe.decorator.js';
 import { NatsService } from './nats.service.js';
@@ -26,14 +27,16 @@ interface ProviderWrapper {
  */
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {
-	private readonly logger = new Logger(NatsSubscriberRegistry.name);
+	private readonly logger: AppLogger;
 
 	constructor(
 		private readonly discoveryService: DiscoveryService,
 		private readonly metadataScanner: MetadataScanner,
 		private readonly reflector: Reflector,
 		private readonly natsService: NatsService,
-	) {}
+	) {
+		this.logger = new AppLogger(undefined, NatsSubscriberRegistry.name);
+	}
 
 	public onModuleInit(): void {
 		const wrappers: ProviderWrapper[] = [
@@ -81,7 +84,7 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 		this.natsService.subscribe(options.subject, boundHandler, {
 			queue: options.queue,
 		});
-		this.logger.log(
+		this.logger.info(
 			`Registered handler "${methodName}" for NATS subject "${options.subject}"${options.queue !== undefined ? ` [queue: ${options.queue}]` : ''}`,
 		);
 	}

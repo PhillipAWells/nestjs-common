@@ -1,6 +1,5 @@
 import {
 	Injectable,
-	Logger,
 	OnApplicationShutdown,
 	OnModuleInit,
 	Inject,
@@ -20,6 +19,7 @@ import {
 	type JetStreamClient,
 	type JetStreamManager,
 } from '@nats-io/jetstream';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
 import type { NatsModuleOptions } from './nats.interfaces.js';
 
@@ -45,13 +45,15 @@ import type { NatsModuleOptions } from './nats.interfaces.js';
  */
 @Injectable()
 export class NatsService implements OnModuleInit, OnApplicationShutdown {
-	private readonly logger = new Logger(NatsService.name);
+	private readonly logger: AppLogger;
 	private connection: NatsConnection | null = null;
 
 	constructor(
 		@Inject(NATS_MODULE_OPTIONS_RAW)
 		private readonly options: NatsModuleOptions,
-	) {}
+	) {
+		this.logger = new AppLogger(undefined, NatsService.name);
+	}
 
 	/**
 	 * Connects to NATS and starts the status monitor loop.
@@ -59,7 +61,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public async onModuleInit(): Promise<void> {
 		this.connection = await connect(this.options);
-		this.logger.log('Connected to NATS');
+		this.logger.info('Connected to NATS');
 		this.monitorStatus();
 	}
 
@@ -71,7 +73,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	public async onApplicationShutdown(_signal?: string): Promise<void> {
 		if (this.connection !== null && !this.connection.isClosed()) {
 			await this.connection.drain();
-			this.logger.log('NATS connection drained and closed');
+			this.logger.info('NATS connection drained and closed');
 		}
 	}
 
@@ -240,7 +242,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 						this.logger.warn('NATS disconnected');
 						break;
 					case 'reconnect':
-						this.logger.log('NATS reconnected');
+						this.logger.info('NATS reconnected');
 						break;
 					case 'reconnecting':
 						this.logger.warn('NATS reconnecting...');
