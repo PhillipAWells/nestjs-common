@@ -243,13 +243,6 @@ export class KeycloakTokenValidationService {
 			} else {
 				this.logger.info(message);
 			}
-		} else {
-			// Fallback to console
-			if (level === 'warn') {
-				console.warn(`[KeycloakTokenValidationService] ${message}`);
-			} else {
-				console.log(`[KeycloakTokenValidationService] ${message}`);
-			}
 		}
 	}
 }

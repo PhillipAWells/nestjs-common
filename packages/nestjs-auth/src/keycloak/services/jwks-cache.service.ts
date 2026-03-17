@@ -180,13 +180,6 @@ export class JwksCacheService implements OnModuleInit {
 			} else {
 				this.logger.info(message);
 			}
-		} else {
-			// Fallback to console
-			if (level === 'warn') {
-				console.warn(`[JwksCacheService] ${message}`);
-			} else {
-				console.log(`[JwksCacheService] ${message}`);
-			}
 		}
 	}
 }

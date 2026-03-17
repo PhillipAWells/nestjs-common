@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { KeycloakClient } from '../client/client.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
@@ -19,7 +19,7 @@ import type { EventService } from '../client/services/event.service.js';
 
 @Injectable()
 export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService {
-	private readonly logger = new Logger(KeycloakAdminService.name);
+	private readonly logger: AppLogger;
 
 	private client: KeycloakClient | null = null;
 
@@ -33,16 +33,18 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 		return this.Module.get(AppLogger);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(public readonly Module: ModuleRef) {
+		this.logger = new AppLogger(undefined, KeycloakAdminService.name);
+	}
 
 	public async onModuleInit(): Promise<void> {
 		if (!this.Config.enabled) {
-			this.logger.log('Keycloak admin client is disabled, skipping initialization');
+			this.logger.info('Keycloak admin client is disabled, skipping initialization');
 			return;
 		}
 
 		try {
-			this.logger.log('Initializing Keycloak admin client...');
+			this.logger.info('Initializing Keycloak admin client...');
 
 			// Build and validate permission scopes
 			const scopes = this.Config.permissions ?? [...KEYCLOAK_DEFAULT_SCOPES];
@@ -51,7 +53,7 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 			if (!this.Config.permissions) {
 				this.logger.warn(
 					'KeycloakAdminModule: no permissions configured — defaulting to read-only scopes. ' +
-					'To grant write access, set the permissions array in KeycloakAdminModule.forRoot() config.',
+						'To grant write access, set the permissions array in KeycloakAdminModule.forRoot() config.',
 				);
 			}
 
@@ -68,11 +70,10 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 			);
 
 			await this.client.authenticate();
-			this.logger.log('Keycloak admin client initialized successfully');
+			this.logger.info('Keycloak admin client initialized successfully');
 		} catch (error) {
 			this.logger.error(
-				'Failed to initialize Keycloak admin client',
-				error instanceof Error ? error.stack : String(error),
+				`Failed to initialize Keycloak admin client: ${error instanceof Error ? error.message : String(error)}`,
 			);
 			// Re-throw if Keycloak is enabled, so startup fails loudly instead of silently
 			if (this.Config.enabled) {
