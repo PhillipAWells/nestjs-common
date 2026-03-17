@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { KeycloakAdminService } from '../services/keycloak-admin.service.js';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';
 import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
@@ -37,7 +38,7 @@ export class KeycloakHealthIndicator extends HealthIndicator implements LazyModu
 			});
 		} catch (error) {
 			return this.getStatus(key, false, {
-				error: error instanceof Error ? error.message : String(error),
+				error: getErrorMessage(error),
 			});
 		}
 	}

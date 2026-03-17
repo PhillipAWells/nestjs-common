@@ -9,6 +9,7 @@ let currentNamespace = OTEL_NAMESPACE;
 /**
  * Set the namespace for tracer names (internal use)
  * @internal
+ * @private
  */
 export function setTracerNamespace(namespace: string): void {
 	currentNamespace = namespace;
@@ -169,6 +170,7 @@ export function addAttributes(
  * Reset tracer namespace to default.
  * Used for test isolation and cleanup.
  * @internal
+ * @private
  */
 export function resetTracerNamespace(): void {
 	currentNamespace = OTEL_NAMESPACE;

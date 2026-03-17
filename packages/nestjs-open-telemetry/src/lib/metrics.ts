@@ -96,6 +96,7 @@ let cachedHttpMetrics: {
 
 /**
  * Get or initialize HTTP metrics.
+ * @private
  */
 function getHttpMetrics(): {
 	requests: Counter;
@@ -209,6 +210,7 @@ export function trackActiveRequests(delta: number, attributes?: Attributes): voi
  * Reset cached HTTP metrics to null.
  * Used for test isolation and cleanup.
  * @internal
+ * @private
  */
 export function resetHttpMetrics(): void {
 	cachedHttpMetrics = null;

@@ -41,14 +41,29 @@ import { OpenTelemetryExporter } from './exporters/index.js';
 })
 export class OpenTelemetryModule implements OnModuleInit {
 	/**
+	 * The OpenTelemetry exporter instance
+	 * @private
+	 */
+	private readonly exporter: OpenTelemetryExporter;
+
+	/**
+	 * The instrumentation registry (from nestjs-shared)
+	 * @private
+	 */
+	private readonly registry: InstrumentationRegistry;
+
+	/**
 	 * Initialize the module by registering the exporter with the registry
 	 * @param exporter - The OpenTelemetry exporter
 	 * @param registry - The instrumentation registry (from nestjs-shared)
 	 */
 	constructor(
-		private readonly exporter: OpenTelemetryExporter,
-		private readonly registry: InstrumentationRegistry,
-	) {}
+		exporter: OpenTelemetryExporter,
+		registry: InstrumentationRegistry,
+	) {
+		this.exporter = exporter;
+		this.registry = registry;
+	}
 
 	/**
 	 * Called after module initialization.

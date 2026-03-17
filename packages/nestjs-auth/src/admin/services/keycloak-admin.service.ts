@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { KeycloakClient } from '../client/client.js';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';
 import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
@@ -73,7 +73,7 @@ export class KeycloakAdminService implements OnModuleInit, LazyModuleRefService 
 			this.logger.info('Keycloak admin client initialized successfully');
 		} catch (error) {
 			this.logger.error(
-				`Failed to initialize Keycloak admin client: ${error instanceof Error ? error.message : String(error)}`,
+				`Failed to initialize Keycloak admin client: ${getErrorMessage(error)}`,
 			);
 			// Re-throw if Keycloak is enabled, so startup fails loudly instead of silently
 			if (this.Config.enabled) {

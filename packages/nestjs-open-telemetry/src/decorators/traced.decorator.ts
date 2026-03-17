@@ -253,6 +253,7 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
 
 /**
  * Cast span attributes to valid OpenTelemetry types.
+ * @private
  *
  * Converts any attribute values to string, number, or boolean for compatibility with OTel API.
  * Objects are serialized with JSON.stringify; functions and symbols are converted to strings.
@@ -281,6 +282,7 @@ function castAttributesToValidTypes(attributes: Record<string, unknown>): Record
 
 /**
  * Detect and redact Personally Identifiable Information (PII) from a string value.
+ * @private
  *
  * Detects and replaces the following patterns:
  * - Email addresses: [REDACTED_EMAIL]
@@ -303,7 +305,7 @@ function detectAndRedactPII(value: string): string {
 		},
 		{
 			type: 'phone',
-			regex: /(\+\d{1,2}\s?)?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s-]?\d{4}/gu,
+			regex: /\b(\+\d{1,2}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s-]?\d{4}\b/gu,
 			label: 'PHONE',
 		},
 		{
@@ -337,6 +339,7 @@ function detectAndRedactPII(value: string): string {
 
 /**
  * Validate a credit card number using the Luhn algorithm.
+ * @private
  *
  * The Luhn algorithm checks the mathematical validity of credit card numbers
  * to reduce false positives from random digit sequences.
@@ -383,6 +386,7 @@ function isValidCreditCard(num: string): boolean {
 
 /**
  * Sanitize argument for span attribute.
+ * @private
  *
  * Converts argument to a safe string/number/boolean for span attributes.
  * Detects and redacts PII patterns (email, phone, SSN, credit card).
@@ -445,6 +449,7 @@ function sanitizeArgument(arg: unknown): string | number | boolean | null {
 
 /**
  * Truncate string to maximum length.
+ * @private
  *
  * @param str - String to truncate
  * @param maxLength - Maximum length

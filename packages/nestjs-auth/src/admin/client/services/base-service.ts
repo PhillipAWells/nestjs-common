@@ -1,6 +1,6 @@
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import type { Logger } from '@pawells/logger';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import type { RetryConfig } from '../utils/index.js';
 import { withRetry } from '../utils/index.js';
 import {
@@ -127,7 +127,7 @@ export abstract class BaseService {
 		}
 
 		// Generic error
-		const message = error instanceof Error ? error.message : String(error);
+		const message = getErrorMessage(error);
 		throw new KeycloakClientError(message, undefined, undefined, error instanceof Error ? error : undefined);
 	}
 }
