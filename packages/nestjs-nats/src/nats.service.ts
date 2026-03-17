@@ -19,29 +19,10 @@ import {
 	type JetStreamClient,
 	type JetStreamManager,
 } from '@nats-io/jetstream';
+import { getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
 import type { NatsModuleOptions } from './nats.interfaces.js';
 import { NatsLogger } from './logger.js';
-
-/**
- * Extracts error stack trace, fallback to message or string representation.
- */
-function getErrorStack(err: unknown): string {
-	if (err instanceof Error) {
-		return err.stack ?? err.message;
-	}
-	return String(err);
-}
-
-/**
- * Extracts error message, fallback to string representation.
- */
-function getErrorMessage(err: unknown): string {
-	if (err instanceof Error) {
-		return err.message;
-	}
-	return String(err);
-}
 
 /**
  * Injectable service that manages the NATS connection lifecycle and provides

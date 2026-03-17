@@ -4235,6 +4235,7 @@ __metadata:
   dependencies:
     "@nats-io/jetstream": "npm:^3.3.1"
     "@nats-io/transport-node": "npm:^3.3.1"
+    "@pawells/nestjs-shared": "workspace:*"
   peerDependencies:
     "@nats-io/jetstream": ">=3.0.0"
     "@nats-io/transport-node": ">=3.0.0"
@@ -4272,7 +4273,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
-    "@pawells/nestjs-shared": "workspace:*"
     "@pyroscope/nodejs": "npm:^0.4.10"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
@@ -4284,6 +4284,8 @@ __metadata:
 "@pawells/nestjs-qdrant@workspace:*, @pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant"
+  dependencies:
+    "@pawells/nestjs-shared": "workspace:*"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
     "@qdrant/js-client-rest": ">=1.0.0"
