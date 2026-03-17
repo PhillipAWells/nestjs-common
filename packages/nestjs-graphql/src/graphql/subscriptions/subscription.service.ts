@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * Service for managing GraphQL subscriptions with Redis PubSub
@@ -46,8 +46,8 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 			await this.pubSub.publish(topic, data);
 		} catch (error) {
 			this.logger.error(
-				`Failed to publish to topic ${topic}: ${(error as Error).message}`,
-				(error as Error).stack,
+				`Failed to publish to topic ${topic}: ${getErrorMessage(error)}`,
+				getErrorStack(error),
 			);
 			throw error;
 		}
@@ -77,8 +77,8 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 			return iterator;
 		} catch (error) {
 			this.logger.error(
-				`Failed to subscribe to topic ${topic}: ${(error as Error).message}`,
-				(error as Error).stack,
+				`Failed to subscribe to topic ${topic}: ${getErrorMessage(error)}`,
+				getErrorStack(error),
 			);
 			throw error;
 		}
