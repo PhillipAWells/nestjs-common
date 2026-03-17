@@ -4,18 +4,7 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-
-/**
- * Extract error message from unknown error type.
- * Handles both Error instances and non-Error types consistently.
- *
- * @internal
- * @param error - The error to extract a message from
- * @returns The error message as a string
- */
-function getErrorMessage(error: unknown): string {
-	return error instanceof Error ? error.message : String(error);
-}
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Non-injectable service that wraps a QdrantClient and pre-binds a collection name.
@@ -44,9 +33,9 @@ function getErrorMessage(error: unknown): string {
  * ```
  */
 export class QdrantCollectionService {
-	private readonly client!: QdrantClient;
+	private readonly client: QdrantClient;
 
-	public readonly collectionName!: string;
+	public readonly collectionName: string;
 
 	constructor(client: QdrantClient, collectionName: string) {
 		this.client = client;

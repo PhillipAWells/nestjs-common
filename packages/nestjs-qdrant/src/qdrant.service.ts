@@ -34,7 +34,7 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
  */
 @Injectable()
 export class QdrantService implements OnModuleDestroy {
-	private readonly moduleRef!: ModuleRef;
+	private readonly moduleRef: ModuleRef;
 
 	constructor(moduleRef: ModuleRef) {
 		this.moduleRef = moduleRef;
