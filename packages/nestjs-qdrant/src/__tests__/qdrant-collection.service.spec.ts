@@ -3,7 +3,7 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { describe, it, expect, beforeEach , vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { QdrantCollectionService } from '../qdrant-collection.service.js';
 
 describe('QdrantCollectionService', () => {
