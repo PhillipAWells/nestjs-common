@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/nestjs-shared';
 
 /**
@@ -297,7 +297,7 @@ export class PrometheusExporter implements IMetricsExporter {
 						instrument.inc(metricValue.labels, metricValue.value);
 					} catch (recordError) {
 						this.logger.warn(
-							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
@@ -308,7 +308,7 @@ export class PrometheusExporter implements IMetricsExporter {
 						instrument.observe(metricValue.labels, metricValue.value);
 					} catch (recordError) {
 						this.logger.warn(
-							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
@@ -356,7 +356,7 @@ export class PrometheusExporter implements IMetricsExporter {
 						instrument.set(labelsForProm, finalValue);
 					} catch (recordError) {
 						this.logger.warn(
-							`Failed to record metric value for "${metricName}": ${recordError instanceof Error ? recordError.message : String(recordError)}`,
+							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
@@ -367,7 +367,7 @@ export class PrometheusExporter implements IMetricsExporter {
 		try {
 			return await this.registry.metrics();
 		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
+			const message = getErrorMessage(error);
 			this.logger.error(`Failed to generate Prometheus metrics: ${message}`);
 			throw error;
 		}
