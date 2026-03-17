@@ -151,7 +151,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 				this.logger.info(`Error recovery successful for connection: ${connectionId}`);
 				return;
 			} catch (recoveryError: unknown) {
-				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`);
+				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${getErrorMessage(recoveryError)}`);
 				attempt++;
 			}
 		}
