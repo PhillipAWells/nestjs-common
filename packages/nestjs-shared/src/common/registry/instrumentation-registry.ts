@@ -5,6 +5,7 @@ import { AppLogger } from '../services/logger.service.js';
 import type { IContextualLogger } from '../interfaces/logger.interface.js';
 import type { IMetricsExporter, MetricDescriptor, MetricValue } from '../interfaces/metrics-exporter.interface.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { getErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Central registry for metrics collection and export
@@ -186,7 +187,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 				this.logger.error('Error notifying exporter of descriptor registration', 'InstrumentationRegistry', {
 					exporterIndex: this.exporters.indexOf(exporter),
 					metricName: descriptor.name,
-					error: error instanceof Error ? error.message : String(error),
+					error: getErrorMessage(error),
 				});
 			}
 		}
@@ -261,7 +262,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 				this.logger.error('Error in event-based exporter onMetricRecorded', 'InstrumentationRegistry', {
 					exporterIndex: this.exporters.indexOf(exporter),
 					metricName: name,
-					error: error instanceof Error ? error.message : String(error),
+					error: getErrorMessage(error),
 				});
 			}
 		}
@@ -275,7 +276,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 				} catch (error) {
 					this.logger.error('Error in metric listener', 'InstrumentationRegistry', {
 						metricName: name,
-						error: error instanceof Error ? error.message : String(error),
+						error: getErrorMessage(error),
 					});
 				}
 			}
@@ -388,7 +389,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 				this.logger.error('Error notifying exporter during registration', 'InstrumentationRegistry', {
 					exporterIndex: this.exporters.length - 1,
 					metricName: descriptor.name,
-					error: error instanceof Error ? error.message : String(error),
+					error: getErrorMessage(error),
 				});
 			}
 		}
@@ -421,7 +422,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 				} catch (error) {
 					this.logger.error('Error during exporter shutdown', 'InstrumentationRegistry', {
 						exporterIndex: this.exporters.indexOf(exporter),
-						error: error instanceof Error ? error.message : String(error),
+						error: getErrorMessage(error),
 					});
 				}
 				return Promise.resolve();

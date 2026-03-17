@@ -8,6 +8,7 @@ import {
 } from '../constants/histogram-buckets.constants.js';
 import { AppLogger } from './logger.service.js';
 import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { getErrorMessage } from '../utils/error.utils.js';
 
 const HTTP_STATUS_CODE_500 = 500;
 const HTTP_STATUS_CODE_400 = 400;
@@ -148,7 +149,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 				this.Logger.warn(`Counter metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : String(error);
+			const errorMsg = getErrorMessage(error);
 			this.Logger.error(`Failed to record counter '${name}': ${errorMsg}`);
 		}
 	}

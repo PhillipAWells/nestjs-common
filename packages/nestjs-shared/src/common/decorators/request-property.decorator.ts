@@ -1,6 +1,7 @@
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
 import type { AppLogger } from '../services/logger.service.js';
 import { ObjectGetPropertyByPath } from '@pawells/typescript-common';
+import { getErrorMessage } from '../utils/error.utils.js';
 
 // Logger instance for decorator warnings
 // Note: We can't use AppLogger directly here since decorators don't have DI context
@@ -135,7 +136,7 @@ export function RequestProperty<T = any>(
 					value = options.transform(value);
 				} catch (error) {
 					throw new Error(
-						`RequestProperty transform failed for path '${path}': ${error instanceof Error ? error.message : String(error)}`,
+						`RequestProperty transform failed for path '${path}': ${getErrorMessage(error)}`,
 						{ cause: error },
 					);
 				}

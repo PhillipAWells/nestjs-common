@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import xss from 'xss';
+import { getErrorMessage } from './error.utils.js';
 
 /**
  * Maximum recursion depth for sanitization operations.
@@ -133,7 +134,7 @@ export function sanitizeXss(value: unknown, logger?: Logger): unknown {
 			sanitized = xss(sanitized);
 		} catch (error) {
 			if (logger) {
-				logger.warn(`XSS sanitization (xss library) failed: ${error instanceof Error ? error.message : String(error)}`);
+				logger.warn(`XSS sanitization (xss library) failed: ${getErrorMessage(error)}`);
 			}
 		}
 

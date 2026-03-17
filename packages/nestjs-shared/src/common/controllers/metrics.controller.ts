@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
+import { getErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Exposes Prometheus metrics at GET /metrics.
@@ -32,7 +33,7 @@ export class MetricsController {
 			const metrics = await this.metricsService.getMetrics();
 			response.send(metrics);
 		} catch (error) {
-			this.logger.error('Failed to collect metrics', error instanceof Error ? error.message : String(error));
+			this.logger.error('Failed to collect metrics', getErrorMessage(error));
 			// Return empty metrics on error to avoid breaking scrapers
 			response.status(HTTP_STATUS_INTERNAL_SERVER_ERROR).send('# Error collecting metrics\n');
 		}
