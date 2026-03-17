@@ -56,7 +56,7 @@ export interface MetricsResponse {
  */
 @Injectable()
 export class MetricsService {
-	private readonly logger: Logger;
+	private readonly logger: Logger = new Logger(MetricsService.name);
 
 	// CPU metrics
 	private cpuSamples = 0;
@@ -77,9 +77,7 @@ export class MetricsService {
 
 	private totalResponseTime = 0;
 
-	constructor() {
-		this.logger = new Logger(MetricsService.name);
-	}
+	constructor() {}
 
 	/**
 	 * Record CPU profiling sample

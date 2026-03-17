@@ -72,7 +72,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly metrics: IProfileMetrics[] = [];
 
-	private readonly logger: Logger;
+	private readonly logger: Logger = new Logger(PyroscopeService.name);
 
 	/**
 	 * Maximum number of metrics to keep in memory to prevent unbounded growth
@@ -89,9 +89,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private readonly STALE_PROFILE_TIMEOUT_MS = PROFILING_STALE_PROFILE_TIMEOUT_MS;
 
-	constructor(private readonly moduleRef: ModuleRef) {
-		this.logger = new Logger(PyroscopeService.name);
-	}
+	constructor(private readonly moduleRef: ModuleRef) {}
 
 	private get config(): IPyroscopeConfig {
 		const cfg = this.moduleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
