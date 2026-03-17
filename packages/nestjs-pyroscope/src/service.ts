@@ -89,7 +89,11 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 */
 	private readonly STALE_PROFILE_TIMEOUT_MS = PROFILING_STALE_PROFILE_TIMEOUT_MS;
 
-	constructor(private readonly moduleRef: ModuleRef) {}
+	private readonly moduleRef: ModuleRef;
+
+	constructor(moduleRef: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private get config(): IPyroscopeConfig {
 		const cfg = this.moduleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });

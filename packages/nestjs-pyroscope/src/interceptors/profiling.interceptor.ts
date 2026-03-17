@@ -56,7 +56,11 @@ interface HttpResponse {
  */
 @Injectable()
 export class ProfilingInterceptor implements NestInterceptor {
-	constructor(private readonly moduleRef: ModuleRef) {}
+	private readonly moduleRef: ModuleRef;
+
+	constructor(moduleRef: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private get pyroscopeService(): PyroscopeService | null {
 		try {

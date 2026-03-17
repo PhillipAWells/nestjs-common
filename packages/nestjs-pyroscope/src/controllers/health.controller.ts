@@ -50,7 +50,11 @@ export interface HealthResponse {
  */
 @Controller('profiling')
 export class HealthController {
-	constructor(@Inject(ModuleRef) private readonly moduleRef: ModuleRef) {}
+	private readonly moduleRef: ModuleRef;
+
+	constructor(@Inject(ModuleRef) moduleRef: ModuleRef) {
+		this.moduleRef = moduleRef;
+	}
 
 	private get pyroscopeService(): PyroscopeService {
 		return this.moduleRef.get(PyroscopeService, { strict: false });
