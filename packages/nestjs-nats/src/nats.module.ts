@@ -16,7 +16,7 @@ const SENSITIVE_OPTION_KEYS: ReadonlyArray<keyof NatsModuleOptions> = [
 
 function sanitizeOptions(options: NatsModuleOptions): Partial<NatsModuleOptions> {
 	return Object.fromEntries(
-		Object.entries(options).filter(([key]) => !SENSITIVE_OPTION_KEYS.includes(key as keyof NatsModuleOptions)),
+		Object.entries(options).filter(([key]: [string, unknown]): boolean => !SENSITIVE_OPTION_KEYS.includes(key as keyof NatsModuleOptions)),
 	) as Partial<NatsModuleOptions>;
 }
 

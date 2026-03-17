@@ -24,6 +24,26 @@ import type { NatsModuleOptions } from './nats.interfaces.js';
 import { NatsLogger } from './logger.js';
 
 /**
+ * Extracts error stack trace, fallback to message or string representation.
+ */
+function getErrorStack(err: unknown): string {
+	if (err instanceof Error) {
+		return err.stack ?? err.message;
+	}
+	return String(err);
+}
+
+/**
+ * Extracts error message, fallback to string representation.
+ */
+function getErrorMessage(err: unknown): string {
+	if (err instanceof Error) {
+		return err.message;
+	}
+	return String(err);
+}
+
+/**
  * Injectable service that manages the NATS connection lifecycle and provides
  * core pub/sub, request-reply, and JetStream operations.
  *
@@ -220,14 +240,14 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 				} catch (err) {
 					this.logger.error(
 						`Handler error on subject "${subject}"`,
-						err instanceof Error ? err.stack : String(err),
+						getErrorStack(err),
 					);
 				}
 			}
 		})().catch((err: unknown): void => {
 			this.logger.error(
 				`Subscription iterator closed for subject "${subject}"`,
-				err instanceof Error ? err.stack : String(err),
+				getErrorStack(err),
 			);
 		});
 	}
@@ -250,8 +270,9 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 						this.logger.warn('NATS reconnecting...');
 						break;
 					case 'error': {
-						const errorStatus = status as { error?: Error };
-						this.logger.error('NATS async error', errorStatus.error instanceof Error ? errorStatus.error.stack : String(errorStatus.error ?? status));
+						const errorStatus = status as { error?: unknown };
+						const errorInfo = errorStatus.error ?? status;
+						this.logger.error('NATS async error', getErrorStack(errorInfo));
 						break;
 					}
 					case 'ldm':
@@ -266,7 +287,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		})().catch((err: unknown): void => {
 			this.logger.debug(
 				'NATS status monitor closed',
-				err instanceof Error ? err.message : String(err),
+				getErrorMessage(err),
 			);
 		});
 	}
