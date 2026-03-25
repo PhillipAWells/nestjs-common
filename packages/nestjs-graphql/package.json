@@ -27,7 +27,7 @@
 		"@nestjs/common": ">=10.0.0",
 		"@nestjs/core": ">=10.0.0",
 		"@nestjs/graphql": ">=12.0.0",
-		"@pawells/nestjs-auth": "*",
+		"@pawells/nestjs-auth": ">=1.0.0",
 		"cache-manager": ">=5.0.0",
 		"class-transformer": ">=0.5.0",
 		"class-validator": ">=0.14.0",

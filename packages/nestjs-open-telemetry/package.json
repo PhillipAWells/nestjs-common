@@ -29,10 +29,6 @@
 		"@pawells/logger": "^1.2.2",
 		"@pawells/nestjs-shared": "workspace:*"
 	},
-	"devDependencies": {
-		"@opentelemetry/sdk-trace-node": "^1.0.0",
-		"@opentelemetry/semantic-conventions": "^1.0.0"
-	},
 	"engines": {
 		"node": ">=24.0.0"
 	},
