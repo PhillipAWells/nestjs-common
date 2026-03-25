@@ -1,7 +1,11 @@
-# @pawells/nestjs-open-telemetry
+# NestJS OpenTelemetry Module
 
+[![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
+[![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-open-telemetry.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
 OpenTelemetry integration for NestJS applications. Provides distributed tracing with the `@Traced` decorator, manual span creation helpers, HTTP metrics recording, and a NestJS logger adapter that automatically injects trace context.
 
