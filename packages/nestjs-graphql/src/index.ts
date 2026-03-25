@@ -45,6 +45,7 @@
 // Cache Module Exports
 // ============================================================================
 export { CacheModule } from './cache/cache.module.js';
+export type { CacheModuleAsyncOptions } from './cache/cache.interfaces.js';
 export { CacheService } from './cache/cache.service.js';
 export { CacheInterceptor } from './cache/cache.interceptor.js';
 
@@ -106,28 +107,146 @@ export { GraphQLErrorFormatter, GraphQLErrorCode } from './graphql/graphql/index
 export type { GraphQLErrorExtensions, ValidationError } from './graphql/graphql/index.js';
 
 // Subscriptions
-export * from './graphql/subscriptions/index.js';
+export {
+	SubscriptionService,
+	RedisPubSubFactory,
+	WebSocketServer,
+	WebSocketAuthService,
+	ConnectionManagerService,
+	ResilienceService,
+	type SubscriptionConfig,
+	type WebSocketConfig,
+	type AuthConfig,
+	type ConnectionConfig,
+	type ResilienceConfig,
+	type WebSocketServerConfig,
+} from './graphql/subscriptions/index.js';
 
 // Guards
-export * from './graphql/guards/index.js';
+export {
+	GraphQLAuthGuard,
+	GraphQLRolesGuard,
+	GraphQLPublicGuard,
+	GraphQLRateLimitGuard,
+	QueryComplexityGuard,
+} from './graphql/guards/index.js';
 
 // Interceptors
-export * from './graphql/interceptors/index.js';
+export {
+	GraphQLLoggingInterceptor,
+	GraphQLPerformanceInterceptor,
+	GraphQLErrorInterceptor,
+	GraphQLCacheInterceptor,
+	GraphQLPerformanceMonitoringInterceptor,
+	BsonResponseInterceptor,
+} from './graphql/interceptors/index.js';
 
 // Pipes
-export * from './graphql/pipes/index.js';
+export {
+	GraphQLValidationPipe,
+	GraphQLInputValidationPipe,
+} from './graphql/pipes/index.js';
 
 // Services
-export * from './graphql/services/index.js';
+export {
+	RateLimitService,
+	MemoryRateLimitStorage,
+	GraphQLCacheService,
+	GraphQLPerformanceService,
+	BsonSerializationService,
+	type RateLimitResult,
+	type RateLimitConfig,
+	type RateLimitStorage,
+	type PerformanceMetrics,
+	type PerformanceStats,
+} from './graphql/services/index.js';
 
 // Decorators
-export * from './graphql/decorators/index.js';
+export {
+	Subscription,
+	SubscriptionFilter,
+	SubscriptionAuth,
+	SUBSCRIPTION_METADATA,
+	Auth,
+	Public,
+	Roles,
+	CurrentUser,
+	AuthToken,
+	GraphQLContextParam,
+	GraphQLUser,
+	GraphQLAuth,
+	GraphQLPublic,
+	GraphQLRoles,
+	GraphQLCurrentUser,
+	GraphQLAuthToken,
+	IS_PUBLIC_KEY,
+	ROLES_KEY,
+	type SubscriptionOptions,
+} from './graphql/decorators/index.js';
 
 // Context
-export * from './graphql/context/index.js';
+export {
+	GraphQLContextFactory,
+	type GraphQLContext,
+	type WebSocketContext,
+	type ContextFactoryOptions,
+} from './graphql/context/index.js';
 
 // Errors
-export * from './graphql/errors/index.js';
+export {
+	BaseApplicationError,
+	createError,
+	BadRequestError,
+	UnauthorizedError,
+	ForbiddenError,
+	NotFoundError,
+	ConflictError,
+	InternalServerError,
+	createGraphQLError,
+	GRAPHQL_ERROR_CONFIGS,
+	GraphqlError,
+	RateLimitError,
+	ValidationError as ValidationErrorClass,
+	LegacyNotFoundError,
+	LegacyValidationError,
+	LegacyUnauthorizedError,
+	LegacyForbiddenError,
+	LegacyConflictError,
+	LegacyRateLimitError,
+	type ErrorConfig,
+	type ErrorType,
+	type GraphQLErrorConfig,
+	type GraphQLErrorType,
+	BaseErrorConfigs,
+	BaseBadRequestError,
+	BaseUnauthorizedError,
+	BaseForbiddenError,
+	BaseNotFoundError,
+	BaseConflictError,
+	BaseUnprocessableEntityError,
+	BaseInternalServerError,
+	BaseBadGatewayError,
+	BaseServiceUnavailableError,
+	BaseGatewayTimeoutError,
+} from './graphql/errors/index.js';
 
 // Loaders
-export * from './graphql/loaders/index.js';
+export {
+	DataLoaderFactory,
+	DataLoaderRegistry,
+	Comment,
+	CommentLoader,
+	CommentsByPostLoader,
+	CommentsByUserLoader,
+	Order,
+	OrderLoader,
+	OrdersByUserLoader,
+	Product,
+	ProductLoader,
+	Tag,
+	TagLoader,
+	User,
+	UserLoader,
+	type BatchLoadFn,
+	type DataLoaderOptions,
+} from './graphql/loaders/index.js';

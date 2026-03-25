@@ -8,13 +8,13 @@
  * @packageDocumentation
  */
 
-export * from './dataloader.factory.js';
-export * from './dataloader-registry.js';
-export * from './user.loader.js';
-export * from './product.loader.js';
-export * from './order.loader.js';
-export * from './comment.loader.js';
-export * from './tag.loader.js';
-export * from './orders-by-user.loader.js';
-export * from './comments-by-user.loader.js';
-export * from './comments-by-post.loader.js';
+export { BatchLoadFn, DataLoaderOptions, DataLoaderFactory } from './dataloader.factory.js';
+export { DataLoaderRegistry } from './dataloader-registry.js';
+export { User, UserLoader } from './user.loader.js';
+export { Product, ProductLoader } from './product.loader.js';
+export { Order, OrderLoader } from './order.loader.js';
+export { Comment, CommentLoader } from './comment.loader.js';
+export { Tag, TagLoader } from './tag.loader.js';
+export { OrdersByUserLoader } from './orders-by-user.loader.js';
+export { CommentsByUserLoader } from './comments-by-user.loader.js';
+export { CommentsByPostLoader } from './comments-by-post.loader.js';

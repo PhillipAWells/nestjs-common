@@ -13,6 +13,7 @@
 
 // Main exports
 export { CacheModule } from './cache.module.js';
+export type { CacheModuleAsyncOptions } from './cache.interfaces.js';
 export { CacheService } from './cache.service.js';
 export { CacheInterceptor } from './cache.interceptor.js';
 

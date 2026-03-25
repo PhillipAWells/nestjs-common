@@ -4,18 +4,10 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheService } from './cache.service.js';
 import { getRedisConnectionOptions } from './redis.config.js';
 import { CommonModule, CACHE_PROVIDER, AppLogger } from '@pawells/nestjs-shared/common';
+import type { CacheModuleAsyncOptions } from './cache.interfaces.js';
 
 // Default TTL for cache entries (1 hour in seconds)
 const CACHE_DEFAULT_TTL_SECONDS = 3_600;
-
-/**
- * Async options for CacheModule configuration
- */
-export interface CacheModuleAsyncOptions {
-	imports?: any[];
-	useFactory: (...args: any[]) => any | Promise<any>;
-	inject?: any[];
-}
 
 /**
  * Cache module providing Redis-based caching functionality
@@ -23,12 +15,7 @@ export interface CacheModuleAsyncOptions {
 @Global()
 @Module({})
 export class CacheModule {
-	public static forRoot(): {
-		module: typeof CacheModule;
-		imports: unknown[];
-		providers: unknown[];
-		exports: unknown[];
-	} {
+	public static forRoot(): DynamicModule {
 		return {
 			module: CacheModule,
 			imports: [
@@ -117,7 +104,6 @@ export class CacheModule {
 			],
 			providers,
 			exports: [CacheService, NestCacheModule, CACHE_PROVIDER],
-			global: true,
 		};
 	}
 }
