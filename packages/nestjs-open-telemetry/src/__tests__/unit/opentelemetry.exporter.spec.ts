@@ -209,6 +209,77 @@ describe('OpenTelemetryExporter', () => {
 
 			expect(mockUpDownCounter.add).toHaveBeenCalledWith(3, {});
 		});
+
+		it('should calculate delta correctly for gauge type', () => {
+			const descriptor = {
+				name: 'test_gauge',
+				type: 'gauge' as const,
+				help: 'Test gauge',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			// First recording
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 10,
+				labels: { instance: 'server1' },
+				timestamp: Date.now(),
+			});
+
+			mockUpDownCounter.add.mockClear();
+
+			// Second recording - should compute delta
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 15,
+				labels: { instance: 'server1' },
+				timestamp: Date.now(),
+			});
+
+			expect(mockUpDownCounter.add).toHaveBeenCalledWith(5, {
+				instance: 'server1',
+			});
+		});
+
+		it('should handle gauge with different labels as separate keys', () => {
+			const descriptor = {
+				name: 'test_gauge',
+				type: 'gauge' as const,
+				help: 'Test gauge',
+				labelNames: [],
+			};
+
+			exporter.onDescriptorRegistered(descriptor);
+
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 10,
+				labels: { instance: 'server1' },
+				timestamp: Date.now(),
+			});
+
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 20,
+				labels: { instance: 'server2' },
+				timestamp: Date.now(),
+			});
+
+			mockUpDownCounter.add.mockClear();
+
+			exporter.onMetricRecorded({
+				descriptor,
+				value: 25,
+				labels: { instance: 'server2' },
+				timestamp: Date.now(),
+			});
+
+			expect(mockUpDownCounter.add).toHaveBeenCalledWith(5, {
+				instance: 'server2',
+			});
+		});
 	});
 
 	describe('shutdown', () => {

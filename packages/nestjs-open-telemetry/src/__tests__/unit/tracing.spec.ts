@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized } from '../helpers/otel-setup.js';
 import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
-import { getTracer, setTracerNamespace, resetTracerNamespace } from '../../lib/tracing.js';
+import { getTracer, setTracerNamespace, resetTracerNamespace, createSpan, withSpan, addAttributes } from '../../lib/tracing.js';
 
 describe('Tracing Helpers', () => {
 	let testConfig: OpenTelemetryConfig;
@@ -85,6 +85,150 @@ describe('Tracing Helpers', () => {
 			expect(tracer).toBeDefined();
 
 			resetTracerNamespace();
+		});
+	});
+
+	describe('createSpan', () => {
+		it('should create a span with the given name', () => {
+			const tracer = getTracer('test-service');
+			const { span, ctx } = createSpan(tracer, 'test-span');
+
+			expect(span).toBeDefined();
+			expect(ctx).toBeDefined();
+			span.end();
+		});
+
+		it('should create a span with custom options', () => {
+			const tracer = getTracer('test-service');
+			const { span, ctx } = createSpan(tracer, 'test-span', {
+				attributes: { 'test.key': 'test.value' },
+			});
+
+			expect(span).toBeDefined();
+			expect(ctx).toBeDefined();
+			span.end();
+		});
+
+		it('should create a span without making it active', () => {
+			const tracer = getTracer('test-service');
+			const { span, ctx } = createSpan(tracer, 'test-span', undefined, false);
+
+			expect(span).toBeDefined();
+			expect(ctx).toBeDefined();
+			span.end();
+		});
+	});
+
+	describe('withSpan', () => {
+		it('should execute a sync function within a span', async () => {
+			const tracer = getTracer('test-service');
+
+			const result = await withSpan(tracer, 'test-operation', () => 'sync-result');
+			expect(result).toBe('sync-result');
+		});
+
+		it('should execute an async function within a span', async () => {
+			const tracer = getTracer('test-service');
+
+			const result = await withSpan(tracer, 'test-operation', async () => {
+				await new Promise(resolve => setTimeout(resolve, 5));
+				return 'async-result';
+			});
+			expect(result).toBe('async-result');
+		});
+
+		it('should handle errors in sync functions', async () => {
+			const tracer = getTracer('test-service');
+
+			await expect(
+				withSpan(tracer, 'test-operation', () => {
+					throw new Error('Test error');
+				}),
+			).rejects.toThrow('Test error');
+		});
+
+		it('should handle errors in async functions', async () => {
+			const tracer = getTracer('test-service');
+
+			await expect(
+				withSpan(tracer, 'test-operation', async () => {
+					throw new Error('Test async error');
+				}),
+			).rejects.toThrow('Test async error');
+		});
+
+		it('should execute function with span options', async () => {
+			const tracer = getTracer('test-service');
+
+			const result = await withSpan(
+				tracer,
+				'test-operation',
+				() => 'result-with-options',
+				{
+					attributes: { 'test.attribute': 'value' },
+				},
+			);
+			expect(result).toBe('result-with-options');
+		});
+	});
+
+	describe('addAttributes', () => {
+		it('should add attributes to the active span', () => {
+			// This test verifies that addAttributes doesn't throw
+			// when called without an active span (graceful degradation)
+			expect(() => {
+				addAttributes({
+					'test.key': 'value',
+					'test.number': 42,
+					'test.boolean': true,
+				});
+			}).not.toThrow();
+		});
+
+		it('should handle empty attributes object', () => {
+			expect(() => {
+				addAttributes({});
+			}).not.toThrow();
+		});
+
+		it('should handle mixed attribute types', () => {
+			expect(() => {
+				addAttributes({
+					'string.attr': 'test-value',
+					'number.attr': 123,
+					'bool.attr': false,
+					'negative.number': -42,
+					'large.number': 999999999,
+				});
+			}).not.toThrow();
+		});
+	});
+
+	describe('integration tests', () => {
+		it('should execute nested spans correctly', async () => {
+			const tracer = getTracer('nested-test');
+
+			const result = await withSpan(tracer, 'outer-span', async () => {
+				const innerResult = await withSpan(tracer, 'inner-span', async () => {
+					return 'nested-result';
+				});
+				return innerResult;
+			});
+
+			expect(result).toBe('nested-result');
+		});
+
+		it('should handle namespace changes correctly', async () => {
+			const originalTracer = getTracer('service-before');
+			expect(originalTracer).toBeDefined();
+
+			setTracerNamespace('custom');
+			const customTracer = getTracer('service-custom');
+			expect(customTracer).toBeDefined();
+
+			resetTracerNamespace();
+			const restoredTracer = getTracer('service-after');
+			expect(restoredTracer).toBeDefined();
 		});
 	});
 });
