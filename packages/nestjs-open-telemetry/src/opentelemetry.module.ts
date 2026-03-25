@@ -5,10 +5,11 @@ import { OpenTelemetryExporter } from './exporters/index.js';
 /**
  * OpenTelemetry module for NestJS applications.
  *
- * This module integrates OpenTelemetry with NestJS by:
- * 1. Providing the OpenTelemetryExporter for metrics collection
- * 2. Registering the exporter with the InstrumentationRegistry (from nestjs-shared)
- * 3. Automatically linking HTTP metrics (via HTTPInstrumentationInterceptor)
+ * Configures and initializes the OpenTelemetry SDK, sets up exporters, and connects
+ * to the metric collection providers. This module:
+ * 1. Provides the OpenTelemetryExporter for metrics collection
+ * 2. Registers the exporter with the InstrumentationRegistry (from nestjs-shared)
+ * 3. Automatically links HTTP metrics (via HTTPInstrumentationInterceptor)
  *    to OpenTelemetry instruments
  *
  * Note: HTTP metrics are handled globally by HTTPInstrumentationInterceptor from
@@ -22,13 +23,15 @@ import { OpenTelemetryExporter } from './exporters/index.js';
  *
  * @example
  * ```typescript
- * import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
+ * import { Module } from '@nestjs/common';
  * import { CommonModule } from '@pawells/nestjs-shared';
+ * import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
  *
+ * // forRoot() usage
  * @Module({
  *   imports: [
- *     CommonModule,          // Provides InstrumentationRegistry
- *     OpenTelemetryModule,   // Integrates OpenTelemetry exporter
+ *     CommonModule,                    // Provides InstrumentationRegistry
+ *     OpenTelemetryModule.forRoot(),   // Initialize OpenTelemetry globally
  *   ],
  * })
  * export class AppModule {}

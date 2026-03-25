@@ -1,6 +1,30 @@
 /**
- * @pawells/nestjs-open-telemetry
- * NestJS integration for OpenTelemetry
+ * @packageDocumentation
+ *
+ * OpenTelemetry tracing and metrics integration for NestJS applications.
+ *
+ * This package provides:
+ * - **@Traced decorator** — Automatically wrap methods in distributed tracing spans with error handling
+ * - **Manual span helpers** — Low-level control over span creation and context management via `getTracer`, `createSpan`, `withSpan`
+ * - **HTTP metrics** — Record request duration, status codes, and body sizes following OpenTelemetry semantic conventions
+ * - **Logger adapter** — Inject trace context (trace_id, span_id) into all logs automatically
+ *
+ * Depends on {@link https://www.npmjs.com/package/@pawells/nestjs-shared @pawells/nestjs-shared} for the `InstrumentationRegistry`.
+ *
+ * @example
+ * ```typescript
+ * import { Module } from '@nestjs/common';
+ * import { CommonModule } from '@pawells/nestjs-shared';
+ * import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
+ *
+ * @Module({
+ *   imports: [
+ *     CommonModule,                    // Provides InstrumentationRegistry
+ *     OpenTelemetryModule.forRoot(),   // Integrates OpenTelemetry exporter
+ *   ],
+ * })
+ * export class AppModule {}
+ * ```
  */
 
 // Modules

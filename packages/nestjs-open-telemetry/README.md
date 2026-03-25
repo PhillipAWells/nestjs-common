@@ -328,6 +328,34 @@ The module is initialized with no required configuration:
 export class AppModule {}
 ```
 
+## Testing Utilities
+
+The package exports two internal helper functions for test isolation and cleanup:
+
+### resetTracerNamespace()
+
+Resets the tracer namespace to its default value (`'pawells'`). Used in test teardown to ensure namespace isolation between tests.
+
+```typescript
+import { resetTracerNamespace } from '@pawells/nestjs-open-telemetry';
+
+afterEach(() => {
+  resetTracerNamespace();  // Clean up for next test
+});
+```
+
+### resetHttpMetrics()
+
+Resets the cached HTTP metrics to null, forcing re-initialization on next access. Used in test teardown to ensure metric state isolation between tests.
+
+```typescript
+import { resetHttpMetrics } from '@pawells/nestjs-open-telemetry';
+
+afterEach(() => {
+  resetHttpMetrics();  // Clean up for next test
+});
+```
+
 ## Re-exports
 
 The package re-exports useful types from OpenTelemetry for convenience:

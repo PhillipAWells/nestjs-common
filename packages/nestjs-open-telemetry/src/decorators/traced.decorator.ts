@@ -1,6 +1,7 @@
 import { trace, SpanStatusCode, context, SpanKind } from '@opentelemetry/api';
 import { getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { OTEL_NAMESPACE } from '../lib/constants.js';
+import type { MethodDecorator } from '@nestjs/common';
 
 /**
  * Options for @Traced decorator.
