@@ -11,7 +11,7 @@ import type { Cache } from 'cache-manager';
 import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
-import { PyroscopeService , ProfileMethod } from '@pawells/nestjs-pyroscope';
+import { PyroscopeService, ProfileMethod } from '@pawells/nestjs-pyroscope';
 import {
 	CACHE_MAX_OPERATION_TIMINGS,
 	CACHE_OPERATION_TIMING_MAX_AGE_MS,
@@ -62,7 +62,7 @@ export interface CacheStats {
  */
 @Injectable()
 export abstract class BaseCacheService implements LazyModuleRefService, OnModuleDestroy {
-	protected logger!: AppLogger;
+	protected logger: AppLogger | undefined;
 
 	protected stats: CacheStats = {
 		hits: 0,
@@ -165,7 +165,6 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			let removedCount = 0;
 
 			// First, try to remove expired entries (older than 1 hour)
-
 			for (const [key, timings] of this.operationTimings.entries()) {
 				const oldestTiming = Math.min(...timings);
 				if (now - oldestTiming > BaseCacheService.OPERATION_TIMING_MAX_AGE_MS) {
@@ -187,7 +186,6 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				});
 
 				// Remove oldest entries
-
 				for (let i = 0; i < toRemove && i < entries.length; i++) {
 					this.operationTimings.delete(entries[i]?.[0] ?? '');
 					removedCount++;
@@ -195,7 +193,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			}
 
 			if (removedCount > 0) {
-				this.logger.debug(`Operation timings cleanup: removed ${removedCount} entries`, JSON.stringify({
+				this.logger?.debug(`Operation timings cleanup: removed ${removedCount} entries`, JSON.stringify({
 					remainingSize: this.operationTimings.size,
 					maxSize: BaseCacheService.MAX_OPERATION_TIMINGS,
 				}));
@@ -253,7 +251,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	public async get<T>(key: string): Promise<T | undefined> {
 		this.validateCacheKey(key);
 		const startTime = Date.now();
-		this.logger.debug('Cache get operation', JSON.stringify({ key }));
+		this.logger?.debug('Cache get operation', JSON.stringify({ key }));
 
 		try {
 			const value = await this.CacheManager.get<T>(key);
@@ -265,7 +263,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			if (value !== null && value !== undefined) {
 				this.stats.hits++;
 				this.updateHitRate();
-				this.logger.debug('Cache hit', JSON.stringify({
+				this.logger?.debug('Cache hit', JSON.stringify({
 					key,
 					durationMs: duration,
 					size: JSON.stringify(value).length,
@@ -276,7 +274,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			} else {
 				this.stats.misses++;
 				this.updateHitRate();
-				this.logger.debug('Cache miss', JSON.stringify({
+				this.logger?.debug('Cache miss', JSON.stringify({
 					key,
 					durationMs: duration,
 				}));
@@ -288,7 +286,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.stats.errors++;
 			const duration = Date.now() - startTime;
 			this.trackOperationTiming('get', duration);
-			this.logger.error('Cache get error', JSON.stringify({
+			this.logger?.error('Cache get error', JSON.stringify({
 				key,
 				error: (error as Error).message,
 				durationMs: duration,
@@ -312,7 +310,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		this.validateCacheKey(key);
 		const startTime = Date.now();
 		const size = JSON.stringify(value).length;
-		this.logger.debug('Cache set operation', JSON.stringify({
+		this.logger?.debug('Cache set operation', JSON.stringify({
 			key,
 			ttl,
 			size,
@@ -323,7 +321,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.stats.sets++;
 			const duration = Date.now() - startTime;
 			this.trackOperationTiming('set', duration);
-			this.logger.debug('Cache set successful', JSON.stringify({
+			this.logger?.debug('Cache set successful', JSON.stringify({
 				key,
 				durationMs: duration,
 				size,
@@ -332,7 +330,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.stats.errors++;
 			const duration = Date.now() - startTime;
 			this.trackOperationTiming('set', duration);
-			this.logger.error('Cache set error', JSON.stringify({
+			this.logger?.error('Cache set error', JSON.stringify({
 				key,
 				error: (error as Error).message,
 				durationMs: duration,
@@ -357,7 +355,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.validateCacheKey(k);
 		}
 		const startTime = Date.now();
-		this.logger.debug(`Cache delete: ${keys.join(', ')}`);
+		this.logger?.debug(`Cache delete: ${keys.join(', ')}`);
 		try {
 			for (const k of keys) {
 				await this.CacheManager.del(k);
@@ -365,7 +363,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.stats.deletes++;
 			const duration = Date.now() - startTime;
 			this.trackOperationTiming('del', duration);
-			this.logger.debug(`Cache deleted: ${keys.length} key(s)`, JSON.stringify({
+			this.logger?.debug(`Cache deleted: ${keys.length} key(s)`, JSON.stringify({
 				durationMs: duration,
 				keysCount: keys.length,
 			}));
@@ -373,7 +371,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.stats.errors++;
 			const duration = Date.now() - startTime;
 			this.trackOperationTiming('del', duration);
-			this.logger.error(`Cache delete error for keys ${key}:`, JSON.stringify({
+			this.logger?.error(`Cache delete error for keys ${key}:`, JSON.stringify({
 				error: (error as Error).message,
 				durationMs: duration,
 			}));
@@ -390,7 +388,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		tags: { operation: 'cache_clear', cacheType: 'redis' },
 	})
 	public async clear(): Promise<void> {
-		this.logger.info('Clearing all cache entries');
+		this.logger?.info('Clearing all cache entries');
 		try {
 			if (typeof (this.CacheManager as any).clear === 'function') {
 				await (this.CacheManager as any).clear();
@@ -398,10 +396,10 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				await this.CacheManager.reset();
 			}
 			this.stats.clears++;
-			this.logger.info('Cache cleared successfully');
+			this.logger?.info('Cache cleared successfully');
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error('Cache clear error', getErrorMessage(error));
+			this.logger?.error('Cache clear error', getErrorMessage(error));
 			throw error;
 		}
 	}
@@ -419,7 +417,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			return value !== null && value !== undefined;
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error(`Cache exists error for key ${key}`, getErrorMessage(error));
+			this.logger?.error(`Cache exists error for key ${key}`, getErrorMessage(error));
 			return false;
 		}
 	}
@@ -442,20 +440,20 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		ttl?: number,
 	): Promise<T> {
 		this.validateCacheKey(key);
-		this.logger.debug(`Cache getOrSet: ${key}`);
+		this.logger?.debug(`Cache getOrSet: ${key}`);
 		const cached = await this.get<T>(key);
 		if (cached !== undefined) {
 			return cached;
 		}
 
-		this.logger.debug(`Executing factory function for key: ${key}`);
+		this.logger?.debug(`Executing factory function for key: ${key}`);
 		try {
 			const value = await factory();
 			await this.set(key, value, ttl);
-			this.logger.debug(`Factory result cached for key: ${key}`);
+			this.logger?.debug(`Factory result cached for key: ${key}`);
 			return value;
 		} catch (error) {
-			this.logger.error(`Factory function error for key ${key}`, getErrorMessage(error));
+			this.logger?.error(`Factory function error for key ${key}`, getErrorMessage(error));
 			throw error;
 		}
 	}
@@ -471,7 +469,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	})
 	public async invalidatePattern(pattern: string): Promise<number> {
 		this.validateCacheKey(pattern);
-		this.logger.info(`Invalidating cache pattern: ${pattern}`);
+		this.logger?.info(`Invalidating cache pattern: ${pattern}`);
 		try {
 			// For Redis store, we need to access the underlying client
 			const { store } = (this.CacheManager as any);
@@ -481,22 +479,22 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 					await this.del(keys);
 					// Track invalidation pattern
 					this.stats.invalidationPatterns[pattern] = (this.stats.invalidationPatterns[pattern] ?? 0) + keys.length;
-					this.logger.info(`Invalidated ${keys.length} cache keys matching pattern: ${pattern}`, JSON.stringify({
+					this.logger?.info(`Invalidated ${keys.length} cache keys matching pattern: ${pattern}`, JSON.stringify({
 						pattern,
 						keysRemoved: keys.length,
 						totalForPattern: this.stats.invalidationPatterns[pattern],
 					}));
 					return keys.length;
 				} else {
-					this.logger.debug(`No cache keys found matching pattern: ${pattern}`);
+					this.logger?.debug(`No cache keys found matching pattern: ${pattern}`);
 				}
 			} else {
-				this.logger.warn(`Store does not support pattern-based eviction for pattern: ${pattern}`);
+				this.logger?.warn(`Store does not support pattern-based eviction for pattern: ${pattern}`);
 			}
 			return 0;
 		} catch (error) {
 			this.stats.errors++;
-			this.logger.error(`Pattern invalidation error for pattern ${pattern}:`, JSON.stringify({
+			this.logger?.error(`Pattern invalidation error for pattern ${pattern}:`, JSON.stringify({
 				pattern,
 				error: (error as Error).message,
 			}));
@@ -617,7 +615,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 		// Log comprehensive statistics
 
-		this.logger.info('Cache statistics', JSON.stringify({
+		this.logger?.info('Cache statistics', JSON.stringify({
 			totalKeys: stats.totalKeys ?? 0,
 
 			memoryUsage: stats.memoryUsage ? `${(stats.memoryUsage / BYTES_PER_MEGABYTE).toFixed(2)}MB` : 'unknown',
@@ -631,7 +629,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		}));
 
 		// Log operation timing percentiles
-		this.logger.info('Cache operation timing percentiles', JSON.stringify({
+		this.logger?.info('Cache operation timing percentiles', JSON.stringify({
 			get: {
 				p50: `${getP50}ms`,
 				p95: `${getP95}ms`,
@@ -648,7 +646,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 		// Log eviction reasons if any
 		if (stats.evictions > 0) {
-			this.logger.info('Cache eviction summary', JSON.stringify({
+			this.logger?.info('Cache eviction summary', JSON.stringify({
 				totalEvictions: stats.evictions,
 				reasons: stats.evictionReasons,
 			}));
@@ -657,7 +655,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		// Log invalidation patterns if any
 		const patternCount = Object.keys(stats.invalidationPatterns).length;
 		if (patternCount > 0) {
-			this.logger.info('Cache invalidation patterns', JSON.stringify({
+			this.logger?.info('Cache invalidation patterns', JSON.stringify({
 				patterns: stats.invalidationPatterns,
 				totalPatterns: patternCount,
 			}));
@@ -671,7 +669,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 		this.stats.evictions += keysRemoved;
 		this.stats.evictionReasons[reason] = (this.stats.evictionReasons[reason] ?? 0) + keysRemoved;
 
-		this.logger.info('Cache eviction', JSON.stringify({
+		this.logger?.info('Cache eviction', JSON.stringify({
 			reason,
 			keysRemoved,
 			memoryFreed: memoryFreed ? `${(memoryFreed / BYTES_PER_KILOBYTE).toFixed(0)}KB` : 'unknown',
@@ -683,7 +681,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	 * Record cache warming event
 	 */
 	protected recordCacheWarming(keysLoaded: number, durationMs: number): void {
-		this.logger.info('Cache warming completed', JSON.stringify({
+		this.logger?.info('Cache warming completed', JSON.stringify({
 			keysLoaded,
 			duration: `${(durationMs / MS_PER_SECOND).toFixed(2)}s`,
 			rate: `${(keysLoaded / (durationMs / MS_PER_SECOND)).toFixed(0)} keys/s`,
@@ -694,7 +692,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	 * Record cache synchronization event
 	 */
 	protected recordCacheSync(source: string, keysSynced: number, durationMs: number): void {
-		this.logger.info('Cache synchronization completed', JSON.stringify({
+		this.logger?.info('Cache synchronization completed', JSON.stringify({
 			source,
 			keysSynced,
 			duration: `${(durationMs / MS_PER_SECOND).toFixed(2)}s`,
@@ -761,7 +759,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 
 			// Log final statistics unconditionally on destroy
 			const stats = this.getStats();
-			this.logger.info('Cache statistics', JSON.stringify({
+			this.logger?.info('Cache statistics', JSON.stringify({
 				hitRate: `${(stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
 				hits: stats.hits,
 				misses: stats.misses,
@@ -770,7 +768,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				clears: stats.clears,
 				errors: stats.errors,
 			}));
-			this.logger.info('Cache service shutdown', JSON.stringify({
+			this.logger?.info('Cache service shutdown', JSON.stringify({
 				finalStats: stats,
 				totalOperations: stats.hits + stats.misses + stats.sets + stats.deletes + stats.clears,
 				hitRatePercent: (stats.hitRate * PERCENTAGE_FACTOR).toFixed(2),
@@ -780,7 +778,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			// Log memory trend
 			const memoryTrend = this.getMemoryTrend();
 			if (memoryTrend.trend !== 'stable') {
-				this.logger.info('Final memory trend', JSON.stringify({
+				this.logger?.info('Final memory trend', JSON.stringify({
 					trend: memoryTrend.trend,
 					rate: `${(memoryTrend.rate / BYTES_PER_KILOBYTE).toFixed(2)} KB/s`,
 				}));
@@ -792,12 +790,12 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 				if (store && typeof store.client?.dbsize === 'function') {
 					const dbSize = await store.client.dbsize();
 					this.stats.totalKeys = dbSize;
-					this.logger.info('Redis database size', JSON.stringify({
+					this.logger?.info('Redis database size', JSON.stringify({
 						keys: dbSize,
 					}));
 				}
 			} catch (error) {
-				this.logger.debug('Could not retrieve cache size information', JSON.stringify({
+				this.logger?.debug('Could not retrieve cache size information', JSON.stringify({
 					error: (error as Error).message,
 				}));
 			}
@@ -807,7 +805,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 			this.memorySnapshots = [];
 			this.keyDistribution.clear();
 		} catch (error) {
-			this.logger.error('Error during cache service cleanup', JSON.stringify({
+			this.logger?.error('Error during cache service cleanup', JSON.stringify({
 				error: (error as Error).message,
 			}));
 		}

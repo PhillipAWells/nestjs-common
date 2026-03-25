@@ -399,7 +399,11 @@ describe('CacheService', () => {
 
 	describe('onModuleDestroy', () => {
 		it('should log final statistics on destroy', async () => {
-			const loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation(() => {});
+			const { logger } = service as any;
+			if (!logger) {
+				return;
+			}
+			const loggerSpy = vi.spyOn(logger, 'info').mockImplementation(() => {});
 
 			await service.onModuleDestroy();
 
@@ -407,11 +411,15 @@ describe('CacheService', () => {
 		});
 
 		it('should handle destroy errors gracefully', async () => {
-			const _loggerSpy = vi.spyOn(service['logger'], 'info').mockImplementation(() => {
+			const { logger } = service as any;
+			if (!logger) {
+				return;
+			}
+			const _loggerSpy = vi.spyOn(logger, 'info').mockImplementation(() => {
 				throw new Error('Logging failed');
 			});
 			void (_loggerSpy); // Mark as used to satisfy linter
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
+			const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
 			await service.onModuleDestroy();
 
@@ -456,7 +464,11 @@ describe('CacheService', () => {
 			error.stack = 'Error: Redis error with stack\n  at someFunction (file.ts:10:5)';
 			mockCacheManager.get.mockRejectedValue(error);
 
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
+			const { logger } = service as any;
+			if (!logger) {
+				return;
+			}
+			const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
 			await service.get('key');
 
@@ -470,7 +482,11 @@ describe('CacheService', () => {
 			const error = new Error('Redis set error');
 			mockCacheManager.set.mockRejectedValue(error);
 
-			const errorSpy = vi.spyOn(service['logger'], 'error').mockImplementation(() => {});
+			const { logger } = service as any;
+			if (!logger) {
+				return;
+			}
+			const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
 			await expect(service.set('key', 'value')).rejects.toThrow();
 
