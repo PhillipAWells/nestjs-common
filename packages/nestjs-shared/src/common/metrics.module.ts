@@ -5,9 +5,12 @@ import { HTTPMetricsInterceptor } from './interceptors/http-metrics.interceptor.
 import { MetricsController } from './controllers/metrics.controller.js';
 
 /**
- * Async options for MetricsModule
+ * Async options for MetricsModule.
+ * Configuration options for asynchronous MetricsModule initialization.
  */
-export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {}
+export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+	/** Optional modules to import for async configuration */
+}
 
 /**
  * Metrics Module.

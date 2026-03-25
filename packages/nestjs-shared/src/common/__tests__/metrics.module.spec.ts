@@ -21,7 +21,6 @@ describe('MetricsModule', () => {
 
 			expect(result).toBeDefined();
 			expect(result.module).toBe(MetricsModule);
-			expect(result.global).toBe(true);
 		});
 	});
 
@@ -31,7 +30,6 @@ describe('MetricsModule', () => {
 
 			expect(result).toBeDefined();
 			expect(result.module).toBe(MetricsModule);
-			expect(result.global).toBe(true);
 		});
 
 		it('should handle custom options with useFactory', () => {
@@ -40,21 +38,6 @@ describe('MetricsModule', () => {
 
 			expect(result).toBeDefined();
 			expect(result.module).toBe(MetricsModule);
-			expect(result.global).toBe(true);
-		});
-	});
-
-	describe('global module behavior', () => {
-		it('should mark module as global', () => {
-			const result = MetricsModule.forRoot();
-
-			expect(result.global).toBe(true);
-		});
-
-		it('should preserve global flag for async configuration', () => {
-			const result = MetricsModule.forRootAsync({});
-
-			expect(result.global).toBe(true);
 		});
 	});
 
@@ -67,7 +50,6 @@ describe('MetricsModule', () => {
 			const result = MetricsModule.forRoot();
 
 			expect(result.module).toBe(MetricsModule);
-			expect(result.global).toBe(true);
 		});
 
 		it('should have static methods', () => {

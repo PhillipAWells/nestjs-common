@@ -11,10 +11,10 @@ import { MetricsRegistryService } from '../services/metrics-registry.service.js'
  * Usage:
  * ```typescript
  * class StreamMetricsCollector extends BaseMetricsCollector {
- *   protected InitializeMetrics(): void {
- *     this.RegisterCounter('stream_created', 'Total streams created', ['region']);
- *     this.RegisterGauge('active_streams', 'Currently active streams', ['region']);
- *     this.RegisterHistogram('stream_duration', 'Stream duration in seconds', ['region']);
+ *   protected initializeMetrics(): void {
+ *     this.registerCounter('stream_created', 'Total streams created', ['region']);
+ *     this.registerGauge('active_streams', 'Currently active streams', ['region']);
+ *     this.registerHistogram('stream_duration', 'Stream duration in seconds', ['region']);
  *   }
  * }
  *

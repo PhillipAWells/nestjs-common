@@ -94,17 +94,17 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 
 	private get Logger(): AppLogger {
 		this._logger ??= this.Module.get(AppLogger);
-		return this._logger ?? this.Module.get(AppLogger);
+		return this._logger;
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
 		this._errorSanitizer ??= this.Module.get(ErrorSanitizerService);
-		return this._errorSanitizer ?? this.Module.get(ErrorSanitizerService);
+		return this._errorSanitizer;
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
 		this._errorCategorizer ??= this.Module.get(ErrorCategorizerService);
-		return this._errorCategorizer ?? this.Module.get(ErrorCategorizerService);
+		return this._errorCategorizer;
 	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {
