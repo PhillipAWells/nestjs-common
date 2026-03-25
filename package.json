@@ -18,8 +18,8 @@
 		"lint:fix": "nx run-many --target=lint --fix",
 		"test": "nx run-many --target=test",
 		"build": "nx run-many --target=build",
+		"publish:dev": "node scripts/publish-dev.mjs",
 		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build",
-		"version:sync": "node -e \"const v=require('./package.json').version;const fs=require('fs');for(const d of fs.readdirSync('packages')){const p='packages/'+d+'/package.json';if(fs.existsSync(p)){const pkg=JSON.parse(fs.readFileSync(p));pkg.version=v;fs.writeFileSync(p,JSON.stringify(pkg,null,2)+'\\n');}}\"",
 		"prepare": "husky"
 	},
 	"workspaces": [
