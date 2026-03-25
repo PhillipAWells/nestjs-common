@@ -137,7 +137,6 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				JSONScalar,
 				...(options.bson?.enabled ? [BsonSerializationService, BsonResponseInterceptor] : []),
 			],
-			global: true,
 		};
 	}
 
@@ -199,7 +198,6 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 				DateTimeScalar,
 				JSONScalar,
 			],
-			global: true,
 		};
 	}
 

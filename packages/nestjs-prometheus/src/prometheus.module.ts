@@ -62,7 +62,6 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	public static forRoot(): DynamicModule {
 		return {
 			module: PrometheusModule,
-			global: true,
 		};
 	}
 

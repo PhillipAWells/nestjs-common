@@ -60,7 +60,6 @@ export class MetricsModule {
 	public static forRoot(): DynamicModule {
 		return {
 			module: MetricsModule,
-			global: true,
 		};
 	}
 
@@ -70,7 +69,6 @@ export class MetricsModule {
 	public static forRootAsync(options: MetricsModuleAsyncOptions): DynamicModule {
 		return {
 			module: MetricsModule,
-			global: true,
 			imports: options.imports,
 		};
 	}

@@ -1,17 +1,11 @@
-import { Module, DynamicModule, Global, ModuleMetadata } from '@nestjs/common';
-import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
+import { Module, DynamicModule, Global } from '@nestjs/common';
 import { CommonModule } from '@pawells/nestjs-shared/common';
 import { KeycloakAdminService } from './services/keycloak-admin.service.js';
 import { KeycloakHealthIndicator } from './health/keycloak.health.js';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './keycloak.constants.js';
 import type { KeycloakAdminConfig } from './config/keycloak.config.js';
 import { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
-
-export interface KeycloakAdminModuleAsyncOptions {
-	imports?: ModuleMetadata['imports'];
-	useFactory: (...args: unknown[]) => Promise<KeycloakAdminConfig> | KeycloakAdminConfig;
-	inject?: Array<InjectionToken | OptionalFactoryDependency>;
-}
+import type { KeycloakAdminModuleAsyncOptions } from './keycloak-admin.interfaces.js';
 
 /**
  * Keycloak Admin module for managing users, roles, and groups.

@@ -1,16 +1,10 @@
-import { Module, DynamicModule, ModuleMetadata } from '@nestjs/common';
+import { Module, DynamicModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
 import { KEYCLOAK_MODULE_OPTIONS } from './keycloak.constants.js';
 import type { KeycloakModuleOptions } from './keycloak.types.js';
+import type { KeycloakModuleAsyncOptions } from './keycloak.interfaces.js';
 import { JwksCacheService } from './services/jwks-cache.service.js';
 import { KeycloakTokenValidationService } from './services/keycloak-token-validation.service.js';
-
-export interface KeycloakModuleAsyncOptions {
-	imports?: ModuleMetadata['imports'];
-	useFactory: (...args: unknown[]) => Promise<KeycloakModuleOptions> | KeycloakModuleOptions;
-	inject?: Array<InjectionToken | OptionalFactoryDependency>;
-}
 
 /**
  * Keycloak Token Validation Module
