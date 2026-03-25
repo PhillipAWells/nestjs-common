@@ -90,7 +90,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 *
 	 * @param descriptor - The metric descriptor being registered
 	 */
-	public override onDescriptorRegistered(descriptor: MetricDescriptor): void {
+	public onDescriptorRegistered(descriptor: MetricDescriptor): void {
 		// Only create if not already cached
 		if (this.instruments.has(descriptor.name)) {
 			return;
@@ -148,7 +148,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 *
 	 * @param value - The metric value being recorded, including descriptor and labels
 	 */
-	public override onMetricRecorded(value: MetricValue): void {
+	public onMetricRecorded(value: MetricValue): void {
 		const instrument = this.instruments.get(value.descriptor.name);
 		if (!instrument) {
 			return;
@@ -198,7 +198,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 *
 	 * Clears the instrument cache and allows OpenTelemetry resources to be cleaned up.
 	 */
-	public override shutdown(): void {
+	public shutdown(): void {
 		this.instruments.clear();
 		this.gaugeValues.clear();
 	}

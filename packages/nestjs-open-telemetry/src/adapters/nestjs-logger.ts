@@ -35,7 +35,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a message (info level).
 	 */
-	public override log(message: unknown, context?: string): void {
+	public log(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.info(this.formatMessage(message), metadata);
 	}
@@ -43,7 +43,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log an error message.
 	 */
-	public override error(message: unknown, stackTrace?: string, context?: string): void {
+	public error(message: unknown, stackTrace?: string, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		if (stackTrace) {
 			metadata['stackTrace'] = stackTrace;
@@ -54,7 +54,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a warning message.
 	 */
-	public override warn(message: unknown, context?: string): void {
+	public warn(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.warn(this.formatMessage(message), metadata);
 	}
@@ -62,7 +62,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a debug message.
 	 */
-	public override debug(message: unknown, context?: string): void {
+	public debug(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.debug(this.formatMessage(message), metadata);
 	}
@@ -72,14 +72,14 @@ export class OpenTelemetryLogger implements LoggerService {
 	 * Intentional downgrade: NestJS verbose is the most verbose level, but AppLogger
 	 * has no verbose level, so verbose messages are mapped to debug level.
 	 */
-	public override verbose(message: unknown, context?: string): void {
+	public verbose(message: unknown, context?: string): void {
 		this.debug(message, context);
 	}
 
 	/**
 	 * Log a fatal error message.
 	 */
-	public override fatal(message: unknown, context?: string): void {
+	public fatal(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.fatal(this.formatMessage(message), metadata);
 	}
