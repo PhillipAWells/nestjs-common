@@ -154,10 +154,10 @@ export function ApplySecurityMiddleware(
 				req.body = sanitizeXss(req.body, logger);
 			}
 			if (req.query) {
-				req.query = sanitizeXss(req.query as any, logger) as any;
+				req.query = sanitizeXss(req.query, logger) as Record<string, string[]> | Record<string, string>;
 			}
 			if (req.params) {
-				req.params = sanitizeXss(req.params as any, logger) as any;
+				req.params = sanitizeXss(req.params, logger) as Record<string, string>;
 			}
 			next();
 		});
@@ -286,8 +286,9 @@ export function ApplySecurityMiddleware(
 			maxAge: 3600,
 		});
 		logger.log(
-			`CORS configured for environment: ${environment}`,
-			corsOrigins.length > 0 ? `Allowed origins: ${corsOrigins.join(', ')}` : 'Using smart origin validation',
+			corsOrigins.length > 0
+				? `CORS configured for environment: ${environment}, Allowed origins: ${corsOrigins.join(', ')}`
+				: `CORS configured for environment: ${environment}, Using smart origin validation`,
 		);
 	}
 }

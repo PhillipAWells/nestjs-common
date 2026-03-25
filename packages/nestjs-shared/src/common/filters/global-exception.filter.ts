@@ -94,20 +94,17 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 
 	private get Logger(): AppLogger {
 		this._logger ??= this.Module.get(AppLogger);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return this._logger!;
+		return this._logger ?? this.Module.get(AppLogger);
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
 		this._errorSanitizer ??= this.Module.get(ErrorSanitizerService);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return this._errorSanitizer!;
+		return this._errorSanitizer ?? this.Module.get(ErrorSanitizerService);
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
 		this._errorCategorizer ??= this.Module.get(ErrorCategorizerService);
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		return this._errorCategorizer!;
+		return this._errorCategorizer ?? this.Module.get(ErrorCategorizerService);
 	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {

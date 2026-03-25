@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { ConfigService } from '@nestjs/config';
-import { AppLogger } from './logger.service.js';
-import { LogLevel } from '../interfaces/log-entry.interface.js';
+import { AppLogger } from '../logger.service.js';
+import { LogLevel } from '../../interfaces/log-entry.interface.js';
 
 describe('AppLogger', () => {
 	let service: AppLogger;

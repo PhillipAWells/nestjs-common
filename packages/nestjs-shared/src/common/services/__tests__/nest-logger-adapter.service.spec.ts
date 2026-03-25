@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AppLogger } from './logger.service.js';
-import { NestLoggerAdapter } from './nest-logger-adapter.service.js';
+import { AppLogger } from '../logger.service.js';
+import { NestLoggerAdapter } from '../nest-logger-adapter.service.js';
 
 describe('NestLoggerAdapter', () => {
 	let adapter: NestLoggerAdapter;
