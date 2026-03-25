@@ -5,7 +5,27 @@ import type {
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak authentication flows
+ * Service for managing Keycloak authentication flows.
+ *
+ * Provides methods for querying and managing authentication flow configurations. Authentication flows
+ * define the steps users must complete to authenticate (e.g., username/password, MFA, social login).
+ * Flows can be customized by adding, removing, or reordering authenticators.
+ * Requires `authentication:read` and `authentication:write` scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.authentication | KeycloakAdminService#authentication}.
+ *
+ * @example
+ * ```typescript
+ * const flows = await keycloak.authentication.getFlows('my-realm');
+ * const flow = await keycloak.authentication.getFlow('my-realm', 'flow-id');
+ * await keycloak.authentication.createFlow('my-realm', {
+ *   alias: 'my-flow',
+ *   description: 'Custom auth flow',
+ *   builtIn: false,
+ *   providerId: 'basic-flow',
+ *   topLevel: true,
+ * });
+ * ```
  */
 export class AuthenticationService extends BaseService {
 	/**

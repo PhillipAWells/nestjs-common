@@ -2,7 +2,20 @@ import type { RoleRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak roles
+ * Service for managing Keycloak roles.
+ *
+ * Provides methods for creating, listing, and deleting both realm-wide and client-specific roles.
+ * Realm roles are shared across all clients in the realm, while client roles are scoped to a single client.
+ * Requires `roles:read` and `roles:write` scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.roles | KeycloakAdminService#roles}.
+ *
+ * @example
+ * ```typescript
+ * const roles = await keycloak.roles.listRealm('my-realm');
+ * const adminRole = await keycloak.roles.getByName('my-realm', 'admin');
+ * await keycloak.roles.create('my-realm', { name: 'editor', enabled: true });
+ * ```
  */
 export class RoleService extends BaseService {
 	/**

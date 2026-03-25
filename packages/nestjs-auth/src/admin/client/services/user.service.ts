@@ -7,7 +7,24 @@ import type {
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak users
+ * Service for managing Keycloak users.
+ *
+ * Provides methods for CRUD operations on Keycloak users, including user creation,
+ * role assignment, group membership, and credential management. Requires `users:read`
+ * and `users:write` scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.users | KeycloakAdminService#users}.
+ *
+ * @example
+ * ```typescript
+ * const users = await keycloak.users.list('my-realm');
+ * await keycloak.users.create('my-realm', {
+ *   email: 'user@example.com',
+ *   firstName: 'John',
+ *   lastName: 'Doe',
+ *   enabled: true,
+ * });
+ * ```
  */
 export class UserService extends BaseService {
 	/**

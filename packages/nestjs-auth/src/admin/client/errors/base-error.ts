@@ -7,6 +7,7 @@ const HTTP_STATUS_NOT_FOUND = 404;
 const HTTP_STATUS_REQUEST_TIMEOUT = 408;
 const HTTP_STATUS_CONFLICT = 409;
 const HTTP_STATUS_RATE_LIMIT = 429;
+const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
 
 /**
  * Base error class for Keycloak client errors
@@ -23,7 +24,7 @@ export class KeycloakClientError extends BaseApplicationError {
 		const errorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
 		super(message, {
 			code: errorCode,
-			statusCode: statusCode ?? 500,
+			statusCode: statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
 			context: { response, cause },
 		});
 		this.name = 'KeycloakClientError';

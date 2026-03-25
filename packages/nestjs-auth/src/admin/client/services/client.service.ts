@@ -6,7 +6,24 @@ import type {
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak OAuth/OIDC clients
+ * Service for managing Keycloak OAuth/OIDC clients.
+ *
+ * Provides methods for CRUD operations on OAuth/OIDC clients, including client creation,
+ * configuration, secret rotation, client scope management, and protocol mapper setup.
+ * Requires `clients:read` and `clients:write` scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.clients | KeycloakAdminService#clients}.
+ *
+ * @example
+ * ```typescript
+ * const clients = await keycloak.clients.list('my-realm');
+ * const client = await keycloak.clients.findByClientId('my-realm', 'my-app');
+ * await keycloak.clients.create('my-realm', {
+ *   clientId: 'my-app',
+ *   enabled: true,
+ *   redirectUris: ['http://localhost:3000/callback'],
+ * });
+ * ```
  */
 export class ClientService extends BaseService {
 	/**

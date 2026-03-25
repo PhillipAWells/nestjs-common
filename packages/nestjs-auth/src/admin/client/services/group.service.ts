@@ -2,7 +2,21 @@ import type { GroupRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak groups
+ * Service for managing Keycloak groups.
+ *
+ * Provides methods for creating, listing, and managing user groups. Groups can be nested hierarchically,
+ * have roles assigned to them, and be used to organize users. Requires `groups:read` and `groups:write`
+ * scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.groups | KeycloakAdminService#groups}.
+ *
+ * @example
+ * ```typescript
+ * const groups = await keycloak.groups.list('my-realm');
+ * const group = await keycloak.groups.get('my-realm', 'group-id');
+ * await keycloak.groups.create('my-realm', { name: 'developers', path: '/developers' });
+ * await keycloak.groups.addMember('my-realm', 'group-id', 'user-id');
+ * ```
  */
 export class GroupService extends BaseService {
 	/**

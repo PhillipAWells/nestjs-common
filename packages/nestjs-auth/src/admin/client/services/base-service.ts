@@ -22,7 +22,15 @@ const HTTP_STATUS_BAD_REQUEST = 400;
 const HTTP_STATUS_REQUEST_TIMEOUT = 408;
 
 /**
- * Base service class for Keycloak client services
+ * Base service class for Keycloak admin API client services.
+ *
+ * Provides shared functionality for all admin sub-services: error handling with classified
+ * exceptions, retry logic for transient failures, and scope-based access control.
+ * All Keycloak admin operations (user, role, client, group management, etc.) inherit from this class.
+ *
+ * Subclasses must call {@link requireScope} before API operations to enforce permission control.
+ *
+ * @abstract
  */
 export abstract class BaseService {
 	private readonly logger: AppLogger;

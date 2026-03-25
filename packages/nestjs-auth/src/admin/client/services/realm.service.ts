@@ -2,7 +2,20 @@ import type { RealmRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
- * Service for managing Keycloak realms
+ * Service for managing Keycloak realms.
+ *
+ * Provides methods for querying and updating realm-level configuration, including realm properties,
+ * security policy, login settings, and event configuration. Requires `realms:read` and `realms:write`
+ * scopes depending on the operation.
+ *
+ * Part of {@link KeycloakAdminService.realms | KeycloakAdminService#realms}.
+ *
+ * @example
+ * ```typescript
+ * const realm = await keycloak.realms.get('my-realm');
+ * const realms = await keycloak.realms.list();
+ * await keycloak.realms.update('my-realm', { accessTokenLifespan: 3600 });
+ * ```
  */
 export class RealmService extends BaseService {
 	/**
