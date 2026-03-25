@@ -180,6 +180,11 @@ export default [
 	{
 		files: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/*.spec.ts', '**/__tests__/**/*.tsx', '**/*.test.tsx', '**/*.spec.tsx'],
 		languageOptions: {
+			parser: tsParser,
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: __dirname,
+			},
 			globals: {
 				...globals.node,
 				describe: 'readonly',
@@ -195,7 +200,28 @@ export default [
 				jest: 'readonly',
 			},
 		},
+		plugins: {
+			'@typescript-eslint': typescriptEslint,
+			'@stylistic': stylistic,
+			'import': importPlugin,
+			'unused-imports': unusedImports,
+		},
+		settings: {
+			'import/resolver': IMPORT_RESOLVER,
+		},
 		rules: {
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': 'off',
+			'unused-imports/no-unused-imports': 'error',
+			'unused-imports/no-unused-vars': [
+				'warn',
+				{
+					vars: 'all',
+					varsIgnorePattern: '^_',
+					args: 'after-used',
+					argsIgnorePattern: '^_',
+				},
+			],
 			'no-magic-numbers': 'off',
 			'require-await': 'off',
 			'@typescript-eslint/no-non-null-assertion': 'off',
