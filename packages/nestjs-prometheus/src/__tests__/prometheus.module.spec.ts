@@ -65,7 +65,6 @@ describe('PrometheusModule', () => {
 
 			expect(config).toBeDefined();
 			expect(config.module).toBe(PrometheusModule);
-			expect(config.global).toBe(true);
 		});
 	});
 

@@ -264,6 +264,17 @@ The PrometheusExporter supports these metric types (as defined in MetricDescript
 | `updown_counter` | prom-client Gauge | Values that can increase or decrease |
 | `histogram` | prom-client Histogram | Distribution of values (e.g., request latency) |
 
+### Gauge and UpDownCounter Accumulation Behavior
+
+**Gauge (`gauge`)**: Records a point-in-time snapshot value. Each recorded value overwrites the previous one for a given label set.
+
+**UpDownCounter (`updown_counter`)**: Accumulates values across scrapes. The PrometheusExporter maintains a running-total Map (`gaugeValues`) for each updown_counter metric, keyed by normalized label set. When a value is recorded:
+1. All values for the same label set within a single scrape interval are accumulated together
+2. The accumulated sum is then added to the persistent running total
+3. This running total persists across Prometheus scrapes (resets only on exporter shutdown)
+
+Example: If you record `+5` then `+3` for the same labels in one scrape cycle, the running total increases by `8` (not just `3`). On the next scrape, if you record `+2`, the running total increases by another `2`.
+
 ## Related Packages
 
 - **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation: InstrumentationRegistry, HTTPMetricsInterceptor, MetricsGuard
