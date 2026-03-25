@@ -66,7 +66,10 @@ export class QdrantModule {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(options: QdrantModuleOptions, isGlobal?: boolean): DynamicModule {
+	public static forRoot(
+		options: QdrantModuleOptions,
+		isGlobal?: boolean,
+	): DynamicModule {
 		const global = isGlobal ?? true;
 		const { name, ...clientOptions } = options;
 		const clientToken = getQdrantClientToken(name);
@@ -122,7 +125,10 @@ export class QdrantModule {
 	 * })
 	 * ```
 	 */
-	public static forRootAsync(options: QdrantModuleAsyncOptions, isGlobal?: boolean): DynamicModule {
+	public static forRootAsync(
+		options: QdrantModuleAsyncOptions,
+		isGlobal?: boolean,
+	): DynamicModule {
 		const global = isGlobal ?? true;
 		const clientToken = getQdrantClientToken(options.name);
 		const optionsToken = getQdrantModuleOptionsToken(options.name);
@@ -132,8 +138,9 @@ export class QdrantModule {
 		const rawProviders = createAsyncProviders(
 			options,
 			rawOptionsToken,
-			(factory: QdrantOptionsFactory): QdrantModuleOptions | Promise<QdrantModuleOptions> =>
-				factory.createQdrantOptions(),
+			(factory: QdrantOptionsFactory): QdrantModuleOptions | Promise<QdrantModuleOptions> => {
+				return factory.createQdrantOptions();
+			},
 		);
 
 		return {

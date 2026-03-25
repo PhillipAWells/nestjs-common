@@ -127,7 +127,7 @@ describe('QdrantModule', () => {
 		it('should provide QDRANT_MODULE_OPTIONS from factory class', () => {
 			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
-			expect(options).toEqual({ url: 'http://localhost:6333' });
+			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
 
 		it('should provide QDRANT_CLIENT_TOKEN', () => {
@@ -180,7 +180,7 @@ describe('QdrantModule', () => {
 		it('should provide QDRANT_MODULE_OPTIONS from existing provider', () => {
 			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
-			expect(options).toEqual({ url: 'http://localhost:6333' });
+			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
 
 		it('should provide QDRANT_CLIENT_TOKEN from existing provider', () => {

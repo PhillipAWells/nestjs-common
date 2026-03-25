@@ -90,9 +90,15 @@ export class QdrantService implements OnModuleDestroy {
 	 * ```
 	 */
 	public collection(collectionName: string): QdrantCollectionService {
-		if (!collectionName || collectionName.length > MAX_COLLECTION_NAME_LENGTH || !/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName)) {
+		const isValidCollectionName =
+			collectionName &&
+			collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
+			/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
+
+		if (!isValidCollectionName) {
 			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
 		}
+
 		return new QdrantCollectionService(this.client, collectionName);
 	}
 
