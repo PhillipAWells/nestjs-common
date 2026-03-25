@@ -1,3 +1,5 @@
+/** @packageDocumentation */
+
 // ============================================================================
 // Keycloak Module — Token Validation and JWT Authentication
 // ============================================================================
@@ -6,6 +8,7 @@ export { KeycloakTokenValidationService } from './keycloak/services/keycloak-tok
 export { JwksCacheService } from './keycloak/services/jwks-cache.service.js';
 export type { TokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
 export type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from './keycloak/keycloak.types.js';
+export type { KeycloakModuleAsyncOptions } from './keycloak/keycloak.interfaces.js';
 export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 
 // ============================================================================
@@ -15,6 +18,7 @@ export { KeycloakAdminModule } from './admin/keycloak-admin.module.js';
 export { KeycloakAdminService } from './admin/services/keycloak-admin.service.js';
 export { KeycloakHealthIndicator } from './admin/health/keycloak.health.js';
 export type { KeycloakAdminConfig } from './admin/config/keycloak.config.js';
+export type { KeycloakAdminModuleAsyncOptions } from './admin/keycloak-admin.interfaces.js';
 export { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
 export { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './admin/keycloak.constants.js';
 
