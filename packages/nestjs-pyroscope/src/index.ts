@@ -1,3 +1,5 @@
+/** @packageDocumentation */
+
 // Public API exports
 
 // Profiling decorators
@@ -12,6 +14,9 @@ export { PyroscopeService } from './service.js';
 
 // Module
 export { PyroscopeModule } from './module.js';
+
+// Error classes
+export { PyroscopeError } from './errors/pyroscope.errors.js';
 
 // Metrics service
 export { MetricsService } from './services/metrics.service.js';

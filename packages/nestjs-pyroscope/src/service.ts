@@ -5,6 +5,7 @@ import type { IPyroscopeConfig, IProfileMetrics, IProfileContext } from './inter
 import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
 import { MetricsService } from './services/metrics.service.js';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import { PyroscopeError } from './errors/pyroscope.errors.js';
 import type { MetricsResponse } from './services/metrics.service.js';
 import {
 	PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
@@ -99,7 +100,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	private get config(): IPyroscopeConfig {
 		const cfg = this.moduleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 		if (!cfg) {
-			throw new Error('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
+			throw new PyroscopeError('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
 		}
 		return cfg;
 	}

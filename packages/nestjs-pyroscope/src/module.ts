@@ -1,4 +1,4 @@
-import { DynamicModule, Global, Provider } from '@nestjs/common';
+import { DynamicModule, Provider } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from './service.js';
 import { MetricsService } from './services/metrics.service.js';
@@ -29,7 +29,6 @@ import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
  * })
  * ```
  */
-@Global()
 export class PyroscopeModule {
 	/**
 	 * Configure Pyroscope with synchronous configuration.

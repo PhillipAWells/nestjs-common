@@ -1,13 +1,4 @@
 {
 	"extends": "./tsconfig.json",
-	"compilerOptions": {
-		"types": [
-			"vitest/globals"
-		],
-		"allowImportingTsExtensions": true,
-		"noEmit": true
-	},
-	"include": [
-		"src/**/*"
-	]
+	"include": ["src/**/*.ts"]
 }
