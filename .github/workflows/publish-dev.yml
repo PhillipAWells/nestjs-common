@@ -1,0 +1,71 @@
+name: Publish Dev (Snapshot)
+
+on:
+  push:
+    branches: ['development/**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  publish-dev:
+    name: Publish Dev Snapshot
+    needs: [ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      CI: true
+      NX_DAEMON: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Stamp snapshot version
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          BASE=$(node -p "require('./package.json').version.replace(/-.*$/, '')")
+          export SNAP="${BASE}-dev.${SHA}"
+          echo "Snapshot version: ${SNAP}"
+          node -e "
+            const fs = require('fs');
+            for (const d of fs.readdirSync('packages')) {
+              const p = 'packages/' + d + '/package.json';
+              if (!fs.existsSync(p)) continue;
+              const pkg = JSON.parse(fs.readFileSync(p));
+              if (pkg.private) continue;
+              pkg.version = process.env.SNAP;
+              fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+            }
+          "
+
+      - name: Build all packages
+        run: yarn build
+
+      - name: Publish dev snapshot
+        run: npx nx release publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
