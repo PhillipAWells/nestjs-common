@@ -269,9 +269,9 @@ describe('NetworkError', () => {
 		expect(error.message).toBe('connection refused');
 	});
 
-	it('does not set statusCode', () => {
+	it('sets statusCode to 500 by default', () => {
 		const error = new NetworkError('connection refused');
-		expect(error.statusCode).toBeUndefined();
+		expect(error.statusCode).toBe(500);
 	});
 
 	it('sets cause when provided', () => {

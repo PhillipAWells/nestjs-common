@@ -1,4 +1,8 @@
+import { BaseApplicationError } from '@pawells/nestjs-shared/common';
+
 const HTTP_STATUS_BAD_REQUEST = 400;
+const HTTP_STATUS_UNAUTHORIZED = 401;
+const HTTP_STATUS_FORBIDDEN = 403;
 const HTTP_STATUS_NOT_FOUND = 404;
 const HTTP_STATUS_REQUEST_TIMEOUT = 408;
 const HTTP_STATUS_CONFLICT = 409;
@@ -7,16 +11,23 @@ const HTTP_STATUS_RATE_LIMIT = 429;
 /**
  * Base error class for Keycloak client errors
  */
-export class KeycloakClientError extends Error {
+export class KeycloakClientError extends BaseApplicationError {
+	public readonly response?: unknown;
+
 	constructor(
 		message: string,
-		public readonly statusCode?: number,
-		public readonly response?: unknown,
+		statusCode?: number,
+		response?: unknown,
 		public override readonly cause?: Error,
 	) {
-		super(message);
+		const errorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
+		super(message, {
+			code: errorCode,
+			statusCode: statusCode ?? 500,
+			context: { response, cause },
+		});
 		this.name = 'KeycloakClientError';
-		Error.captureStackTrace(this, this.constructor);
+		this.response = response;
 	}
 }
 
@@ -25,7 +36,7 @@ export class KeycloakClientError extends Error {
  */
 export class AuthenticationError extends KeycloakClientError {
 	constructor(message: string, statusCode?: number, response?: unknown) {
-		super(message, statusCode, response);
+		super(message, statusCode ?? HTTP_STATUS_UNAUTHORIZED, response);
 		this.name = 'AuthenticationError';
 	}
 }
@@ -35,7 +46,7 @@ export class AuthenticationError extends KeycloakClientError {
  */
 export class AuthorizationError extends KeycloakClientError {
 	constructor(message: string, statusCode?: number, response?: unknown) {
-		super(message, statusCode, response);
+		super(message, statusCode ?? HTTP_STATUS_FORBIDDEN, response);
 		this.name = 'AuthorizationError';
 	}
 }
