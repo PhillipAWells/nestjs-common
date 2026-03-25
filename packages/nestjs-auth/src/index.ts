@@ -1,4 +1,55 @@
-/** @packageDocumentation */
+/**
+ * @packageDocumentation
+ *
+ * Keycloak integration library for NestJS resource servers. Provides token validation,
+ * role and permission guards, authentication decorators, and a typed Admin REST API client.
+ *
+ * ## Key Features
+ *
+ * - **Token Validation**: Online introspection (default) detects revoked tokens immediately;
+ *   offline JWKS mode validates signatures locally without network hops
+ * - **Guards & Decorators**: `@Public()`, `@Auth()`, `@Roles()`, `@Permissions()`, `@CurrentUser()`,
+ *   and `@AuthToken()` for HTTP routes; GraphQL-specific variants for resolvers
+ * - **Admin REST API Client**: Typed service for user management, role/group administration,
+ *   federated identity linking, and event polling
+ * - **Security Defaults**: Introspection by default, CORS localhost validation, path normalization
+ *   for metrics cardinality control
+ *
+ * ## Quick Start
+ *
+ * ```typescript
+ * import { Module } from '@nestjs/common';
+ * import { APP_GUARD } from '@nestjs/core';
+ * import { ConfigModule, ConfigService } from '@nestjs/config';
+ * import { KeycloakModule, JwtAuthGuard } from '@pawells/nestjs-auth';
+ *
+ * @Module({
+ *   imports: [
+ *     KeycloakModule.forRootAsync({
+ *       imports: [ConfigModule],
+ *       inject: [ConfigService],
+ *       useFactory: (config: ConfigService) => ({
+ *         authServerUrl: config.get('KEYCLOAK_AUTH_SERVER_URL'),
+ *         realm: config.get('KEYCLOAK_REALM'),
+ *         clientId: config.get('KEYCLOAK_CLIENT_ID'),
+ *         clientSecret: config.get('KEYCLOAK_CLIENT_SECRET'),
+ *       }),
+ *     }),
+ *   ],
+ *   providers: [
+ *     {
+ *       provide: APP_GUARD,
+ *       useClass: JwtAuthGuard,
+ *     },
+ *   ],
+ * })
+ * export class AppModule {}
+ * ```
+ *
+ * @see {@link KeycloakModule} for token validation configuration
+ * @see {@link KeycloakAdminModule} for admin API setup
+ * @see {@link JwtAuthGuard} for authentication enforcement
+ */
 
 // ============================================================================
 // Keycloak Module — Token Validation and JWT Authentication

@@ -11,6 +11,7 @@ export {
 	detectContextType,
 	extractRequestFromContext,
 	extractUserFromContext,
+	extractAuthTokenFromContext,
 } from './auth-decorators.js';
 
 export type { ContextOptions } from './auth-decorators.js';
