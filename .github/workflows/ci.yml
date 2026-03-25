@@ -19,6 +19,9 @@ jobs:
   validate:
     name: Typecheck & Lint
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      NX_DAEMON: false
     steps:
       - uses: actions/checkout@v6
         with:
@@ -44,6 +47,9 @@ jobs:
   test:
     name: Test (Node 24)
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      NX_DAEMON: false
     steps:
       - uses: actions/checkout@v6
         with:
@@ -67,6 +73,9 @@ jobs:
     name: Build
     needs: [validate, test]
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      NX_DAEMON: false
     steps:
       - uses: actions/checkout@v6
         with:

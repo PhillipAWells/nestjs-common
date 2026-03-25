@@ -22,21 +22,36 @@
 			}
 		}
 	],
-	"targetDefaults": {
-		"version-sync": {
-			"cache": false,
-			"command": "node {workspaceRoot}/scripts/sync-version.mjs"
+	"release": {
+		"projects": ["packages/*"],
+		"projectsRelationship": "fixed",
+		"releaseTag": {
+			"pattern": "v{version}"
 		},
+		"version": {
+			"versionActionsOptions": {
+				"skipLockFileUpdate": true
+			}
+		}
+	},
+	"targetDefaults": {
 		"build": {
 			"cache": true,
-			"dependsOn": ["version-sync", "^build"],
+			"dependsOn": ["^build"],
 			"inputs": ["production", "^production"]
 		},
 		"@nx/js:tsc": {
 			"cache": true,
-			"dependsOn": ["version-sync", "^build"],
+			"dependsOn": ["^build"],
 			"inputs": ["production", "^production"],
 			"outputs": ["{options.outputPath}"]
+		},
+		"nx-release-publish": {
+			"dependsOn": ["build"],
+			"options": {
+				"packageRoot": "{projectRoot}/build",
+				"access": "public"
+			}
 		},
 		"test": {
 			"cache": true

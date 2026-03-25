@@ -14,15 +14,20 @@ permissions:
 jobs:
   ci:
     name: CI
+    if: ${{ !contains(github.ref_name, '-') }}
     uses: ./.github/workflows/ci.yml
 
   publish:
     name: Publish
+    if: ${{ !contains(github.ref_name, '-') }}
     needs: [ci]
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
+    env:
+      CI: true
+      NX_DAEMON: false
     steps:
       - uses: actions/checkout@v6
         with:
@@ -40,53 +45,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Extract version from tag
-        id: version
-        env:
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          VERSION="${REF_NAME#v}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Sync version to workspace root
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: npm version "$VERSION" --no-git-tag-version
-
-      - name: Sync version to all packages
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          for dir in packages/*/; do
-            PACKAGE_JSON="${dir}package.json"
-            if [ -f "$PACKAGE_JSON" ]; then
-              PACKAGE_JSON="$PACKAGE_JSON" node -e "
-                const fs = require('fs');
-                const pkg = JSON.parse(fs.readFileSync(process.env.PACKAGE_JSON, 'utf8'));
-                pkg.version = process.env.VERSION;
-                fs.writeFileSync(process.env.PACKAGE_JSON, JSON.stringify(pkg, null, 2) + '\n');
-              "
-            fi
-          done
-
-      - name: Build all packages
-        run: yarn build
-
-      - name: Publish packages to npm
+      - name: Publish packages
+        run: npx nx release publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          for dir in packages/*/; do
-            PACKAGE_JSON="${dir}package.json"
-            if [ -f "$PACKAGE_JSON" ]; then
-              IS_PRIVATE=$(node -p "try{JSON.parse(require('fs').readFileSync('${PACKAGE_JSON}','utf8')).private===true?'true':'false'}catch(e){'false'}")
-              if [ "$IS_PRIVATE" != "true" ]; then
-                cd "$dir"
-                npm publish --provenance --access public
-                cd ../..
-              fi
-            fi
-          done
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
