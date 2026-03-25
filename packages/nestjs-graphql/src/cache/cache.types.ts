@@ -91,13 +91,21 @@ export interface CacheInvalidationOptions {
 }
 
 /**
- * Redis connection status
+ * Redis connection status enumeration
+ *
+ * Represents the current state of the Redis connection used by the cache module.
+ * Used to track connection lifecycle and health monitoring.
  */
 export enum RedisConnectionStatus {
+	/** Redis connection is established and operational */
 	CONNECTED = 'connected',
+	/** Redis connection is closed and no attempt to reconnect is in progress */
 	DISCONNECTED = 'disconnected',
+	/** Initial connection attempt in progress */
 	CONNECTING = 'connecting',
+	/** Reconnection attempt in progress after a previous failure */
 	RECONNECTING = 'reconnecting',
+	/** An error occurred during connection or operation */
 	ERROR = 'error',
 }
 

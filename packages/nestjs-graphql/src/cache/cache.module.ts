@@ -11,6 +11,27 @@ const CACHE_DEFAULT_TTL_SECONDS = 3_600;
 
 /**
  * Cache module providing Redis-based caching functionality
+ *
+ * Provides Redis-backed HTTP and GraphQL response caching with automatic
+ * storage management, TTL support, and metrics tracking. Requires Redis
+ * connection configuration via environment variables (REDIS_HOST, REDIS_PORT, etc.).
+ *
+ * Use {@link CacheModule.forRoot} for standard configuration or
+ * {@link CacheModule.forRootAsync} for dynamic configuration via factories.
+ *
+ * @example
+ * ```typescript
+ * import { CacheModule } from '@pawells/nestjs-graphql';
+ *
+ * @Module({
+ *   imports: [CacheModule.forRoot()],
+ * })
+ * export class AppModule {}
+ * ```
+ *
+ * @see {@link CacheService} for cache operations API
+ * @see {@link CacheInterceptor} for HTTP response caching
+ * @see {@link Cacheable}, {@link CacheInvalidate}, {@link CacheEvict} decorators
  */
 @Global()
 @Module({})

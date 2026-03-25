@@ -14,6 +14,9 @@ import {
  * params, and user ID. Keys are encoded in base64 to ensure they're safe for use with Redis.
  * Only supports GET requests.
  *
+ * @internal Implementation detail of {@link CacheInterceptor}. Use via
+ * {@link CacheInterceptor} or {@link BaseCacheInterceptor} rather than directly.
+ *
  * @example
  * ```typescript
  * // Cache key includes user context
@@ -75,8 +78,12 @@ export class HttpCacheKeyGenerator implements CacheKeyGenerator {
 /**
  * HTTP-specific cache metadata extractor
  *
- * Extracts caching metadata from route handlers and controllers using reflection.
- * Looks for cache-disabled and cache-ttl metadata attached to handler methods.
+ * Extracts caching metadata from route handlers and controllers using Reflect metadata.
+ * Inspects handlers for 'cache-disabled' and 'cache-ttl' metadata to determine
+ * whether caching should be applied and the appropriate TTL for cached responses.
+ *
+ * @internal Implementation detail of {@link CacheInterceptor}. Use via
+ * {@link CacheInterceptor} or {@link BaseCacheInterceptor} rather than directly.
  */
 @Injectable()
 export class HttpCacheMetadataExtractor implements CacheMetadataExtractor {
@@ -107,7 +114,11 @@ export class HttpCacheMetadataExtractor implements CacheMetadataExtractor {
  * HTTP-specific cache context handler
  *
  * Manages HTTP response headers for cache hits/misses and controls caching behavior
- * at the HTTP level. Sets X-Cache and Cache-Control headers appropriately.
+ * at the HTTP level. Sets X-Cache and Cache-Control headers appropriately based on
+ * cache hit/miss status and configured TTL. Only applies to GET requests.
+ *
+ * @internal Implementation detail of {@link CacheInterceptor}. Use via
+ * {@link CacheInterceptor} or {@link BaseCacheInterceptor} rather than directly.
  */
 @Injectable()
 export class HttpCacheContextHandler implements CacheContextHandler {
@@ -143,20 +154,30 @@ export class HttpCacheContextHandler implements CacheContextHandler {
 }
 
 /**
- * HTTP Cache Interceptor extending the base cache interceptor
+ * HTTP Cache Interceptor
  *
- * Provides automatic HTTP response caching for GET requests. Uses HttpCacheKeyGenerator,
- * HttpCacheMetadataExtractor, and HttpCacheContextHandler to implement HTTP-specific
- * caching logic. Sets X-Cache and Cache-Control headers for client-side caching.
+ * Provides automatic HTTP response caching for GET requests using the cache-aside pattern.
+ * Generates deterministic cache keys based on request context, extracts cache metadata from
+ * route handlers, and applies HTTP cache headers (X-Cache, Cache-Control) to responses.
+ *
+ * Internally uses {@link HttpCacheKeyGenerator}, {@link HttpCacheMetadataExtractor},
+ * and {@link HttpCacheContextHandler} to manage HTTP-specific caching behavior.
+ * Only caches GET requests; sets X-Cache: HIT/MISS headers on responses.
  *
  * @example
  * ```typescript
+ * import { UseInterceptors } from '@nestjs/common';
+ * import { CacheInterceptor } from '@pawells/nestjs-graphql';
+ *
  * @UseInterceptors(CacheInterceptor)
- * @Get('data')
- * async getData() {
- *   return { data: 'cached' };
+ * @Get('users/:id')
+ * async getUser(@Param('id') id: string) {
+ *   return this.userService.findById(id);
  * }
  * ```
+ *
+ * @see {@link BaseCacheInterceptor} for base caching logic
+ * @see {@link CacheService} for manual cache operations
  */
 @Injectable()
 export class CacheInterceptor extends BaseCacheInterceptor {

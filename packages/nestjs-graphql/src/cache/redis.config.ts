@@ -59,10 +59,24 @@ export interface RedisConnectionOptions {
 }
 
 /**
- * Validate Redis configuration
- * @param config Configuration object
- * @returns Validated configuration with defaults
- * @throws Error if validation fails
+ * Validate Redis configuration against Joi schema
+ *
+ * Validates all Redis environment variable configuration options and applies defaults.
+ * Uses Joi for schema validation with strict type checking and range validation on
+ * numeric values (ports, timeouts, etc.).
+ *
+ * @param config Configuration object containing Redis environment variables
+ * @returns Validated configuration object with applied defaults
+ * @throws Error if any configuration value fails validation (e.g., port out of range, invalid hostname)
+ *
+ * @example
+ * ```typescript
+ * const config = validateRedisConfig({
+ *   REDIS_HOST: 'localhost',
+ *   REDIS_PORT: '6379',
+ *   REDIS_PASSWORD: 'secret',
+ * });
+ * ```
  */
 export function validateRedisConfig(config: Record<string, any>): Record<string, any> {
 	// Allow undefined values - they will use defaults

@@ -785,7 +785,7 @@ async slowQuery(): Promise<Post[]> {
 
 ### Context Handling
 
-Access GraphQL context with typed decorators:
+Access GraphQL context with typed decorators (re-exported from `@pawells/nestjs-auth` for convenience):
 
 ```typescript
 import { GraphQLContextParam, GraphQLCurrentUser } from '@pawells/nestjs-graphql';
@@ -800,6 +800,8 @@ async me(
   return user;
 }
 ```
+
+**Note:** `GraphQLContextParam` and `GraphQLCurrentUser` are re-exported from `@pawells/nestjs-auth` for convenience. See the auth package documentation for additional GraphQL decorator variants.
 
 ### BSON Serialization
 
