@@ -3,9 +3,10 @@
  * Provides access to the Qdrant client for vector search operations
  */
 
-import { BadRequestException, Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { AppLogger, BadRequestError, InternalServerError } from '@pawells/nestjs-shared/common';
 import { MAX_COLLECTION_NAME_LENGTH, QDRANT_CLIENT_TOKEN } from './qdrant.constants.js';
 import { QdrantCollectionService } from './qdrant-collection.service.js';
 
@@ -36,14 +37,18 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
 export class QdrantService implements OnModuleDestroy {
 	private readonly moduleRef: ModuleRef;
 
+	private readonly logger = new AppLogger(undefined, QdrantService.name);
+
 	constructor(moduleRef: ModuleRef) {
 		this.moduleRef = moduleRef;
+		this.logger.debug('Qdrant service initialized');
 	}
 
 	private get client(): QdrantClient {
 		const clientInstance = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
 		if (!clientInstance) {
-			throw new Error('QdrantService: Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
+			this.logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
+			throw new InternalServerError('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}
 		return clientInstance;
 	}
@@ -96,7 +101,7 @@ export class QdrantService implements OnModuleDestroy {
 			/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
 
 		if (!isValidCollectionName) {
-			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
+			throw new BadRequestError(`Invalid collection name: "${collectionName}"`);
 		}
 
 		return new QdrantCollectionService(this.client, collectionName);
