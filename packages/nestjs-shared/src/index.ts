@@ -1,4 +1,50 @@
-/** @packageDocumentation */
+/**
+ * @packageDocumentation
+ *
+ * Foundational NestJS infrastructure library providing essential utilities for building secure, observable, and maintainable applications.
+ *
+ * ## Key Features
+ *
+ * - **Error Handling**: Structured error responses with categorization (transient/permanent) and automatic sanitization
+ * - **Logging**: Centralized, structured logging with automatic redaction of sensitive data
+ * - **Metrics**: Prometheus metrics with automatic HTTP request tracking and custom metric support
+ * - **Validation**: Automatic DTO validation and transformation with comprehensive error formatting
+ * - **CSRF Protection**: Double-Submit Cookie pattern with per-IP rate limiting
+ * - **Security**: Global filters, guards, and interceptors for standardized protection
+ * - **Configuration**: Type-safe environment variable access with Joi validation
+ * - **Lazy Loading**: Defer dependency resolution to avoid circular dependencies
+ * - **Audit Logging**: Security event logging for compliance and forensics
+ * - **Health Checks**: Kubernetes-ready liveness, readiness, and general health probes
+ * - **HTTP Client**: Robust HTTP client with timeout, SSL/TLS, and sensitive data redaction
+ *
+ * ## Quick Start
+ *
+ * @example
+ * ```typescript
+ * import { Module } from '@nestjs/common';
+ * import { ConfigModule, CommonModule } from '@pawells/nestjs-shared';
+ *
+ * @Module({
+ *   imports: [
+ *     ConfigModule,     // MUST come first
+ *     CommonModule,     // Depends on ConfigModule
+ *   ],
+ * })
+ * export class AppModule {}
+ *
+ * async function bootstrap() {
+ *   const app = await NestFactory.create(AppModule);
+ *   const port = process.env['PORT'] ?? 3000;
+ *   await app.listen(port);
+ * }
+ * ```
+ *
+ * ## Modules
+ *
+ * - **ConfigModule**: Environment configuration with validation (must be imported first)
+ * - **CommonModule**: Global infrastructure (filters, interceptors, pipes, services)
+ * - **MetricsModule**: Prometheus metrics endpoint and collection
+ */
 
 // ============================================================================
 // Metrics Exporter Interfaces

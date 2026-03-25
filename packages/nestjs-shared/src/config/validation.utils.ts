@@ -28,9 +28,9 @@ export class ValidationService implements LazyModuleRefService {
 	}
 
 	/**
-	 * Create a validation schema for environment variables
-	 * @param schema Joi schema definition
-	 * @returns Compiled Joi schema
+	 * Create a validation schema for environment variables.
+	 * @param schema - Joi schema definition object with validation rules
+	 * @returns Compiled Joi ObjectSchema ready for validation
 	 */
 	public createValidationSchema(schema: ConfigSchema): Joi.ObjectSchema {
 		this.logger.debug('Creating validation schema');
@@ -40,10 +40,10 @@ export class ValidationService implements LazyModuleRefService {
 	}
 
 	/**
-	 * Validate configuration against a schema
-	 * @param config Configuration object to validate
-	 * @param schema Joi validation schema
-	 * @returns Validation result
+	 * Validate configuration against a schema.
+	 * @param config - Configuration object to validate
+	 * @param schema - Joi validation schema
+	 * @returns ValidationResult with isValid flag and optional errors array
 	 */
 	public validateConfig(config: any, schema: Joi.ObjectSchema): ValidationResult {
 		this.logger.debug('Starting configuration validation');
@@ -69,19 +69,21 @@ export class ValidationService implements LazyModuleRefService {
 }
 
 /**
- * Create a validation schema for environment variables
- * @param schema Joi schema definition
- * @returns Compiled Joi schema
+ * Create a validation schema for environment variables.
+ * Utility function to compile a configuration object into a Joi validation schema.
+ * @param schema - Joi schema definition object with validation rules
+ * @returns Compiled Joi ObjectSchema ready for validation
  */
 export function CreateValidationSchema(schema: ConfigSchema): Joi.ObjectSchema {
 	return Joi.object(schema);
 }
 
 /**
- * Validate configuration against a schema
- * @param config Configuration object to validate
- * @param schema Joi validation schema
- * @returns Validation result
+ * Validate configuration against a schema.
+ * Utility function to validate a configuration object using a Joi schema.
+ * @param config - Configuration object to validate
+ * @param schema - Joi validation schema
+ * @returns ValidationResult with isValid flag and optional errors array
  */
 export function ValidateConfig(config: any, schema: Joi.ObjectSchema): ValidationResult {
 	const { error } = schema.validate(config, {
@@ -102,9 +104,16 @@ export function ValidateConfig(config: any, schema: Joi.ObjectSchema): Validatio
 }
 
 /**
- * Create a string validation schema with common patterns
- * @param options Validation options
- * @returns Joi string schema
+ * Create a string validation schema with common patterns.
+ * Utility to build Joi string schemas with min/max length, pattern matching, and defaults.
+ * @param options - String schema options
+ * @param options.min - Minimum string length
+ * @param options.max - Maximum string length
+ * @param options.required - Whether the field is required
+ * @param options.pattern - Regular expression pattern to match
+ * @param options.default - Default value if not provided
+ * @param options.description - Human-readable description
+ * @returns Configured Joi StringSchema
  */
 export function CreateStringSchema(options: {
 	min?: number;
@@ -144,9 +153,16 @@ export function CreateStringSchema(options: {
 }
 
 /**
- * Create a number validation schema with common patterns
- * @param options Validation options
- * @returns Joi number schema
+ * Create a number validation schema with common patterns.
+ * Utility to build Joi number schemas with min/max bounds, integer constraint, and defaults.
+ * @param options - Number schema options
+ * @param options.min - Minimum numeric value
+ * @param options.max - Maximum numeric value
+ * @param options.integer - Whether value must be an integer
+ * @param options.required - Whether the field is required
+ * @param options.default - Default value if not provided
+ * @param options.description - Human-readable description
+ * @returns Configured Joi NumberSchema
  */
 export function CreateNumberSchema(options: {
 	min?: number;
@@ -186,9 +202,13 @@ export function CreateNumberSchema(options: {
 }
 
 /**
- * Create a boolean validation schema
- * @param options Validation options
- * @returns Joi boolean schema
+ * Create a boolean validation schema.
+ * Utility to build Joi boolean schemas with required flag and defaults.
+ * @param options - Boolean schema options
+ * @param options.required - Whether the field is required
+ * @param options.default - Default value if not provided
+ * @param options.description - Human-readable description
+ * @returns Configured Joi BooleanSchema
  */
 export function CreateBooleanSchema(options: {
 	required?: boolean;
@@ -213,9 +233,13 @@ export function CreateBooleanSchema(options: {
 }
 
 /**
- * Create a URI validation schema
- * @param options Validation options
- * @returns Joi string schema with URI validation
+ * Create a URI validation schema.
+ * Utility to build Joi string schemas that validate RFC 3986 URIs.
+ * @param options - URI schema options
+ * @param options.required - Whether the field is required
+ * @param options.default - Default value if not provided
+ * @param options.description - Human-readable description
+ * @returns Configured Joi StringSchema with URI validation
  */
 export function CreateUriSchema(options: {
 	required?: boolean;
@@ -240,10 +264,11 @@ export function CreateUriSchema(options: {
 }
 
 /**
- * Create validation schema for port numbers
- * @param defaultValue Default port value
- * @param description Field description
- * @returns Joi number schema for ports
+ * Create validation schema for port numbers.
+ * Utility to build Joi number schemas for TCP/UDP port validation (1-65535).
+ * @param defaultValue - Default port number (default: 3000)
+ * @param description - Human-readable description
+ * @returns Configured Joi NumberSchema for port validation
  */
 // eslint-disable-next-line no-magic-numbers
 export function CreatePortSchema(defaultValue: number = 3000, description?: string): Joi.NumberSchema {
@@ -257,11 +282,12 @@ export function CreatePortSchema(defaultValue: number = 3000, description?: stri
 }
 
 /**
- * Create validation schema for environment variables
- * @param allowedValues Array of allowed environment values
- * @param defaultValue Default environment value
- * @param description Field description
- * @returns Joi string schema for environment
+ * Create validation schema for environment variables.
+ * Utility to build Joi string schemas that restrict values to a whitelist of environments.
+ * @param allowedValues - Array of allowed environment values (default: development, production, test)
+ * @param defaultValue - Default environment value (default: development)
+ * @param description - Human-readable description
+ * @returns Configured Joi StringSchema with environment validation
  */
 export function CreateEnvironmentSchema(
 	allowedValues: string[] = ['development', 'production', 'test'],
@@ -276,10 +302,11 @@ export function CreateEnvironmentSchema(
 }
 
 /**
- * Create validation schema for JWT expiration times
- * @param defaultValue Default expiration time
- * @param description Field description
- * @returns Joi string schema for JWT expiration
+ * Create validation schema for JWT expiration times.
+ * Utility to build Joi string schemas that validate JWT expiration duration format (e.g., 15m, 1h, 7d).
+ * @param defaultValue - Default expiration time (default: 15m)
+ * @param description - Human-readable description
+ * @returns Configured Joi StringSchema with JWT expiration validation
  */
 export function CreateJwtExpirationSchema(
 	defaultValue: string = '15m',

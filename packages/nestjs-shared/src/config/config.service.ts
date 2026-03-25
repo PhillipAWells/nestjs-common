@@ -59,9 +59,11 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	public get Logger(): AppLogger {
 		if (!this._contextualLogger) {
 			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
+			if (baseLogger) {
+				this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
+			}
 		}
-		return this._contextualLogger;
+		return this._contextualLogger ?? this.Module.get(AppLogger);
 	}
 
 	private get NestConfig(): NestConfigService {
