@@ -51,7 +51,7 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 export class ProfilingHealthIndicator extends HealthIndicator {
 	private readonly moduleRef: ModuleRef;
 
-	constructor(moduleRef: ModuleRef) {
+	public constructor(moduleRef: ModuleRef) {
 		super();
 		this.moduleRef = moduleRef;
 	}

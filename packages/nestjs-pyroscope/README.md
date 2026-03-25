@@ -444,6 +444,120 @@ interface IPyroscopeConfig {
 type TProfileType = 'cpu' | 'memory' | 'goroutine' | 'mutex' | 'block';
 ```
 
+### IProfileMetrics Interface
+
+Represents profiling metrics collected during a profiling session. Used to track performance data from individual operations:
+
+```typescript
+interface IProfileMetrics {
+  cpuTime: number;              // CPU time consumed in milliseconds
+  memoryUsage: number;          // Memory usage in bytes
+  duration: number;             // Total operation duration in milliseconds
+  timestamp: number;            // Timestamp when metrics were recorded
+  tags?: Record<string, string>; // Optional metadata tags for filtering/analysis
+}
+```
+
+**When to use:**
+- You need to access metrics from a completed profiling session
+- You want to store or analyze profiling data programmatically
+- You're implementing custom metrics aggregation or reporting
+
+**Example:**
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { PyroscopeService, IProfileMetrics } from '@pawells/nestjs-pyroscope';
+
+@Injectable()
+export class PerformanceAnalyzer {
+  constructor(private pyroscope: PyroscopeService) {}
+
+  async trackAndLog(operation: string) {
+    const context = {
+      functionName: operation,
+      startTime: Date.now(),
+      tags: { operation },
+    };
+
+    this.pyroscope.startProfiling(context);
+
+    try {
+      // Your logic here
+      await this.expensiveOperation();
+    } finally {
+      const metrics = this.pyroscope.stopProfiling(context);
+      console.log(`Operation: ${operation}`);
+      console.log(`Duration: ${metrics.duration}ms`);
+      console.log(`CPU: ${metrics.cpuTime}ms`);
+      console.log(`Memory: ${metrics.memoryUsage} bytes`);
+    }
+  }
+}
+```
+
+### IProfileContext Interface
+
+Represents the lifecycle and metadata of a profiling session. Used internally by PyroscopeService and provided by decorators/interceptors:
+
+```typescript
+interface IProfileContext {
+  profileId?: string;               // Unique profile identifier
+  functionName: string;             // Name of the function/operation being profiled
+  className?: string;               // Class name (for class methods)
+  methodName?: string;              // Method name (for class methods)
+  startTime?: number;               // Start timestamp in milliseconds
+  endTime?: number;                 // End timestamp in milliseconds
+  duration?: number;                // Computed duration in milliseconds
+  error?: Error;                    // Error object if operation failed
+  tags?: Record<string, string>;    // Metadata tags for profiling context
+}
+```
+
+**When to use:**
+- You're implementing manual profiling with `PyroscopeService.startProfiling()` and `.stopProfiling()`
+- You need to track profiling metadata for complex operations
+- You're building custom decorators or profiling utilities
+
+**Example:**
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { PyroscopeService, IProfileContext } from '@pawells/nestjs-pyroscope';
+
+@Injectable()
+export class DataProcessingService {
+  constructor(private pyroscope: PyroscopeService) {}
+
+  async processWithContext(data: any[]) {
+    const context: IProfileContext = {
+      functionName: 'processLargeDataset',
+      className: 'DataProcessingService',
+      methodName: 'processWithContext',
+      startTime: Date.now(),
+      tags: {
+        dataSize: data.length.toString(),
+        environment: process.env.NODE_ENV || 'development',
+      },
+    };
+
+    this.pyroscope.startProfiling(context);
+
+    try {
+      const result = data.map(item => this.transform(item));
+      context.duration = Date.now() - (context.startTime || 0);
+      return result;
+    } catch (error) {
+      context.error = error as Error;
+      context.duration = Date.now() - (context.startTime || 0);
+      throw error;
+    } finally {
+      this.pyroscope.stopProfiling(context);
+    }
+  }
+}
+```
+
 ## MetricsService API
 
 The `MetricsService` is injected with the module and provides metrics aggregation:

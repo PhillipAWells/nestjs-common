@@ -58,7 +58,7 @@ interface HttpResponse {
 export class ProfilingInterceptor implements NestInterceptor {
 	private readonly moduleRef: ModuleRef;
 
-	constructor(moduleRef: ModuleRef) {
+	public constructor(moduleRef: ModuleRef) {
 		this.moduleRef = moduleRef;
 	}
 

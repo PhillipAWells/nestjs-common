@@ -78,7 +78,7 @@ export class MetricsService {
 
 	private totalResponseTime = 0;
 
-	constructor() {}
+	public constructor() {}
 
 	/**
 	 * Record CPU profiling sample
