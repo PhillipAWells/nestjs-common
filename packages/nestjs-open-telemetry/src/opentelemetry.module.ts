@@ -1,5 +1,5 @@
 import { Global, Module, OnModuleInit, DynamicModule } from '@nestjs/common';
-import { InstrumentationRegistry } from '@pawells/nestjs-shared';
+import { InstrumentationRegistry, BaseApplicationError } from '@pawells/nestjs-shared';
 import { OpenTelemetryExporter } from './exporters/index.js';
 
 /**
@@ -72,7 +72,7 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 */
 	public onModuleInit(): void {
 		if (!this.registry) {
-			throw new Error(
+			throw new BaseApplicationError(
 				'OpenTelemetryModule initialization failed: InstrumentationRegistry not found. ' +
 				'Ensure that CommonModule from @pawells/nestjs-shared is imported in your module or a parent module.',
 			);

@@ -35,7 +35,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a message (info level).
 	 */
-	public log(message: any, context?: string): void {
+	public log(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.info(this.formatMessage(message), metadata);
 	}
@@ -43,7 +43,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log an error message.
 	 */
-	public error(message: any, stackTrace?: string, context?: string): void {
+	public error(message: unknown, stackTrace?: string, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		if (stackTrace) {
 			metadata['stackTrace'] = stackTrace;
@@ -54,7 +54,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a warning message.
 	 */
-	public warn(message: any, context?: string): void {
+	public warn(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.warn(this.formatMessage(message), metadata);
 	}
@@ -62,7 +62,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a debug message.
 	 */
-	public debug(message: any, context?: string): void {
+	public debug(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.debug(this.formatMessage(message), metadata);
 	}
@@ -72,22 +72,25 @@ export class OpenTelemetryLogger implements LoggerService {
 	 * Intentional downgrade: NestJS verbose is the most verbose level, but AppLogger
 	 * has no verbose level, so verbose messages are mapped to debug level.
 	 */
-	public verbose(message: any, context?: string): void {
+	public verbose(message: unknown, context?: string): void {
 		this.debug(message, context);
 	}
 
 	/**
 	 * Log a fatal error message.
 	 */
-	public fatal(message: any, context?: string): void {
+	public fatal(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
 		this.logger.fatal(this.formatMessage(message), metadata);
 	}
 
 	/**
 	 * Build metadata with trace context and NestJS context.
+	 * @private
 	 */
-	private buildMetadata(context?: string): Record<string, string | number> {
+	private buildMetadata(
+		context?: string,
+	): Record<string, string | number> {
 		const metadata: Record<string, string | number> = {};
 
 		// Add NestJS context if provided
@@ -109,8 +112,11 @@ export class OpenTelemetryLogger implements LoggerService {
 
 	/**
 	 * Format message to string.
+	 * @private
 	 */
-	private formatMessage(message: unknown): string {
+	private formatMessage(
+		message: unknown,
+	): string {
 		if (typeof message === 'string') {
 			return message;
 		}

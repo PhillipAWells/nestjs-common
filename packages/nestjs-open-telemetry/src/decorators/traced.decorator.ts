@@ -261,7 +261,9 @@ export function Traced(options: TracedOptions = {}): MethodDecorator {
  * @param attributes - Original attributes (may contain any types)
  * @returns Attributes cast to valid OTel types
  */
-function castAttributesToValidTypes(attributes: Record<string, unknown>): Record<string, string | number | boolean> {
+function castAttributesToValidTypes(
+	attributes: Record<string, unknown>,
+): Record<string, string | number | boolean> {
 	const result: Record<string, string | number | boolean> = {};
 
 	for (const [key, value] of Object.entries(attributes)) {
@@ -295,7 +297,9 @@ function castAttributesToValidTypes(attributes: Record<string, unknown>): Record
  * @param value - String value to check for PII
  * @returns String with PII redacted
  */
-function detectAndRedactPII(value: string): string {
+function detectAndRedactPII(
+	value: string,
+): string {
 	// PII detection patterns with labels
 	const patterns = [
 		{
@@ -347,7 +351,9 @@ function detectAndRedactPII(value: string): string {
  * @param num - Credit card number string (may contain spaces or hyphens)
  * @returns True if the number passes Luhn validation, false otherwise
  */
-function isValidCreditCard(num: string): boolean {
+function isValidCreditCard(
+	num: string,
+): boolean {
 	// Extract digits only
 	const digits = num.replace(/\D/g, '');
 
@@ -395,7 +401,9 @@ function isValidCreditCard(num: string): boolean {
  * @param arg - Argument to sanitize
  * @returns Sanitized value or null
  */
-function sanitizeArgument(arg: unknown): string | number | boolean | null {
+function sanitizeArgument(
+	arg: unknown,
+): string | number | boolean | null {
 	// Handle primitives
 	if (typeof arg === 'string') {
 		// Detect and redact PII, then truncate
@@ -455,7 +463,10 @@ function sanitizeArgument(arg: unknown): string | number | boolean | null {
  * @param maxLength - Maximum length
  * @returns Truncated string
  */
-function truncateString(str: string, maxLength: number): string {
+function truncateString(
+	str: string,
+	maxLength: number,
+): string {
 	if (str.length <= maxLength) {
 		return str;
 	}

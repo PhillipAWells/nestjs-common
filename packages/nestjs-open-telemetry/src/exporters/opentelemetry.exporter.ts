@@ -11,6 +11,7 @@ import {
 	IMetricsExporter,
 	MetricDescriptor,
 	MetricValue,
+	BaseApplicationError,
 } from '@pawells/nestjs-shared';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
@@ -128,7 +129,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				default: {
 					// Exhaustiveness check — this block is unreachable if all types are handled
 					const _exhaustive: never = descriptor.type as never;
-					throw new Error(`Unhandled metric type: ${_exhaustive}`);
+					throw new BaseApplicationError(`Unhandled metric type: ${_exhaustive}`);
 				}
 			}
 

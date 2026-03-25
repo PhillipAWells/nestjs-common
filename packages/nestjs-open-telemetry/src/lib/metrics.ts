@@ -23,7 +23,10 @@ const meterCache = new Map<string, Meter>();
  * @param version - Meter version (optional)
  * @returns Meter instance
  */
-export function getMeter(name: string, version?: string): Meter {
+export function getMeter(
+	name: string,
+	version?: string,
+): Meter {
 	const cacheKey = version ? `${name}@${version}` : name;
 	// Return cached meter if exists
 	const cached = meterCache.get(cacheKey);
@@ -51,7 +54,11 @@ export function getMeter(name: string, version?: string): Meter {
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Counter instance
  */
-export function createCounter(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): Counter {
+export function createCounter(
+	name: string,
+	options?: MetricOptions,
+	meterName = '@pawells/nestjs-open-telemetry',
+): Counter {
 	const meter = getMeter(meterName);
 	return meter.createCounter(name, options);
 }
@@ -64,7 +71,11 @@ export function createCounter(name: string, options?: MetricOptions, meterName =
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Histogram instance
  */
-export function createHistogram(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): Histogram {
+export function createHistogram(
+	name: string,
+	options?: MetricOptions,
+	meterName = '@pawells/nestjs-open-telemetry',
+): Histogram {
 	const meter = getMeter(meterName);
 	return meter.createHistogram(name, options);
 }
@@ -77,7 +88,11 @@ export function createHistogram(name: string, options?: MetricOptions, meterName
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns UpDownCounter instance
  */
-export function createUpDownCounter(name: string, options?: MetricOptions, meterName = '@pawells/nestjs-open-telemetry'): UpDownCounter {
+export function createUpDownCounter(
+	name: string,
+	options?: MetricOptions,
+	meterName = '@pawells/nestjs-open-telemetry',
+): UpDownCounter {
 	const meter = getMeter(meterName);
 	return meter.createUpDownCounter(name, options);
 }
@@ -96,14 +111,15 @@ let cachedHttpMetrics: {
 
 /**
  * Get or initialize HTTP metrics.
+ * @internal
  * @private
  */
 function getHttpMetrics(): {
-	requests: Counter;
-	duration: Histogram;
-	activeRequests: UpDownCounter;
-	requestSize: Histogram;
-	responseSize: Histogram;
+	readonly requests: Counter;
+	readonly duration: Histogram;
+	readonly activeRequests: UpDownCounter;
+	readonly requestSize: Histogram;
+	readonly responseSize: Histogram;
 } {
 	if (cachedHttpMetrics !== null) {
 		return cachedHttpMetrics;
