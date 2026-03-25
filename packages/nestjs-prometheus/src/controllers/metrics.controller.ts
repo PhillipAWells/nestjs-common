@@ -38,11 +38,9 @@ import { PrometheusExporter } from '../prometheus.exporter.js';
  */
 @Controller()
 export class MetricsController {
-	private readonly exporter: PrometheusExporter;
-
-	constructor(exporter: PrometheusExporter) {
-		this.exporter = exporter;
-	}
+	constructor(
+		private readonly exporter: PrometheusExporter,
+	) {}
 
 	/**
 	 * Get all metrics in Prometheus text format
