@@ -363,7 +363,7 @@ describe('PyroscopeModule Lifecycle (Integration)', () => {
 
 		it('should support multiple modules with different configs', async () => {
 			const AppModule = class {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 			};
 
 			module = await Test.createTestingModule({

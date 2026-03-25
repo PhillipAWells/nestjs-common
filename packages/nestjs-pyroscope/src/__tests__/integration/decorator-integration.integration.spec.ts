@@ -19,7 +19,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 	describe('@Profile class decorator', () => {
 		let module: TestingModule;
-		let pyroscopeService: PyroscopeService;
+		let _pyroscopeService: PyroscopeService;
 
 		afterEach(async () => {
 			if (module) {
@@ -31,7 +31,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile()
 			@Injectable()
 			class ProfiledService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				public processData(input: string): string {
 					return input.toUpperCase();
@@ -47,7 +47,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 				providers: [ProfiledService],
 			}).compile();
 
-			pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
+			_pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
 			const service = module.get<ProfiledService>(ProfiledService);
 
 			// Verify service methods are wrapped
@@ -55,7 +55,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			expect(service.calculateMetrics([1, 2, 3])).toBe(6);
 
 			// Methods should have been wrapped with profiling
-			const metrics = pyroscopeService.getMetrics();
+			const metrics = _pyroscopeService.getMetrics();
 			expect(metrics).toBeDefined();
 		});
 
@@ -65,7 +65,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile({ tags: customTags })
 			@Injectable()
 			class TaggedService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				public execute(): string {
 					return 'executed';
@@ -88,7 +88,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile()
 			@Injectable()
 			class ErrorService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				public throwError(): void {
 					throw new Error('Test error');
@@ -109,7 +109,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile()
 			@Controller('test')
 			class ProfiledController {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@Get('data')
 				public getData(): { success: boolean } {
@@ -141,7 +141,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should profile specific decorated methods only', async () => {
 			@Injectable()
 			class SelectiveService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod()
 				public profiledMethod(): string {
@@ -167,7 +167,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should use custom profile name', async () => {
 			@Injectable()
 			class CustomNameService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod({ name: 'CustomOperation' })
 				public execute(): string {
@@ -189,7 +189,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			@Injectable()
 			class TaggedMethodService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod({ tags })
 				public create(): { id: string } {
@@ -211,7 +211,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should handle method arguments and return values', async () => {
 			@Injectable()
 			class ArgsService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod()
 				public processInput(name: string, age: number): { name: string; isAdult: boolean } {
@@ -233,7 +233,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should work on controller action methods', async () => {
 			@Controller('items')
 			class ItemController {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@Get(':id')
 				@ProfileMethod({ name: 'GetItem' })
@@ -266,7 +266,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should profile async methods', async () => {
 			@Injectable()
 			class AsyncService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileAsync()
 				public async fetchData(): Promise<{ data: string }> {
@@ -289,7 +289,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should use custom name for async methods', async () => {
 			@Injectable()
 			class CustomAsyncService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileAsync({ name: 'AsyncOperation' })
 				public process(): boolean {
@@ -313,7 +313,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 
 			@Injectable()
 			class AsyncTagService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileAsync({ tags })
 				public async queryDatabase(): Promise<{ count: number }> {
@@ -336,7 +336,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should handle async method errors', async () => {
 			@Injectable()
 			class AsyncErrorService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileAsync()
 				public async failAsync(): Promise<void> {
@@ -358,7 +358,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should work with controller async handlers', async () => {
 			@Controller('async-items')
 			class AsyncItemController {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@Get()
 				@ProfileAsync({ name: 'ListAsyncItems' })
@@ -382,7 +382,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 		it('should handle multiple concurrent async operations', async () => {
 			@Injectable()
 			class ConcurrentService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileAsync()
 				public async operation1(): Promise<string> {
@@ -427,7 +427,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile()
 			@Injectable()
 			class MixedService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod({ name: 'CustomName' })
 				public customMethod(): string {
@@ -456,7 +456,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			@Profile()
 			@Injectable()
 			class DisabledService {
-				constructor(private readonly pyroscopeService: PyroscopeService) {}
+				constructor(private readonly _pyroscopeService: PyroscopeService) {}
 
 				@ProfileMethod()
 				public method1(): string {
