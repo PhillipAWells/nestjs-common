@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BsonSerializationService } from './bson-serialization.service.js';
+import { BsonSerializationService } from '../bson-serialization.service.js';
 
 describe('BsonSerializationService', () => {
 	let service: BsonSerializationService;

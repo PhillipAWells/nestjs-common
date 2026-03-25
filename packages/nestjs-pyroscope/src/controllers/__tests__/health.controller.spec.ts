@@ -1,10 +1,10 @@
 import { vi } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
-import { HealthController } from './health.controller.js';
-import { PyroscopeService } from '../service.js';
-import { MetricsService } from '../services/metrics.service.js';
-import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
-import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
+import { HealthController } from '../health.controller.js';
+import { PyroscopeService } from '../../service.js';
+import { MetricsService } from '../../services/metrics.service.js';
+import { PYROSCOPE_CONFIG_TOKEN } from '../../constants.js';
+import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
 describe('HealthController', () => {
 	let controller: HealthController;

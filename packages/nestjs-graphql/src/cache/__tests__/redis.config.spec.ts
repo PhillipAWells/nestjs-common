@@ -1,4 +1,4 @@
-import { getRedisConfig, getRedisConnectionOptions } from './redis.config.js';
+import { getRedisConfig, getRedisConnectionOptions } from '../redis.config.js';
 
 describe('Redis Configuration Validation', () => {
 	beforeEach(() => {

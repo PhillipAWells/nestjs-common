@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { Profile, ProfileMethod, ProfileAsync } from './profile.decorator.js';
+import { Profile, ProfileMethod, ProfileAsync } from '../profile.decorator.js';
 
 describe('Profile Decorators', () => {
 	let mockPyroscopeService: { isEnabled: ReturnType<typeof vi.fn>; startProfiling: ReturnType<typeof vi.fn>; stopProfiling: ReturnType<typeof vi.fn> };

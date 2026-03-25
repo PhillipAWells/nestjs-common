@@ -1,9 +1,9 @@
 import { vi } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
-import { ProfilingHealthIndicator } from './profiling.health.js';
-import { PyroscopeService } from '../service.js';
-import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
-import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
+import { ProfilingHealthIndicator } from '../profiling.health.js';
+import { PyroscopeService } from '../../service.js';
+import { PYROSCOPE_CONFIG_TOKEN } from '../../constants.js';
+import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
 describe('ProfilingHealthIndicator', () => {
 	let indicator: ProfilingHealthIndicator;

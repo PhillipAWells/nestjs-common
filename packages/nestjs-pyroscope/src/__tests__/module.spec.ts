@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PyroscopeModule } from './module.js';
-import { PyroscopeService } from './service.js';
-import { MetricsService } from './services/metrics.service.js';
-import { ProfilingHealthIndicator } from './indicators/profiling.health.js';
-import { HealthController } from './controllers/health.controller.js';
-import { IPyroscopeConfig } from './interfaces/profiling.interface.js';
+import { PyroscopeModule } from '../module.js';
+import { PyroscopeService } from '../service.js';
+import { MetricsService } from '../services/metrics.service.js';
+import { ProfilingHealthIndicator } from '../indicators/profiling.health.js';
+import { HealthController } from '../controllers/health.controller.js';
+import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 
 describe('PyroscopeModule', () => {
 	const mockConfig: IPyroscopeConfig = {

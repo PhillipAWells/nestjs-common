@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
-import { BsonResponseInterceptor } from './bson-response.interceptor.js';
-import { BsonSerializationService } from './bson-serialization.service.js';
+import { BsonResponseInterceptor } from '../bson-response.interceptor.js';
+import { BsonSerializationService } from '../bson-serialization.service.js';
 import { of } from 'rxjs';
 
 describe('BsonResponseInterceptor', () => {

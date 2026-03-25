@@ -8,7 +8,7 @@ import {
 	type OptionalLazyGetter,
 	type TokenLazyGetter,
 	type LazyModuleRefService,
-} from './lazy-getter.types.js';
+} from '../lazy-getter.types.js';
 
 describe('LazyGetter Utilities', () => {
 	let mockModuleRef: ModuleRef;

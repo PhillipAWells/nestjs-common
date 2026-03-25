@@ -1,10 +1,10 @@
 import { vi } from 'vitest';
 import { Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { PyroscopeService } from './service.js';
-import { IPyroscopeConfig, IProfileContext } from './interfaces/profiling.interface.js';
-import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
-import { MetricsService } from './services/metrics.service.js';
+import { PyroscopeService } from '../service.js';
+import { IPyroscopeConfig, IProfileContext } from '../interfaces/profiling.interface.js';
+import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
+import { MetricsService } from '../services/metrics.service.js';
 
 describe('PyroscopeService', () => {
 	let service: PyroscopeService;

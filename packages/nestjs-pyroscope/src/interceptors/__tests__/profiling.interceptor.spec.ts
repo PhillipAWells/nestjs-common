@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { of, throwError, from } from 'rxjs';
 import { ModuleRef } from '@nestjs/core';
-import { ProfilingInterceptor } from './profiling.interceptor.js';
+import { ProfilingInterceptor } from '../profiling.interceptor.js';
 
 describe('ProfilingInterceptor', () => {
 	let interceptor: ProfilingInterceptor;

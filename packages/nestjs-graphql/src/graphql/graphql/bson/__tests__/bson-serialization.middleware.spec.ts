@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BsonSerializationMiddleware } from './bson-serialization.middleware.js';
-import { BsonSerializationService } from './bson-serialization.service.js';
+import { BsonSerializationMiddleware } from '../bson-serialization.middleware.js';
+import { BsonSerializationService } from '../bson-serialization.service.js';
 import { Request, Response } from 'express';
 
 describe('BsonSerializationMiddleware', () => {

@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
-import { GraphQLErrorFormatter } from './error-formatter.js';
+import { GraphQLErrorFormatter } from '../error-formatter.js';
 
 describe('GraphQLErrorFormatter', () => {
 	describe('formatError', () => {

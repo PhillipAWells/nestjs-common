@@ -6,8 +6,8 @@ import {
 	generateProfileId,
 	formatDuration,
 	isProfilingEnabled,
-} from './profiling.utils.js';
-import { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
+} from '../profiling.utils.js';
+import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
 describe('Profiling Utils', () => {
 	describe('ProfilingConfigValidator', () => {
