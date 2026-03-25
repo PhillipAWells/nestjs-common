@@ -408,6 +408,87 @@ await client.delete('documents', {
 });
 ```
 
+## Token Utilities
+
+The module exports several constants and utility functions for manual dependency injection and advanced scenarios:
+
+### Constants
+
+- **`QDRANT_CLIENT_TOKEN`** — Injection token for the default Qdrant client instance
+- **`QDRANT_MODULE_OPTIONS`** — Injection token for the sanitized module options (apiKey stripped for security)
+- **`DEFAULT_QDRANT_CLIENT_NAME`** — The default client name constant (`'default'`)
+- **`MAX_COLLECTION_NAME_LENGTH`** — Maximum allowed collection name length (255 characters)
+
+### Utility Functions
+
+#### `getQdrantClientToken(name?: string): string`
+
+Returns the injection token for a named or default Qdrant client.
+
+**Parameters:**
+- `name` (optional) — Client name. If omitted or `'default'`, returns the base token for the default client.
+
+**Returns:** Injection token string (e.g., `'QDRANT_CLIENT'` or `'QDRANT_CLIENT:archive'`)
+
+#### `getQdrantModuleOptionsToken(name?: string): string`
+
+Returns the injection token for module options for a named or default client.
+
+**Parameters:**
+- `name` (optional) — Client name. If omitted or `'default'`, returns the base token for default options.
+
+**Returns:** Injection token string (e.g., `'QDRANT_MODULE_OPTIONS'` or `'QDRANT_MODULE_OPTIONS:backup'`)
+
+### Manual Token Injection Example
+
+If you need to inject a named client without using the `@InjectQdrantClient()` decorator, use `getQdrantClientToken()`:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { QdrantClient } from '@qdrant/js-client-rest';
+import { getQdrantClientToken } from '@pawells/nestjs-qdrant';
+
+@Injectable()
+export class MultiArchiveService {
+  constructor(
+    // Manual injection using token getter
+    @Inject(getQdrantClientToken('primary'))
+    private primaryClient: QdrantClient,
+
+    @Inject(getQdrantClientToken('backup'))
+    private backupClient: QdrantClient,
+  ) {}
+
+  async getPrimaryStats() {
+    return this.primaryClient.getCollections();
+  }
+
+  async getBackupStats() {
+    return this.backupClient.getCollections();
+  }
+}
+```
+
+Similarly, you can inject module options:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { getQdrantModuleOptionsToken } from '@pawells/nestjs-qdrant';
+import type { QdrantModuleOptions } from '@pawells/nestjs-qdrant';
+
+@Injectable()
+export class ConfigInspector {
+  constructor(
+    @Inject(getQdrantModuleOptionsToken('primary'))
+    private primaryOptions: QdrantModuleOptions,
+  ) {}
+
+  getUrl(): string {
+    return this.primaryOptions.url;
+  }
+}
+```
+
 ## Advanced Usage
 
 ### Custom Point Type
