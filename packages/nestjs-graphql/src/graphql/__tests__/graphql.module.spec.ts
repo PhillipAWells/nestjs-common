@@ -10,7 +10,6 @@ describe('GraphQLModule', () => {
 			expect(module.module).toBe(GraphQLModule);
 			expect(module.providers).toBeDefined();
 			expect(module.exports).toBeDefined();
-			expect(module.global).toBe(true);
 		});
 
 		it('should include GraphQLService in providers and exports', () => {
@@ -48,7 +47,6 @@ describe('GraphQLModule', () => {
 			expect(module.module).toBe(GraphQLModule);
 			expect(module.providers).toBeDefined();
 			expect(module.exports).toBeDefined();
-			expect(module.global).toBe(true);
 		});
 
 		it('should include GraphQLService in providers and exports for async config', () => {

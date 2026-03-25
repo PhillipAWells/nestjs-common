@@ -156,12 +156,17 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		}
 
 		// Generate invalidation keys
-		let { patterns } = invalidateOptions;
-		if (invalidateOptions.keyGenerator) {
-			patterns = invalidateOptions.keyGenerator(Object.values(args), gqlContext, result);
+		const { patterns: initialPatterns, keyGenerator } = invalidateOptions;
+		let patterns: string[] | undefined = initialPatterns;
+		if (keyGenerator) {
+			patterns = keyGenerator(Object.values(args), gqlContext, result);
 		}
 
 		// Invalidate each pattern
+		if (!patterns) {
+			return;
+		}
+
 		for (const pattern of patterns) {
 			try {
 				await this.GraphQLCacheService?.invalidatePattern(pattern);

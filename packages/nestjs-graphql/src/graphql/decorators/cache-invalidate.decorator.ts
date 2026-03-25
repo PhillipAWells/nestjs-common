@@ -1,14 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-
-/**
- * Shared cache metadata keys
- * @internal
- */
-const CACHE_METADATA_KEYS = {
-	CACHEABLE: 'cacheable',
-	CACHE_INVALIDATE: 'cache-invalidate',
-	CACHE_EVICT: 'cache-evict',
-} as const;
+import { CACHE_METADATA_KEYS } from './cacheable.decorator.js';
 
 /**
  * Base cache invalidate options interface
@@ -36,7 +27,7 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
 	 * Cache key patterns to invalidate
 	 * Supports wildcards and dynamic key generation
 	 */
-	patterns: string[];
+	patterns?: string[];
 
 	/**
 	 * Custom key generator function for dynamic patterns

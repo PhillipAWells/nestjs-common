@@ -4,7 +4,7 @@ import { SetMetadata } from '@nestjs/common';
  * Shared cache metadata keys
  * @internal
  */
-const CACHE_METADATA_KEYS = {
+export const CACHE_METADATA_KEYS = {
 	CACHEABLE: 'cacheable',
 	CACHE_INVALIDATE: 'cache-invalidate',
 	CACHE_EVICT: 'cache-evict',

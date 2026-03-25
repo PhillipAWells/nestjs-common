@@ -1,20 +1,49 @@
 /**
  * Configuration interface for GraphQL subscriptions with Redis PubSub
+ *
+ * Aggregates all configuration aspects for production-grade GraphQL subscriptions:
+ * Redis for distributed pub/sub, WebSocket server settings, authentication,
+ * connection limits, and resilience behavior.
  */
 export interface SubscriptionConfig {
-	/** Redis connection configuration */
+	/**
+	 * Redis connection configuration
+	 *
+	 * Defines how the subscription service connects to Redis for pub/sub functionality.
+	 * Required for multi-instance deployments. See {@link RedisConfig}.
+	 */
 	redis: RedisConfig;
 
-	/** WebSocket server configuration */
+	/**
+	 * WebSocket server configuration
+	 *
+	 * Controls the WebSocket server behavior including path, payload limits,
+	 * keepalive intervals, and connection timeouts. See {@link WebSocketConfig}.
+	 */
 	websocket: WebSocketConfig;
 
-	/** Authentication configuration */
+	/**
+	 * Authentication configuration
+	 *
+	 * Specifies JWT validation, token expiration, and header/parameter names
+	 * for WebSocket subscription authentication. See {@link AuthConfig}.
+	 */
 	auth: AuthConfig;
 
-	/** Connection management configuration */
+	/**
+	 * Connection management configuration
+	 *
+	 * Controls per-user subscription limits, cleanup intervals, and optional
+	 * statistics collection. See {@link ConnectionConfig}.
+	 */
 	connection: ConnectionConfig;
 
-	/** Resilience configuration */
+	/**
+	 * Resilience configuration
+	 *
+	 * Specifies keepalive, reconnection, error recovery, and graceful shutdown
+	 * behavior for robust subscription handling. See {@link ResilienceConfig}.
+	 */
 	resilience: ResilienceConfig;
 }
 

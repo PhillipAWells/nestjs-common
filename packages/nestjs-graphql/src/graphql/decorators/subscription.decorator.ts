@@ -39,6 +39,7 @@ export function Subscription(topic: string, options: SubscriptionOptions = {}) {
 
 		// Mark method as subscription resolver
 		SetMetadata('graphql:subscription', true)(target, propertyKey, descriptor);
+		return descriptor;
 	};
 }
 
@@ -55,6 +56,7 @@ export function SubscriptionFilter(filterFunction: (payload: any, variables: any
 			filterFunction,
 		});
 		Reflect.defineMetadata('subscription:filters', existingFilters, target, propertyKey);
+		return undefined;
 	};
 }
 
@@ -66,5 +68,6 @@ export function SubscriptionFilter(filterFunction: (payload: any, variables: any
 export function SubscriptionAuth(requiredRoles: string[] = []) {
 	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 		SetMetadata('subscription:auth', { requiredRoles })(target, propertyKey, descriptor);
+		return descriptor;
 	};
 }
