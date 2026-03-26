@@ -18,7 +18,6 @@
 		"lint:fix": "nx run-many --target=lint --fix",
 		"test": "nx run-many --target=test",
 		"build": "nx run-many --target=build",
-		"publish:dev": "node scripts/publish-dev.mjs",
 		"pipeline": "nx run-many -t typecheck lint test build",
 		"prepare": "husky"
 	},
