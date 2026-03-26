@@ -10,6 +10,7 @@ export default defineConfig({
 		env: {
 			LOG_LEVEL: 'silent',
 		},
+		setupFiles: ['./src/test-setup.ts'],
 		typecheck: {
 			tsconfig: './tsconfig.test.json',
 		},
