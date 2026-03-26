@@ -19,7 +19,7 @@
 		"test": "nx run-many --target=test",
 		"build": "nx run-many --target=build",
 		"publish:dev": "node scripts/publish-dev.mjs",
-		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build",
+		"pipeline": "nx run-many -t typecheck lint test build",
 		"prepare": "husky"
 	},
 	"workspaces": [
