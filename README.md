@@ -9,7 +9,7 @@ A comprehensive collection of NestJS utility libraries for building enterprise-g
 - **Package Manager**: Yarn 4 (corepack)
 - **Build Tool**: NX 21
 - **Test Framework**: Vitest
-- **Node Requirement**: >=24.0.0
+- **Node Requirement**: >=22.0.0
 - **License**: MIT
 
 ## Packages

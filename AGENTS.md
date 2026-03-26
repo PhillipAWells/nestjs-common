@@ -5,7 +5,7 @@
 - **Package manager**: Yarn 4 (corepack)
 - **Build tool**: NX 21 with `@nx/vite` and `@nx/eslint` plugins
 - **Test framework**: Vitest
-- **Node requirement**: >=24.0.0
+- **Node requirement**: >=22.0.0
 - **TypeScript**: ES2022 target, strict mode, `bundler` module resolution
 
 ## Commands
