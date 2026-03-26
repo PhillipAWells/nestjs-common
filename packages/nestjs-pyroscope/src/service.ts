@@ -93,7 +93,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 	private readonly moduleRef: ModuleRef;
 
-	public constructor(moduleRef: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
 		this.moduleRef = moduleRef;
 	}
 

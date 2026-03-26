@@ -52,7 +52,7 @@ export interface HealthResponse {
 export class HealthController {
 	private readonly moduleRef: ModuleRef;
 
-	public constructor(@Inject(ModuleRef) moduleRef: ModuleRef) {
+	constructor(@Inject(ModuleRef) moduleRef: ModuleRef) {
 		this.moduleRef = moduleRef;
 	}
 

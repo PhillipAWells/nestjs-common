@@ -5,7 +5,7 @@
 export class PyroscopeError extends Error {
 	public readonly context?: string;
 
-	public constructor(message: string, context?: string) {
+	constructor(message: string, context?: string) {
 		super(message);
 		this.name = this.constructor.name;
 		this.context = context;
