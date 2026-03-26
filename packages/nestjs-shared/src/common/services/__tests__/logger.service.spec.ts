@@ -31,8 +31,14 @@ describe('AppLogger', () => {
 
 	describe('parseLogLevel', () => {
 		it('should default to INFO level', () => {
-			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			const saved = process.env['LOG_LEVEL'];
+			delete process.env['LOG_LEVEL'];
+			try {
+				const logger = new AppLogger(configService);
+				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			} finally {
+				if (saved !== undefined) process.env['LOG_LEVEL'] = saved;
+			}
 		});
 
 		it('should parse debug level', () => {
@@ -603,9 +609,15 @@ describe('AppLogger', () => {
 
 	describe('Service initialization with optional ConfigService', () => {
 		it('should handle missing ConfigService gracefully', () => {
-			const logger = new AppLogger();
-			expect(logger).toBeDefined();
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			const saved = process.env['LOG_LEVEL'];
+			delete process.env['LOG_LEVEL'];
+			try {
+				const logger = new AppLogger();
+				expect(logger).toBeDefined();
+				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			} finally {
+				if (saved !== undefined) process.env['LOG_LEVEL'] = saved;
+			}
 		});
 
 		it('should use default service name when ConfigService is missing', () => {

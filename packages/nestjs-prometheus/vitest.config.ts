@@ -7,6 +7,9 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.ts'],
 		exclude: ['node_modules', 'build', 'tmp'],
 		silent: true,
+		env: {
+			LOG_LEVEL: 'silent',
+		},
 		typecheck: {
 			tsconfig: './tsconfig.test.json',
 		},
