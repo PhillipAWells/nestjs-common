@@ -10,7 +10,12 @@
 				"main": "{projectRoot}/src/index.ts",
 				"outputPath": "{projectRoot}/build",
 				"tsConfig": "{projectRoot}/tsconfig.build.json",
-				"rootDir": "{projectRoot}/src"
+				"rootDir": "{projectRoot}/src",
+				"assets": [
+					{ "input": "{projectRoot}", "glob": "README.md", "output": "." },
+					{ "input": "{projectRoot}", "glob": "LICENSE", "output": "." }
+				],
+				"updateBuildableProjectDepsInPackageJson": true
 			},
 			"outputs": ["{projectRoot}/build"]
 		},

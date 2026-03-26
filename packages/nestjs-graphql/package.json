@@ -49,9 +49,9 @@
 		}
 	},
 	"dependencies": {
-		"@pawells/nestjs-open-telemetry": "workspace:*",
-		"@pawells/nestjs-pyroscope": "workspace:*",
-		"@pawells/nestjs-shared": "workspace:*"
+		"@pawells/nestjs-open-telemetry": "^1.0.0",
+		"@pawells/nestjs-pyroscope": "^1.0.0",
+		"@pawells/nestjs-shared": "^1.0.0"
 	},
 	"engines": {
 		"node": ">=24.0.0"

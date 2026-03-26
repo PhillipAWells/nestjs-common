@@ -49,7 +49,7 @@
 		"nx-release-publish": {
 			"dependsOn": ["build"],
 			"options": {
-				"packageRoot": "{projectRoot}/build",
+				"packageRoot": "{projectRoot}",
 				"access": "public"
 			}
 		},

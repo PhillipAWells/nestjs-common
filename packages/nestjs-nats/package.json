@@ -22,7 +22,7 @@
 		"pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
 	},
 	"dependencies": {
-		"@pawells/nestjs-shared": "workspace:*"
+		"@pawells/nestjs-shared": "^1.0.0"
 	},
 	"peerDependencies": {
 		"@nats-io/jetstream": ">=3.0.0",
