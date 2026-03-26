@@ -4086,7 +4086,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-auth@workspace:packages/nestjs-auth"
   dependencies:
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
     "@nestjs/core": ">=10.0.0"
@@ -4200,9 +4200,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-graphql@workspace:packages/nestjs-graphql"
   dependencies:
-    "@pawells/nestjs-open-telemetry": "workspace:*"
-    "@pawells/nestjs-pyroscope": "workspace:*"
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-open-telemetry": "npm:^1.0.0"
+    "@pawells/nestjs-pyroscope": "npm:^1.0.0"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nestjs/apollo": ">=12.0.0"
     "@nestjs/cache-manager": ">=2.0.0"
@@ -4235,7 +4235,7 @@ __metadata:
   dependencies:
     "@nats-io/jetstream": "npm:^3.3.1"
     "@nats-io/transport-node": "npm:^3.3.1"
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nats-io/jetstream": ">=3.0.0"
     "@nats-io/transport-node": ">=3.0.0"
@@ -4244,12 +4244,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-open-telemetry@workspace:*, @pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
+"@pawells/nestjs-open-telemetry@npm:^1.0.0, @pawells/nestjs-open-telemetry@workspace:*, @pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry"
   dependencies:
     "@pawells/logger": "npm:^1.2.2"
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
     "@opentelemetry/api": ">=1.0.0"
@@ -4260,14 +4260,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-prometheus@workspace:packages/nestjs-prometheus"
   dependencies:
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
     prom-client: ">=15.0.0"
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-pyroscope@workspace:*, @pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
+"@pawells/nestjs-pyroscope@npm:^1.0.0, @pawells/nestjs-pyroscope@workspace:*, @pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
@@ -4283,14 +4283,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant"
   dependencies:
-    "@pawells/nestjs-shared": "workspace:*"
+    "@pawells/nestjs-shared": "npm:^1.0.0"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
     "@qdrant/js-client-rest": ">=1.0.0"
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
+"@pawells/nestjs-shared@npm:^1.0.0, @pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-shared@workspace:packages/nestjs-shared"
   dependencies:
