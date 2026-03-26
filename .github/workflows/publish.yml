@@ -93,21 +93,21 @@ jobs:
 
       - name: Publish packages
         if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
-        run: npx nx release publish
+        run: npx nx release publish --parallel=1
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
       - name: Publish dev snapshot
         if: startsWith(github.ref, 'refs/heads/')
-        run: npx nx release publish --tag dev
+        run: npx nx release publish --tag dev --parallel=1
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
       - name: Publish pre-release
         if: github.event_name == 'workflow_dispatch'
-        run: npx nx release publish --tag ${{ inputs.preid }}
+        run: npx nx release publish --tag ${{ inputs.preid }} --parallel=1
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
