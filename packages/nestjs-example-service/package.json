@@ -55,7 +55,7 @@
     "prom-client": ">=15.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": ">=7.0.0",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.2",
     "uuid": ">=9.0.0",
     "xss": ">=1.0.0"
   },
