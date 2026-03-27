@@ -1,0 +1,104 @@
+/**
+ * Mock Cache Provider for Testing
+ *
+ * Provides in-memory cache implementation for unit tests
+ * Allows testing auth module without Redis setup
+ */
+import { Injectable } from '@nestjs/common';
+import type { ICacheProvider } from '../../common/interfaces/cache-provider.interface.js';
+
+/**
+ * In-memory mock cache provider for testing
+ */
+@Injectable()
+export class MockCacheProvider implements ICacheProvider {
+	// eslint-disable-next-line no-magic-numbers
+	private static readonly MS_PER_SECOND = 1000;
+
+	private readonly store: Map<string, { value: any; expiresAt?: number }> = new Map();
+
+	/**
+	 * Set a cache value with optional TTL
+	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+		const expiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
+		this.store.set(key, { value, expiresAt });
+		return Promise.resolve();
+	}
+
+	/**
+	 * Get a cache value
+	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public get(key: string): Promise<any> {
+		const entry = this.store.get(key);
+		if (!entry) {
+			return Promise.resolve(null);
+		}
+
+		// Check expiration
+		if (entry.expiresAt && Date.now() > entry.expiresAt) {
+			this.store.delete(key);
+			return Promise.resolve(null);
+		}
+
+		return Promise.resolve(entry.value);
+	}
+
+	/**
+	 * Check if a key exists in cache
+	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public exists(key: string): Promise<boolean> {
+		const entry = this.store.get(key);
+		if (!entry) {
+			return Promise.resolve(false);
+		}
+
+		// Check expiration
+		if (entry.expiresAt && Date.now() > entry.expiresAt) {
+			this.store.delete(key);
+			return Promise.resolve(false);
+		}
+
+		return Promise.resolve(true);
+	}
+
+	/**
+	 * Delete a cache value
+	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public del(key: string): Promise<void> {
+		this.store.delete(key);
+		return Promise.resolve();
+	}
+
+	/**
+	 * Clear all cache values
+	 */
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public clear(): Promise<void> {
+		this.store.clear();
+		return Promise.resolve();
+	}
+
+	/**
+	 * Helper: Get cache statistics for testing
+	 */
+	public getStats(): { size: number; keys: string[] } {
+		return {
+			size: this.store.size,
+			keys: Array.from(this.store.keys()),
+		};
+	}
+
+	/**
+	 * Helper: Manually expire all entries (for testing)
+	 */
+	public expireAll(): void {
+		this.store.forEach(entry => {
+			entry.expiresAt = Date.now() - 1; // Already expired
+		});
+	}
+}

@@ -4246,7 +4246,7 @@ __metadata:
     "@nestjs/terminus": "npm:^11.1.1"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4394,9 +4394,9 @@ __metadata:
     "@nestjs/terminus": "npm:^11.1.1"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-open-telemetry": "npm:^1.0.2"
-    "@pawells/nestjs-pyroscope": "npm:^1.0.2"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-open-telemetry": "npm:^1.1.0"
+    "@pawells/nestjs-pyroscope": "npm:^1.1.0"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     cache-manager: "npm:^7.0.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
@@ -4427,7 +4427,7 @@ __metadata:
     "@nestjs/terminus": ">=10.0.0"
     "@nestjs/throttler": ">=5.0.0"
     "@opentelemetry/api": ">=1.0.0"
-    "@pawells/nestjs-auth": 1.0.2
+    "@pawells/nestjs-auth": 1.1.0
     cache-manager: ">=7.0.0"
     class-transformer: ">=0.5.0"
     class-validator: ">=0.14.0"
@@ -4465,7 +4465,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4498,7 +4498,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-open-telemetry@npm:^1.0.2, @pawells/nestjs-open-telemetry@workspace:*, @pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
+"@pawells/nestjs-open-telemetry@npm:^1.1.0, @pawells/nestjs-open-telemetry@workspace:*, @pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry"
   dependencies:
@@ -4508,7 +4508,7 @@ __metadata:
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
     "@pawells/logger": "npm:^1.2.2"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4548,7 +4548,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4579,7 +4579,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-pyroscope@npm:^1.0.2, @pawells/nestjs-pyroscope@workspace:*, @pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
+"@pawells/nestjs-pyroscope@npm:^1.1.0, @pawells/nestjs-pyroscope@workspace:*, @pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
@@ -4604,7 +4604,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.0.2"
+    "@pawells/nestjs-shared": "npm:^1.1.0"
     "@qdrant/js-client-rest": "npm:^1.17.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
@@ -4638,7 +4638,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-shared@npm:^1.0.2, @pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
+"@pawells/nestjs-shared@npm:^1.1.0, @pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-shared@workspace:packages/nestjs-shared"
   dependencies:

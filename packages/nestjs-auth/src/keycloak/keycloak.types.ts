@@ -55,3 +55,27 @@ export interface KeycloakUser {
 	/** Roles from resource_access[clientId].roles */
 	clientRoles: string[];
 }
+
+/**
+ * Create a mock KeycloakUser with sensible test defaults.
+ * Override any field by passing a Partial<KeycloakUser>.
+ *
+ * This is a pure data factory with no side effects — safe to use in any test context.
+ *
+ * @example
+ * ```typescript
+ * const adminUser = createMockKeycloakUser({ realmRoles: ['admin'] });
+ * const guestUser = createMockKeycloakUser({ id: 'guest-id', clientRoles: [] });
+ * ```
+ */
+export function createMockKeycloakUser(overrides: Partial<KeycloakUser> = {}): KeycloakUser {
+	return {
+		id: 'test-user-id',
+		email: 'test@example.com',
+		username: 'test-user',
+		name: 'Test User',
+		realmRoles: [],
+		clientRoles: [],
+		...overrides,
+	};
+}

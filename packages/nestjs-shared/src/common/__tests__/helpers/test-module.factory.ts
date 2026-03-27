@@ -7,7 +7,7 @@
 import { Module } from '@nestjs/common';
 import { vi } from 'vitest';
 import { CACHE_PROVIDER } from '../../interfaces/cache-provider.interface.js';
-import { MockCacheProvider } from '../mocks/cache-provider.mock.js';
+import { MockCacheProvider } from '../../../testing/mocks/cache-provider.mock.js';
 import { AppLogger } from '../../services/logger.service.js';
 
 /**
