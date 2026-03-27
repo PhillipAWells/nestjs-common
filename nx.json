@@ -28,6 +28,9 @@
 		"releaseTag": {
 			"pattern": "v{version}"
 		},
+		"git": {
+			"tag": false
+		},
 		"version": {
 			"versionActionsOptions": {
 				"skipLockFileUpdate": true
