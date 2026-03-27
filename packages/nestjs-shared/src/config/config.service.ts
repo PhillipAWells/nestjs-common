@@ -1,8 +1,8 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
-import { AppLogger } from '../common/index.js';
+import { AppLogger, getErrorMessage } from '../common/index.js';
 
 /**
  * Configuration schema definition interface.
@@ -53,7 +53,7 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	}
 
 	public onModuleInit(): void {
-		Logger.log('Configuration service initialized', ConfigService.name);
+		this.Logger.info('Configuration service initialized');
 	}
 
 	public get Logger(): AppLogger {
@@ -105,7 +105,7 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 		} catch (error) {
 			const durationMs = Date.now() - startTime;
 			this.Logger.error('Configuration validation error', undefined, undefined, {
-				error: error instanceof Error ? error.message : String(error),
+				error: getErrorMessage(error),
 				durationMs,
 			});
 			throw error;

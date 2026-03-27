@@ -1,5 +1,5 @@
-import { Logger } from '@nestjs/common';
 import { Counter, Gauge, Histogram } from 'prom-client';
+import { AppLogger } from '../services/logger.service.js';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
 
 /**
@@ -22,7 +22,7 @@ import { MetricsRegistryService } from '../services/metrics-registry.service.js'
  * ```
  */
 export abstract class BaseMetricsCollector {
-	protected readonly logger = new Logger(this.constructor.name);
+	protected readonly logger: AppLogger = new AppLogger(undefined, this.constructor.name);
 
 	private readonly metricsRegistry: MetricsRegistryService;
 
@@ -31,7 +31,7 @@ export abstract class BaseMetricsCollector {
 	constructor(metricsRegistry: MetricsRegistryService) {
 		this.metricsRegistry = metricsRegistry;
 		this.initializeMetrics();
-		this.logger.log(`${this.constructor.name} initialized with ${this.metrics.size} metrics`);
+		this.logger.info(`${this.constructor.name} initialized with ${this.metrics.size} metrics`);
 	}
 
 	/**
