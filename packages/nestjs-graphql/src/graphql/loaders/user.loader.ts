@@ -1,0 +1,124 @@
+import DataLoader from 'dataloader';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
+import { DataLoaderRegistry } from './dataloader-registry.js';
+
+/**
+ * Interface for User entity
+ */
+export interface User {
+	id: string;
+	[key: string]: any;
+}
+
+/**
+ * DataLoader for loading users by ID
+ * Prevents N+1 query problems when resolving user fields in GraphQL
+ */
+@Injectable()
+export class UserLoader implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
+	public get DataLoaderRegistry(): DataLoaderRegistry {
+		return this.Module.get(DataLoaderRegistry, { strict: false });
+	}
+
+	public get AppLogger(): AppLogger {
+		return this.Module.get(AppLogger, { strict: false });
+	}
+
+	private get logger(): AppLogger {
+		return this.AppLogger.createContextualLogger(UserLoader.name);
+	}
+
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
+
+	/**
+   * Gets the user DataLoader instance
+   * @param batchLoadFn Custom batch loading function (optional)
+   * @returns DataLoader for users
+   */
+	public getLoader(
+		batchLoadFn?: (keys: readonly string[]) => Promise<(User | Error)[]>,
+	): DataLoader<string, User> {
+		return this.DataLoaderRegistry.createWithCache(
+			'user-loader',
+			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
+		);
+	}
+
+	/**
+   * Default batch loading function for users
+   * This should be overridden with actual database/service logic
+   * @param userIds Array of user IDs to load
+   * @returns Promise resolving to array of users or errors
+   */
+	// eslint-disable-next-line require-await
+	private async defaultBatchLoadFn(
+		userIds: readonly string[],
+	): Promise<(User | Error)[]> {
+		this.logger.warn(
+			'Using default user batch loader. Override with actual implementation.',
+		);
+
+		// This is a placeholder - in real implementation, this would query the database
+		// For now, return errors to indicate implementation is needed
+		return userIds.map(
+			(id) =>
+				new Error(
+					`UserLoader not implemented. Override batchLoadFn for user ID: ${id}`,
+				),
+		);
+	}
+
+	/**
+   * Loads a single user by ID
+   * @param userId User ID to load
+   * @returns Promise resolving to user or undefined
+   */
+	public async load(userId: string): Promise<User | undefined> {
+		const loader = this.getLoader();
+		try {
+			return await loader.load(userId);
+		} catch (error) {
+			this.logger.error(`Failed to load user ${userId}`, getErrorStack(error));
+			return undefined;
+		}
+	}
+
+	/**
+   * Loads multiple users by IDs
+   * @param userIds Array of user IDs to load
+   * @returns Promise resolving to array of users
+   */
+	public async loadMany(userIds: string[]): Promise<(User | Error)[]> {
+		const loader = this.getLoader();
+		try {
+			return await loader.loadMany(userIds);
+		} catch (error) {
+			this.logger.error(`Failed to load users ${userIds}`, getErrorStack(error));
+			return userIds.map(() => error as Error);
+		}
+	}
+
+	/**
+   * Clears the cache for a specific user
+   * @param userId User ID to clear from cache
+   */
+	public clear(userId: string): void {
+		const loader = this.getLoader();
+		loader.clear(userId);
+		this.logger.debug(`Cleared cache for user ${userId}`);
+	}
+
+	/**
+   * Clears all cached users
+   */
+	public clearAll(): void {
+		this.DataLoaderRegistry.clearCache('user-loader');
+	}
+}

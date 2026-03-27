@@ -1,0 +1,144 @@
+import { BaseApplicationError } from '../base-application-error.js';
+
+describe('BaseApplicationError', () => {
+	describe('constructor', () => {
+		it('should create error with default values', () => {
+			const error = new BaseApplicationError('Test error');
+
+			expect(error.message).toBe('Test error');
+			expect(error.code).toBe('INTERNAL_SERVER_ERROR');
+			expect(error.statusCode).toBe(500);
+			expect(error.context).toEqual({});
+			expect(error.timestamp).toBeInstanceOf(Date);
+			expect(error.name).toBe('BaseApplicationError');
+		});
+
+		it('should create error with custom options', () => {
+			const context = { userId: '123' };
+			const error = new BaseApplicationError('Test error', {
+				code: 'CUSTOM_ERROR',
+				statusCode: 400,
+				context,
+			});
+
+			expect(error.message).toBe('Test error');
+			expect(error.code).toBe('CUSTOM_ERROR');
+			expect(error.statusCode).toBe(400);
+			expect(error.context).toEqual(context);
+		});
+
+		it('should capture stack trace', () => {
+			const error = new BaseApplicationError('Test error');
+
+			expect(error.stack).toBeDefined();
+			expect(error.stack).toContain('BaseApplicationError');
+		});
+	});
+
+	describe('toJSON', () => {
+		it('should serialize error to plain object', () => {
+			const originalEnv = process.env.NODE_ENV;
+			process.env.NODE_ENV = 'production'; // Ensure no stack in production
+
+			const error = new BaseApplicationError('Test error', {
+				code: 'TEST_ERROR',
+				statusCode: 400,
+				context: { userId: '123' },
+			});
+
+			const json = error.toJSON();
+
+			expect(json).toEqual({
+				name: 'BaseApplicationError',
+				message: 'Test error',
+				code: 'TEST_ERROR',
+				statusCode: 400,
+				context: { userId: '123' },
+				timestamp: error.timestamp.toISOString(),
+			});
+
+			process.env.NODE_ENV = originalEnv;
+		});
+
+		it('should include stack trace in development', () => {
+			const originalEnv = process.env.NODE_ENV;
+			process.env.NODE_ENV = 'development';
+
+			const error = new BaseApplicationError('Test error');
+			const json = error.toJSON();
+
+			expect(json.stack).toBeDefined();
+
+			process.env.NODE_ENV = originalEnv;
+		});
+
+		it('should exclude stack trace in production', () => {
+			const originalEnv = process.env.NODE_ENV;
+			process.env.NODE_ENV = 'production';
+
+			const error = new BaseApplicationError('Test error');
+			const json = error.toJSON();
+
+			expect(json.stack).toBeUndefined();
+
+			process.env.NODE_ENV = originalEnv;
+		});
+	});
+
+	describe('withContext', () => {
+		it('should create new error with merged context', () => {
+			const originalError = new BaseApplicationError('Test error', {
+				context: { userId: '123' },
+			});
+
+			const newError = originalError.withContext({ action: 'login' });
+
+			expect(newError).not.toBe(originalError);
+			expect(newError.message).toBe('Test error');
+			expect(newError.code).toBe('INTERNAL_SERVER_ERROR');
+			expect(newError.statusCode).toBe(500);
+			expect(newError.context).toEqual({ userId: '123', action: 'login' });
+		});
+
+		it('should override existing context values', () => {
+			const originalError = new BaseApplicationError('Test error', {
+				context: { userId: '123', action: 'register' },
+			});
+
+			const newError = originalError.withContext({ action: 'login' });
+
+			expect(newError.context).toEqual({ userId: '123', action: 'login' });
+		});
+	});
+
+	describe('withMessage', () => {
+		it('should create new error with different message', () => {
+			const originalError = new BaseApplicationError('Original message', {
+				code: 'TEST_ERROR',
+				context: { userId: '123' },
+			});
+
+			const newError = originalError.withMessage('New message');
+
+			expect(newError).not.toBe(originalError);
+			expect(newError.message).toBe('New message');
+			expect(newError.code).toBe('TEST_ERROR');
+			expect(newError.context).toEqual({ userId: '123' });
+		});
+	});
+
+	describe('inheritance', () => {
+		it('should be instanceof Error', () => {
+			const error = new BaseApplicationError('Test error');
+
+			expect(error).toBeInstanceOf(Error);
+		});
+
+		it('should have proper prototype chain', () => {
+			const error = new BaseApplicationError('Test error');
+
+			expect(Object.getPrototypeOf(error)).toBe(BaseApplicationError.prototype);
+			expect(Object.getPrototypeOf(BaseApplicationError.prototype)).toBe(Error.prototype);
+		});
+	});
+});
