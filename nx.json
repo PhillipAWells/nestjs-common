@@ -1,0 +1,87 @@
+{
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"defaultBase": "main",
+	"tui": { "enabled": false },
+	"workspaceLayout": {
+		"appsDir": "packages",
+		"libsDir": "packages"
+	},
+	"plugins": [
+		{
+			"plugin": "@nx/eslint/plugin",
+			"options": {
+				"targetName": "lint"
+			}
+		},
+		{
+			"plugin": "@nx/vite/plugin",
+			"options": {
+				"buildTargetName": "build",
+				"testTargetName": "test",
+				"previewTargetName": "preview"
+			}
+		}
+	],
+	"release": {
+		"projects": ["packages/*"],
+		"projectsRelationship": "fixed",
+		"releaseTag": {
+			"pattern": "v{version}"
+		},
+		"git": {
+			"tag": false,
+			"commitMessage": "chore: bump version to {version}"
+		},
+		"version": {
+			"versionActionsOptions": {
+				"skipLockFileUpdate": true
+			}
+		}
+	},
+	"targetDefaults": {
+		"build": {
+			"cache": true,
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"]
+		},
+		"@nx/js:tsc": {
+			"cache": true,
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"],
+			"outputs": ["{options.outputPath}"]
+		},
+		"nx-release-publish": {
+			"dependsOn": ["build"],
+			"options": {
+				"packageRoot": "{projectRoot}",
+				"access": "public"
+			}
+		},
+		"test": {
+			"cache": true
+		},
+		"lint": {
+			"cache": true
+		},
+		"typecheck": {
+			"dependsOn": ["^build"],
+			"cache": true
+		},
+		"serve": {
+			"dependsOn": ["^build"]
+		}
+	},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"production": [
+			"default",
+			"!{projectRoot}/**/*.spec.ts",
+			"!{projectRoot}/**/*.test.ts",
+			"!{projectRoot}/coverage/**/*"
+		],
+		"sharedGlobals": [
+			"{workspaceRoot}/tsconfig.base.json",
+			"{workspaceRoot}/eslint.config.mjs"
+		]
+	}
+}

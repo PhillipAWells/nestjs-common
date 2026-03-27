@@ -1,0 +1,84 @@
+{
+  "name": "@pawells/nestjs-nats",
+  "displayName": "@pawells/nestjs-nats",
+  "version": "1.0.2",
+  "description": "NestJS NATS pub/sub integration module",
+  "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest --coverage",
+    "pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
+  },
+  "dependencies": {
+    "@pawells/nestjs-shared": "^1.0.2"
+  },
+  "peerDependencies": {
+    "@nats-io/jetstream": ">=3.0.0",
+    "@nats-io/transport-node": ">=3.0.0",
+    "@nestjs/common": ">=10.0.0",
+    "@nestjs/config": ">=3.0.0",
+    "@nestjs/core": ">=10.0.0",
+    "@nestjs/throttler": ">=5.0.0",
+    "@opentelemetry/api": ">=1.0.0",
+    "class-transformer": ">=0.5.0",
+    "class-validator": ">=0.14.0",
+    "compression": ">=1.0.0",
+    "csrf-csrf": ">=3.0.0",
+    "express": ">=4.0.0",
+    "helmet": ">=7.0.0",
+    "joi": ">=17.0.0",
+    "prom-client": ">=15.0.0",
+    "rxjs": ">=7.0.0",
+    "xss": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@nats-io/jetstream": "^3.3.1",
+    "@nats-io/transport-node": "^3.3.1",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/throttler": "^6.4.0",
+    "@opentelemetry/api": "^1.9.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "compression": "^1.7.4",
+    "csrf-csrf": "^3.2.0",
+    "express": "^4.21.0",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.0",
+    "prom-client": "^15.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0",
+    "xss": "^1.0.15"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "yarn@4.12.0",
+  "author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PhillipAWells/nestjs-common"
+  },
+  "files": [
+    "build/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,12 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"outDir": "./build",
+		"rootDir": "./src",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"types": ["vitest/globals", "node"]
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "build"]
+}

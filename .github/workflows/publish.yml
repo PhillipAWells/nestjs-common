@@ -1,0 +1,119 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+    branches: ['development/[0-9]*.[0-9]*']
+  workflow_dispatch:
+    inputs:
+      preid:
+        description: 'Pre-release identifier'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [dev, alpha, beta, rc]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    # For pre-release tag pushes (tags that contain '-'), CI was already validated
+    # by the workflow_dispatch run that created the tag — skip it here.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/heads/') ||
+      (startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-'))
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish
+    needs: [ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      CI: true
+      NX_DAEMON: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Stamp snapshot version
+        if: startsWith(github.ref, 'refs/heads/')
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          BASE=$(node -p "require('./packages/nestjs-shared/package.json').version.replace(/-.*$/, '')")
+          export SNAP="${BASE}-dev.${SHA}"
+          echo "Snapshot version: ${SNAP}"
+          node -e "
+            const fs = require('fs');
+            for (const d of fs.readdirSync('packages')) {
+              const p = 'packages/' + d + '/package.json';
+              if (!fs.existsSync(p)) continue;
+              const pkg = JSON.parse(fs.readFileSync(p));
+              if (pkg.private) continue;
+              pkg.version = process.env.SNAP;
+              fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+            }
+          "
+
+      - name: Bump pre-release version
+        if: github.event_name == 'workflow_dispatch'
+        run: npx nx release version prerelease --preid ${{ inputs.preid }} --yes --git-commit --git-tag
+
+      - name: Build all packages
+        run: yarn build
+
+      - name: Publish packages
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+        run: npx nx release publish --parallel=1
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish dev snapshot
+        if: startsWith(github.ref, 'refs/heads/')
+        run: npx nx release publish --tag dev --parallel=1
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Publish pre-release
+        if: github.event_name == 'workflow_dispatch'
+        run: npx nx release publish --tag ${{ inputs.preid }} --parallel=1
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref_name, '-')
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          generate_release_notes: true
+
+      - name: Push version commit and tag
+        if: github.event_name == 'workflow_dispatch'
+        run: git push --follow-tags
