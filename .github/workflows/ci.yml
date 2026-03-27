@@ -22,7 +22,6 @@ jobs:
     env:
       CI: true
       NX_DAEMON: false
-      NODE_AUTH_TOKEN: ""
     steps:
       - uses: actions/checkout@v6
         with:
