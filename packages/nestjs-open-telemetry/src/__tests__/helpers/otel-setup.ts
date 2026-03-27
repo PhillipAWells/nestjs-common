@@ -1,5 +1,5 @@
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { Resource } from '@opentelemetry/resources';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { type Logger } from '@pawells/logger';
 
 /**
@@ -69,14 +69,13 @@ export async function initializeOpenTelemetry(config: OpenTelemetryConfig): Prom
 	try {
 		// Create a basic NodeTracerProvider
 		// In test environments, this doesn't export to a collector
-		const resource = Resource.default().merge(
-			new Resource({
-				'service.name': config.serviceName,
-				'service.version': config.serviceVersion ?? '0.0.0',
-				'deployment.environment': config.environment ?? 'development',
-				...config.resourceAttributes,
-			}),
-		);
+		const customResource = resourceFromAttributes({
+			'service.name': config.serviceName,
+			'service.version': config.serviceVersion ?? '0.0.0',
+			'deployment.environment': config.environment ?? 'development',
+			...config.resourceAttributes,
+		});
+		const resource = defaultResource().merge(customResource);
 
 		const provider = new NodeTracerProvider({
 			resource,
