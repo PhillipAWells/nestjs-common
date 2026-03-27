@@ -298,13 +298,13 @@ Use `LazyGetter<T>` and `OptionalLazyGetter<T>` type aliases with factory functi
 
 ## Versioning & Publishing
 
-All packages share a single version defined in the root `package.json`. Version sync is handled automatically:
+All packages share a single version managed by NX release (`projectsRelationship: "fixed"`). There are three publishing channels:
 
-```bash
-yarn version:sync
-```
+- **Production (`latest`)** — push a `v*` tag to GitHub after merging to `main`. Publishes all non-private packages and creates a GitHub Release.
+- **Dev snapshot (`@dev`)** — happens automatically on every push to a `development/**` branch. Version format: `{base}-dev.{sha}` (e.g., `1.0.2-dev.abc1234`). Install with `yarn add @pawells/nestjs-shared@dev`.
+- **Pre-release (`@alpha`, `@beta`, `@rc`)** — triggered manually via GitHub Actions → Publish workflow → Run workflow. Choose a preid (`alpha`, `beta`, or `rc`) when prompted.
 
-Publishing is triggered by pushing a `v*` git tag. The CI/CD workflow (`.github/workflows/publish.yml`) automatically publishes all packages to npm.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full release workflow, including the exact commands to bump and tag a production release.
 
 ---
 

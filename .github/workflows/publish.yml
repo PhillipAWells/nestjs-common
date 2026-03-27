@@ -68,7 +68,7 @@ jobs:
         if: startsWith(github.ref, 'refs/heads/')
         run: |
           SHA=$(git rev-parse --short HEAD)
-          BASE=$(node -p "require('./package.json').version.replace(/-.*$/, '')")
+          BASE=$(node -p "require('./packages/nestjs-shared/package.json').version.replace(/-.*$/, '')")
           export SNAP="${BASE}-dev.${SHA}"
           echo "Snapshot version: ${SNAP}"
           node -e "
