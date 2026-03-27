@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-prometheus",
   "displayName": "@pawells/nestjs-prometheus",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "NestJS Prometheus metrics module with endpoint controller",
   "type": "module",
   "main": "./build/index.js",

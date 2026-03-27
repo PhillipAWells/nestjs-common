@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-shared",
   "displayName": "@pawells/nestjs-shared",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Shared NestJS infrastructure: filters, logging, metrics, and security",
   "type": "module",
   "main": "./build/index.js",
