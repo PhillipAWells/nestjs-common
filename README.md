@@ -38,21 +38,21 @@ yarn add @pawells/nestjs-shared
 ### Authentication & Authorization
 
 #### [@pawells/nestjs-auth](packages/nestjs-auth)
-JWT, sessions, OAuth/OIDC, and Keycloak authentication with rate limiting and token blacklisting. Provides decorators for role-based and permission-based access control.
+Keycloak integration library for NestJS resource servers. Validates Keycloak-issued access tokens, enforces role and permission guards on HTTP and GraphQL routes, and provides a typed Admin REST API client for user management, federated identity, and event polling.
 
-**Depends on:** `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope`
+**Depends on:** `nestjs-shared`
 
 ```bash
 yarn add @pawells/nestjs-auth
 ```
 
 **Key Features:**
-- JWT and session strategies (Passport.js integration)
-- OAuth/OIDC and Keycloak support
+- Online token introspection (default) and offline JWKS validation (opt-in)
 - `@Auth`, `@Public`, `@Roles`, `@Permissions`, `@CurrentUser`, `@AuthToken` decorators
-- GraphQL-specific variants: `@GraphQLAuth`, `@GraphQLRoles`, `@GraphQLCurrentUser`, etc.
-- Token blacklisting with fail-closed cache semantics
-- Rate limiting on logout and refresh endpoints
+- GraphQL-specific variants: `@GraphQLAuth`, `@GraphQLPublic`, `@GraphQLRoles`, `@GraphQLCurrentUser`, etc.
+- `KeycloakAdminModule` for user management, role assignment, and group operations
+- Federated identity linking with deduplication guard (Keycloak issue #34608)
+- Admin event polling with checkpoint cursor pattern
 
 ---
 
@@ -141,24 +141,55 @@ yarn add @pawells/nestjs-qdrant
 
 ---
 
+### Messaging
+
+#### [@pawells/nestjs-nats](packages/nestjs-nats)
+NATS pub/sub integration with automatic subscriber discovery, request-reply patterns, and JetStream support.
+
+**Standalone** (no cross-package dependencies)
+
+```bash
+yarn add @pawells/nestjs-nats @nats-io/transport-node @nats-io/jetstream
+```
+
+**Key Features:**
+- `NatsModule.forRoot` / `forRootAsync` dynamic module pattern
+- `NatsService` for publish, subscribe, and request-reply messaging
+- `@Subscribe(subject, queue?)` decorator with automatic handler discovery
+- JetStream integration for persistent, durable messaging
+- Credentials sanitized from the public options token
+
+---
+
 ## Quick Start
 
 ### Basic Setup
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { SharedModule } from '@pawells/nestjs-shared';
-import { AuthModule } from '@pawells/nestjs-auth';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, CommonModule } from '@pawells/nestjs-shared';
+import { KeycloakModule, JwtAuthGuard } from '@pawells/nestjs-auth';
 
 @Module({
   imports: [
-    SharedModule.forRoot({
-      corsOrigin: /^http:\/\/localhost(?::\d+)?$/,
-      csrf: { enabled: true },
+    ConfigModule,          // Must come first
+    CommonModule,          // Registers global filters, interceptors, and pipes
+    KeycloakModule.forRootAsync({
+      inject: [/* ConfigService */],
+      useFactory: () => ({
+        authServerUrl: process.env.KEYCLOAK_AUTH_SERVER_URL,
+        realm: process.env.KEYCLOAK_REALM,
+        clientId: process.env.KEYCLOAK_CLIENT_ID,
+        clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+      }),
     }),
-    AuthModule.forRoot({
-      jwt: { secret: process.env.JWT_SECRET },
-    }),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}

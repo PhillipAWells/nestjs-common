@@ -786,7 +786,7 @@ export class AppModule implements NestModule {
 The `nestjs-pyroscope` package works seamlessly with other `@pawells/nestjs-*` packages:
 
 - **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation library with filters, guards, error handling
-- **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - JWT and session auth with OAuth/OIDC
+- **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - Keycloak integration: token validation, guards, decorators, Admin API client
 - **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - Distributed tracing
 - **[@pawells/nestjs-prometheus](https://www.npmjs.com/package/@pawells/nestjs-prometheus)** - Prometheus metrics export
 - **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** - GraphQL with subscriptions and caching

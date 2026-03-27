@@ -934,7 +934,7 @@ See `examples/` directory for a complete working application.
 ## Related Packages
 
 - **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation library with guards, filters, and utilities
-- **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - JWT, sessions, OAuth, Keycloak
+- **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - Keycloak integration: token validation, guards, decorators, Admin API client
 - **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - Distributed tracing
 - **[@pawells/nestjs-prometheus](https://www.npmjs.com/package/@pawells/nestjs-prometheus)** - Prometheus metrics
 - **[@pawells/nestjs-pyroscope](https://www.npmjs.com/package/@pawells/nestjs-pyroscope)** - Continuous profiling
