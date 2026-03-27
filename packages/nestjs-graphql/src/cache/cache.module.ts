@@ -1,13 +1,15 @@
 import { Global, Module, DynamicModule, Provider } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
+import Keyv from 'keyv';
+import RedisStore from '@keyv/redis';
 import { CacheService } from './cache.service.js';
 import { getRedisConnectionOptions } from './redis.config.js';
 import { CommonModule, CACHE_PROVIDER, AppLogger } from '@pawells/nestjs-shared/common';
 import type { CacheModuleAsyncOptions } from './cache.interfaces.js';
 
-// Default TTL for cache entries (1 hour in seconds)
-const CACHE_DEFAULT_TTL_SECONDS = 3_600;
+// Default TTL for cache entries (1 hour in milliseconds)
+// cache-manager v7 and @keyv/redis require TTL in milliseconds
+const CACHE_DEFAULT_TTL_MS = 3_600_000;
 
 /**
  * Cache module providing Redis-based caching functionality
@@ -53,27 +55,17 @@ export class CacheModule {
 								keyPrefix: redisOptions.keyPrefix,
 							}));
 
-							const config = {
-								store: redisStore,
-								host: redisOptions.host,
-								port: redisOptions.port,
-								password: redisOptions.password,
-								db: redisOptions.db,
-								ttl: redisOptions.ttl ?? CACHE_DEFAULT_TTL_SECONDS,
-								keyPrefix: redisOptions.keyPrefix,
-								enableReadyCheck: redisOptions.enableReadyCheck,
-								maxRetriesPerRequest: redisOptions.maxRetriesPerRequest,
-								lazyConnect: redisOptions.lazyConnect,
-								reconnectOnError: redisOptions.reconnectOnError,
-								connectTimeout: redisOptions.connectTimeout,
-								commandTimeout: redisOptions.commandTimeout,
-								family: redisOptions.family,
-								keepAlive: redisOptions.keepAlive,
-							};
+							// Create Keyv with RedisStore for cache-manager v7 compatibility
+							// RedisStore accepts connection URI or options
+							const store = new Keyv({
+								store: new RedisStore(`redis://${redisOptions.host}:${redisOptions.port}/${redisOptions.db ?? 0}`),
+								namespace: redisOptions.keyPrefix,
+							});
 
-							// Event listeners will be attached lazily on first cache operation to respect lazyConnect=true
-
-							return config as any;
+							return {
+								store,
+								ttl: redisOptions.ttl ?? CACHE_DEFAULT_TTL_MS,
+							} as any;
 						} catch (error) {
 							logger.error('Failed to initialize Redis cache store', JSON.stringify({
 								error: (error as Error).message,

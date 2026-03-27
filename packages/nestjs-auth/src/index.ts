@@ -59,6 +59,7 @@ export { KeycloakTokenValidationService } from './keycloak/services/keycloak-tok
 export { JwksCacheService } from './keycloak/services/jwks-cache.service.js';
 export type { TokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
 export type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from './keycloak/keycloak.types.js';
+export { createMockKeycloakUser } from './keycloak/keycloak.types.js';
 export type { KeycloakModuleAsyncOptions } from './keycloak/keycloak.interfaces.js';
 export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 

@@ -1,0 +1,62 @@
+/**
+ * Mock App Logger for Testing
+ *
+ * Provides a no-op IContextualLogger implementation for unit tests.
+ * All logging methods are silent no-ops. Consumers that need spy behaviour
+ * should wrap methods with vi.fn() / jest.fn() after obtaining the instance.
+ */
+import { Injectable } from '@nestjs/common';
+import type { LogMetadata } from '../../common/interfaces/log-entry.interface.js';
+import type { IContextualLogger } from '../../common/interfaces/logger.interface.js';
+
+/**
+ * No-op contextual logger for testing — implements IContextualLogger with silent methods.
+ */
+@Injectable()
+export class MockAppLogger implements IContextualLogger {
+	public debug(
+		_message: string | Error,
+		_contextOrMetadata?: string | LogMetadata,
+		_metadata?: LogMetadata,
+	): void {
+		// No-op
+	}
+
+	public info(
+		_message: string | Error,
+		_contextOrMetadata?: string | LogMetadata,
+		_metadata?: LogMetadata,
+	): void {
+		// No-op
+	}
+
+	public warn(
+		_message: string | Error,
+		_contextOrMetadata?: string | LogMetadata,
+		_metadata?: LogMetadata,
+	): void {
+		// No-op
+	}
+
+	public error(
+		_message: string | Error,
+		_traceOrContext?: string,
+		_contextOrMetadata?: string | LogMetadata,
+		_metadata?: LogMetadata,
+	): void {
+		// No-op
+	}
+
+	public fatal(
+		_message: string | Error,
+		_traceOrContext?: string,
+		_contextOrMetadata?: string | LogMetadata,
+		_metadata?: LogMetadata,
+	): void {
+		// No-op
+	}
+
+	public createContextualLogger(_context: string): IContextualLogger {
+		return this;
+	}
+}

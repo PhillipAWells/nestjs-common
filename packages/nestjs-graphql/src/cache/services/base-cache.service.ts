@@ -303,7 +303,7 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	 * Set a value in cache
 	 * @param key Cache key
 	 * @param value Value to cache
-	 * @param ttl Time to live in seconds (optional)
+	 * @param ttl Time to live in milliseconds (optional)
 	 */
 	@Traced({ name: 'cache.set' })
 	@ProfileMethod({
@@ -394,11 +394,8 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	public async clear(): Promise<void> {
 		this.logger?.info('Clearing all cache entries');
 		try {
-			if (typeof (this.CacheManager as any).clear === 'function') {
-				await (this.CacheManager as any).clear();
-			} else {
-				await this.CacheManager.reset();
-			}
+			// cache-manager v7 uses clear() method exclusively
+			await (this.CacheManager as any).clear();
 			this.stats.clears++;
 			this.logger?.info('Cache cleared successfully');
 		} catch (error) {

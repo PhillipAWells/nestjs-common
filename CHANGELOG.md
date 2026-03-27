@@ -1,3 +1,19 @@
+## 1.1.1 (2026-03-27)
+
+### 🚀 Features
+
+- add /testing conditional exports for nestjs-shared and nestjs-auth ([b255c0e](https://github.com/PhillipAWells/nestjs-common/commit/b255c0e))
+- add SWC dependencies for improved TypeScript support ([571ffb6](https://github.com/PhillipAWells/nestjs-common/commit/571ffb6))
+
+### 🩹 Fixes
+
+- suppress TypeScript 6.0 baseUrl deprecation warning ([54de14f](https://github.com/PhillipAWells/nestjs-common/commit/54de14f))
+- declare missing transitive peer dependencies for nestjs-graphql and nestjs-pyroscope ([ca7f068](https://github.com/PhillipAWells/nestjs-common/commit/ca7f068))
+
+### ❤️ Thank You
+
+- Aaron Wells @PhillipAWells
+
 ## 1.0.2 (2026-03-27)
 
 ### 🚀 Features

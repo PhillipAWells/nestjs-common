@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-shared",
   "displayName": "@pawells/nestjs-shared",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "Shared NestJS infrastructure: filters, logging, metrics, and security",
   "type": "module",
   "main": "./build/index.js",
@@ -18,6 +18,10 @@
     "./common/utils/lazy-getter.types": {
       "types": "./build/common/utils/lazy-getter.types.d.ts",
       "import": "./build/common/utils/lazy-getter.types.js"
+    },
+    "./testing": {
+      "types": "./build/testing/index.d.ts",
+      "import": "./build/testing/index.js"
     }
   },
   "scripts": {
@@ -38,10 +42,10 @@
     "class-transformer": ">=0.5.0",
     "class-validator": ">=0.14.0",
     "compression": ">=1.0.0",
-    "csrf-csrf": ">=3.0.0",
-    "express": ">=4.0.0",
+    "csrf-csrf": ">=4.0.0",
+    "express": ">=5.0.0",
     "helmet": ">=7.0.0",
-    "joi": ">=17.0.0",
+    "joi": ">=18.0.0",
     "prom-client": ">=15.0.0",
     "rxjs": ">=7.0.0",
     "xss": ">=1.0.0"

@@ -2,7 +2,7 @@
   "name": "nestjs-example-service",
   "displayName": "nestjs-example-service",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "Example NestJS service demonstrating usage of all @pawells/nestjs-* packages. Not published.",
   "type": "module",
   "scripts": {
@@ -46,7 +46,7 @@
     "graphql": ">=16.0.0",
     "graphql-query-complexity": ">=0.12.0",
     "graphql-redis-subscriptions": ">=2.0.0",
-    "graphql-subscriptions": "^2.0.0",
+    "graphql-subscriptions": "^3.0.0",
     "helmet": ">=7.0.0",
     "ioredis": ">=5.0.0",
     "joi": ">=17.0.0",
@@ -55,7 +55,7 @@
     "prom-client": ">=15.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": ">=7.0.0",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.2",
     "uuid": ">=9.0.0",
     "xss": ">=1.0.0"
   },

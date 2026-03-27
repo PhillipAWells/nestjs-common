@@ -486,7 +486,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		if (!protection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
-		return protection.generateToken(req, res);
+		return protection.generateCsrfToken(req, res);
 	}
 
 	/**
