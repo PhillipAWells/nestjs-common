@@ -117,7 +117,7 @@ The publish workflow (`.github/workflows/publish.yml`) picks up the tag and hand
 
 ### Dev Snapshot
 
-Triggered automatically on every push to any `development/**` branch. No manual steps are required.
+Triggered automatically on every push to a versioned `development/<major>.<minor>` branch (e.g. `development/1.0`). No manual steps are required.
 
 Publishes under the `@dev` npm tag with a version in the form `{base}-dev.{sha}` (for example, `1.0.2-dev.abc1234`). Use dev snapshots to test unreleased changes in downstream projects:
 
@@ -150,6 +150,12 @@ Additional notes:
 
 ## CI
 
-The CI pipeline runs on every push to `main` and every pull request targeting `main`. It executes `yarn pipeline` — typecheck, lint, test, and build — across all packages.
+The CI pipeline runs on:
 
-All pipeline steps must pass before a pull request can be merged.
+- Every push to `main`
+- Every push to a versioned `development/<major>.<minor>` branch (e.g. `development/1.0`)
+- Every pull request targeting `main`
+
+It executes `yarn pipeline` — typecheck, lint, test, and build — across all packages. All pipeline steps must pass before a pull request can be merged.
+
+Pushes to other `development/*` branches (e.g. `development/feature-x`) do **not** trigger CI.
