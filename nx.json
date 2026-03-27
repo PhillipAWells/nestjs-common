@@ -29,7 +29,8 @@
 			"pattern": "v{version}"
 		},
 		"git": {
-			"tag": false
+			"tag": false,
+			"commitMessage": "chore: bump version to {version}"
 		},
 		"version": {
 			"versionActionsOptions": {
