@@ -2,7 +2,7 @@
   "name": "nestjs-example-service",
   "displayName": "nestjs-example-service",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Example NestJS service demonstrating usage of all @pawells/nestjs-* packages. Not published.",
   "type": "module",
   "scripts": {

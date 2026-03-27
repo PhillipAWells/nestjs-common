@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-open-telemetry",
   "displayName": "@pawells/nestjs-open-telemetry",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "NestJS OpenTelemetry integration with tracing, metrics, and logger adapter",
   "type": "module",
   "main": "./build/index.js",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@pawells/logger": "^1.2.2",
-    "@pawells/nestjs-shared": "^1.0.2"
+    "@pawells/nestjs-shared": "^1.1.0"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.17",

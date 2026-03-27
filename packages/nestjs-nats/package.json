@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-nats",
   "displayName": "@pawells/nestjs-nats",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "NestJS NATS pub/sub integration module",
   "type": "module",
   "main": "./build/index.js",
@@ -22,7 +22,7 @@
     "pipeline": "yarn typecheck && yarn lint && yarn test && yarn build"
   },
   "dependencies": {
-    "@pawells/nestjs-shared": "^1.0.2"
+    "@pawells/nestjs-shared": "^1.1.0"
   },
   "peerDependencies": {
     "@nats-io/jetstream": ">=3.0.0",

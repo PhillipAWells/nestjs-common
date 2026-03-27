@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-prometheus",
   "displayName": "@pawells/nestjs-prometheus",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "NestJS Prometheus metrics module with endpoint controller",
   "type": "module",
   "main": "./build/index.js",
@@ -39,7 +39,7 @@
     "xss": ">=1.0.0"
   },
   "dependencies": {
-    "@pawells/nestjs-shared": "^1.0.2"
+    "@pawells/nestjs-shared": "^1.1.0"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.17",

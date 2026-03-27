@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-pyroscope",
   "displayName": "@pawells/nestjs-pyroscope",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "NestJS Pyroscope profiling with decorators and interceptors",
   "type": "module",
   "main": "./build/index.js",

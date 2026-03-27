@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-qdrant",
   "displayName": "@pawells/nestjs-qdrant",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "NestJS Qdrant vector database module",
   "type": "module",
   "main": "./build/index.js",
@@ -40,7 +40,7 @@
     "xss": ">=1.0.0"
   },
   "dependencies": {
-    "@pawells/nestjs-shared": "^1.0.2"
+    "@pawells/nestjs-shared": "^1.1.0"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.17",
