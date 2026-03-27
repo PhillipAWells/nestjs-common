@@ -32,12 +32,14 @@ import type { WebSocketServerConfig } from './websocket-config.interface.js';
  */
 @Injectable()
 export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleDestroy, LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly logger: AppLogger;
 	private wsServer: WebSocketServer | null = null;
 	private disposeServer: (() => Promise<void>) | null = null;
 	private serverConfig: WebSocketServerConfig | null = null;
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.logger = new AppLogger(undefined, GraphQLWebSocketServer.name);
 	}
 

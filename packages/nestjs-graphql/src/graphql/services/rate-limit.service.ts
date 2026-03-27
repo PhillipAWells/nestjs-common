@@ -122,6 +122,7 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
  */
 @Injectable()
 export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly store = new Map<string, RateLimitEntry>();
 
 	// eslint-disable-next-line no-undef
@@ -143,7 +144,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Default rate limit configuration

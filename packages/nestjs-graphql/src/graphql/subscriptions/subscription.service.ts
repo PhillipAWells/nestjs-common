@@ -9,6 +9,8 @@ import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-share
  */
 @Injectable()
 export class SubscriptionService implements OnModuleDestroy, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -25,7 +27,9 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Publish an event to a topic

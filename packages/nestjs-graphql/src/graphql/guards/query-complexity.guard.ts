@@ -36,6 +36,8 @@ import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVA
  */
 @Injectable()
 export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	private get AppLogger(): AppLogger | undefined {
 		try {
 			return this.Module.get(AppLogger, { strict: false });
@@ -65,7 +67,8 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.startPeriodicCleanup();
 	}
 

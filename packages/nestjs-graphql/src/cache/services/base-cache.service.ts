@@ -112,7 +112,11 @@ export abstract class BaseCacheService implements LazyModuleRefService, OnModule
 	// Base logger - memoized and contextualized
 	private _appLogger: AppLogger | undefined;
 
-	constructor(public readonly Module: ModuleRef) {}
+	public readonly Module: ModuleRef;
+
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	public get CacheManager(): Cache {
 		if (!this._cacheManager) {

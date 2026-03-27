@@ -28,6 +28,8 @@ export interface DataLoaderOptions<K, V> {
  */
 @Injectable()
 export class DataLoaderFactory implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -36,7 +38,9 @@ export class DataLoaderFactory implements LazyModuleRefService {
 		return this.AppLogger.createContextualLogger(DataLoaderFactory.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
     * Creates a new DataLoader instance with the provided options

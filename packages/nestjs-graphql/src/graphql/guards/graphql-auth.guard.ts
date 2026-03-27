@@ -22,6 +22,8 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  */
 @Injectable()
 export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	private get AppLogger(): AppLogger | undefined {
 		try {
 			return this.Module.get(AppLogger, { strict: false });
@@ -38,7 +40,9 @@ export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Determines if the current request can proceed

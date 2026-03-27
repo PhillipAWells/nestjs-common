@@ -13,13 +13,15 @@ import { BsonSerializationService } from './bson-serialization.service.js';
  */
 @Injectable()
 export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly logger: AppLogger;
 
 	public get BsonSerializationService(): BsonSerializationService {
 		return this.Module.get(BsonSerializationService, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.logger = new AppLogger(undefined, BsonResponseInterceptor.name);
 	}
 

@@ -14,11 +14,15 @@ const HTTP_STATUS_BAD_REQUEST = 400;
  */
 @Injectable()
 export class BsonSerializationMiddleware implements NestMiddleware, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get BsonSerializationService(): BsonSerializationService {
 		return this.Module.get(BsonSerializationService, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Handle incoming request

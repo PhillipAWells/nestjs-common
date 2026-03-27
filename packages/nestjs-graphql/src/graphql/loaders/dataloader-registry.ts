@@ -11,6 +11,8 @@ import { DataLoaderFactory, BatchLoadFn, DataLoaderOptions } from './dataloader.
  */
 @Injectable({ scope: Scope.REQUEST })
 export class DataLoaderRegistry implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -25,7 +27,9 @@ export class DataLoaderRegistry implements LazyModuleRefService {
 		return this.Module.get(DataLoaderFactory, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Gets or creates a DataLoader for the given key

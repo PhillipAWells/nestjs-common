@@ -19,6 +19,8 @@ export interface Comment {
  */
 @Injectable()
 export class CommentLoader implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -31,7 +33,9 @@ export class CommentLoader implements LazyModuleRefService {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Gets the comment DataLoader instance

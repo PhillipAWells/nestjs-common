@@ -26,6 +26,8 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  */
 @Injectable()
 export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get GraphQLPerformanceService(): GraphQLPerformanceService {
 		return this.Module.get(GraphQLPerformanceService, { strict: false });
 	}
@@ -38,7 +40,9 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceMonitoringInterceptor.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Intercepts resolver execution to monitor performance

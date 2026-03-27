@@ -55,6 +55,8 @@ export interface PerformanceStats {
  */
 @Injectable()
 export class GraphQLPerformanceService implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -63,7 +65,9 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceService.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	private readonly metrics: PerformanceMetrics[] = [];
 

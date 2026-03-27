@@ -24,6 +24,8 @@ const RESULT_SUMMARY_MAX_KEYS = 3;
  */
 @Injectable()
 export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -32,7 +34,9 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRef
 		return this.AppLogger.createContextualLogger(GraphQLLoggingInterceptor.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Intercepts GraphQL operations for logging

@@ -22,6 +22,8 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  */
 @Injectable()
 export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	private get AppLogger(): AppLogger | undefined {
 		try {
 			return this.Module.get(AppLogger, { strict: false });
@@ -42,7 +44,9 @@ export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 		return this.Module.get(Reflector, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Determines if the current user has the required roles

@@ -44,6 +44,7 @@ export interface CacheContextHandler {
  */
 @Injectable()
 export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	protected logger: AppLogger | null = null;
 
 	public get CacheManager(): Cache {
@@ -59,7 +60,9 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 		return this.logger;
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Abstract method to get cache key generator

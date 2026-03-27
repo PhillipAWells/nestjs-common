@@ -19,6 +19,8 @@ export interface User {
  */
 @Injectable()
 export class UserLoader implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get DataLoaderRegistry(): DataLoaderRegistry {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
 	}
@@ -31,7 +33,9 @@ export class UserLoader implements LazyModuleRefService {
 		return this.AppLogger.createContextualLogger(UserLoader.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Gets the user DataLoader instance

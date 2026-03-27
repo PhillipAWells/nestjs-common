@@ -16,6 +16,7 @@ import { MAX_WEBSOCKET_CONNECTIONS } from '../constants/subscriptions.constants.
  */
 @Injectable()
 export class ConnectionManagerService implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly logger: AppLogger;
 
 	private readonly connections = new Map<string, Set<any>>();
@@ -33,7 +34,8 @@ export class ConnectionManagerService implements LazyModuleRefService {
 		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.logger = new AppLogger(undefined, ConnectionManagerService.name);
 	}
 

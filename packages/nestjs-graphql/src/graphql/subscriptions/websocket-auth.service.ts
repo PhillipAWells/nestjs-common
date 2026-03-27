@@ -22,6 +22,8 @@ const BEARER_PREFIX_LENGTH = 7; // 'Bearer '.length
  */
 @Injectable()
 export class WebSocketAuthService implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	private get AppLogger(): AppLogger | undefined {
 		try {
 			return this.Module.get(AppLogger, { strict: false });
@@ -46,7 +48,9 @@ export class WebSocketAuthService implements LazyModuleRefService {
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Authenticates a WebSocket connection

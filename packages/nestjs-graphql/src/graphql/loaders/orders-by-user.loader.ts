@@ -12,6 +12,8 @@ import { Order } from './order.loader.js';
  */
 @Injectable()
 export class OrdersByUserLoader implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -24,7 +26,9 @@ export class OrdersByUserLoader implements LazyModuleRefService {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Gets the orders by user DataLoader instance

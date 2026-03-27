@@ -16,6 +16,7 @@ import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.consta
  */
 @Injectable()
 export class ResilienceService implements OnModuleDestroy, LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly logger: AppLogger;
 
 	// eslint-disable-next-line no-undef
@@ -31,7 +32,8 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.logger = new AppLogger(undefined, ResilienceService.name);
 	}
 

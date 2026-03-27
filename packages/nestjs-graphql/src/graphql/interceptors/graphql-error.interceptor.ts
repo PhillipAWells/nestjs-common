@@ -23,6 +23,8 @@ import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STAT
  */
 @Injectable()
 export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -31,7 +33,9 @@ export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefSe
 		return this.AppLogger.createContextualLogger(GraphQLErrorInterceptor.name);
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Intercepts GraphQL operations for error handling

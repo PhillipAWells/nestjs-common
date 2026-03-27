@@ -24,6 +24,8 @@ const MS_PER_SECOND = 1000;
  */
 @Injectable()
 export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	private get AppLogger(): AppLogger | undefined {
 		try {
 			return this.Module.get(AppLogger, { strict: false });
@@ -44,7 +46,9 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 		return this.Module.get(RateLimitService, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Determines if the request can proceed based on rate limits

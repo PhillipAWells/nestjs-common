@@ -23,6 +23,8 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  */
 @Injectable()
 export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get Reflector(): Reflector {
 		return this.Module.get(Reflector, { strict: false });
 	}
@@ -43,7 +45,9 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
 	 * Determines if the current resolver is marked as public

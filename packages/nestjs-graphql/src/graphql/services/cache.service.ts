@@ -47,6 +47,7 @@ const HIT_RATE_PERCENTAGE = 100;
  */
 @Injectable()
 export class GraphQLCacheService implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
 	private readonly cacheStats = {
 		hits: 0,
 		misses: 0,
@@ -62,7 +63,8 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
 		this.logger = this.AppLogger.createContextualLogger(GraphQLCacheService.name);
 	}
 

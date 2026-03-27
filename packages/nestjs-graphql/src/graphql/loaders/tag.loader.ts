@@ -19,6 +19,8 @@ export interface Tag {
  */
 @Injectable()
 export class TagLoader implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
@@ -31,7 +33,9 @@ export class TagLoader implements LazyModuleRefService {
 		return this.Module.get(DataLoaderRegistry, { strict: false });
 	}
 
-	constructor(public readonly Module: ModuleRef) {}
+	constructor(moduleRef: ModuleRef) {
+		this.Module = moduleRef;
+	}
 
 	/**
    * Gets the tag DataLoader instance
