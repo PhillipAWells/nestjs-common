@@ -1,6 +1,5 @@
 {
 	"name": "@pawells/nestjs-common-workspace",
-	"version": "1.0.0",
 	"private": true,
 	"author": "Aaron Wells <69355326+PhillipAWells@users.noreply.github.com>",
 	"license": "MIT",
