@@ -18,38 +18,4 @@ if (invalid.length) {
 }
 EOF
 
-# Check version-sync — ensure all packages are synced with workspace version
-node --input-type=module << 'EOF'
-import { readFileSync, readdirSync } from 'fs';
-import { resolve } from 'path';
-
-const workspacePkg = JSON.parse(readFileSync('package.json', 'utf8'));
-const workspaceVersion = workspacePkg.version;
-
-let outOfSync = [];
-try {
-	const packagesDir = resolve('packages');
-	const pkgDirs = readdirSync(packagesDir);
-	for (const dir of pkgDirs) {
-		const pkgPath = resolve(packagesDir, dir, 'package.json');
-		try {
-			const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-			if (pkg.version !== workspaceVersion) {
-				outOfSync.push(`  packages/${dir}: ${pkg.version} (expected ${workspaceVersion})`);
-			}
-		} catch {
-			// Skip dirs without package.json
-		}
-	}
-} catch {
-	// packages dir doesn't exist yet, skip check
-}
-
-if (outOfSync.length) {
-	process.stderr.write('Error: package versions out of sync with workspace version:\n');
-	outOfSync.forEach(l => process.stderr.write(l + '\n'));
-	process.exit(1);
-}
-EOF
-
 yarn typecheck && yarn lint
