@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Body, Query, Param, BadRequestException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Auth, Public, CurrentUser } from '@pawells/nestjs-auth';
+import { LazyModuleRefBase } from '@pawells/nestjs-shared';
 import { ItemsService, type Item, type StoredItem } from './items.service.js';
 
 const DEFAULT_LIMIT = 10;
@@ -24,15 +25,13 @@ interface AppUser {
  *  - @CurrentUser — inject the resolved user from the JWT payload
  */
 @Controller('items')
-export class ItemsController {
-	private readonly moduleRef: ModuleRef;
-
-	constructor(moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
+export class ItemsController extends LazyModuleRefBase {
+	constructor(module: ModuleRef) {
+		super(module);
 	}
 
-	private get items(): ItemsService {
-		return this.moduleRef.get(ItemsService) as ItemsService;
+	protected get Items(): ItemsService {
+		return this.Module.get(ItemsService) as ItemsService;
 	}
 
 	/**
@@ -45,7 +44,7 @@ export class ItemsController {
 		@Body() body: StoredItem,
 		@CurrentUser() _user: AppUser,
 	): Promise<void> {
-		await this.items.upsertItem(body);
+		await this.Items.upsertItem(body);
 	}
 
 	/**
@@ -73,7 +72,7 @@ export class ItemsController {
 		}
 
 		const limit = limitStr !== undefined ? Number(limitStr) : DEFAULT_LIMIT;
-		return this.items.findSimilar(vector, limit);
+		return this.Items.findSimilar(vector, limit);
 	}
 
 	/**
@@ -86,6 +85,6 @@ export class ItemsController {
 		@Param('id') id: string,
 		@CurrentUser() _user: AppUser,
 	): Promise<void> {
-		await this.items.deleteItem(id);
+		await this.Items.deleteItem(id);
 	}
 }
