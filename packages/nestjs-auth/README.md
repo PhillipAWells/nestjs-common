@@ -309,24 +309,24 @@ import type { KeycloakUser } from '@pawells/nestjs-auth';
 @Resolver()
 export class UserResolver {
   @GraphQLPublic()
-  @Query(() => String)
+  @Query(() => String, { name: 'Health' })
   async health(): Promise<string> {
     return 'ok';
   }
 
   @GraphQLAuth()
-  @Query(() => String)
+  @Query(() => String, { name: 'Me' })
   async me(@GraphQLCurrentUser() user: KeycloakUser): Promise<string> {
     return user.id;
   }
 
   @GraphQLRoles('admin')
-  @Query(() => [String])
+  @Query(() => [String], { name: 'ListUsers' })
   async listUsers(): Promise<string[]> {
     return [];
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { name: 'ValidateToken' })
   async validateToken(@GraphQLAuthToken() token: string): Promise<boolean> {
     return !!token;
   }

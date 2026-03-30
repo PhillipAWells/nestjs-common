@@ -285,7 +285,7 @@ export class Post {
 Query with ObjectId:
 
 ```typescript
-@Query(() => Post)
+@Query(() => Post, { name: 'GetPost' })
 async getPost(
   @Args('id', { type: () => ObjectIdScalar }) id: ObjectId
 ): Promise<Post> {
@@ -362,7 +362,7 @@ export class UserEdge {
 }
 
 // Usage in resolver
-@Query(() => UserConnection)
+@Query(() => UserConnection, { name: 'GetUsers' })
 async getUsers(
   @Args('first', { type: () => Int, nullable: true }) first?: number,
   @Args('after', { nullable: true }) after?: string,
@@ -438,7 +438,7 @@ Prevent expensive queries that could impact performance:
 import { QueryComplexityGuard } from '@pawells/nestjs-graphql';
 
 @UseGuards(QueryComplexityGuard)
-@Query(() => [Post])
+@Query(() => [Post], { name: 'Posts' })
 async posts(
   @Args('limit', { type: () => Int, nullable: true }) limit?: number,
 ): Promise<Post[]> {
@@ -470,12 +470,12 @@ const pubSub = new PubSub();
 
 @Resolver()
 export class NotificationResolver {
-  @Subscription(() => String)
+  @Subscription(() => String, { name: 'NotificationAdded' })
   notificationAdded() {
     return pubSub.asyncIterator('notification.added');
   }
 
-  @Mutation(() => String)
+  @Mutation(() => String, { name: 'SendNotification' })
   async sendNotification(@Args('message') message: string) {
     pubSub.publish('notification.added', { notificationAdded: message });
     return message;
@@ -653,7 +653,7 @@ import { UseGuards } from '@nestjs/common';
 import { GraphQLAuthGuard } from '@pawells/nestjs-graphql';
 
 @UseGuards(GraphQLAuthGuard)
-@Query(() => String)
+@Query(() => String, { name: 'GetCurrentUser' })
 async getCurrentUser(): Promise<string> {
   // Only authenticated users can access
   return 'user-data';
@@ -668,7 +668,7 @@ Marks resolvers as publicly accessible:
 import { GraphQLPublic } from '@pawells/nestjs-auth';
 
 @GraphQLPublic()
-@Query(() => String)
+@Query(() => String, { name: 'Health' })
 async health(): Promise<string> {
   return 'OK';
 }
@@ -685,7 +685,7 @@ import { GraphQLRolesGuard } from '@pawells/nestjs-graphql';
 
 @UseGuards(GraphQLRolesGuard)
 @Roles('admin', 'moderator')
-@Query(() => [User])
+@Query(() => [User], { name: 'AllUsers' })
 async allUsers(): Promise<User[]> {
   // Only admin or moderator roles can access
   return this.userService.findMany();
@@ -701,7 +701,7 @@ import { UseGuards } from '@nestjs/common';
 import { QueryComplexityGuard } from '@pawells/nestjs-graphql';
 
 @UseGuards(QueryComplexityGuard)
-@Query(() => [Post])
+@Query(() => [Post], { name: 'ExpensiveQuery' })
 async expensiveQuery(): Promise<Post[]> {
   // Query complexity is validated before execution
   return this.postService.findExpensive();
@@ -717,7 +717,7 @@ import { UseGuards } from '@nestjs/common';
 import { GraphQLRateLimitGuard } from '@pawells/nestjs-graphql';
 
 @UseGuards(GraphQLRateLimitGuard)
-@Mutation(() => String)
+@Mutation(() => String, { name: 'CreatePost' })
 async createPost(@Args() input: CreatePostInput): Promise<string> {
   // Rate limited to default: 100 requests per 15 minutes
   return this.postService.create(input);
@@ -753,7 +753,7 @@ Automatic GraphQL operation logging:
 @Injectable()
 @UseInterceptors(GraphQLLoggingInterceptor)
 export class PostResolver {
-  @Query(() => [Post])
+  @Query(() => [Post], { name: 'Posts' })
   async posts(): Promise<Post[]> {
     // Automatically logged with operation name, arguments, and execution time
     return this.postService.findMany();
@@ -767,7 +767,7 @@ Consistent error formatting and logging:
 
 ```typescript
 @UseInterceptors(GraphQLErrorInterceptor)
-@Query(() => String)
+@Query(() => String, { name: 'RiskyOperation' })
 async riskyOperation(): Promise<string> {
   // Errors are automatically formatted and logged
   return this.service.risky();
@@ -780,7 +780,7 @@ Track and report resolver performance:
 
 ```typescript
 @UseInterceptors(GraphQLPerformanceInterceptor)
-@Query(() => [Post])
+@Query(() => [Post], { name: 'SlowQuery' })
 async slowQuery(): Promise<Post[]> {
   // Execution time is tracked and logged
   return this.postService.slowQuery();
@@ -794,7 +794,7 @@ Access GraphQL context with typed decorators (re-exported from `@pawells/nestjs-
 ```typescript
 import { GraphQLContextParam, GraphQLCurrentUser } from '@pawells/nestjs-graphql';
 
-@Query(() => User)
+@Query(() => User, { name: 'Me' })
 async me(
   @GraphQLContextParam() context: any,
   @GraphQLCurrentUser() user: User,
