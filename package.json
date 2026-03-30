@@ -62,7 +62,7 @@
     "@opentelemetry/semantic-conventions": "^1.40.0",
     "@pawells/logger": "^1.2.2",
     "@pawells/typescript-common": "^1.4.1",
-    "@pyroscope/nodejs": "^0.4.10",
+    "@pyroscope/nodejs": "^0.4.11",
     "@qdrant/js-client-rest": "^1.17.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/compression": "^1.8.1",
