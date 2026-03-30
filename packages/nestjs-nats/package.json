@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-nats",
   "displayName": "@pawells/nestjs-nats",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "NestJS NATS pub/sub integration module",
   "type": "module",
   "main": "./build/index.js",

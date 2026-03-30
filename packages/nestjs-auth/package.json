@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-auth",
   "displayName": "@pawells/nestjs-auth",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "NestJS Keycloak integration library — token validation, admin API, and federated identity",
   "type": "module",
   "main": "./build/index.js",
