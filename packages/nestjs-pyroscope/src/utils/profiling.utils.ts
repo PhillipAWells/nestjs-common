@@ -76,7 +76,7 @@ export class ProfilingConfigValidator {
 }
 
 /**
- * Tag formatting utilities.
+ * ITag formatting utilities.
  *
  * Handles tag formatting, merging, and sanitization for profiling operations.
  */
@@ -215,7 +215,7 @@ export class MetricAggregator {
 	 * performance by dimension (e.g., by endpoint, operation type, etc).
 	 *
 	 * @param metrics Array of metrics with optional tags
-	 * @param tagKeys Tag keys to group by
+	 * @param tagKeys ITag keys to group by
 	 * @returns Object with group keys and arrays of metrics in each group
 	 *
 	 * @example
@@ -289,7 +289,7 @@ export class ProfilingErrorHandler {
 	 * Generic message returned for unknown errors.
 	 *
 	 * @param error Error to format
-	 * @returns User-friendly error message
+	 * @returns IUser-friendly error message
 	 *
 	 * @example
 	 * ```typescript

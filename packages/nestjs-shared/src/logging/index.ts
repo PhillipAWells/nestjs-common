@@ -1,5 +1,5 @@
 // Logging interfaces
-export type { LogContext, LogEntry, LogLevel, LogMetadata } from '../common/interfaces/index.js';
+export type { ILogContext, ILogEntry, LogLevel, ILogMetadata } from '../common/interfaces/index.js';
 export { LOG_LEVEL_STRINGS } from '../common/interfaces/index.js';
 export type { ILogger, IContextualLogger } from '../common/interfaces/index.js';
 

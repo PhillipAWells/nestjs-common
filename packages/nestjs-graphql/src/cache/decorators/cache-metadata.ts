@@ -8,7 +8,7 @@
 /**
  * Base options for cacheable operations
  */
-export interface BaseCacheableOptions {
+export interface IBaseCacheableOptions {
 	/**
 	 * Cache TTL in milliseconds
 	 * @default 300000 (5 minutes)
@@ -29,7 +29,7 @@ export interface BaseCacheableOptions {
 /**
  * Base options for cache invalidation operations
  */
-export interface BaseCacheInvalidateOptions {
+export interface IBaseCacheInvalidateOptions {
 	/**
 	 * Cache keys or patterns to invalidate
 	 */
@@ -53,4 +53,4 @@ export const CACHE_METADATA_KEYS = {
 /**
  * Type for cache metadata keys
  */
-export type CacheMetadataKey = typeof CACHE_METADATA_KEYS[keyof typeof CACHE_METADATA_KEYS];
+export type TCacheMetadataKey = typeof CACHE_METADATA_KEYS[keyof typeof CACHE_METADATA_KEYS];

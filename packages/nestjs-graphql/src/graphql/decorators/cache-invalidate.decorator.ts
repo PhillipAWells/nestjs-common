@@ -5,7 +5,7 @@ import { CACHE_METADATA_KEYS } from './cacheable.decorator.js';
  * Base cache invalidate options interface
  * @internal
  */
-interface BaseCacheInvalidateOptions {
+interface IBaseCacheInvalidateOptions {
 	/**
 	 * Cache keys or patterns to invalidate
 	 */
@@ -22,7 +22,7 @@ interface BaseCacheInvalidateOptions {
  *
  * Extends base cache invalidate options with GraphQL-specific features
  */
-export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
+export interface ICacheInvalidateOptions extends IBaseCacheInvalidateOptions {
 	/**
 	 * Cache key patterns to invalidate
 	 * Supports wildcards and dynamic key generation
@@ -60,8 +60,8 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
  *   patterns: ['graphql:user|id:*'], // Invalidate all user queries by ID
  *   when: 'after' // Invalidate after successful execution
  * })
- * @Mutation(() => User, { name: 'UpdateUser' })
- * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
+ * @Mutation(() => IUser, { name: 'UpdateUser' })
+ * async updateUser(@Args('input') input: UpdateUserInput): Promise<IUser> {
  *   return this.userService.update(input.id, input);
  * }
  *
@@ -75,7 +75,7 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
  * }
  * ```
  */
-export const CacheInvalidate = (options: CacheInvalidateOptions): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHE_INVALIDATE, options);
+export const CacheInvalidate = (options: ICacheInvalidateOptions): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHE_INVALIDATE, options);
 
 /**
  * Metadata key for cache invalidation configuration

@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { createConditionalDecorator } from '@pawells/nestjs-shared/common';
-import { ContextOptions, ExtractRequestFromContext } from './context-utils.js';
+import { IContextOptions, ExtractRequestFromContext } from './context-utils.js';
 
 /**
  * Authentication Decorators for NestJS
@@ -82,8 +82,8 @@ export const Public = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Auth()
- * @Query(() => User, { name: 'GetCurrentUser' })
- * async getCurrentUser(@CurrentUser() user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@CurrentUser() user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -115,8 +115,8 @@ export const Auth = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Roles('admin')
- * @Mutation(() => User, { name: 'UpdateUser' })
- * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
+ * @Mutation(() => IUser, { name: 'UpdateUser' })
+ * async updateUser(@Args('input') input: UpdateUserInput): Promise<IUser> {
  *   // Only admin users can update other users
  * }
  * ```
@@ -161,7 +161,7 @@ export const Permissions = (...permissions: string[]): MethodDecorator => create
 });
 
 // Re-export context utilities for convenience
-export type { ContextOptions } from './context-utils.js';
+export type { IContextOptions } from './context-utils.js';
 export { detectContextType, extractRequestFromContext, extractUserFromContext, extractAuthTokenFromContext } from './context-utils.js';
 
 /**
@@ -180,7 +180,7 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  * @example HTTP context (auto-detected)
  * ```typescript
  * @Get('profile')
- * getProfile(@CurrentUser() user: User) {
+ * getProfile(@CurrentUser() user: IUser) {
  *   return user;
  * }
  * ```
@@ -195,8 +195,8 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  *
  * @example GraphQL context (explicit)
  * ```typescript
- * @Query(() => User, { name: 'GetCurrentUser' })
- * async getCurrentUser(@CurrentUser(undefined, { contextType: 'graphql' }) user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@CurrentUser(undefined, { contextType: 'graphql' }) user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -204,12 +204,12 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  * @example Auto-detect context
  * ```typescript
  * @UseGuards(AuthGuard)
- * getData(@CurrentUser() user: User) {
+ * getData(@CurrentUser() user: IUser) {
  *   // Works in both HTTP and GraphQL contexts
  * }
  * ```
  */
-export function CurrentUser(property?: string, options?: ContextOptions): ParameterDecorator {
+export function CurrentUser(property?: string, options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
 			const request = ExtractRequestFromContext(ctx, options);
@@ -252,7 +252,7 @@ export function CurrentUser(property?: string, options?: ContextOptions): Parame
  * }
  * ```
  */
-export function AuthToken(options?: ContextOptions): ParameterDecorator {
+export function AuthToken(options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
 			const request = ExtractRequestFromContext(ctx, options);

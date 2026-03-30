@@ -10,23 +10,23 @@ export class PageInfo {
    * Whether there is a next page of results
    */
 	@Field(() => Boolean)
-	public hasNextPage!: boolean;
+	public HasNextPage!: boolean;
 
 	/**
    * Whether there is a previous page of results
    */
 	@Field(() => Boolean)
-	public hasPreviousPage!: boolean;
+	public HasPreviousPage!: boolean;
 
 	/**
    * Cursor for the first item in the current page
    */
 	@Field(() => String, { nullable: true })
-	public startCursor?: string;
+	public StartCursor?: string;
 
 	/**
    * Cursor for the last item in the current page
    */
 	@Field(() => String, { nullable: true })
-	public endCursor?: string;
+	public EndCursor?: string;
 }

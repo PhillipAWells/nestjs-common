@@ -8,7 +8,7 @@ export const SUBSCRIPTION_METADATA = 'subscription';
 /**
  * Options for subscription decorator
  */
-export interface SubscriptionOptions {
+export interface ISubscriptionOptions {
 	/** Topic filter pattern */
 	filter?: string;
 
@@ -28,7 +28,7 @@ export interface SubscriptionOptions {
  * @param options Additional subscription options
  * @returns Method decorator
  */
-export function Subscription(topic: string, options: SubscriptionOptions = {}) {
+export function Subscription(topic: string, options: ISubscriptionOptions = {}) {
 	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 		// Store subscription metadata
 		SetMetadata(SUBSCRIPTION_METADATA, {

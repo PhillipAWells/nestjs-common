@@ -204,7 +204,7 @@ describe('NatsService', () => {
 		it('should log handler errors without crashing the subscription', async () => {
 			const error = new Error('Handler error');
 			const handler = vi.fn().mockRejectedValue(error);
-			const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
+			const loggerErrorSpy = vi.spyOn(service['Logger'], 'error');
 
 			mockConnection.subscribe.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
@@ -282,8 +282,8 @@ describe('NatsService', () => {
 			mockConnection.status.mockReturnValue(statusIterator);
 
 			const newService = new NatsService(mockOptions);
-			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
+			newService['Connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
@@ -302,8 +302,8 @@ describe('NatsService', () => {
 			mockConnection.status.mockReturnValue(statusIterator);
 
 			const newService = new NatsService(mockOptions);
-			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
+			newService['Connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
@@ -322,8 +322,8 @@ describe('NatsService', () => {
 			mockConnection.status.mockReturnValue(statusIterator);
 
 			const newService = new NatsService(mockOptions);
-			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerInfoSpy = vi.spyOn(newService['logger'], 'info');
+			newService['Connection'] = mockConnection as unknown as NatsConnection;
+			const loggerInfoSpy = vi.spyOn(newService['Logger'], 'info');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
@@ -343,8 +343,8 @@ describe('NatsService', () => {
 			mockConnection.status.mockReturnValue(statusIterator);
 
 			const newService = new NatsService(mockOptions);
-			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerErrorSpy = vi.spyOn(newService['logger'], 'error');
+			newService['Connection'] = mockConnection as unknown as NatsConnection;
+			const loggerErrorSpy = vi.spyOn(newService['Logger'], 'error');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process
@@ -363,8 +363,8 @@ describe('NatsService', () => {
 			mockConnection.status.mockReturnValue(statusIterator);
 
 			const newService = new NatsService(mockOptions);
-			newService['connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['logger'], 'warn');
+			newService['Connection'] = mockConnection as unknown as NatsConnection;
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
 			newService['monitorStatus']();
 
 			// Give the async iterator time to process

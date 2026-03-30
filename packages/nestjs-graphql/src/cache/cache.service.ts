@@ -12,11 +12,11 @@ import { BaseCacheService } from './services/base-cache.service.js';
  * @example
  * ```typescript
  * // Inject into service
- * constructor(private cacheService: CacheService) {}
+ * constructor(private CacheService: CacheService) {}
  *
  * // Get or set value
- * const value = await this.cacheService.get('key');
- * await this.cacheService.set('key', { data: 'value' }, 300);
+ * const value = await this.CacheService.get('key');
+ * await this.CacheService.set('key', { data: 'value' }, 300);
  * ```
  *
  * @see BaseCacheService - Base class with core functionality

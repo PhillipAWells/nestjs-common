@@ -15,12 +15,12 @@ import type { InstrumentationRegistry } from '../registry/instrumentation-regist
  *   errorCounters: ['user_service_find_by_id_error'],
  *   labels: (userId: string) => ({ userId }),
  * })
- * async findById(userId: string): Promise<User> {
+ * async findById(userId: string): Promise<IUser> {
  *   // Implementation
  * }
  * ```
  */
-export interface InstrumentOptions {
+export interface IInstrumentOptions {
 	/**
 	 * Name of the histogram metric to record method timing (in seconds).
 	 * If provided, timing will be recorded for all invocations.
@@ -68,7 +68,7 @@ export interface InstrumentOptions {
  * @example
  * ```typescript
  * // In CommonModule.onModuleInit()
- * InstrumentationRegistryHolder.setInstance(this.registry);
+ * InstrumentationRegistryHolder.setInstance(this.Registry);
  * ```
  */
 export class InstrumentationRegistryHolder {
@@ -76,7 +76,7 @@ export class InstrumentationRegistryHolder {
 	 * Singleton instance of InstrumentationRegistry
 	 * @private
 	 */
-	private static instance: InstrumentationRegistry | null = null;
+	private static Instance: InstrumentationRegistry | null = null;
 
 	/**
 	 * Set the singleton instance.
@@ -85,7 +85,7 @@ export class InstrumentationRegistryHolder {
 	 * @param registry - The InstrumentationRegistry instance
 	 */
 	public static setInstance(registry: InstrumentationRegistry): void {
-		InstrumentationRegistryHolder.instance = registry;
+		InstrumentationRegistryHolder.Instance = registry;
 	}
 
 	/**
@@ -94,7 +94,7 @@ export class InstrumentationRegistryHolder {
 	 * @returns The InstrumentationRegistry instance, or null if not yet set
 	 */
 	public static getInstance(): InstrumentationRegistry | null {
-		return InstrumentationRegistryHolder.instance;
+		return InstrumentationRegistryHolder.Instance;
 	}
 }
 
@@ -121,7 +121,7 @@ export class InstrumentationRegistryHolder {
  *     errorCounters: ['user_service_create_errors'],
  *     labels: { service: 'user' },
  *   })
- *   async create(userData: CreateUserDto): Promise<User> {
+ *   async create(userData: CreateUserDto): Promise<IUser> {
  *     return this.repository.save(userData);
  *   }
  *
@@ -131,13 +131,13 @@ export class InstrumentationRegistryHolder {
  *     errorCounters: ['user_service_find_by_id_errors'],
  *     labels: (id: string) => ({ userId: id }),
  *   })
- *   async findById(id: string): Promise<User | null> {
+ *   async findById(id: string): Promise<IUser | null> {
  *     return this.repository.findOne(id);
  *   }
  * }
  * ```
  */
-export function Instrument(options: InstrumentOptions): MethodDecorator {
+export function Instrument(options: IInstrumentOptions): MethodDecorator {
 	return (target: any, propertyKey: string | symbol | undefined, descriptor: PropertyDescriptor): PropertyDescriptor => {
 		const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
 

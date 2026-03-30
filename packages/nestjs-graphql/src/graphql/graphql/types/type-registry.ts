@@ -2,9 +2,9 @@ import { Type } from '@nestjs/common';
 import { BaseUser } from './base-user.type.js';
 import { BasePost } from './base-post.type.js';
 import { BaseComment } from './base-comment.type.js';
-import { User } from './user.type.js';
+import { IUser } from './user.type.js';
 import { Post } from './post.type.js';
-import { Comment } from './comment.type.js';
+import { IComment } from './comment.type.js';
 
 /**
  * Central registry for GraphQL types to manage circular dependencies
@@ -26,9 +26,9 @@ export const BASE_GRAPHQL_TYPES: Type<unknown>[] = [
  * Register after base types to avoid circular dependencies
  */
 export const EXTENDED_GRAPHQL_TYPES: Type<unknown>[] = [
-	User,
+	IUser,
 	Post,
-	Comment,
+	IComment,
 ];
 
 /**

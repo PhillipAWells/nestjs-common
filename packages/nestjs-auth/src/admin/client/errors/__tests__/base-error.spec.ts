@@ -4,7 +4,7 @@ import {
 	AuthenticationError,
 	AuthorizationError,
 	NotFoundError,
-	ValidationError,
+	IValidationError,
 	RateLimitError,
 	TimeoutError,
 	NetworkError,
@@ -29,19 +29,19 @@ describe('KeycloakClientError', () => {
 
 	it('sets statusCode when provided', () => {
 		const error = new KeycloakClientError('test message', 500);
-		expect(error.statusCode).toBe(500);
+		expect(error.StatusCode).toBe(500);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'some error' };
 		const error = new KeycloakClientError('test message', 500, response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 
 	it('sets cause when provided', () => {
 		const cause = new Error('cause error');
 		const error = new KeycloakClientError('test message', 500, undefined, cause);
-		expect(error.cause).toBe(cause);
+		expect(error.Cause).toBe(cause);
 	});
 
 	it('captures stack trace', () => {
@@ -74,13 +74,13 @@ describe('AuthenticationError', () => {
 
 	it('sets statusCode when provided', () => {
 		const error = new AuthenticationError('auth failed', 401);
-		expect(error.statusCode).toBe(401);
+		expect(error.StatusCode).toBe(401);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'invalid credentials' };
 		const error = new AuthenticationError('auth failed', 401, response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 });
 
@@ -107,13 +107,13 @@ describe('AuthorizationError', () => {
 
 	it('sets statusCode when provided', () => {
 		const error = new AuthorizationError('not authorized', 403);
-		expect(error.statusCode).toBe(403);
+		expect(error.StatusCode).toBe(403);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'insufficient permissions' };
 		const error = new AuthorizationError('not authorized', 403, response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 });
 
@@ -140,46 +140,46 @@ describe('NotFoundError', () => {
 
 	it('always sets statusCode to 404', () => {
 		const error = new NotFoundError('resource not found');
-		expect(error.statusCode).toBe(404);
+		expect(error.StatusCode).toBe(404);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'not found' };
 		const error = new NotFoundError('resource not found', response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 });
 
-describe('ValidationError', () => {
+describe('IValidationError', () => {
 	it('is an instance of KeycloakClientError', () => {
-		const error = new ValidationError('test message');
+		const error = new IValidationError('test message');
 		expect(error).toBeInstanceOf(KeycloakClientError);
 	});
 
 	it('is an instance of Error', () => {
-		const error = new ValidationError('test message');
+		const error = new IValidationError('test message');
 		expect(error).toBeInstanceOf(Error);
 	});
 
 	it('has the correct name', () => {
-		const error = new ValidationError('test message');
-		expect(error.name).toBe('ValidationError');
+		const error = new IValidationError('test message');
+		expect(error.name).toBe('IValidationError');
 	});
 
 	it('preserves the message', () => {
-		const error = new ValidationError('invalid data');
+		const error = new IValidationError('invalid data');
 		expect(error.message).toBe('invalid data');
 	});
 
 	it('always sets statusCode to 400', () => {
-		const error = new ValidationError('invalid data');
-		expect(error.statusCode).toBe(400);
+		const error = new IValidationError('invalid data');
+		expect(error.StatusCode).toBe(400);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'validation failed' };
-		const error = new ValidationError('invalid data', response);
-		expect(error.response).toBe(response);
+		const error = new IValidationError('invalid data', response);
+		expect(error.Response).toBe(response);
 	});
 });
 
@@ -206,13 +206,13 @@ describe('RateLimitError', () => {
 
 	it('always sets statusCode to 429', () => {
 		const error = new RateLimitError('too many requests');
-		expect(error.statusCode).toBe(429);
+		expect(error.StatusCode).toBe(429);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'rate limited' };
 		const error = new RateLimitError('too many requests', response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 });
 
@@ -239,12 +239,12 @@ describe('TimeoutError', () => {
 
 	it('always sets statusCode to 408', () => {
 		const error = new TimeoutError('request timeout');
-		expect(error.statusCode).toBe(408);
+		expect(error.StatusCode).toBe(408);
 	});
 
 	it('does not set response', () => {
 		const error = new TimeoutError('request timeout');
-		expect(error.response).toBeUndefined();
+		expect(error.Response).toBeUndefined();
 	});
 });
 
@@ -271,18 +271,18 @@ describe('NetworkError', () => {
 
 	it('sets statusCode to 500 by default', () => {
 		const error = new NetworkError('connection refused');
-		expect(error.statusCode).toBe(500);
+		expect(error.StatusCode).toBe(500);
 	});
 
 	it('sets cause when provided', () => {
 		const cause = new Error('underlying error');
 		const error = new NetworkError('connection refused', cause);
-		expect(error.cause).toBe(cause);
+		expect(error.Cause).toBe(cause);
 	});
 
 	it('does not set response', () => {
 		const error = new NetworkError('connection refused');
-		expect(error.response).toBeUndefined();
+		expect(error.Response).toBeUndefined();
 	});
 });
 
@@ -309,12 +309,12 @@ describe('ConflictError', () => {
 
 	it('always sets statusCode to 409', () => {
 		const error = new ConflictError('conflict detected');
-		expect(error.statusCode).toBe(409);
+		expect(error.StatusCode).toBe(409);
 	});
 
 	it('sets response when provided', () => {
 		const response = { error: 'conflict' };
 		const error = new ConflictError('conflict detected', response);
-		expect(error.response).toBe(response);
+		expect(error.Response).toBe(response);
 	});
 });

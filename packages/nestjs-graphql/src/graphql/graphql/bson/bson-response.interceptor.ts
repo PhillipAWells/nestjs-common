@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { Observable, from, EMPTY } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Response } from 'express';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
@@ -12,9 +12,9 @@ import { BsonSerializationService } from './bson-serialization.service.js';
  * Checks Accept header for application/bson and converts response accordingly
  */
 @Injectable()
-export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefService {
+export class BsonResponseInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	public get BsonSerializationService(): BsonSerializationService {
 		return this.Module.get(BsonSerializationService, { strict: false });
@@ -22,7 +22,7 @@ export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefSe
 
 	constructor(moduleRef: ModuleRef) {
 		this.Module = moduleRef;
-		this.logger = new AppLogger(undefined, BsonResponseInterceptor.name);
+		this.Logger = new AppLogger(undefined, BsonResponseInterceptor.name);
 	}
 
 	/**
@@ -58,7 +58,7 @@ export class BsonResponseInterceptor implements NestInterceptor, LazyModuleRefSe
 						},
 						(error: unknown) => {
 							// Log error but fall through to JSON response
-							this.logger.error(
+							this.Logger.error(
 								`Failed to serialize BSON response: ${getErrorMessage(error)}`,
 							);
 

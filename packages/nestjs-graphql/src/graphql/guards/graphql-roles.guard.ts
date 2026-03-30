@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector, ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -14,14 +14,14 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```typescript
  * @UseGuards(GraphQLRolesGuard)
  * @Roles('admin', 'moderator')
- * @Query(() => User, { name: 'GetUsers' })
- * async getUsers(): Promise<User[]> {
+ * @Query(() => IUser, { name: 'GetUsers' })
+ * async getUsers(): Promise<IUser[]> {
  *   // Only users with 'admin' or 'moderator' roles can access
  * }
  * ```
  */
 @Injectable()
-export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
+export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
@@ -32,7 +32,7 @@ export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLRolesGuard.name);
 		} catch {
@@ -71,7 +71,7 @@ export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 		const { user } = gqlContext.getContext();
 
 		if (!user) {
-			this.logger?.warn('No user found in GraphQL context');
+			this.Logger?.warn('No user found in GraphQL context');
 			throw new ForbiddenException('Authentication required');
 		}
 
@@ -80,14 +80,14 @@ export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 		const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
 
 		if (!hasRequiredRole) {
-			this.logger?.warn(
-				`User ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${requiredRoles.join(', ')}], User has: [${userRoles.join(', ')}]`,
+			this.Logger?.warn(
+				`IUser ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${requiredRoles.join(', ')}], IUser has: [${userRoles.join(', ')}]`,
 			);
 			throw new ForbiddenException('Insufficient permissions');
 		}
 
-		this.logger?.debug(
-			`User ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${userRoles.join(', ')}]`,
+		this.Logger?.debug(
+			`IUser ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${userRoles.join(', ')}]`,
 		);
 
 		return true;
@@ -119,7 +119,7 @@ export class GraphQLRolesGuard implements CanActivate, LazyModuleRefService {
 		}
 
 		// Default to empty array if no roles found
-		this.logger?.warn('No roles found in user object');
+		this.Logger?.warn('No roles found in user object');
 		return [];
 	}
 }

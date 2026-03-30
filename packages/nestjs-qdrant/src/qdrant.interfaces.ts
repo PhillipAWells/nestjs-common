@@ -15,7 +15,7 @@ import type { QdrantClientParams } from '@qdrant/js-client-rest';
  *
  * @example
  * ```typescript
- * interface MyQdrantOptions extends QdrantModuleOptions {
+ * interface MyQdrantOptions extends TQdrantModuleOptions {
  *   url: string;           // e.g., 'http://localhost:6333'
  *   apiKey?: string;       // Optional API key for authentication
  *   timeout?: number;      // Optional request timeout in ms
@@ -23,7 +23,7 @@ import type { QdrantClientParams } from '@qdrant/js-client-rest';
  * }
  * ```
  */
-export type QdrantModuleOptions = QdrantClientParams & {
+export type TQdrantModuleOptions = QdrantClientParams & {
 	/**
 	 * Optional name for the Qdrant client instance.
 	 * Used when registering multiple named Qdrant client instances in the same application.
@@ -39,19 +39,19 @@ export type QdrantModuleOptions = QdrantClientParams & {
  * @example
  * ```typescript
  * @Injectable()
- * export class QdrantConfigService implements QdrantOptionsFactory {
- *   constructor(private configService: ConfigService) {}
+ * export class QdrantConfigService implements IQdrantOptionsFactory {
+ *   constructor(private ConfigService: ConfigService) {}
  *
- *   async createQdrantOptions(): Promise<QdrantModuleOptions> {
+ *   async createQdrantOptions(): Promise<TQdrantModuleOptions> {
  *     return {
- *       url: await this.configService.get('QDRANT_URL'),
- *       apiKey: this.configService.get('QDRANT_API_KEY'),
+ *       url: await this.ConfigService.get('QDRANT_URL'),
+ *       apiKey: this.ConfigService.get('QDRANT_API_KEY'),
  *     };
  *   }
  * }
  * ```
  */
-export interface QdrantOptionsFactory {
+export interface IQdrantOptionsFactory {
 	/**
 	 * Create and return Qdrant module options.
 	 * Can be synchronous or asynchronous.
@@ -59,7 +59,7 @@ export interface QdrantOptionsFactory {
 	 * @returns Qdrant module options (or a Promise that resolves to options)
 	 * @throws Error - If configuration cannot be resolved
 	 */
-	createQdrantOptions(): Promise<QdrantModuleOptions> | QdrantModuleOptions;
+	createQdrantOptions(): Promise<TQdrantModuleOptions> | TQdrantModuleOptions;
 }
 
 /**
@@ -90,27 +90,27 @@ export interface QdrantOptionsFactory {
  * })
  * ```
  */
-export interface QdrantModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+export interface IQdrantModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
 	/**
 	 * Reuse an existing Qdrant options factory instance.
 	 * The factory will be retrieved from the dependency injection container.
 	 * Useful for reusing a factory defined in another module.
 	 */
-	useExisting?: Type<QdrantOptionsFactory>;
+	useExisting?: Type<IQdrantOptionsFactory>;
 
 	/**
 	 * Use a class to create Qdrant options.
-	 * The class must implement QdrantOptionsFactory.
+	 * The class must implement IQdrantOptionsFactory.
 	 * The class will be instantiated by NestJS and its createQdrantOptions() method called.
 	 */
-	useClass?: Type<QdrantOptionsFactory>;
+	useClass?: Type<IQdrantOptionsFactory>;
 
 	/**
 	 * Use a factory function to create Qdrant options.
 	 * The function receives dependencies from the inject array as parameters.
 	 * Can be synchronous or async (must return Promise if async).
 	 */
-	useFactory?: (...args: unknown[]) => Promise<QdrantModuleOptions> | QdrantModuleOptions;
+	useFactory?: (...args: unknown[]) => Promise<TQdrantModuleOptions> | TQdrantModuleOptions;
 
 	/**
 	 * Dependencies to inject into the factory function.

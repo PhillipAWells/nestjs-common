@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { AuthenticationService } from '../authentication.service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('AuthenticationService', () => {
 	let service: AuthenticationService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -23,9 +23,9 @@ describe('AuthenticationService', () => {
 			},
 		} as unknown as KcAdminClient;
 
-		allScopes = new Set(['authentication:read', 'authentication:write'] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['authentication:read'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		allScopes = new Set(['authentication:read', 'authentication:write'] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['authentication:read'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('getFlows', () => {

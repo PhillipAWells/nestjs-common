@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import {
@@ -16,7 +16,7 @@ import {
 /**
  * Performance metrics interface
  */
-export interface PerformanceMetrics {
+export interface IPerformanceMetrics {
 	operation: string;
 	duration: number;
 	startTime: Date;
@@ -29,7 +29,7 @@ export interface PerformanceMetrics {
 /**
  * Performance statistics
  */
-export interface PerformanceStats {
+export interface IPerformanceStats {
 	totalOperations: number;
 	averageDuration: number;
 	minDuration: number;
@@ -54,14 +54,14 @@ export interface PerformanceStats {
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceService implements LazyModuleRefService {
+export class GraphQLPerformanceService implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceService.name);
 	}
 
@@ -69,9 +69,9 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 		this.Module = moduleRef;
 	}
 
-	private readonly metrics: PerformanceMetrics[] = [];
+	private readonly Metrics: IPerformanceMetrics[] = [];
 
-	private readonly maxMetricsHistory = MAX_METRICS_HISTORY;
+	private readonly MaxMetricsHistory = MAX_METRICS_HISTORY;
 
 	/**
 	 * Measures execution time of an operation
@@ -106,7 +106,7 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 
 			// Log slow operations
 			if (duration > SLOW_OPERATION_THRESHOLD_MS) {
-				this.logger.warn(`Slow operation: ${operation} took ${duration}ms`);
+				this.Logger.warn(`Slow operation: ${operation} took ${duration}ms`);
 			}
 
 			return result;
@@ -124,7 +124,7 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 				metadata,
 			});
 
-			this.logger.error(`Operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
+			this.Logger.error(`Operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
 			throw error;
 		}
 	}
@@ -132,12 +132,12 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	/**
 	 * Records performance metrics
 	 */
-	private recordMetrics(metrics: PerformanceMetrics): void {
-		this.metrics.push(metrics);
+	private recordMetrics(metrics: IPerformanceMetrics): void {
+		this.Metrics.push(metrics);
 
 		// Maintain history limit
-		if (this.metrics.length > this.maxMetricsHistory) {
-			this.metrics.shift();
+		if (this.Metrics.length > this.MaxMetricsHistory) {
+			this.Metrics.shift();
 		}
 	}
 
@@ -146,13 +146,13 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	 *
 	 * @param operation - Optional operation filter
 	 * @param timeRange - Time range in milliseconds (default: 1 hour)
-	 * @returns PerformanceStats - Statistics for the period
+	 * @returns IPerformanceStats - Statistics for the period
 	 */
-	public getStats(operation?: string, timeRange: number = DEFAULT_STATS_TIME_RANGE_MS): PerformanceStats {
+	public getStats(operation?: string, timeRange: number = DEFAULT_STATS_TIME_RANGE_MS): IPerformanceStats {
 		const now = Date.now();
 		const cutoff = now - timeRange;
 
-		const relevantMetrics = this.metrics.filter(m =>
+		const relevantMetrics = this.Metrics.filter(m =>
 			m.startTime.getTime() >= cutoff &&
 			(!operation || m.operation === operation),
 		);
@@ -189,10 +189,10 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	 *
 	 * @param limit - Maximum number of metrics to return
 	 * @param operation - Optional operation filter
-	 * @returns PerformanceMetrics[] - Recent metrics
+	 * @returns IPerformanceMetrics[] - Recent metrics
 	 */
-	public getRecentMetrics(limit: number = DEFAULT_RECENT_METRICS_LIMIT, operation?: string): PerformanceMetrics[] {
-		return this.metrics
+	public getRecentMetrics(limit: number = DEFAULT_RECENT_METRICS_LIMIT, operation?: string): IPerformanceMetrics[] {
+		return this.Metrics
 			.filter(m => !operation || m.operation === operation)
 			.slice(-limit)
 			.reverse(); // Most recent first
@@ -203,10 +203,10 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	 *
 	 * @param threshold - Duration threshold in milliseconds
 	 * @param limit - Maximum number to return
-	 * @returns PerformanceMetrics[] - Slow operations
+	 * @returns IPerformanceMetrics[] - Slow operations
 	 */
-	public getSlowOperations(threshold: number = SLOW_OPERATION_THRESHOLD_MS, limit: number = DEFAULT_SLOW_OPERATIONS_LIMIT): PerformanceMetrics[] {
-		return this.metrics
+	public getSlowOperations(threshold: number = SLOW_OPERATION_THRESHOLD_MS, limit: number = DEFAULT_SLOW_OPERATIONS_LIMIT): IPerformanceMetrics[] {
+		return this.Metrics
 			.filter(m => m.duration >= threshold)
 			.sort((a, b) => b.duration - a.duration)
 			.slice(0, limit);
@@ -216,10 +216,10 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	 * Gets error metrics
 	 *
 	 * @param limit - Maximum number to return
-	 * @returns PerformanceMetrics[] - Failed operations
+	 * @returns IPerformanceMetrics[] - Failed operations
 	 */
-	public getErrors(limit: number = DEFAULT_ERRORS_LIMIT): PerformanceMetrics[] {
-		return this.metrics
+	public getErrors(limit: number = DEFAULT_ERRORS_LIMIT): IPerformanceMetrics[] {
+		return this.Metrics
 			.filter(m => !m.success)
 			.slice(-limit)
 			.reverse(); // Most recent first
@@ -229,8 +229,8 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	 * Clears all metrics
 	 */
 	public clearMetrics(): void {
-		this.metrics.length = 0;
-		this.logger.info('Performance metrics cleared');
+		this.Metrics.length = 0;
+		this.Logger.info('Performance metrics cleared');
 	}
 
 	/**
@@ -241,7 +241,7 @@ export class GraphQLPerformanceService implements LazyModuleRefService {
 	public getOperationsSummary(): Record<string, { count: number; avgDuration: number; errorRate: number }> {
 		const summary: Record<string, { durations: number[]; errors: number; count: number }> = {};
 
-		for (const metric of this.metrics) {
+		for (const metric of this.Metrics) {
 			const opSummary = summary[metric.operation] ?? (summary[metric.operation] = { durations: [], errors: 0, count: 0 });
 
 			opSummary.durations.push(metric.duration);

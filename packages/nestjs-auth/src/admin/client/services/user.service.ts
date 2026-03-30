@@ -1,8 +1,8 @@
 import type {
-	UserRepresentation,
-	UserQuery,
-	CredentialRepresentation,
-	RoleRepresentation,
+	IUserRepresentation,
+	IUserQuery,
+	ICredentialRepresentation,
+	IRoleRepresentation,
 } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
@@ -30,11 +30,11 @@ export class UserService extends BaseService {
 	/**
 	 * List users in a realm
 	 */
-	public async list(realm: string, query?: UserQuery): Promise<UserRepresentation[]> {
+	public async list(realm: string, query?: IUserQuery): Promise<IUserRepresentation[]> {
 		this.requireScope('users:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.users.find({ ...query, realm }),
+				this.AdminClient.users.find({ ...query, realm }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -44,11 +44,11 @@ export class UserService extends BaseService {
 	/**
 	 * Get a user by ID
 	 */
-	public async get(realm: string, userId: string): Promise<UserRepresentation> {
+	public async get(realm: string, userId: string): Promise<IUserRepresentation> {
 		this.requireScope('users:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.users.findOne({ realm, id: userId }),
+				this.AdminClient.users.findOne({ realm, id: userId }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -58,11 +58,11 @@ export class UserService extends BaseService {
 	/**
 	 * Create a new user
 	 */
-	public async create(realm: string, user: UserRepresentation): Promise<{ id: string }> {
+	public async create(realm: string, user: IUserRepresentation): Promise<{ id: string }> {
 		this.requireScope('users:write');
 		try {
 			return await this.withRetry(() =>
-				this.adminClient.users.create({ ...user, realm }),
+				this.AdminClient.users.create({ ...user, realm }),
 			);
 		} catch (error) {
 			return this.handleError(error);
@@ -72,11 +72,11 @@ export class UserService extends BaseService {
 	/**
 	 * Update a user
 	 */
-	public async update(realm: string, userId: string, user: UserRepresentation): Promise<void> {
+	public async update(realm: string, userId: string, user: IUserRepresentation): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.update({ realm, id: userId }, user),
+				this.AdminClient.users.update({ realm, id: userId }, user),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -90,7 +90,7 @@ export class UserService extends BaseService {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.del({ realm, id: userId }),
+				this.AdminClient.users.del({ realm, id: userId }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -103,12 +103,12 @@ export class UserService extends BaseService {
 	public async resetPassword(
 		realm: string,
 		userId: string,
-		credential: CredentialRepresentation,
+		credential: ICredentialRepresentation,
 	): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.resetPassword({
+				this.AdminClient.users.resetPassword({
 					realm,
 					id: userId,
 					credential,
@@ -125,12 +125,12 @@ export class UserService extends BaseService {
 	public async addRealmRoles(
 		realm: string,
 		userId: string,
-		roles: RoleRepresentation[],
+		roles: IRoleRepresentation[],
 	): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.addRealmRoleMappings({
+				this.AdminClient.users.addRealmRoleMappings({
 					realm,
 					id: userId,
 					roles: roles as any,
@@ -144,11 +144,11 @@ export class UserService extends BaseService {
 	/**
 	 * Get realm roles for a user
 	 */
-	public async getRealmRoles(realm: string, userId: string): Promise<RoleRepresentation[]> {
+	public async getRealmRoles(realm: string, userId: string): Promise<IRoleRepresentation[]> {
 		this.requireScope('users:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.users.listRealmRoleMappings({ realm, id: userId }),
+				this.AdminClient.users.listRealmRoleMappings({ realm, id: userId }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -161,12 +161,12 @@ export class UserService extends BaseService {
 	public async deleteRealmRoles(
 		realm: string,
 		userId: string,
-		roles: RoleRepresentation[],
+		roles: IRoleRepresentation[],
 	): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.delRealmRoleMappings({
+				this.AdminClient.users.delRealmRoleMappings({
 					realm,
 					id: userId,
 					roles: roles as any,
@@ -184,12 +184,12 @@ export class UserService extends BaseService {
 		realm: string,
 		userId: string,
 		clientId: string,
-		roles: RoleRepresentation[],
+		roles: IRoleRepresentation[],
 	): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.addClientRoleMappings({
+				this.AdminClient.users.addClientRoleMappings({
 					realm,
 					id: userId,
 					clientUniqueId: clientId,
@@ -208,11 +208,11 @@ export class UserService extends BaseService {
 		realm: string,
 		userId: string,
 		clientId: string,
-	): Promise<RoleRepresentation[]> {
+	): Promise<IRoleRepresentation[]> {
 		this.requireScope('users:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.users.listClientRoleMappings({
+				this.AdminClient.users.listClientRoleMappings({
 					realm,
 					id: userId,
 					clientUniqueId: clientId,
@@ -230,12 +230,12 @@ export class UserService extends BaseService {
 		realm: string,
 		userId: string,
 		clientId: string,
-		roles: RoleRepresentation[],
+		roles: IRoleRepresentation[],
 	): Promise<void> {
 		this.requireScope('users:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.delClientRoleMappings({
+				this.AdminClient.users.delClientRoleMappings({
 					realm,
 					id: userId,
 					clientUniqueId: clientId,
@@ -258,16 +258,16 @@ export class UserService extends BaseService {
 	public async findByFederatedIdentity(
 		idpAlias: string,
 		idpUserId: string,
-	): Promise<UserRepresentation | null> {
+	): Promise<IUserRepresentation | null> {
 		this.requireScope('users:read');
 		try {
 			const results = (await this.withRetry(() =>
-				this.adminClient.users.find({
+				this.AdminClient.users.find({
 					idpAlias,
 					idpUserId,
 					exact: true,
 				}),
-			)) as UserRepresentation[];
+			)) as IUserRepresentation[];
 
 			return results[0] ?? null;
 		} catch (error) {

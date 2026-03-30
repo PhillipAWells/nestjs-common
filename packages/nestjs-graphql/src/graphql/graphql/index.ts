@@ -1,6 +1,6 @@
 export { GraphQLModule } from './graphql.module.js';
 export { GraphQLService } from './graphql.service.js';
-export type { GraphQLConfigOptions, GraphQLAsyncConfig } from './graphql-config.interface.js';
+export type { IGraphQLConfigOptions, IGraphQLAsyncConfig } from './graphql-config.interface.js';
 
 // Scalars
 export { ObjectIdScalar } from './scalars/object-id.scalar.js';
@@ -17,7 +17,7 @@ export { SortDirection } from './enums/sort-direction.enum.js';
 // Error Handling
 export { GraphQLErrorFormatter } from './error-formatter.js';
 export { GraphQLErrorCode } from './error-codes.js';
-export type { GraphQLErrorExtensions, ValidationError } from './error-codes.js';
+export type { IGraphQLErrorExtensions, IValidationError } from './error-codes.js';
 
 // BSON Support
 export { BsonSerializationService, BsonSerializationMiddleware, BsonResponseInterceptor } from './bson/index.js';

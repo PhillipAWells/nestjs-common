@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Instrument, InstrumentOptions, InstrumentationRegistryHolder } from '../instrument.decorator.js';
+import { Instrument, IInstrumentOptions, InstrumentationRegistryHolder } from '../instrument.decorator.js';
 import type { InstrumentationRegistry } from '../../registry/instrumentation-registry.js';
 
 /**
@@ -230,7 +230,7 @@ describe('Instrument Decorator', () => {
 		});
 
 		it('should record timing and success counters together', () => {
-			const options: InstrumentOptions = {
+			const options: IInstrumentOptions = {
 				timing: 'test_duration_seconds',
 				counters: ['test_success'],
 			};
@@ -254,7 +254,7 @@ describe('Instrument Decorator', () => {
 		});
 
 		it('should handle success and error counters separately', () => {
-			const options: InstrumentOptions = {
+			const options: IInstrumentOptions = {
 				counters: ['test_success'],
 				errorCounters: ['test_error'],
 			};

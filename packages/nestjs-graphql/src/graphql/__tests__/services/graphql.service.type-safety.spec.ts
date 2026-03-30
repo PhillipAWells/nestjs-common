@@ -106,7 +106,7 @@ describe('GraphQLService - Type Safety', () => {
 		): Array<{ id: string; name: string; createdAt: Date }> => {
 			return Array.from({ length: count }, (_, i) => ({
 				id: `item-${i + 1}`,
-				name: `Item ${i + 1}`,
+				name: `IItem ${i + 1}`,
 				createdAt: new Date(`2023-01-${String(i + 1).padStart(2, '0')}`),
 			}));
 		};

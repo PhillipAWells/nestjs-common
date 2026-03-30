@@ -1,14 +1,14 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
- * Interface for Product entity
+ * Interface for IProduct entity
  */
-export interface Product {
+export interface IProduct {
 	id: string;
 	[key: string]: any;
 }
@@ -18,14 +18,14 @@ export interface Product {
  * Prevents N+1 query problems when resolving product fields in GraphQL
  */
 @Injectable()
-export class ProductLoader implements LazyModuleRefService {
+export class ProductLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(ProductLoader.name);
 	}
 
@@ -43,8 +43,8 @@ export class ProductLoader implements LazyModuleRefService {
    * @returns DataLoader for products
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Product | Error)[]>,
-	): DataLoader<string, Product> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IProduct | Error)[]>,
+	): DataLoader<string, IProduct> {
 		return this.DataLoaderRegistry.createWithCache(
 			'product-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -60,8 +60,8 @@ export class ProductLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		productIds: readonly string[],
-	): Promise<(Product | Error)[]> {
-		this.logger.warn(
+	): Promise<(IProduct | Error)[]> {
+		this.Logger.warn(
 			'Using default product batch loader. Override with actual implementation.',
 		);
 
@@ -76,15 +76,15 @@ export class ProductLoader implements LazyModuleRefService {
 
 	/**
    * Loads a single product by ID
-   * @param productId Product ID to load
+   * @param productId IProduct ID to load
    * @returns Promise resolving to product or undefined
    */
-	public async load(productId: string): Promise<Product | undefined> {
+	public async load(productId: string): Promise<IProduct | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(productId);
 		} catch (error) {
-			this.logger.error(`Failed to load product ${productId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load product ${productId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -94,24 +94,24 @@ export class ProductLoader implements LazyModuleRefService {
    * @param productIds Array of product IDs to load
    * @returns Promise resolving to array of products
    */
-	public async loadMany(productIds: string[]): Promise<(Product | Error)[]> {
+	public async loadMany(productIds: string[]): Promise<(IProduct | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(productIds);
 		} catch (error) {
-			this.logger.error(`Failed to load products ${productIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load products ${productIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return productIds.map(() => error as Error);
 		}
 	}
 
 	/**
    * Clears the cache for a specific product
-   * @param productId Product ID to clear from cache
+   * @param productId IProduct ID to clear from cache
    */
 	public clear(productId: string): void {
 		const loader = this.getLoader();
 		loader.clear(productId);
-		this.logger.debug(`Cleared cache for product ${productId}`);
+		this.Logger.debug(`Cleared cache for product ${productId}`);
 	}
 
 	/**

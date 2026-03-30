@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { RoleService } from '../role.service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('RoleService', () => {
 	let service: RoleService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -25,9 +25,9 @@ describe('RoleService', () => {
 			},
 		} as unknown as KcAdminClient;
 
-		allScopes = new Set(['roles:read', 'roles:write'] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['roles:read'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		allScopes = new Set(['roles:read', 'roles:write'] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['roles:read'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('listRealm', () => {

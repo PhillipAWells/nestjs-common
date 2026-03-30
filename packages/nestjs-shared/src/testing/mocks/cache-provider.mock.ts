@@ -15,7 +15,7 @@ export class MockCacheProvider implements ICacheProvider {
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly MS_PER_SECOND = 1000;
 
-	private readonly store: Map<string, { value: any; expiresAt?: number }> = new Map();
+	private readonly Store: Map<string, { value: any; expiresAt?: number }> = new Map();
 
 	/**
 	 * Set a cache value with optional TTL
@@ -23,7 +23,7 @@ export class MockCacheProvider implements ICacheProvider {
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public set(key: string, value: any, ttlSeconds?: number): Promise<void> {
 		const expiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
-		this.store.set(key, { value, expiresAt });
+		this.Store.set(key, { value, expiresAt });
 		return Promise.resolve();
 	}
 
@@ -32,14 +32,14 @@ export class MockCacheProvider implements ICacheProvider {
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public get(key: string): Promise<any> {
-		const entry = this.store.get(key);
+		const entry = this.Store.get(key);
 		if (!entry) {
 			return Promise.resolve(null);
 		}
 
 		// Check expiration
 		if (entry.expiresAt && Date.now() > entry.expiresAt) {
-			this.store.delete(key);
+			this.Store.delete(key);
 			return Promise.resolve(null);
 		}
 
@@ -51,14 +51,14 @@ export class MockCacheProvider implements ICacheProvider {
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public exists(key: string): Promise<boolean> {
-		const entry = this.store.get(key);
+		const entry = this.Store.get(key);
 		if (!entry) {
 			return Promise.resolve(false);
 		}
 
 		// Check expiration
 		if (entry.expiresAt && Date.now() > entry.expiresAt) {
-			this.store.delete(key);
+			this.Store.delete(key);
 			return Promise.resolve(false);
 		}
 
@@ -70,7 +70,7 @@ export class MockCacheProvider implements ICacheProvider {
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public del(key: string): Promise<void> {
-		this.store.delete(key);
+		this.Store.delete(key);
 		return Promise.resolve();
 	}
 
@@ -79,7 +79,7 @@ export class MockCacheProvider implements ICacheProvider {
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public clear(): Promise<void> {
-		this.store.clear();
+		this.Store.clear();
 		return Promise.resolve();
 	}
 
@@ -88,8 +88,8 @@ export class MockCacheProvider implements ICacheProvider {
 	 */
 	public getStats(): { size: number; keys: string[] } {
 		return {
-			size: this.store.size,
-			keys: Array.from(this.store.keys()),
+			size: this.Store.size,
+			keys: Array.from(this.Store.keys()),
 		};
 	}
 
@@ -97,7 +97,7 @@ export class MockCacheProvider implements ICacheProvider {
 	 * Helper: Manually expire all entries (for testing)
 	 */
 	public expireAll(): void {
-		this.store.forEach(entry => {
+		this.Store.forEach(entry => {
 			entry.expiresAt = Date.now() - 1; // Already expired
 		});
 	}

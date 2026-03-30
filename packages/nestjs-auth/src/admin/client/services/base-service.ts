@@ -1,18 +1,18 @@
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import type { Logger } from '@pawells/logger';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
-import type { RetryConfig } from '../utils/index.js';
+import type { IRetryConfig } from '../utils/index.js';
 import { withRetry } from '../utils/index.js';
 import {
 	KeycloakClientError,
 	AuthenticationError,
 	AuthorizationError,
 	NotFoundError,
-	ValidationError,
+	IValidationError,
 	TimeoutError,
 	NetworkError,
 } from '../errors/index.js';
-import type { KeycloakAdminScope } from '../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../permissions/keycloak-admin.permissions.js';
 import { KeycloakAdminScopeError } from '../../permissions/keycloak-admin.permissions.js';
 
 const HTTP_STATUS_UNAUTHORIZED = 401;
@@ -33,43 +33,43 @@ const HTTP_STATUS_REQUEST_TIMEOUT = 408;
  * @abstract
  */
 export abstract class BaseService {
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
-	protected adminClient: KcAdminClient;
+	protected AdminClient: KcAdminClient;
 
-	protected grantedScopes: ReadonlySet<KeycloakAdminScope>;
+	protected GrantedScopes: ReadonlySet<TKeycloakAdminScope>;
 
-	protected loggerConfig?: Logger;
+	protected LoggerConfig?: Logger;
 
-	protected retryConfig?: RetryConfig;
+	protected RetryConfig?: IRetryConfig;
 
 	constructor(
 		adminClient: KcAdminClient,
-		grantedScopes: ReadonlySet<KeycloakAdminScope>,
+		grantedScopes: ReadonlySet<TKeycloakAdminScope>,
 		loggerConfig?: Logger,
-		retryConfig?: RetryConfig,
+		retryConfig?: IRetryConfig,
 	) {
-		this.adminClient = adminClient;
-		this.grantedScopes = grantedScopes;
-		this.loggerConfig = loggerConfig;
-		this.retryConfig = retryConfig;
-		this.logger = new AppLogger(undefined, this.constructor.name);
+		this.AdminClient = adminClient;
+		this.GrantedScopes = grantedScopes;
+		this.LoggerConfig = loggerConfig;
+		this.RetryConfig = retryConfig;
+		this.Logger = new AppLogger(undefined, this.constructor.name);
 	}
 
 	/**
 	 * Asserts that the given scope is granted. Throws {@link KeycloakAdminScopeError}
 	 * synchronously if not, before any network request is made.
-	 * All mutation operations ({@link KeycloakAdminScope} ending in `:write`) are
+	 * All mutation operations ({@link TKeycloakAdminScope} ending in `:write`) are
 	 * audit-logged at INFO level when the check passes.
 	 */
-	protected requireScope(scope: KeycloakAdminScope): void {
-		if (!this.grantedScopes.has(scope)) {
-			this.logger.warn(`Keycloak admin scope blocked: '${scope}' not granted`);
+	protected requireScope(scope: TKeycloakAdminScope): void {
+		if (!this.GrantedScopes.has(scope)) {
+			this.Logger.warn(`Keycloak admin scope blocked: '${scope}' not granted`);
 			throw new KeycloakAdminScopeError(scope);
 		}
 
 		if (scope.endsWith(':write')) {
-			this.logger.info(`Keycloak admin mutation: scope '${scope}' invoked`);
+			this.Logger.info(`Keycloak admin mutation: scope '${scope}' invoked`);
 		}
 	}
 
@@ -78,12 +78,12 @@ export abstract class BaseService {
 	 */
 	protected async withRetry<T>(
 		fn: () => Promise<T>,
-		options?: RetryConfig,
+		options?: IRetryConfig,
 	): Promise<T> {
 		const config = {
-			...this.retryConfig,
+			...this.RetryConfig,
 			...options,
-			...(this.loggerConfig && { logger: this.loggerConfig }),
+			...(this.LoggerConfig && { logger: this.LoggerConfig }),
 		};
 
 		const result = await withRetry(fn, config);
@@ -129,7 +129,7 @@ export abstract class BaseService {
 			}
 
 			if (status === HTTP_STATUS_BAD_REQUEST) {
-				throw new ValidationError(message, data);
+				throw new IValidationError(message, data);
 			}
 
 			if (status === HTTP_STATUS_REQUEST_TIMEOUT) {

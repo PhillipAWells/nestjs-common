@@ -1,6 +1,6 @@
 import type {
-	AuthenticationFlowRepresentation,
-	AuthenticationExecutionInfoRepresentation,
+	IAuthenticationFlowRepresentation,
+	IAuthenticationExecutionInfoRepresentation,
 } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
@@ -31,11 +31,11 @@ export class AuthenticationService extends BaseService {
 	/**
 	 * Get all authentication flows
 	 */
-	public async getFlows(realm: string): Promise<AuthenticationFlowRepresentation[]> {
+	public async getFlows(realm: string): Promise<IAuthenticationFlowRepresentation[]> {
 		this.requireScope('authentication:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getFlows({ realm }),
+				this.AdminClient.authenticationManagement.getFlows({ realm }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -45,11 +45,11 @@ export class AuthenticationService extends BaseService {
 	/**
 	 * Get a specific authentication flow
 	 */
-	public async getFlow(realm: string, flowId: string): Promise<AuthenticationFlowRepresentation> {
+	public async getFlow(realm: string, flowId: string): Promise<IAuthenticationFlowRepresentation> {
 		this.requireScope('authentication:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getFlow({ realm, flowId }),
+				this.AdminClient.authenticationManagement.getFlow({ realm, flowId }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -61,12 +61,12 @@ export class AuthenticationService extends BaseService {
 	 */
 	public async createFlow(
 		realm: string,
-		flow: AuthenticationFlowRepresentation,
+		flow: IAuthenticationFlowRepresentation,
 	): Promise<void> {
 		this.requireScope('authentication:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.createFlow({ ...flow, realm }),
+				this.AdminClient.authenticationManagement.createFlow({ ...flow, realm }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -80,7 +80,7 @@ export class AuthenticationService extends BaseService {
 		this.requireScope('authentication:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.deleteFlow({ realm, flowId }),
+				this.AdminClient.authenticationManagement.deleteFlow({ realm, flowId }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -93,11 +93,11 @@ export class AuthenticationService extends BaseService {
 	public async getExecutions(
 		realm: string,
 		flowAlias: string,
-	): Promise<AuthenticationExecutionInfoRepresentation[]> {
+	): Promise<IAuthenticationExecutionInfoRepresentation[]> {
 		this.requireScope('authentication:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getExecutions({ realm, flow: flowAlias }),
+				this.AdminClient.authenticationManagement.getExecutions({ realm, flow: flowAlias }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -115,7 +115,7 @@ export class AuthenticationService extends BaseService {
 		this.requireScope('authentication:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.addExecution(
+				this.AdminClient.authenticationManagement.addExecution(
 					{ realm, flow: flowAlias },
 					execution as any,
 				),

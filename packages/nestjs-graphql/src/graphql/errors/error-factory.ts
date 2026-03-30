@@ -3,7 +3,7 @@ import { GraphqlError } from './graphql-error.js';
 /**
  * Configuration for creating GraphQL error classes
  */
-export interface GraphQLErrorConfig {
+export interface IGraphQLErrorConfig {
 	/** The error code used in GraphQL extensions */
 	code: string;
 	/** The HTTP status code */
@@ -30,7 +30,7 @@ export interface GraphQLErrorConfig {
  * });
  * ```
  */
-export function createGraphQLError(config: GraphQLErrorConfig): typeof GraphqlError {
+export function createGraphQLError(config: IGraphQLErrorConfig): typeof GraphqlError {
 	const { code, statusCode, defaultMessage } = config;
 
 	/**
@@ -108,4 +108,4 @@ export const ERROR_CONFIGS = {
 /**
  * Type for error configuration keys
  */
-export type GraphQLErrorType = keyof typeof ERROR_CONFIGS;
+export type TGraphQLErrorType = keyof typeof ERROR_CONFIGS;

@@ -15,7 +15,7 @@ const CREDIT_CARD_ADJUSTMENT = 9;
 const LUHN_MODULO = 10;
 const MAX_ARRAY_LENGTH_FOR_LOGGING = 5;
 
-export interface TracedOptions {
+export interface ITracedOptions {
 	/**
    * Custom span name (defaults to ClassName.methodName)
    */
@@ -96,7 +96,7 @@ export interface TracedOptions {
  * }
  * ```
  */
-export function Traced(options: TracedOptions = {}) {
+export function Traced(options: ITracedOptions = {}) {
 	return function(
 		target: object,
 		propertyKey: string | symbol,

@@ -35,19 +35,19 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
  */
 @Injectable()
 export class QdrantService implements OnModuleDestroy {
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
-	private readonly logger = new AppLogger(undefined, QdrantService.name);
+	private readonly Logger = new AppLogger(undefined, QdrantService.name);
 
 	constructor(moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
-		this.logger.debug('Qdrant service initialized');
+		this.ModuleRef = moduleRef;
+		this.Logger.debug('Qdrant service initialized');
 	}
 
 	private get client(): QdrantClient {
-		const clientInstance = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
+		const clientInstance = this.ModuleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
 		if (!clientInstance) {
-			this.logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
+			this.Logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 			throw new InternalServerError('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}
 		return clientInstance;
@@ -97,8 +97,8 @@ export class QdrantService implements OnModuleDestroy {
 	public collection(collectionName: string): QdrantCollectionService {
 		const isValidCollectionName =
 			collectionName &&
-			collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
-			/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
+		collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
+		/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
 
 		if (!isValidCollectionName) {
 			throw new BadRequestError(`Invalid collection name: "${collectionName}"`);

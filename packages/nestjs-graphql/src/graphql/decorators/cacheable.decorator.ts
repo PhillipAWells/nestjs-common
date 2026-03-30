@@ -14,7 +14,7 @@ export const CACHE_METADATA_KEYS = {
  * Base cacheable options interface
  * @internal
  */
-interface BaseCacheableOptions {
+interface IBaseCacheableOptions {
 	/**
 	 * Cache TTL in milliseconds
 	 * @default 300000 (5 minutes)
@@ -37,7 +37,7 @@ interface BaseCacheableOptions {
  *
  * Extends base cacheable options with GraphQL-specific features
  */
-export interface CacheableOptions extends BaseCacheableOptions {
+export interface ICacheableOptions extends IBaseCacheableOptions {
 	/**
 	 * Custom cache key generator function with GraphQL context
 	 */
@@ -66,8 +66,8 @@ export interface CacheableOptions extends BaseCacheableOptions {
  * @example
  * ```typescript
  * @Cacheable({ ttl: 300000 }) // 5 minutes
- * @Query(() => User, { name: 'GetUser' })
- * async getUser(@Args('id') id: string): Promise<User> {
+ * @Query(() => IUser, { name: 'GetUser' })
+ * async getUser(@Args('id') id: string): Promise<IUser> {
  *   return this.userService.findById(id);
  * }
  *
@@ -81,7 +81,7 @@ export interface CacheableOptions extends BaseCacheableOptions {
  * }
  * ```
  */
-export const Cacheable = (options: CacheableOptions = {}): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHEABLE, options);
+export const Cacheable = (options: ICacheableOptions = {}): ReturnType<typeof SetMetadata> => SetMetadata(CACHE_METADATA_KEYS.CACHEABLE, options);
 
 /**
  * Metadata key for cacheable configuration

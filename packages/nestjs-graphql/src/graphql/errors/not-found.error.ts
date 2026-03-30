@@ -8,7 +8,7 @@ import { GraphqlError } from './graphql-error.js';
  *
  * @example
  * ```typescript
- * throw new NotFoundError('User not found', { userId: '123' });
+ * throw new NotFoundError('IUser not found', { userId: '123' });
  * ```
  */
 export class NotFoundError extends GraphqlError {

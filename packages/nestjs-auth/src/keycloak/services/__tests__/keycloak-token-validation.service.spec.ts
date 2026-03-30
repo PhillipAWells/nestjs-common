@@ -4,15 +4,15 @@ import { JwtService } from '@nestjs/jwt';
 import { KeycloakTokenValidationService } from '../keycloak-token-validation.service.js';
 import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak.constants.js';
 import { JwksCacheService } from '../jwks-cache.service.js';
-import type { KeycloakModuleOptions, KeycloakTokenClaims } from '../../keycloak.types.js';
+import type { IKeycloakModuleOptions, IKeycloakTokenClaims } from '../../keycloak.types.js';
 
 describe('KeycloakTokenValidationService', () => {
 	let service: KeycloakTokenValidationService;
 	let mockJwtService: Partial<JwtService>;
 	let mockJwksCacheService: Partial<JwksCacheService>;
-	let options: KeycloakModuleOptions;
+	let options: IKeycloakModuleOptions;
 
-	const createTestClaims = (): KeycloakTokenClaims => ({
+	const createTestClaims = (): IKeycloakTokenClaims => ({
 		sub: 'user-123',
 		email: 'user@example.com',
 		preferred_username: 'john_doe',
@@ -147,7 +147,7 @@ describe('KeycloakTokenValidationService', () => {
 		let offlineService: KeycloakTokenValidationService;
 
 		beforeEach(() => {
-			const offlineOptions: KeycloakModuleOptions = {
+			const offlineOptions: IKeycloakModuleOptions = {
 				authServerUrl: 'http://keycloak:8080',
 				realm: 'myrealm',
 				clientId: 'my-client',

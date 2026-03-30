@@ -7,7 +7,7 @@ import { Kind, ValueNode } from 'graphql';
  */
 @Scalar('DateTime')
 export class DateTimeScalar {
-	public description = 'ISO 8601 date-time string custom scalar type';
+	public Description = 'ISO 8601 date-time string custom scalar type';
 
 	/**
    * Parse value from client input

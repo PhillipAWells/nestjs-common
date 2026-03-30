@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InstrumentationRegistry } from '../instrumentation-registry.js';
-import type { IMetricsExporter, MetricDescriptor, MetricValue } from '../../interfaces/metrics-exporter.interface.js';
+import type { IMetricsExporter, IMetricDescriptor, IMetricValue } from '../../interfaces/metrics-exporter.interface.js';
 import { AppLogger } from '../../services/logger.service.js';
 
 // Mock helpers
 const createMockExporter = (overrides?: Partial<IMetricsExporter>): IMetricsExporter => ({
-	supportsEventBased: false,
-	supportsPull: true,
+	SupportsEventBased: false,
+	SupportsPull: true,
 	onMetricRecorded: vi.fn(),
 	onDescriptorRegistered: vi.fn(),
 	shutdown: vi.fn(),
@@ -58,7 +58,7 @@ describe('InstrumentationRegistry', () => {
 
 	describe('registerDescriptor()', () => {
 		it('should register a new descriptor successfully', () => {
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'custom_metric',
 				type: 'counter',
 				help: 'A custom metric',
@@ -74,7 +74,7 @@ describe('InstrumentationRegistry', () => {
 		});
 
 		it('should be idempotent when called with identical descriptor', () => {
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'idempotent_metric',
 				type: 'counter',
 				help: 'Test idempotency',
@@ -96,14 +96,14 @@ describe('InstrumentationRegistry', () => {
 		});
 
 		it('should throw on conflict: same name, different type', () => {
-			const descriptor1: MetricDescriptor = {
+			const descriptor1: IMetricDescriptor = {
 				name: 'conflict_metric',
 				type: 'counter',
 				help: 'First version',
 				labelNames: ['label1'],
 			};
 
-			const descriptor2: MetricDescriptor = {
+			const descriptor2: IMetricDescriptor = {
 				name: 'conflict_metric',
 				type: 'histogram', // Different type
 				help: 'First version',
@@ -118,14 +118,14 @@ describe('InstrumentationRegistry', () => {
 		});
 
 		it('should throw on conflict: same name, different labelNames', () => {
-			const descriptor1: MetricDescriptor = {
+			const descriptor1: IMetricDescriptor = {
 				name: 'label_conflict',
 				type: 'counter',
 				help: 'Test',
 				labelNames: ['label1'],
 			};
 
-			const descriptor2: MetricDescriptor = {
+			const descriptor2: IMetricDescriptor = {
 				name: 'label_conflict',
 				type: 'counter',
 				help: 'Test',
@@ -146,7 +146,7 @@ describe('InstrumentationRegistry', () => {
 			registry.registerExporter(exporter1);
 			registry.registerExporter(exporter2);
 
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'new_metric',
 				type: 'histogram',
 				help: 'New metric after exporters registered',
@@ -169,7 +169,7 @@ describe('InstrumentationRegistry', () => {
 
 			registry.registerExporter(errorExporter);
 
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'error_test_metric',
 				type: 'counter',
 				help: 'Test error handling',
@@ -229,7 +229,7 @@ describe('InstrumentationRegistry', () => {
 
 		it('should call onMetricRecorded on event-based exporters', () => {
 			const eventExporter = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 			});
 
 			registry.registerExporter(eventExporter);
@@ -242,8 +242,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should NOT call onMetricRecorded on pull-based-only exporters', () => {
 			const pullExporter = createMockExporter({
-				supportsEventBased: false,
-				supportsPull: true,
+				SupportsEventBased: false,
+				SupportsPull: true,
 			});
 
 			registry.registerExporter(pullExporter);
@@ -267,7 +267,7 @@ describe('InstrumentationRegistry', () => {
 
 		it('should catch and log errors thrown by exporters (does not rethrow)', () => {
 			const errorExporter = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 				onMetricRecorded: vi.fn(() => {
 					throw new Error('Exporter error');
 				}),
@@ -351,7 +351,7 @@ describe('InstrumentationRegistry', () => {
 			const originalSize = metrics1.get('mutable_test')?.length ?? 0;
 
 			// Mutate the returned map
-			const newArray: MetricValue[] = [];
+			const newArray: IMetricValue[] = [];
 			metrics1.set('mutable_test', newArray);
 
 			// Get fresh copy
@@ -512,7 +512,7 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			const eventExporter = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 			});
 
 			registry.registerExporter(eventExporter);
@@ -532,8 +532,8 @@ describe('InstrumentationRegistry', () => {
 			registry.recordMetric('pull_test', 123);
 
 			const pullExporter = createMockExporter({
-				supportsPull: true,
-				supportsEventBased: false,
+				SupportsPull: true,
+				SupportsEventBased: false,
 			});
 
 			registry.registerExporter(pullExporter);
@@ -544,8 +544,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should handle exporter with both event and pull support', () => {
 			const hybridExporter = createMockExporter({
-				supportsEventBased: true,
-				supportsPull: true,
+				SupportsEventBased: true,
+				SupportsPull: true,
 			});
 
 			registry.registerExporter(hybridExporter);
@@ -582,8 +582,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should handle exporter without onDescriptorRegistered method', () => {
 			const minimalExporter: IMetricsExporter = {
-				supportsEventBased: false,
-				supportsPull: true,
+				SupportsEventBased: false,
+				SupportsPull: true,
 			};
 
 			// Should not throw
@@ -761,8 +761,8 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			// Register exporters
-			const exporter1 = createMockExporter({ supportsEventBased: true });
-			const exporter2 = createMockExporter({ supportsEventBased: true });
+			const exporter1 = createMockExporter({ SupportsEventBased: true });
+			const exporter2 = createMockExporter({ SupportsEventBased: true });
 			registry.registerExporter(exporter1);
 			registry.registerExporter(exporter2);
 
@@ -822,7 +822,7 @@ describe('InstrumentationRegistry', () => {
 			});
 			registry.registerExporter(exporter);
 
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'branch_test_1',
 				type: 'counter',
 				help: 'Test',
@@ -837,8 +837,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should skip notifying exporter if onDescriptorRegistered is undefined', () => {
 			const exporter: IMetricsExporter = {
-				supportsEventBased: false,
-				supportsPull: true,
+				SupportsEventBased: false,
+				SupportsPull: true,
 				// No onDescriptorRegistered method
 			};
 
@@ -848,7 +848,7 @@ describe('InstrumentationRegistry', () => {
 			}).not.toThrow();
 		});
 
-		it('should only call onMetricRecorded when supportsEventBased is true', () => {
+		it('should only call onMetricRecorded when SupportsEventBased is true', () => {
 			registry.registerDescriptor({
 				name: 'event_filter_test',
 				type: 'counter',
@@ -857,11 +857,11 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			const eventExporter = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 				onMetricRecorded: vi.fn(),
 			});
 			const pullExporter = createMockExporter({
-				supportsEventBased: false,
+				SupportsEventBased: false,
 				onMetricRecorded: vi.fn(),
 			});
 
@@ -899,11 +899,11 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			const exporter1 = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 				onMetricRecorded: vi.fn(),
 			});
 			const exporter2 = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 				onMetricRecorded: vi.fn(),
 			});
 
@@ -943,12 +943,12 @@ describe('InstrumentationRegistry', () => {
 			const [[value1]] = listener1.mock.calls;
 			const [[value2]] = listener2.mock.calls;
 			const [[value3]] = listener3.mock.calls;
-			expect((value2 as MetricValue).value).toBe((value1 as MetricValue).value);
-			expect((value3 as MetricValue).value).toBe((value1 as MetricValue).value);
+			expect((value2 as IMetricValue).value).toBe((value1 as IMetricValue).value);
+			expect((value3 as IMetricValue).value).toBe((value1 as IMetricValue).value);
 		});
 
 		it('should handle descriptor comparison with all fields', () => {
-			const desc1: MetricDescriptor = {
+			const desc1: IMetricDescriptor = {
 				name: 'compare_test',
 				type: 'histogram',
 				help: 'Help text',
@@ -957,7 +957,7 @@ describe('InstrumentationRegistry', () => {
 				unit: 'seconds',
 			};
 
-			const desc2: MetricDescriptor = {
+			const desc2: IMetricDescriptor = {
 				name: 'compare_test',
 				type: 'histogram',
 				help: 'Different help',
@@ -975,7 +975,7 @@ describe('InstrumentationRegistry', () => {
 		});
 
 		it('should handle bucket difference detection', () => {
-			const desc1: MetricDescriptor = {
+			const desc1: IMetricDescriptor = {
 				name: 'bucket_test',
 				type: 'histogram',
 				help: 'Test buckets',
@@ -983,7 +983,7 @@ describe('InstrumentationRegistry', () => {
 				buckets: [0.1, 0.5, 1.0],
 			};
 
-			const desc2: MetricDescriptor = {
+			const desc2: IMetricDescriptor = {
 				name: 'bucket_test',
 				type: 'histogram',
 				help: 'Test buckets',
@@ -1048,7 +1048,7 @@ describe('InstrumentationRegistry', () => {
 			});
 
 			const errorExporter = createMockExporter({
-				supportsEventBased: true,
+				SupportsEventBased: true,
 				onMetricRecorded: vi.fn(() => {
 					// eslint-disable-next-line no-throw-literal
 					throw 'string error'; // Not an Error object
@@ -1100,7 +1100,7 @@ describe('InstrumentationRegistry', () => {
 
 			registry.registerExporter(errorExporter);
 
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'descriptor_non_error_test',
 				type: 'counter',
 				help: 'Test',
@@ -1230,7 +1230,7 @@ describe('InstrumentationRegistry', () => {
 			// Try to unsubscribe handler3 which was never subscribed
 			const unsubHandler3 = () => {
 				// Find and remove from empty list
-				const handlers: Array<(value: MetricValue) => void> = [];
+				const handlers: Array<(value: IMetricValue) => void> = [];
 				const idx = handlers.indexOf(handler3);
 				if (idx >= 0) {
 					handlers.splice(idx, 1);
@@ -1274,8 +1274,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should skip onDescriptorRegistered when undefined and not throw', () => {
 			const minimalExporter: IMetricsExporter = {
-				supportsEventBased: false,
-				supportsPull: true,
+				SupportsEventBased: false,
+				SupportsPull: true,
 				// Explicitly no onDescriptorRegistered method
 			};
 
@@ -1283,7 +1283,7 @@ describe('InstrumentationRegistry', () => {
 			registry.registerExporter(minimalExporter);
 
 			// Now register a new descriptor
-			const descriptor: MetricDescriptor = {
+			const descriptor: IMetricDescriptor = {
 				name: 'skip_on_descriptor_test',
 				type: 'counter',
 				help: 'Test skip onDescriptorRegistered',
@@ -1298,8 +1298,8 @@ describe('InstrumentationRegistry', () => {
 
 		it('should handle exporter with undefined shutdown method during shutdown', async () => {
 			const exporterNoShutdown: IMetricsExporter = {
-				supportsEventBased: false,
-				supportsPull: true,
+				SupportsEventBased: false,
+				SupportsPull: true,
 				// No shutdown method
 			};
 

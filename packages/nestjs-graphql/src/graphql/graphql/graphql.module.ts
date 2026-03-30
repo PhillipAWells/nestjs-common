@@ -6,7 +6,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 // AuthModule depends on CacheModule from this package
 // Applications should import both modules at root level
 import { GraphQLService } from './graphql.service.js';
-import { GraphQLConfigOptions, GraphQLAsyncConfig } from './graphql-config.interface.js';
+import { IGraphQLConfigOptions, IGraphQLAsyncConfig } from './graphql-config.interface.js';
 import { GraphQLCacheService } from '../services/cache.service.js';
 import { GraphQLPublicGuard } from '../guards/graphql-public.guard.js';
 import { GraphQLAuthGuard } from '../guards/graphql-auth.guard.js';
@@ -34,18 +34,24 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	/**
 	 * Store config for use in onModuleInit
 	 */
-	private static bsonConfig: GraphQLConfigOptions['bson'] = undefined;
+	private static BsonConfig: IGraphQLConfigOptions['bson'] = undefined;
+
+	private readonly BsonService: BsonSerializationService | undefined;
+	private readonly BsonMiddleware: BsonSerializationMiddleware | undefined;
 
 	constructor(
-		@Optional() private readonly bsonService?: BsonSerializationService,
-		@Optional() private readonly bsonMiddleware?: BsonSerializationMiddleware,
-	) {}
+		@Optional() bsonService?: BsonSerializationService,
+		@Optional() bsonMiddleware?: BsonSerializationMiddleware,
+	) {
+		this.BsonService = bsonService;
+		this.BsonMiddleware = bsonMiddleware;
+	}
 	/**
 	 * Validate GraphQL configuration options
 	 * @param options Configuration options
 	 * @throws Error if validation fails
 	 */
-	private static validateGraphQLConfig(options: GraphQLConfigOptions): void {
+	private static validateGraphQLConfig(options: IGraphQLConfigOptions): void {
 		const schema = Joi.object({
 			autoSchemaFile: Joi.alternatives().try(Joi.string(), Joi.boolean()).optional().description('Path to auto-generated schema file or boolean'),
 			sortSchema: Joi.boolean().strict().optional().description('Whether to sort schema'),
@@ -67,12 +73,12 @@ export class GraphQLModule implements NestModule, OnModuleInit {
     * @param options Configuration options for Apollo Server
     * @returns Dynamic module configuration
     */
-	public static forRoot(options: GraphQLConfigOptions = {}): DynamicModule {
+	public static forRoot(options: IGraphQLConfigOptions = {}): DynamicModule {
 		// Validate configuration
 		this.validateGraphQLConfig(options);
 
 		// Store bson config for middleware registration
-		this.bsonConfig = options.bson;
+		this.BsonConfig = options.bson;
 
 		const defaultOptions: ApolloDriverConfig = {
 			driver: ApolloDriver,
@@ -145,7 +151,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
    * @param options Asynchronous configuration options
    * @returns Dynamic module configuration
    */
-	public static forRootAsync(options: GraphQLAsyncConfig): DynamicModule {
+	public static forRootAsync(options: IGraphQLAsyncConfig): DynamicModule {
 		const providers: Provider[] = [
 			GraphQLService,
 			RateLimitService,
@@ -206,11 +212,11 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	 */
 	public configure(consumer: MiddlewareConsumer): void {
 		// Only configure if BSON is enabled
-		if (GraphQLModule.bsonConfig?.enabled && this.bsonMiddleware) {
+		if (GraphQLModule.BsonConfig?.enabled && this.BsonMiddleware) {
 			// apply() accepts Type<NestMiddleware> or functional middleware;
 			// passing the injected instance requires a cast.
 			consumer
-				.apply(this.bsonMiddleware as unknown as Type<BsonSerializationMiddleware>)
+				.apply(this.BsonMiddleware as unknown as Type<BsonSerializationMiddleware>)
 				.forRoutes('graphql');
 		}
 	}

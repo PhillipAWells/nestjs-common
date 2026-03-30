@@ -9,7 +9,7 @@ import { GraphQLErrorCode } from './error-codes.js';
  * Removes sensitive internal information and provides user-friendly messages.
  */
 export class GraphQLErrorFormatter {
-	private static readonly logger: AppLogger = new AppLogger(undefined, GraphQLErrorFormatter.name);
+	private static readonly Logger: AppLogger = new AppLogger(undefined, GraphQLErrorFormatter.name);
 
 	/**
 	 * Formats a GraphQL error for client response
@@ -61,7 +61,7 @@ export class GraphQLErrorFormatter {
 	 * Checks if error is a validation error
 	 */
 	private static isValidationError(error: any): boolean {
-		return error.name === 'ValidationError' ||
+		return error.name === 'IValidationError' ||
 			   Boolean(error.message?.includes('validation')) ||
 			   Boolean(error.errors);
 	}
@@ -97,7 +97,7 @@ export class GraphQLErrorFormatter {
 	 * Formats application-specific errors
 	 */
 	private static formatApplicationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
-		this.logger.warn(`Application error: ${originalError.message}`, originalError.stack);
+		this.Logger.warn(`Application error: ${originalError.message}`, originalError.stack);
 
 		return {
 			message: originalError.message ?? 'An error occurred',
@@ -174,7 +174,7 @@ export class GraphQLErrorFormatter {
 	 */
 	private static formatGenericError(error: GraphQLError, context?: any): GraphQLFormattedError {
 		// Log internal errors for debugging
-		this.logger.error(`GraphQL Error: ${error.message}`, error.stack);
+		this.Logger.error(`GraphQL Error: ${error.message}`, error.stack);
 
 		const originalError = error.originalError as any;
 		const statusCode = originalError?.getStatus?.() ?? originalError?.status ?? originalError?.statusCode;

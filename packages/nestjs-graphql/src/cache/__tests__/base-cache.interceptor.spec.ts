@@ -3,46 +3,46 @@ import { vi } from 'vitest';
 import { of } from 'rxjs';
 import {
 	BaseCacheInterceptor,
-	CacheKeyGenerator,
-	CacheMetadataExtractor,
-	CacheContextHandler,
+	ICacheKeyGenerator,
+	ICacheMetadataExtractor,
+	ICacheContextHandler,
 } from '../interceptors/base-cache.interceptor.js';
 
 // Mock implementations for testing
-class MockCacheKeyGenerator implements CacheKeyGenerator {
+class MockCacheKeyGenerator implements ICacheKeyGenerator {
 	public generate = vi.fn<(context: any, options?: any) => string>().mockReturnValue('test-key');
 }
 
-class MockCacheMetadataExtractor implements CacheMetadataExtractor {
+class MockCacheMetadataExtractor implements ICacheMetadataExtractor {
 	public getCacheDisabled = vi.fn<(context: any) => boolean>().mockReturnValue(false);
 
 	public getCacheTtl = vi.fn<(context: any) => number | undefined>().mockReturnValue(300);
 }
 
-class MockCacheContextHandler implements CacheContextHandler {
+class MockCacheContextHandler implements ICacheContextHandler {
 	public setCacheHeaders = vi.fn<(context: any, hit: boolean, ttl?: number) => void>();
 
 	public shouldCacheRequest = vi.fn<(context: any) => boolean>().mockReturnValue(true);
 }
 
 class TestBaseCacheInterceptor extends BaseCacheInterceptor {
-	public getCacheKeyGenerator(): CacheKeyGenerator {
+	public getCacheKeyGenerator(): ICacheKeyGenerator {
 		return this.keyGenerator;
 	}
 
-	public getCacheMetadataExtractor(): CacheMetadataExtractor {
+	public getCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return this.metadataExtractor;
 	}
 
-	public getCacheContextHandler(): CacheContextHandler {
+	public getCacheContextHandler(): ICacheContextHandler {
 		return this.contextHandler;
 	}
 
 	constructor(
 		moduleRef: any,
-		private readonly keyGenerator: CacheKeyGenerator,
-		private readonly metadataExtractor: CacheMetadataExtractor,
-		private readonly contextHandler: CacheContextHandler,
+		private readonly keyGenerator: ICacheKeyGenerator,
+		private readonly metadataExtractor: ICacheMetadataExtractor,
+		private readonly contextHandler: ICacheContextHandler,
 	) {
 		super(moduleRef);
 	}

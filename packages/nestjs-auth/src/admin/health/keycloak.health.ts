@@ -4,18 +4,18 @@ import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { KeycloakAdminService } from '../services/keycloak-admin.service.js';
 import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from '../keycloak.constants.js';
-import type { KeycloakAdminConfig } from '../config/keycloak.config.js';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { IKeycloakAdminConfig } from '../config/keycloak.config.js';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 
 @Injectable()
-export class KeycloakHealthIndicator extends HealthIndicator implements LazyModuleRefService {
+export class KeycloakHealthIndicator extends HealthIndicator implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get KeycloakAdminService(): KeycloakAdminService {
 		return this.Module.get(KeycloakAdminService);
 	}
 
-	public get Config(): KeycloakAdminConfig {
+	public get Config(): IKeycloakAdminConfig {
 		return this.Module.get(KEYCLOAK_ADMIN_CONFIG_TOKEN, { strict: false });
 	}
 

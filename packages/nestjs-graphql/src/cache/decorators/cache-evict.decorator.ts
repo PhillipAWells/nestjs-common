@@ -4,7 +4,7 @@ import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 /**
  * Options for @CacheEvict decorator
  */
-export interface CacheEvictOptions {
+export interface ICacheEvictOptions {
 	/**
 	 * Redis glob pattern to match cache keys for eviction
 	 * Examples: `user:*`, `post:123:*`, `*:comments`
@@ -43,7 +43,7 @@ export interface CacheEvictOptions {
  * - Eviction happens after method execution, so the method's result is not affected
  * - Logs warnings if store doesn't support pattern-based eviction
  */
-export function CacheEvict(options: CacheEvictOptions) {
+export function CacheEvict(options: ICacheEvictOptions) {
 	const logger = new AppLogger(undefined, 'CacheEvictDecorator');
 
 	return function(

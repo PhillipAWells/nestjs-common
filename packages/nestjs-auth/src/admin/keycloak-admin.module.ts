@@ -3,9 +3,9 @@ import { CommonModule } from '@pawells/nestjs-shared/common';
 import { KeycloakAdminService } from './services/keycloak-admin.service.js';
 import { KeycloakHealthIndicator } from './health/keycloak.health.js';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './keycloak.constants.js';
-import type { KeycloakAdminConfig } from './config/keycloak.config.js';
+import type { IKeycloakAdminConfig } from './config/keycloak.config.js';
 import { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
-import type { KeycloakAdminModuleAsyncOptions } from './keycloak-admin.interfaces.js';
+import type { IKeycloakAdminModuleAsyncOptions } from './keycloak-admin.interfaces.js';
 
 /**
  * Keycloak Admin module for managing users, roles, and groups.
@@ -20,7 +20,7 @@ export class KeycloakAdminModule {
 	 * @returns Dynamic module configuration
 	 * @throws Error if Keycloak is enabled but credentials are missing
 	 */
-	public static forRoot(config: Partial<KeycloakAdminConfig> = {}): DynamicModule {
+	public static forRoot(config: Partial<IKeycloakAdminConfig> = {}): DynamicModule {
 		const mergedConfig = { ...KeycloakAdminDefaults, ...config };
 		validateKeycloakAdminConfig(mergedConfig);
 
@@ -58,7 +58,7 @@ export class KeycloakAdminModule {
 	 * @param options Async factory configuration
 	 * @returns Dynamic module configuration
 	 */
-	public static forRootAsync(options: KeycloakAdminModuleAsyncOptions): DynamicModule {
+	public static forRootAsync(options: IKeycloakAdminModuleAsyncOptions): DynamicModule {
 		return {
 			module: KeycloakAdminModule,
 			imports: [CommonModule, ...(options.imports ?? [])],

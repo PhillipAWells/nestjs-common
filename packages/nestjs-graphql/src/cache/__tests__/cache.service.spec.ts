@@ -679,7 +679,7 @@ describe('CacheService', () => {
 	});
 
 	describe('BaseCacheService Memory Management', () => {
-		it('should limit operationTimings map size', async () => {
+		it('should limit OperationTimings map size', async () => {
 			const maxSize = 10000;
 			mockCacheManager.set.mockResolvedValue(undefined);
 			mockCacheManager.get.mockResolvedValue(null);
@@ -689,10 +689,10 @@ describe('CacheService', () => {
 				await service.set(`key_${i}`, `value_${i}`);
 			}
 
-			// operationTimings should not exceed maxSize
-			const operationTimingsMap = (service as any).operationTimings;
+			// OperationTimings should not exceed maxSize
+			const OperationTimingsMap = (service as any).OperationTimings;
 			let totalTimings = 0;
-			for (const [, timings] of operationTimingsMap.entries()) {
+			for (const [, timings] of OperationTimingsMap.entries()) {
 				totalTimings += (timings as number[]).length;
 			}
 
@@ -705,15 +705,15 @@ describe('CacheService', () => {
 			const cleanupMethod = (service as any).cleanupTimings;
 			if (typeof cleanupMethod === 'function') {
 				// Simulate old entries
-				(service as any).operationTimings.set('old_key_1', [Date.now() - 7200000]);
-				(service as any).operationTimings.set('recent_key', [Date.now()]);
+				(service as any).OperationTimings.set('old_key_1', [Date.now() - 7200000]);
+				(service as any).OperationTimings.set('recent_key', [Date.now()]);
 
 				// Trigger cleanup
 				cleanupMethod.call(service);
 
 				// Verify old entries should be removed (if cleanup has timestamp-based logic)
-				const { operationTimings } = (service as any);
-				expect(operationTimings.size).toBeGreaterThan(0);
+				const { OperationTimings } = (service as any);
+				expect(OperationTimings.size).toBeGreaterThan(0);
 			}
 		});
 
@@ -729,9 +729,9 @@ describe('CacheService', () => {
 			const stats = service.getStats();
 			expect(stats.sets).toBe(1000);
 
-			// But operationTimings arrays should not grow unbounded
-			const operationTimingsMap = (service as any).operationTimings;
-			for (const [opType, timings] of operationTimingsMap.entries()) {
+			// But OperationTimings arrays should not grow unbounded
+			const OperationTimingsMap = (service as any).OperationTimings;
+			for (const [opType, timings] of OperationTimingsMap.entries()) {
 				if (opType === 'set') {
 					// Should be capped at reasonable size (e.g., 1000)
 					expect((timings as number[]).length).toBeLessThanOrEqual(1000);
@@ -785,14 +785,14 @@ describe('CacheService', () => {
 			service.resetStats();
 
 			// Verify cleanup
-			const operationTimingsMap = (service as any).operationTimings;
-			expect(operationTimingsMap.size).toBe(0);
+			const OperationTimingsMap = (service as any).OperationTimings;
+			expect(OperationTimingsMap.size).toBe(0);
 
-			const { memorySnapshots } = (service as any);
-			expect(memorySnapshots.length).toBe(0);
+			const { MemorySnapshots } = (service as any);
+			expect(MemorySnapshots.length).toBe(0);
 
-			const { keyDistribution } = (service as any);
-			expect(keyDistribution.size).toBe(0);
+			const { KeyDistribution } = (service as any);
+			expect(KeyDistribution.size).toBe(0);
 		});
 
 		it('should handle memory cleanup on module destroy', async () => {

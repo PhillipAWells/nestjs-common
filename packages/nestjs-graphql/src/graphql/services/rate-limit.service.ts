@@ -1,12 +1,13 @@
 declare global {
 	namespace NodeJS {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		interface Timeout {}
 	}
 }
 
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const MS_PER_SECOND = 1000;
@@ -18,7 +19,7 @@ const CLEANUP_INTERVAL_MS = 60_000;
 /**
  * Rate limit result interface
  */
-export interface RateLimitResult {
+export interface IRateLimitResult {
 	allowed: boolean;
 	remaining: number;
 	limit: number;
@@ -29,7 +30,7 @@ export interface RateLimitResult {
 /**
  * Rate limit configuration
  */
-export interface RateLimitConfig {
+export interface IRateLimitConfig {
 	windowMs: number; // Time window in milliseconds
 	maxRequests: number; // Maximum requests per window
 }
@@ -37,7 +38,7 @@ export interface RateLimitConfig {
 /**
  * Storage backend interface for rate limiting
  */
-export interface RateLimitStorage {
+export interface IRateLimitStorage {
 	increment(key: string, windowMs: number): Promise<number>;
 	get(key: string): Promise<number>;
 	reset(key: string): Promise<void>;
@@ -47,7 +48,7 @@ export interface RateLimitStorage {
 /**
  * In-memory rate limit store entry
  */
-interface RateLimitEntry {
+interface IRateLimitEntry {
 	count: number;
 	resetTime: number;
 }
@@ -56,30 +57,30 @@ interface RateLimitEntry {
  * In-memory storage implementation
  */
 @Injectable()
-export class MemoryRateLimitStorage implements RateLimitStorage {
-	private readonly storage = new Map<string, { count: number; resetTime: number }>();
+export class MemoryRateLimitStorage implements IRateLimitStorage {
+	private readonly Storage = new Map<string, { count: number; resetTime: number }>();
 
 	// eslint-disable-next-line require-await
 	public async increment(key: string, windowMs: number): Promise<number> {
 		const now = Date.now();
-		const entry = this.storage.get(key);
+		const entry = this.Storage.get(key);
 
 		if (!entry || now > entry.resetTime) {
 			// Create new entry
 			const resetTime = now + windowMs;
-			this.storage.set(key, { count: 1, resetTime });
+			this.Storage.set(key, { count: 1, resetTime });
 			return 1;
 		} else {
 			// Increment existing entry
 			entry.count++;
-			this.storage.set(key, entry);
+			this.Storage.set(key, entry);
 			return entry.count;
 		}
 	}
 
 	// eslint-disable-next-line require-await
 	public async get(key: string): Promise<number> {
-		const entry = this.storage.get(key);
+		const entry = this.Storage.get(key);
 		const now = Date.now();
 
 		if (!entry || now > entry.resetTime) {
@@ -91,15 +92,15 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
 
 	// eslint-disable-next-line require-await
 	public async reset(key: string): Promise<void> {
-		this.storage.delete(key);
+		this.Storage.delete(key);
 	}
 
 	// eslint-disable-next-line require-await
 	public async cleanup(): Promise<void> {
 		const now = Date.now();
-		for (const [key, entry] of this.storage.entries()) {
+		for (const [key, entry] of this.Storage.entries()) {
 			if (now > entry.resetTime) {
-				this.storage.delete(key);
+				this.Storage.delete(key);
 			}
 		}
 	}
@@ -121,24 +122,24 @@ export class MemoryRateLimitStorage implements RateLimitStorage {
  * ```
  */
 @Injectable()
-export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModuleRefService {
+export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
-	private readonly store = new Map<string, RateLimitEntry>();
+	private readonly Store = new Map<string, IRateLimitEntry>();
 
 	// eslint-disable-next-line no-undef
-	private cleanupInterval?: NodeJS.Timeout;
+	private CleanupInterval?: NodeJS.Timeout;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(RateLimitService.name);
 	}
 
-	private get storage(): RateLimitStorage | undefined {
+	private get Storage(): IRateLimitStorage | undefined {
 		try {
-			return this.Module.get<RateLimitStorage>('RATE_LIMIT_STORAGE', { strict: false });
+			return this.Module.get<IRateLimitStorage>('RATE_LIMIT_STORAGE', { strict: false });
 		} catch {
 			return undefined;
 		}
@@ -152,7 +153,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 * Default rate limit configuration
 	 * 100 requests per 15 minutes
 	 */
-	private readonly defaultConfig: RateLimitConfig = {
+	private readonly DefaultConfig: IRateLimitConfig = {
 		windowMs: DEFAULT_RATE_LIMIT_WINDOW_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND, // 15 minutes
 		maxRequests: DEFAULT_RATE_LIMIT_MAX_REQUESTS,
 	};
@@ -160,22 +161,22 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	/**
 	 * Custom configurations per operation type
 	 */
-	private readonly operationConfigs = new Map<string, RateLimitConfig>();
+	private readonly OperationConfigs = new Map<string, IRateLimitConfig>();
 
 	public onModuleInit(): void {
 		// Start cleanup interval to remove expired entries
-		this.cleanupInterval = setInterval(async () => {
+		this.CleanupInterval = setInterval(async () => {
 			await this.cleanup();
 		}, CLEANUP_INTERVAL_MS); // Clean up every minute
 
-		this.logger.info('Rate limit service initialized');
+		this.Logger.info('Rate limit service initialized');
 	}
 
 	public onModuleDestroy(): void {
-		if (this.cleanupInterval) {
-			clearInterval(this.cleanupInterval);
+		if (this.CleanupInterval) {
+			clearInterval(this.CleanupInterval);
 		}
-		this.logger.info('Rate limit service destroyed');
+		this.Logger.info('Rate limit service destroyed');
 	}
 
 	/**
@@ -183,16 +184,16 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 *
 	 * @param clientId - Unique client identifier (user ID or IP)
 	 * @param operation - Optional operation name for custom limits
-	 * @returns Promise<RateLimitResult> - Rate limit check result
+	 * @returns Promise<IRateLimitResult> - Rate limit check result
 	 */
 	// eslint-disable-next-line require-await
-	public async checkLimit(clientId: string, operation?: string): Promise<RateLimitResult> {
-		const config = operation ? this.getConfigForOperation(operation) : this.defaultConfig;
+	public async checkLimit(clientId: string, operation?: string): Promise<IRateLimitResult> {
+		const config = operation ? this.getConfigForOperation(operation) : this.DefaultConfig;
 
 		// Use storage backend if available, otherwise fall back to in-memory
-		const { storage } = this;
-		if (storage) {
-			return this.checkLimitWithStorage(clientId, config, storage);
+		const { Storage } = this;
+		if (Storage) {
+			return this.checkLimitWithStorage(clientId, config, Storage);
 		} else {
 			return this.checkLimitInMemory(clientId, config);
 		}
@@ -201,7 +202,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	/**
 	 * Check rate limit using storage backend
 	 */
-	private async checkLimitWithStorage(clientId: string, config: RateLimitConfig, storage: RateLimitStorage): Promise<RateLimitResult> {
+	private async checkLimitWithStorage(clientId: string, config: IRateLimitConfig, storage: IRateLimitStorage): Promise<IRateLimitResult> {
 		try {
 			const current = await storage.increment(clientId, config.windowMs);
 			const remaining = Math.max(0, config.maxRequests - current);
@@ -215,7 +216,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 				current,
 			};
 		} catch (error) {
-			this.logger.error(`Storage rate limit check failed for ${clientId}:`, getErrorMessage(error));
+			this.Logger.error(`Storage rate limit check failed for ${clientId}:`, getErrorMessage(error));
 			// Fall back to in-memory on storage error
 			return this.checkLimitInMemory(clientId, config);
 		}
@@ -224,10 +225,10 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	/**
 	 * Check rate limit using in-memory storage (legacy implementation)
 	 */
-	private checkLimitInMemory(clientId: string, config: RateLimitConfig): RateLimitResult {
+	private checkLimitInMemory(clientId: string, config: IRateLimitConfig): IRateLimitResult {
 		const now = Date.now();
 
-		let entry = this.store.get(clientId);
+		let entry = this.Store.get(clientId);
 
 		if (!entry || now > entry.resetTime) {
 			// Create new entry or reset expired entry
@@ -241,7 +242,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 
 		if (allowed) {
 			entry.count++;
-			this.store.set(clientId, entry);
+			this.Store.set(clientId, entry);
 		}
 
 		const remaining = Math.max(0, config.maxRequests - entry.count);
@@ -261,19 +262,19 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 * @param operation - Operation name (e.g., 'query', 'mutation')
 	 * @param config - Rate limit configuration
 	 */
-	public setOperationConfig(operation: string, config: RateLimitConfig): void {
-		this.operationConfigs.set(operation, config);
-		this.logger.info(`Set custom rate limit for operation '${operation}': ${config.maxRequests} requests per ${config.windowMs}ms`);
+	public setOperationConfig(operation: string, config: IRateLimitConfig): void {
+		this.OperationConfigs.set(operation, config);
+		this.Logger.info(`Set custom rate limit for operation '${operation}': ${config.maxRequests} requests per ${config.windowMs}ms`);
 	}
 
 	/**
 	 * Gets rate limit configuration for an operation
 	 *
 	 * @param operation - Operation name
-	 * @returns RateLimitConfig - Configuration for the operation
+	 * @returns IRateLimitConfig - Configuration for the operation
 	 */
-	private getConfigForOperation(operation: string): RateLimitConfig {
-		return this.operationConfigs.get(operation) ?? this.defaultConfig;
+	private getConfigForOperation(operation: string): IRateLimitConfig {
+		return this.OperationConfigs.get(operation) ?? this.DefaultConfig;
 	}
 
 	/**
@@ -282,16 +283,16 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 * @param clientId - Client identifier to reset
 	 */
 	public async resetLimit(clientId: string): Promise<void> {
-		this.store.delete(clientId);
+		this.Store.delete(clientId);
 		// Also reset in storage backend if available
-		if (this.storage) {
+		if (this.Storage) {
 			try {
-				await this.storage.reset(clientId);
+				await this.Storage.reset(clientId);
 			} catch (error) {
-				this.logger.error(`Failed to reset rate limit in storage for ${clientId}:`, getErrorMessage(error));
+				this.Logger.error(`Failed to reset rate limit in storage for ${clientId}:`, getErrorMessage(error));
 			}
 		}
-		this.logger.info(`Reset rate limit for client: ${clientId}`);
+		this.Logger.info(`Reset rate limit for client: ${clientId}`);
 	}
 
 	/**
@@ -299,15 +300,15 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 *
 	 * @param clientId - Client identifier
 	 * @param operation - Optional operation name
-	 * @returns RateLimitResult | null - Current status or null if no record
+	 * @returns IRateLimitResult | null - Current status or null if no record
 	 */
-	public async getStatus(clientId: string, operation?: string): Promise<RateLimitResult | null> {
-		const config = operation ? this.getConfigForOperation(operation) : this.defaultConfig;
+	public async getStatus(clientId: string, operation?: string): Promise<IRateLimitResult | null> {
+		const config = operation ? this.getConfigForOperation(operation) : this.DefaultConfig;
 
 		// Check storage backend first if available
-		if (this.storage) {
+		if (this.Storage) {
 			try {
-				const count = await this.storage.get(clientId);
+				const count = await this.Storage.get(clientId);
 				if (count > 0) {
 					const remaining = Math.max(0, config.maxRequests - count);
 					return {
@@ -319,13 +320,13 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 					};
 				}
 			} catch (error) {
-				this.logger.error(`Storage status check failed for ${clientId}:`, getErrorMessage(error));
+				this.Logger.error(`Storage status check failed for ${clientId}:`, getErrorMessage(error));
 				// Fall back to in-memory
 			}
 		}
 
 		// Fall back to in-memory store
-		const entry = this.store.get(clientId);
+		const entry = this.Store.get(clientId);
 
 		if (!entry) {
 			return null;
@@ -347,12 +348,12 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 */
 	private async cleanup(): Promise<void> {
 		// Clean up storage backend if available
-		const { storage } = this;
-		if (storage) {
+		const { Storage } = this;
+		if (Storage) {
 			try {
-				await storage.cleanup();
+				await Storage.cleanup();
 			} catch (error) {
-				this.logger.error('Storage cleanup failed:', getErrorMessage(error));
+				this.Logger.error('Storage cleanup failed:', getErrorMessage(error));
 			}
 		}
 
@@ -360,15 +361,15 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 		const now = Date.now();
 		let cleaned = 0;
 
-		for (const [clientId, entry] of this.store.entries()) {
+		for (const [clientId, entry] of this.Store.entries()) {
 			if (now > entry.resetTime) {
-				this.store.delete(clientId);
+				this.Store.delete(clientId);
 				cleaned++;
 			}
 		}
 
 		if (cleaned > 0) {
-			this.logger.debug(`Cleaned up ${cleaned} expired rate limit entries`);
+			this.Logger.debug(`Cleaned up ${cleaned} expired rate limit entries`);
 		}
 	}
 
@@ -379,8 +380,8 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, LazyModu
 	 */
 	public getStats(): { totalEntries: number; operationConfigs: number } {
 		return {
-			totalEntries: this.store.size,
-			operationConfigs: this.operationConfigs.size,
+			totalEntries: this.Store.size,
+			operationConfigs: this.OperationConfigs.size,
 		};
 	}
 }

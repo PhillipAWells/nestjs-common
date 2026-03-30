@@ -29,7 +29,7 @@
  * export class AppModule {}
  * ```
  */
-export interface CacheModuleAsyncOptions {
+export interface ICacheModuleAsyncOptions {
 	/** Optional modules to import for dependency injection */
 	imports?: any[];
 	/** Factory function that returns cache configuration */

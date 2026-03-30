@@ -35,7 +35,7 @@ describe('AppLogger', () => {
 			delete process.env['LOG_LEVEL'];
 			try {
 				const logger = new AppLogger(configService);
-				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+				expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 			} finally {
 				if (saved !== undefined) process.env['LOG_LEVEL'] = saved;
 			}
@@ -44,43 +44,43 @@ describe('AppLogger', () => {
 		it('should parse debug level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('debug');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+			expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 		});
 
 		it('should parse info level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 
 		it('should parse warn level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('warn');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.WARN);
+			expect((logger as any).MinLevel).toBe(LogLevel.WARN);
 		});
 
 		it('should parse error level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('error');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.ERROR);
+			expect((logger as any).MinLevel).toBe(LogLevel.ERROR);
 		});
 
 		it('should parse fatal level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('fatal');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.FATAL);
+			expect((logger as any).MinLevel).toBe(LogLevel.FATAL);
 		});
 
 		it('should handle case insensitive input', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('DEBUG');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+			expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 		});
 
 		it('should default to INFO for invalid level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('invalid');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 	});
 
@@ -239,31 +239,31 @@ describe('AppLogger', () => {
 		it('should log debug messages when level is DEBUG', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('debug');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+			expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 		});
 
 		it('should log info messages when level is INFO', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 
 		it('should log warn messages when level is WARN', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('warn');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.WARN);
+			expect((logger as any).MinLevel).toBe(LogLevel.WARN);
 		});
 
 		it('should log error messages when level is ERROR', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('error');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.ERROR);
+			expect((logger as any).MinLevel).toBe(LogLevel.ERROR);
 		});
 
 		it('should log fatal messages when level is FATAL', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('fatal');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.FATAL);
+			expect((logger as any).MinLevel).toBe(LogLevel.FATAL);
 		});
 	});
 
@@ -476,7 +476,7 @@ describe('AppLogger', () => {
 			}).not.toThrow();
 		});
 
-		it('should support debug(message, options) signature with LogOptions', () => {
+		it('should support debug(message, options) signature with ILogOptions', () => {
 			expect(() => {
 				service.debug('Debug message', {
 					context: 'TestContext',
@@ -526,13 +526,13 @@ describe('AppLogger', () => {
 		it('should fall back to INFO for invalid LOG_LEVEL and log warning', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('invalid_level');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 
 		it('should handle numeric LOG_LEVEL and convert to string', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('invalid_level');
 			const logger = new AppLogger(configService);
-			expect((logger as any).minLevel).toBe(LogLevel.INFO);
+			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 	});
 
@@ -614,7 +614,7 @@ describe('AppLogger', () => {
 			try {
 				const logger = new AppLogger();
 				expect(logger).toBeDefined();
-				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+				expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 			} finally {
 				if (saved !== undefined) process.env['LOG_LEVEL'] = saved;
 			}
@@ -641,7 +641,7 @@ describe('AppLogger', () => {
 			process.env['LOG_LEVEL'] = 'debug';
 			try {
 				const logger = new AppLogger();
-				expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+				expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 			} finally {
 				if (originalEnv === undefined) {
 					delete process.env['LOG_LEVEL'];
@@ -673,7 +673,7 @@ describe('AppLogger', () => {
 			process.env['SERVICE_NAME'] = 'test-service-from-env';
 			try {
 				const logger = new AppLogger();
-				expect((logger as any).serviceName).toBe('test-service-from-env');
+				expect((logger as any).ServiceName).toBe('test-service-from-env');
 			} finally {
 				if (originalEnv === undefined) {
 					delete process.env['SERVICE_NAME'];
@@ -694,8 +694,8 @@ describe('AppLogger', () => {
 
 			try {
 				const logger = new AppLogger();
-				expect((logger as any).serviceName).toBe('unknown-service');
-				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+				expect((logger as any).ServiceName).toBe('unknown-service');
+				expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 			} finally {
 				if (originalServiceName !== undefined) {
 					process.env['SERVICE_NAME'] = originalServiceName;
@@ -720,7 +720,7 @@ describe('AppLogger', () => {
 					}),
 				} as any;
 				const logger = new AppLogger(mockConfigService);
-				expect((logger as any).serviceName).toBe('config-service');
+				expect((logger as any).ServiceName).toBe('config-service');
 			} finally {
 				if (originalEnv === undefined) {
 					delete process.env['SERVICE_NAME'];
@@ -744,7 +744,7 @@ describe('AppLogger', () => {
 				process.env['LOG_LEVEL'] = levelStr;
 				try {
 					const logger = new AppLogger();
-					expect((logger as any).minLevel).toBe(expectedLevel);
+					expect((logger as any).MinLevel).toBe(expectedLevel);
 				} finally {
 					if (originalEnv === undefined) {
 						delete process.env['LOG_LEVEL'];
@@ -760,7 +760,7 @@ describe('AppLogger', () => {
 			process.env['LOG_LEVEL'] = 'invalid_level';
 			try {
 				const logger = new AppLogger();
-				expect((logger as any).minLevel).toBe(LogLevel.INFO);
+				expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 			} finally {
 				if (originalEnv === undefined) {
 					delete process.env['LOG_LEVEL'];
@@ -790,7 +790,7 @@ describe('AppLogger', () => {
 			process.env['LOG_LEVEL'] = 'DEBUG';
 			try {
 				const logger = new AppLogger();
-				expect((logger as any).minLevel).toBe(LogLevel.DEBUG);
+				expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 			} finally {
 				if (originalEnv === undefined) {
 					delete process.env['LOG_LEVEL'];

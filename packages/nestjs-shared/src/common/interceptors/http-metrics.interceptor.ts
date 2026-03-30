@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 const DEFAULT_ERROR_STATUS_CODE = 500;
 
@@ -30,7 +30,7 @@ const DEFAULT_ERROR_STATUS_CODE = 500;
  */
 
 @Injectable()
-export class HTTPMetricsInterceptor implements NestInterceptor, LazyModuleRefService {
+export class HTTPMetricsInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {

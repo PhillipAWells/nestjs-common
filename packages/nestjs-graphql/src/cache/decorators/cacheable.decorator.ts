@@ -5,7 +5,7 @@ import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 /**
  * Options for @Cacheable decorator
  */
-export interface CacheableOptions {
+export interface ICacheableOptions {
 	/**
 	 * Cache key — either a constant string or a function to generate keys dynamically
 	 * Default: `${ClassName}:${methodName}`
@@ -58,7 +58,7 @@ export interface CacheableOptions {
  * - Falls back gracefully if cache is unavailable
  * - Async-safe; works with async/await methods
  */
-export function Cacheable(options: CacheableOptions = {}) {
+export function Cacheable(options: ICacheableOptions = {}) {
 	const logger = new AppLogger(undefined, 'CacheableDecorator');
 
 	return function(

@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { AppLogger } from '@pawells/nestjs-shared';
-import { Item } from './item.type.js';
+import { IItem } from './item.type.js';
 import { ItemsService } from './items.service.js';
 
 /**
@@ -16,15 +16,15 @@ import { ItemsService } from './items.service.js';
  * Note: The GraphQL module must be enabled in app.module.ts (currently commented out).
  * Uncomment the GraphQLModule.forRoot() section to activate this resolver.
  */
-@Resolver(() => Item)
+@Resolver(() => IItem)
 export class ItemsResolver {
-	private readonly itemsService: ItemsService;
+	private readonly ItemsService: ItemsService;
 
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	constructor(itemsService: ItemsService, logger: AppLogger) {
-		this.itemsService = itemsService;
-		this.logger = logger;
+		this.ItemsService = itemsService;
+		this.Logger = logger;
 	}
 
 	/**
@@ -32,21 +32,21 @@ export class ItemsResolver {
 	 *
 	 * The operation name in the GraphQL schema will be "GetItems" (PascalCase).
 	 */
-	@Query(() => [Item], { name: 'GetItems' })
-	public getItems(): Item[] {
-		this.logger.debug('GetItems query executed');
+	@Query(() => [IItem], { name: 'GetItems' })
+	public getItems(): IItem[] {
+		this.Logger.debug('GetItems query executed');
 		// Simulated return — in a real resolver, this would query ItemsService
 		// or a database. For now, we return a static demo list.
 		return [
 			{
-				id: '1',
-				name: 'Example Item 1',
-				description: 'A sample item for demonstration',
+				Id: '1',
+				Name: 'Example IItem 1',
+				Description: 'A sample item for demonstration',
 			},
 			{
-				id: '2',
-				name: 'Example Item 2',
-				description: 'Another sample item',
+				Id: '2',
+				Name: 'Example IItem 2',
+				Description: 'Another sample item',
 			},
 		];
 	}
@@ -57,22 +57,22 @@ export class ItemsResolver {
 	 * The operation name in the GraphQL schema will be "GetItem" (PascalCase).
 	 * Returns null if the item is not found (nullable: true).
 	 */
-	@Query(() => Item, { name: 'GetItem', nullable: true })
-	public getItem(@Args('id') id: string): Item | null {
-		this.logger.debug(`GetItem query executed for id: ${id}`);
+	@Query(() => IItem, { name: 'GetItem', nullable: true })
+	public getItem(@Args('id') id: string): IItem | null {
+		this.Logger.debug(`GetItem query executed for id: ${id}`);
 		// Simulated logic — check if the ID matches a demo item
 		if (id === '1') {
 			return {
-				id: '1',
-				name: 'Example Item 1',
-				description: 'A sample item for demonstration',
+				Id: '1',
+				Name: 'Example IItem 1',
+				Description: 'A sample item for demonstration',
 			};
 		}
 		if (id === '2') {
 			return {
-				id: '2',
-				name: 'Example Item 2',
-				description: 'Another sample item',
+				Id: '2',
+				Name: 'Example IItem 2',
+				Description: 'Another sample item',
 			};
 		}
 		return null;
@@ -84,17 +84,17 @@ export class ItemsResolver {
 	 * The operation name in the GraphQL schema will be "CreateItem" (PascalCase).
 	 * Returns the created item.
 	 */
-	@Mutation(() => Item, { name: 'CreateItem' })
+	@Mutation(() => IItem, { name: 'CreateItem' })
 	public createItem(
 		@Args('name') name: string,
 		@Args('description') description: string,
-	): Item {
-		this.logger.debug(`CreateItem mutation executed with name: ${name}`);
+	): IItem {
+		this.Logger.debug(`CreateItem mutation executed with name: ${name}`);
 		// Simulated item creation
-		const newItem: Item = {
-			id: String(Date.now()),
-			name,
-			description,
+		const newItem: IItem = {
+			Id: String(Date.now()),
+			Name: name,
+			Description: description,
 		};
 		return newItem;
 	}
@@ -107,13 +107,13 @@ export class ItemsResolver {
 	 */
 	@Mutation(() => Boolean, { name: 'DeleteItem' })
 	public async deleteItem(@Args('id') id: string): Promise<boolean> {
-		this.logger.debug(`DeleteItem mutation executed for id: ${id}`);
+		this.Logger.debug(`DeleteItem mutation executed for id: ${id}`);
 		// Simulated deletion — always returns true for demo purposes
 		try {
-			await this.itemsService.deleteItem(id);
+			await this.ItemsService.deleteItem(id);
 			return true;
 		} catch (error) {
-			this.logger.error(`Failed to delete item ${id}: ${String(error)}`);
+			this.Logger.error(`Failed to delete item ${id}: ${String(error)}`);
 			return false;
 		}
 	}

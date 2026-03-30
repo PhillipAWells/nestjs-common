@@ -34,7 +34,7 @@ describe('ProfilingInterceptor', () => {
 			url: '/api/users',
 			route: { path: '/api/users' },
 			get: vi.fn((header: string) => {
-				if (header === 'User-Agent') return 'Mozilla/5.0';
+				if (header === 'IUser-Agent') return 'Mozilla/5.0';
 				return undefined;
 			}),
 		};
@@ -160,7 +160,7 @@ describe('ProfilingInterceptor', () => {
 			});
 		});
 
-		it('should handle unknown User-Agent', () => {
+		it('should handle unknown IUser-Agent', () => {
 			const mockRequest = {
 				method: 'GET',
 				url: '/api/test',
@@ -204,7 +204,7 @@ describe('ProfilingInterceptor', () => {
 				getResponse: () => ({ statusCode: 201 }),
 			});
 
-			mockCallHandler.handle.mockReturnValue(of({ id: 1, name: 'Test User' }));
+			mockCallHandler.handle.mockReturnValue(of({ id: 1, name: 'Test IUser' }));
 
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({

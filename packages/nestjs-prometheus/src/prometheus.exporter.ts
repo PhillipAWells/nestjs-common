@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
-import type { IMetricsExporter, MetricDescriptor, MetricValue } from '@pawells/nestjs-shared';
+import type { IMetricsExporter, IMetricDescriptor, IMetricValue } from '@pawells/nestjs-shared';
 
 /**
  * Prometheus metrics exporter implementation
@@ -38,39 +38,39 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * This exporter buffers metric values as they are recorded and flushes
 	 * them into prom-client instruments on each pull (getMetrics)
 	 */
-	public readonly supportsEventBased = true;
+	public readonly SupportsEventBased = true;
 
 	/**
 	 * This exporter supports pull-based metric retrieval
 	 */
-	public readonly supportsPull = true;
+	public readonly SupportsPull = true;
 
 	/**
 	 * Prom-client Registry instance for managing instruments
 	 * @private
 	 */
-	private readonly registry: Registry;
+	private readonly Registry: Registry;
 
 	/**
 	 * Cache of created prom-client instruments (Counter, Histogram, Gauge)
 	 * Keyed by metric name
 	 * @private
 	 */
-	private readonly instruments: Map<string, Counter<string> | Histogram<string> | Gauge<string>>;
+	private readonly Instruments: Map<string, Counter<string> | Histogram<string> | Gauge<string>>;
 
 	/**
 	 * Pending metric values to be flushed into prom-client instruments on next getMetrics()
 	 * Keyed by metric name
 	 * @private
 	 */
-	private readonly pending: Map<string, MetricValue[]>;
+	private readonly Pending: Map<string, IMetricValue[]>;
 
 	/**
 	 * Running totals for updown_counter metrics (persistent across scrapes)
 	 * Keyed by metric name, then by normalized label key
 	 * @private
 	 */
-	private readonly gaugeValues: Map<string, Map<string, number>>;
+	private readonly GaugeValues: Map<string, Map<string, number>>;
 
 	/**
 	 * Maximum number of pending metric values per metric before culling oldest entries
@@ -83,7 +83,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	/**
 	 * Logger instance for warnings and errors
 	 */
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	/**
 	 * Normalize label keys to handle consistent ordering regardless of insertion order
@@ -101,14 +101,14 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * (process CPU, memory, event loop, garbage collection, etc.).
 	 */
 	constructor() {
-		this.registry = new Registry();
-		this.instruments = new Map();
-		this.pending = new Map();
-		this.gaugeValues = new Map();
-		this.logger = new AppLogger(undefined, PrometheusExporter.name);
+		this.Registry = new Registry();
+		this.Instruments = new Map();
+		this.Pending = new Map();
+		this.GaugeValues = new Map();
+		this.Logger = new AppLogger(undefined, PrometheusExporter.name);
 
 		// Collect Node.js default metrics into our registry
-		collectDefaultMetrics({ register: this.registry });
+		collectDefaultMetrics({ register: this.Registry });
 	}
 
 	/**
@@ -137,22 +137,22 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * });
 	 * ```
 	 */
-	public onDescriptorRegistered(descriptor: MetricDescriptor): void {
+	public onDescriptorRegistered(descriptor: IMetricDescriptor): void {
 		const { name, type, help, labelNames, buckets } = descriptor;
 
 		// Guard against duplicate registration
-		if (this.instruments.has(name)) {
+		if (this.Instruments.has(name)) {
 			return;
 		}
 
 		// Validate required fields
 		if (!name) {
-			this.logger.warn('Metric descriptor registered with empty name');
+			this.Logger.warn('Metric descriptor registered with empty name');
 			return;
 		}
 
 		if (!help) {
-			this.logger.warn(`Metric descriptor "${name}" registered with empty help text`);
+			this.Logger.warn(`Metric descriptor "${name}" registered with empty help text`);
 			return;
 		}
 
@@ -164,7 +164,7 @@ export class PrometheusExporter implements IMetricsExporter {
 					name,
 					help,
 					labelNames,
-					registers: [this.registry],
+					registers: [this.Registry],
 				});
 				break;
 
@@ -174,7 +174,7 @@ export class PrometheusExporter implements IMetricsExporter {
 					help,
 					labelNames,
 					buckets,
-					registers: [this.registry],
+					registers: [this.Registry],
 				});
 				break;
 
@@ -185,11 +185,11 @@ export class PrometheusExporter implements IMetricsExporter {
 					name,
 					help,
 					labelNames,
-					registers: [this.registry],
+					registers: [this.Registry],
 				});
 				// Initialize running totals map for this metric
 				if (type === 'updown_counter') {
-					this.gaugeValues.set(name, new Map());
+					this.GaugeValues.set(name, new Map());
 				}
 				break;
 
@@ -197,8 +197,8 @@ export class PrometheusExporter implements IMetricsExporter {
 				throw new Error(`Unsupported metric type "${type}" for descriptor "${name}"`);
 		}
 
-		this.instruments.set(name, instrument);
-		this.pending.set(name, []);
+		this.Instruments.set(name, instrument);
+		this.Pending.set(name, []);
 	}
 
 	/**
@@ -224,9 +224,9 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * });
 	 * ```
 	 */
-	public onMetricRecorded(value: MetricValue): void {
+	public onMetricRecorded(value: IMetricValue): void {
 		const metricName = value.descriptor.name;
-		const pendingArray = this.pending.get(metricName);
+		const pendingArray = this.Pending.get(metricName);
 
 		if (pendingArray) {
 			pendingArray.push(value);
@@ -237,7 +237,7 @@ export class PrometheusExporter implements IMetricsExporter {
 			}
 		} else {
 			// Warn if metric recorded before descriptor registration (data will be lost)
-			this.logger.warn(`Metric recorded before descriptor registration: ${metricName}`);
+			this.Logger.warn(`Metric recorded before descriptor registration: ${metricName}`);
 		}
 	}
 
@@ -275,15 +275,15 @@ export class PrometheusExporter implements IMetricsExporter {
 		// Flush all pending values into prom-client instruments
 		// Use atomic swap pattern: capture current values and replace with empty array
 		// to prevent loss of metrics recorded concurrently during flush
-		for (const [metricName, pendingValues] of this.pending.entries()) {
+		for (const [metricName, pendingValues] of this.Pending.entries()) {
 			// Atomically swap pending array with a fresh one
-			this.pending.set(metricName, []);
+			this.Pending.set(metricName, []);
 
 			if (pendingValues.length === 0) {
 				continue;
 			}
 
-			const instrument = this.instruments.get(metricName);
+			const instrument = this.Instruments.get(metricName);
 			if (!instrument) {
 				// Instrument not yet created, skip pending values
 				continue;
@@ -296,7 +296,7 @@ export class PrometheusExporter implements IMetricsExporter {
 					try {
 						instrument.inc(metricValue.labels, metricValue.value);
 					} catch (recordError) {
-						this.logger.warn(
+						this.Logger.warn(
 							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
@@ -307,7 +307,7 @@ export class PrometheusExporter implements IMetricsExporter {
 					try {
 						instrument.observe(metricValue.labels, metricValue.value);
 					} catch (recordError) {
-						this.logger.warn(
+						this.Logger.warn(
 							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
@@ -331,7 +331,7 @@ export class PrometheusExporter implements IMetricsExporter {
 				}
 
 				// Get running totals map for this metric (if it exists, it's an updown_counter)
-				const runningTotals = this.gaugeValues.get(metricName);
+				const runningTotals = this.GaugeValues.get(metricName);
 
 				// Apply accumulated values to the gauge (iterate only through unique label sets)
 				for (const { labels, value: accumulatedValue } of accumulatedValues.values()) {
@@ -354,7 +354,7 @@ export class PrometheusExporter implements IMetricsExporter {
 
 						instrument.set(labelsForProm, finalValue);
 					} catch (recordError) {
-						this.logger.warn(
+						this.Logger.warn(
 							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
@@ -364,10 +364,10 @@ export class PrometheusExporter implements IMetricsExporter {
 
 		// Return metrics in Prometheus text format
 		try {
-			return await this.registry.metrics();
+			return await this.Registry.metrics();
 		} catch (error) {
 			const message = getErrorMessage(error);
-			this.logger.error(`Failed to generate Prometheus metrics: ${message}`);
+			this.Logger.error(`Failed to generate Prometheus metrics: ${message}`);
 			throw error;
 		}
 	}
@@ -391,9 +391,9 @@ export class PrometheusExporter implements IMetricsExporter {
 	 */
 	// eslint-disable-next-line require-await
 	public async shutdown(): Promise<void> {
-		this.registry.clear();
-		this.instruments.clear();
-		this.pending.clear();
-		this.gaugeValues.clear();
+		this.Registry.clear();
+		this.Instruments.clear();
+		this.Pending.clear();
+		this.GaugeValues.clear();
 	}
 }

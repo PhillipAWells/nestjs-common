@@ -15,7 +15,7 @@ import compression from 'compression';
 import express, { Request, Response, NextFunction } from 'express';
 import { sanitizeObject, sanitizeXss } from '../utils/sanitization.utils.js';
 
-export interface SecurityBootstrapOptions {
+export interface ISecurityBootstrapOptions {
 	/** List of allowed CORS origins. In development, localhost and Apollo Studio are always included. */
 	corsOrigins?: string[];
 	/** Environment mode (development or production). Defaults to NODE_ENV or 'development'. */
@@ -83,7 +83,7 @@ export interface SecurityBootstrapOptions {
  */
 export function ApplySecurityMiddleware(
 	app: INestApplication,
-	options: SecurityBootstrapOptions = {},
+	options: ISecurityBootstrapOptions = {},
 ): void {
 	const {
 		corsOrigins = [],

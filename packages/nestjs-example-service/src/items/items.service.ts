@@ -4,12 +4,12 @@ import { QdrantService } from '@pawells/nestjs-qdrant';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 
-export interface Item {
+export interface IItem {
 	id: string;
 	name: string;
 }
 
-export interface StoredItem extends Item {
+export interface IStoredItem extends IItem {
 	vector: number[];
 }
 
@@ -28,14 +28,14 @@ const DEFAULT_SEARCH_LIMIT = 10;
 export class ItemsService {
 	private static readonly COLLECTION = 'items';
 
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
 	constructor(moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
 	private get qdrant(): QdrantService {
-		return this.moduleRef.get(QdrantService, { strict: false }) as QdrantService;
+		return this.ModuleRef.get(QdrantService, { strict: false }) as QdrantService;
 	}
 
 	/**
@@ -43,7 +43,7 @@ export class ItemsService {
 	 */
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'findSimilar' } })
-	public async findSimilar(vector: number[], limit = DEFAULT_SEARCH_LIMIT): Promise<Item[]> {
+	public async findSimilar(vector: number[], limit = DEFAULT_SEARCH_LIMIT): Promise<IItem[]> {
 		const results = await this.qdrant
 			.collection(ItemsService.COLLECTION)
 			.search({ vector, limit, with_payload: true });
@@ -59,7 +59,7 @@ export class ItemsService {
 	 */
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'upsertItem' } })
-	public async upsertItem(item: StoredItem): Promise<void> {
+	public async upsertItem(item: IStoredItem): Promise<void> {
 		await this.qdrant
 			.collection(ItemsService.COLLECTION)
 			.upsert({

@@ -31,11 +31,11 @@ export enum GraphQLErrorCode {
  *
  * Defines the structure of error extensions returned to clients
  */
-export interface GraphQLErrorExtensions {
+export interface IGraphQLErrorExtensions {
 	code: GraphQLErrorCode;
 	timestamp: string;
 	details?: any;
-	validationErrors?: ValidationError[];
+	validationErrors?: IValidationError[];
 }
 
 /**
@@ -43,7 +43,7 @@ export interface GraphQLErrorExtensions {
  *
  * Structure for individual validation errors
  */
-export interface ValidationError {
+export interface IValidationError {
 	field?: string;
 	message?: string;
 	constraints?: Record<string, string>;

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
 import { ItemsController } from '../items/items.controller.js';
-import { ItemsService, type Item, type StoredItem } from '../items/items.service.js';
+import { ItemsService, type IItem, type IStoredItem } from '../items/items.service.js';
 
 describe('ItemsController', () => {
 	let controller: ItemsController;
@@ -33,7 +33,7 @@ describe('ItemsController', () => {
 
 	describe('findSimilar', () => {
 		it('should parse a comma-separated vector string and return items', async () => {
-			const items: Item[] = [{ id: 'a', name: 'Alpha' }];
+			const items: IItem[] = [{ id: 'a', name: 'Alpha' }];
 			mockFindSimilar.mockResolvedValue(items);
 
 			const result = await controller.findSimilar('0.1,0.2,0.3');
@@ -61,7 +61,7 @@ describe('ItemsController', () => {
 
 	describe('upsertItem', () => {
 		it('should delegate to ItemsService and return void', async () => {
-			const body: StoredItem = { id: 'x', name: 'Xenon', vector: [0.9] };
+			const body: IStoredItem = { id: 'x', name: 'Xenon', vector: [0.9] };
 			const fakeUser = { id: 'user-1', email: 'u@test.com', roles: [] };
 			mockUpsertItem.mockResolvedValue(undefined);
 

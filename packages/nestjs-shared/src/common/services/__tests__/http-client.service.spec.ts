@@ -163,7 +163,7 @@ describe('HttpClientService', () => {
 		});
 
 		it('should have post shortcut method', () => {
-			expect(typeof service.post).toBe('function');
+			expect(typeof service.Post).toBe('function');
 		});
 
 		it('should have put shortcut method', () => {
@@ -970,7 +970,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			const result = await service.post('http://api.example.com/items', { name: 'test' });
+			const result = await service.Post('http://api.example.com/items', { name: 'test' });
 
 			expect(result.status).toBe(201);
 		});
@@ -1260,7 +1260,7 @@ describe('HttpClientService', () => {
 				headers: {
 					'Content-Type': 'application/json',
 					Accept: 'application/json',
-					'User-Agent': 'MyAgent/1.0',
+					'IUser-Agent': 'MyAgent/1.0',
 				},
 			});
 
@@ -1269,7 +1269,7 @@ describe('HttpClientService', () => {
 			const loggedHeaders = JSON.parse(debugMessage).headers;
 			expect(loggedHeaders['Content-Type']).toBe('application/json');
 			expect(loggedHeaders.Accept).toBe('application/json');
-			expect(loggedHeaders['User-Agent']).toBe('MyAgent/1.0');
+			expect(loggedHeaders['IUser-Agent']).toBe('MyAgent/1.0');
 		});
 	});
 });

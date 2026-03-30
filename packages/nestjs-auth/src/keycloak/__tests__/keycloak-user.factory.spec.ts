@@ -7,7 +7,7 @@ describe('createMockKeycloakUser()', () => {
 		expect(user.id).toBe('test-user-id');
 		expect(user.email).toBe('test@example.com');
 		expect(user.username).toBe('test-user');
-		expect(user.name).toBe('Test User');
+		expect(user.name).toBe('Test IUser');
 		expect(user.realmRoles).toEqual([]);
 		expect(user.clientRoles).toEqual([]);
 	});

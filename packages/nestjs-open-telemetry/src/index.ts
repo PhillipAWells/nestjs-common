@@ -38,7 +38,7 @@ export { OpenTelemetryLogger } from './adapters/nestjs-logger.js';
 
 // Decorators
 export { Traced, SpanKind } from './decorators/traced.decorator.js';
-export type { TracedOptions } from './decorators/traced.decorator.js';
+export type { ITracedOptions } from './decorators/traced.decorator.js';
 
 // Re-export useful types from dependencies
 export type { ILoggerConfig, LogLevel } from '@pawells/logger';

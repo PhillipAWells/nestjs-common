@@ -1,7 +1,7 @@
 import { PyroscopeService } from '../service.js';
 import { IProfileContext } from '../interfaces/profiling.interface.js';
 
-type AnyFunction = (...args: unknown[]) => unknown;
+type TAnyFunction = (...args: unknown[]) => unknown;
 
 /**
  * Class-level decorator for profiling all methods in a class.
@@ -51,7 +51,7 @@ export function Profile(options?: { tags?: Record<string, string> }): ClassDecor
 				continue;
 			}
 
-			const originalMethod = proto[methodName] as AnyFunction;
+			const originalMethod = proto[methodName] as TAnyFunction;
 
 			proto[methodName] = function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): unknown {
 				const { pyroscopeService } = this;
@@ -149,7 +149,7 @@ export function ProfileMethod(options?: {
 	tags?: Record<string, string>;
 }): MethodDecorator {
 	return function(target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
-		const originalMethod = descriptor.value as AnyFunction;
+		const originalMethod = descriptor.value as TAnyFunction;
 		const methodName = String(propertyKey);
 
 		descriptor.value = function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): unknown {
@@ -252,7 +252,7 @@ export function ProfileAsync(options?: {
 	tags?: Record<string, string>;
 }): MethodDecorator {
 	return function(target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
-		const originalMethod = descriptor.value as AnyFunction;
+		const originalMethod = descriptor.value as TAnyFunction;
 		const methodName = String(propertyKey);
 
 		descriptor.value = async function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): Promise<unknown> {

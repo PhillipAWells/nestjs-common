@@ -4,7 +4,7 @@ import Joi from 'joi';
 import { AppLogger } from '../../common/index.js';
 import { ConfigService } from '../config.service.js';
 import { ValidationService } from '../validation.utils.js';
-import { AppConfig } from '../config.types.js';
+import { IAppConfig } from '../config.types.js';
 
 describe('Config Integration', () => {
 	let configService: ConfigService;
@@ -73,7 +73,7 @@ describe('Config Integration', () => {
 	});
 
 	it('should validate loaded configuration', () => {
-		const config: Partial<AppConfig> = {
+		const config: Partial<IAppConfig> = {
 			port: 3000,
 			nodeEnv: 'test',
 			corsOrigin: 'http://localhost:3000',
@@ -91,7 +91,7 @@ describe('Config Integration', () => {
 		});
 
 		// Note: This is a simplified validation test
-		// In practice, you'd have a proper schema for AppConfig
+		// In practice, you'd have a proper schema for IAppConfig
 		expect(config.port).toBe(3000);
 	});
 });

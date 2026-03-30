@@ -1,5 +1,5 @@
 
-import { CreateRateLimitConfig, RateLimitConfig } from '../rate-limit-config.factory.js';
+import { CreateRateLimitConfig, IRateLimitConfig } from '../rate-limit-config.factory.js';
 
 describe('RateLimitConfigFactory', () => {
 	it('should create default rate limit config', () => {
@@ -22,7 +22,7 @@ describe('RateLimitConfigFactory', () => {
 	});
 
 	it('should allow merging custom limits', () => {
-		const custom: RateLimitConfig = {
+		const custom: IRateLimitConfig = {
 			auth: {
 				login: { ttl: 30000, limit: 3 },
 			},
@@ -36,7 +36,7 @@ describe('RateLimitConfigFactory', () => {
 	});
 
 	it('should preserve defaults when merging partial config', () => {
-		const partial: RateLimitConfig = {
+		const partial: IRateLimitConfig = {
 			auth: {
 				login: { ttl: 30000, limit: 1 },
 			},
@@ -61,7 +61,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should merge nested objects (auth)', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 30000, limit: 2 },
 					register: { ttl: 45000, limit: 1 },
@@ -77,7 +77,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should merge nested objects (api)', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {
 					default: { ttl: 30000, limit: 50 },
@@ -92,7 +92,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should not recurse into arrays', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 				items: [1, 2, 3],
@@ -102,7 +102,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should overwrite primitive values', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 				timeout: 5000,
@@ -114,7 +114,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should overwrite null values with primitives', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 				nullValue: null,
@@ -124,7 +124,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle mixed object and primitive overrides', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 20000, limit: 5 },
 				},
@@ -142,7 +142,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle deep nesting', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 				level1: {
@@ -158,7 +158,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should not merge source keys that dont exist in target', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 				newKey: { someValue: true },
@@ -168,7 +168,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle empty object overrides', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {},
 			};
@@ -182,7 +182,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle complete override', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 10000, limit: 1 },
 					register: { ttl: 20000, limit: 2 },
@@ -202,7 +202,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle partial auth overrides', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 25000, limit: 3 },
 				},
@@ -216,7 +216,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle partial api overrides', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {},
 				api: {
 					search: { ttl: 90000, limit: 25 },
@@ -229,7 +229,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should not modify original defaults', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 10000, limit: 1 },
 				},
@@ -243,7 +243,7 @@ describe('RateLimitConfigFactory', () => {
 		});
 
 		it('should handle multiple levels of nesting with mixed types', () => {
-			const overrides: RateLimitConfig = {
+			const overrides: IRateLimitConfig = {
 				auth: {
 					login: { ttl: 15000, limit: 4 },
 				},

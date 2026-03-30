@@ -20,7 +20,7 @@ export { PyroscopeError } from './errors/pyroscope.errors.js';
 
 // Metrics service
 export { MetricsService } from './services/metrics.service.js';
-export type { MetricsResponse } from './services/metrics.service.js';
+export type { IMetricsResponse } from './services/metrics.service.js';
 
 // Profiling interceptors
 export { ProfilingInterceptor } from './interceptors/profiling.interceptor.js';
@@ -28,7 +28,7 @@ export { ProfilingInterceptor } from './interceptors/profiling.interceptor.js';
 // Health monitoring
 export { ProfilingHealthIndicator } from './indicators/profiling.health.js';
 export { HealthController } from './controllers/health.controller.js';
-export type { HealthResponse } from './controllers/health.controller.js';
+export type { IHealthResponse } from './controllers/health.controller.js';
 
 // Profiling interfaces and types
 export type {

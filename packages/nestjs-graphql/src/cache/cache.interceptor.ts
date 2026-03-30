@@ -2,9 +2,9 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Response } from 'express';
 import {
 	BaseCacheInterceptor,
-	CacheKeyGenerator,
-	CacheMetadataExtractor,
-	CacheContextHandler,
+	ICacheKeyGenerator,
+	ICacheMetadataExtractor,
+	ICacheContextHandler,
 } from './interceptors/base-cache.interceptor.js';
 
 /**
@@ -24,7 +24,7 @@ import {
  * ```
  */
 @Injectable()
-export class HttpCacheKeyGenerator implements CacheKeyGenerator {
+export class HttpCacheKeyGenerator implements ICacheKeyGenerator {
 	/**
 	 * Generates a cache key for an HTTP request
 	 * @param context Execution context from the request
@@ -86,7 +86,7 @@ export class HttpCacheKeyGenerator implements CacheKeyGenerator {
  * {@link CacheInterceptor} or {@link BaseCacheInterceptor} rather than directly.
  */
 @Injectable()
-export class HttpCacheMetadataExtractor implements CacheMetadataExtractor {
+export class HttpCacheMetadataExtractor implements ICacheMetadataExtractor {
 	/**
 	 * Gets whether caching is disabled for the route
 	 * @param context Execution context from the request
@@ -121,7 +121,7 @@ export class HttpCacheMetadataExtractor implements CacheMetadataExtractor {
  * {@link CacheInterceptor} or {@link BaseCacheInterceptor} rather than directly.
  */
 @Injectable()
-export class HttpCacheContextHandler implements CacheContextHandler {
+export class HttpCacheContextHandler implements ICacheContextHandler {
 	/**
 	 * Sets cache-related HTTP response headers
 	 * @param context Execution context from the request
@@ -185,7 +185,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache key generator for HTTP requests
 	 * @returns HttpCacheKeyGenerator instance
 	 */
-	protected getCacheKeyGenerator(): CacheKeyGenerator {
+	protected getCacheKeyGenerator(): ICacheKeyGenerator {
 		return new HttpCacheKeyGenerator();
 	}
 
@@ -193,7 +193,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache metadata extractor for HTTP routes
 	 * @returns HttpCacheMetadataExtractor instance
 	 */
-	protected getCacheMetadataExtractor(): CacheMetadataExtractor {
+	protected getCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return new HttpCacheMetadataExtractor();
 	}
 
@@ -201,7 +201,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache context handler for HTTP responses
 	 * @returns HttpCacheContextHandler instance
 	 */
-	protected getCacheContextHandler(): CacheContextHandler {
+	protected getCacheContextHandler(): ICacheContextHandler {
 		return new HttpCacheContextHandler();
 	}
 }

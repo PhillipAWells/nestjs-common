@@ -12,7 +12,7 @@ const JITTER_FACTOR = 0.2;
 /**
  * Retry configuration options
  */
-export interface RetryConfig {
+export interface IRetryConfig {
 	/**
 	 * Maximum number of retry attempts
 	 * @default 3
@@ -52,7 +52,7 @@ export interface RetryConfig {
 /**
  * Default retry configuration
  */
-const DEFAULT_RETRY_CONFIG: Required<Omit<RetryConfig, 'logger'>> = {
+const DEFAULT_RETRY_CONFIG: Required<Omit<IRetryConfig, 'logger'>> = {
 	maxRetries: 3,
 	initialDelay: 1000,
 	maxDelay: 30000,
@@ -98,7 +98,7 @@ function calculateDelay(
  */
 export async function withRetry<T>(
 	fn: () => Promise<T>,
-	config: RetryConfig = {},
+	config: IRetryConfig = {},
 ): Promise<T> {
 	const {
 		maxRetries,

@@ -1,11 +1,11 @@
 
 import { vi } from 'vitest';
 import { ConnectionManagerService } from '../../subscriptions/connection-manager.service.js';
-import type { SubscriptionConfig } from '../../subscriptions/subscription-config.interface.js';
+import type { ISubscriptionConfig } from '../../subscriptions/subscription-config.interface.js';
 
 describe('ConnectionManagerService', () => {
 	let service: ConnectionManagerService;
-	let config: SubscriptionConfig;
+	let config: ISubscriptionConfig;
 	let mockWs: any;
 
 	beforeEach(() => {

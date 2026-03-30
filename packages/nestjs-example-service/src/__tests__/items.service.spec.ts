@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
 import { QdrantService } from '@pawells/nestjs-qdrant';
-import { ItemsService, type StoredItem } from '../items/items.service.js';
+import { ItemsService, type IStoredItem } from '../items/items.service.js';
 
 describe('ItemsService', () => {
 	let service: ItemsService;
@@ -96,7 +96,7 @@ describe('ItemsService', () => {
 	});
 
 	describe('upsertItem', () => {
-		const item: StoredItem = { id: 'item-1', name: 'Test Item', vector: [0.1, 0.2, 0.3] };
+		const item: IStoredItem = { id: 'item-1', name: 'Test IItem', vector: [0.1, 0.2, 0.3] };
 
 		it('should call upsert on the correct collection', async () => {
 			mockUpsert.mockResolvedValue({ status: 'ok', result: { operation_id: 1 } });
@@ -108,7 +108,7 @@ describe('ItemsService', () => {
 				points: [{
 					id: 'item-1',
 					vector: [0.1, 0.2, 0.3],
-					payload: { name: 'Test Item' },
+					payload: { name: 'Test IItem' },
 				}],
 			});
 		});

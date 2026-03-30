@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql';
 /**
  * Base configuration interface for error classes
  */
-interface ErrorConfig {
+interface IErrorConfig {
 	/** The error code for programmatic identification */
 	code: string;
 	/** The HTTP status code */
@@ -16,9 +16,9 @@ interface ErrorConfig {
 
 /**
  * Configuration interface for creating GraphQL error classes
- * Extends the base ErrorConfig with GraphQL-specific properties
+ * Extends the base IErrorConfig with GraphQL-specific properties
  */
-export interface GraphQLErrorConfig extends ErrorConfig {
+export interface IGraphQLErrorConfig extends IErrorConfig {
 	/** The GraphQL error code used in extensions */
 	graphqlCode: string;
 }
@@ -26,11 +26,11 @@ export interface GraphQLErrorConfig extends ErrorConfig {
 /**
  * Interface describing a generated GraphQL error instance
  */
-export interface GeneratedGraphQLErrorInstance extends GraphQLError {
-	readonly statusCode: number;
-	readonly code: string;
-	readonly context: Record<string, unknown>;
-	readonly timestamp: Date;
+export interface IGeneratedGraphQLErrorInstance extends GraphQLError {
+	readonly StatusCode: number;
+	readonly Code: string;
+	readonly Context: Record<string, unknown>;
+	readonly Timestamp: Date;
 	toPlainObject(): Record<string, unknown>;
 	withContext(additionalContext: Record<string, unknown>): this;
 	withMessage(newMessage: string): this;
@@ -39,10 +39,10 @@ export interface GeneratedGraphQLErrorInstance extends GraphQLError {
 /**
  * Type describing the constructor returned by createGraphQLError
  */
-export type GeneratedGraphQLErrorConstructor = new (
+export type TGeneratedGraphQLErrorConstructor = new (
 	message?: string,
 	context?: Record<string, unknown>,
-) => GeneratedGraphQLErrorInstance;
+) => IGeneratedGraphQLErrorInstance;
 
 /**
  * Factory function to create GraphQL error classes
@@ -63,7 +63,7 @@ export type GeneratedGraphQLErrorConstructor = new (
  * });
  * ```
  */
-export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQLErrorConstructor {
+export function createGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraphQLErrorConstructor {
 	const { code, statusCode, defaultMessage, name = `${code}Error`, graphqlCode } = config;
 
 	/**
@@ -71,13 +71,13 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 	 * Extends GraphQLError for GraphQL-specific formatting while inheriting from BaseApplicationError
 	 */
 	class GeneratedGraphQLError extends GraphQLError {
-		public readonly statusCode: number;
+		public readonly StatusCode: number;
 
-		public readonly code: string;
+		public readonly Code: string;
 
-		public readonly context: Record<string, unknown>;
+		public readonly Context: Record<string, unknown>;
 
-		public readonly timestamp: Date;
+		public readonly Timestamp: Date;
 
 		/**
 		 * Creates a new GraphQL error instance
@@ -100,10 +100,10 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 				extensions,
 			});
 
-			this.statusCode = statusCode;
-			this.code = code;
-			this.context = mergedContext;
-			this.timestamp = new Date();
+			this.StatusCode = statusCode;
+			this.Code = code;
+			this.Context = mergedContext;
+			this.Timestamp = new Date();
 
 			// Set the name for better debugging
 			this.name = name;
@@ -118,11 +118,11 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 			return {
 				name: this.name,
 				message: this.message,
-				code: this.code,
-				statusCode: this.statusCode,
+				code: this.Code,
+				statusCode: this.StatusCode,
 				graphqlCode: (this.extensions as Record<string, unknown>)['code'],
-				context: this.context,
-				timestamp: this.timestamp.toISOString(),
+				context: this.Context,
+				timestamp: this.Timestamp.toISOString(),
 			};
 		}
 
@@ -133,7 +133,7 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 		 * @returns A new error instance with the merged context
 		 */
 		public withContext(additionalContext: Record<string, unknown>): this {
-			const mergedContext = { ...this.context, ...additionalContext };
+			const mergedContext = { ...this.Context, ...additionalContext };
 			const Constructor = this.constructor as new (message?: string, context?: Record<string, unknown>) => this;
 
 			return new Constructor(this.message, mergedContext);
@@ -148,7 +148,7 @@ export function createGraphQLError(config: GraphQLErrorConfig): GeneratedGraphQL
 		public withMessage(newMessage: string): this {
 			const Constructor = this.constructor as new (message?: string, context?: Record<string, unknown>) => this;
 
-			return new Constructor(newMessage, this.context);
+			return new Constructor(newMessage, this.Context);
 		}
 	}
 
@@ -219,4 +219,4 @@ export const GRAPHQL_ERROR_CONFIGS = {
 /**
  * Type for GraphQL error configuration keys
  */
-export type GraphQLErrorType = keyof typeof GRAPHQL_ERROR_CONFIGS;
+export type TGraphQLErrorType = keyof typeof GRAPHQL_ERROR_CONFIGS;

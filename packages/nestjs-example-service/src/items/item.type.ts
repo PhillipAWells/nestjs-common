@@ -1,7 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 /**
- * Item — GraphQL ObjectType representing a searchable item in the vector database.
+ * IItem — GraphQL ObjectType representing a searchable item in the vector database.
  *
  * Demonstrates:
  *  - @ObjectType decorator for GraphQL schema generation
@@ -9,13 +9,13 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
  *  - ID scalar for the primary key
  */
 @ObjectType()
-export class Item {
+export class IItem {
 	@Field(() => ID)
-	public id: string = '';
+	public Id: string = '';
 
 	@Field()
-	public name: string = '';
+	public Name: string = '';
 
 	@Field()
-	public description: string = '';
+	public Description: string = '';
 }

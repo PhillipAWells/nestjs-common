@@ -3,7 +3,7 @@
  *
  * Filters and pagination options for querying administrative events.
  */
-export interface AdminEventQuery {
+export interface IAdminEventQuery {
 	/**
 	 * Filter by operation types to include
 	 */
@@ -46,7 +46,7 @@ export interface AdminEventQuery {
  *
  * Filters and pagination options for querying authentication and authorization events.
  */
-export interface AccessEventQuery {
+export interface IAccessEventQuery {
 	/**
 	 * Filter by event types to include (e.g., ['LOGIN', 'LOGOUT', 'LOGIN_ERROR'])
 	 */
@@ -90,7 +90,7 @@ export interface AccessEventQuery {
  * Represents a single administrative event (user creation, role assignment, client updates, etc.)
  * in a Keycloak realm.
  */
-export interface KeycloakAdminEvent {
+export interface IKeycloakAdminEvent {
 	/**
 	 * Event timestamp (milliseconds since epoch)
 	 */
@@ -142,7 +142,7 @@ export interface KeycloakAdminEvent {
 		clientId: string;
 
 		/**
-		 * User ID of the admin who performed the operation
+		 * IUser ID of the admin who performed the operation
 		 */
 		userId: string;
 
@@ -159,7 +159,7 @@ export interface KeycloakAdminEvent {
  * Represents a single authentication or authorization event (login, logout, permission check, etc.)
  * in a Keycloak realm.
  */
-export interface KeycloakAccessEvent {
+export interface IKeycloakAccessEvent {
 	/**
 	 * Event timestamp (milliseconds since epoch)
 	 */

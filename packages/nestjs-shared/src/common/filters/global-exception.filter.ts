@@ -9,13 +9,13 @@ import { Response, Request } from 'express';
 import { BaseApplicationError } from '../errors/base-application-error.js';
 import { AppLogger } from '../services/logger.service.js';
 import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
-import { ErrorCategorizerService, type ErrorCategory } from '../services/error-categorizer.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ErrorCategorizerService, type IErrorCategory } from '../services/error-categorizer.service.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Standard error response structure for all exceptions.
  */
-export interface ErrorResponseBody {
+export interface IErrorResponseBody {
 	success: false;
 	error: {
 		code: string;
@@ -63,7 +63,7 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  *   success: false,
  *   error: {
  *     code: 'USER_NOT_FOUND',
- *     message: 'User with ID 123 not found',
+ *     message: 'IUser with ID 123 not found',
  *     timestamp: '2024-01-01T12:00:00.000Z',
  *     context: { userId: '123' },
  *     stack: '...'
@@ -75,17 +75,17 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  *   success: false,
  *   error: {
  *     code: 'USER_NOT_FOUND',
- *     message: 'User with ID 123 not found',
+ *     message: 'IUser with ID 123 not found',
  *     timestamp: '2024-01-01T12:00:00.000Z'
  *   }
  * }
  * ```
  */
 @Catch(BaseApplicationError, Error)
-export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefService {
-	private _logger: AppLogger | undefined;
-	private _errorSanitizer: ErrorSanitizerService | undefined;
-	private _errorCategorizer: ErrorCategorizerService | undefined;
+export class GlobalExceptionFilter implements ExceptionFilter, ILazyModuleRefService {
+	private _Logger: AppLogger | undefined;
+	private _ErrorSanitizer: ErrorSanitizerService | undefined;
+	private _ErrorCategorizer: ErrorCategorizerService | undefined;
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -93,18 +93,18 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 	}
 
 	private get Logger(): AppLogger {
-		this._logger ??= this.Module.get<AppLogger>(AppLogger);
-		return this._logger;
+		this._Logger ??= this.Module.get<AppLogger>(AppLogger);
+		return this._Logger;
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
-		this._errorSanitizer ??= this.Module.get<ErrorSanitizerService>(ErrorSanitizerService);
-		return this._errorSanitizer;
+		this._ErrorSanitizer ??= this.Module.get<ErrorSanitizerService>(ErrorSanitizerService);
+		return this._ErrorSanitizer;
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
-		this._errorCategorizer ??= this.Module.get<ErrorCategorizerService>(ErrorCategorizerService);
-		return this._errorCategorizer;
+		this._ErrorCategorizer ??= this.Module.get<ErrorCategorizerService>(ErrorCategorizerService);
+		return this._ErrorCategorizer;
 	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {
@@ -117,22 +117,22 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 		const isDevelopment = !isProduction;
 
 		let status: number;
-		let errorResponse: ErrorResponseBody;
-		let errorCategory: ErrorCategory;
+		let errorResponse: IErrorResponseBody;
+		let errorCategory: IErrorCategory;
 		let errorTrace: string | undefined;
 
 		// Standardize error response structure for all exception types
 		if (exception instanceof BaseApplicationError) {
 			// Standardized application error
-			status = exception.statusCode;
+			status = exception.StatusCode;
 			errorResponse = {
 				success: false,
 				error: {
-					code: exception.code,
+					code: exception.Code,
 					message: exception.message,
-					timestamp: exception.timestamp.toISOString(),
+					timestamp: exception.Timestamp.toISOString(),
 					...(isDevelopment ? {
-						context: exception.context,
+						context: exception.Context,
 						stack: exception.stack,
 					} : {}),
 				},
@@ -197,7 +197,7 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 			},
 			isDevelopment,
 		);
-		const sanitizedError: ErrorResponseBody = {
+		const sanitizedError: IErrorResponseBody = {
 			success: false,
 			error: {
 				code: errorResponse.error.code,

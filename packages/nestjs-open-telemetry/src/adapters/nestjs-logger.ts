@@ -22,10 +22,10 @@ import { Logger, ILoggerConfig } from '@pawells/logger';
  * ```
  */
 export class OpenTelemetryLogger implements LoggerService {
-	private readonly logger: Logger;
+	private readonly Logger: Logger;
 
 	constructor(config?: Partial<ILoggerConfig>) {
-		this.logger = new Logger({
+		this.Logger = new Logger({
 			service: config?.service ?? 'nestjs-app',
 			...(config?.level !== undefined && { level: config.level }),
 			...(config?.format !== undefined && { format: config.format }),
@@ -37,7 +37,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	 */
 	public log(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
-		this.logger.info(this.formatMessage(message), metadata);
+		this.Logger.info(this.formatMessage(message), metadata);
 	}
 
 	/**
@@ -48,7 +48,7 @@ export class OpenTelemetryLogger implements LoggerService {
 		if (stackTrace) {
 			metadata['stackTrace'] = stackTrace;
 		}
-		this.logger.error(this.formatMessage(message), metadata);
+		this.Logger.error(this.formatMessage(message), metadata);
 	}
 
 	/**
@@ -56,7 +56,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	 */
 	public warn(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
-		this.logger.warn(this.formatMessage(message), metadata);
+		this.Logger.warn(this.formatMessage(message), metadata);
 	}
 
 	/**
@@ -64,7 +64,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	 */
 	public debug(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
-		this.logger.debug(this.formatMessage(message), metadata);
+		this.Logger.debug(this.formatMessage(message), metadata);
 	}
 
 	/**
@@ -81,7 +81,7 @@ export class OpenTelemetryLogger implements LoggerService {
 	 */
 	public fatal(message: unknown, context?: string): void {
 		const metadata = this.buildMetadata(context);
-		this.logger.fatal(this.formatMessage(message), metadata);
+		this.Logger.fatal(this.formatMessage(message), metadata);
 	}
 
 	/**

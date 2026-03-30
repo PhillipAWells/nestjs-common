@@ -527,15 +527,15 @@ describe('CSRFService', () => {
 		it('should track capacity threshold crossings with counter', () => {
 			// Verify the service has capacity tracking in place
 			const internalService = service as any;
-			expect(internalService.capacityThresholdCrossedCount).toBeDefined();
-			expect(typeof internalService.capacityThresholdCrossedCount).toBe('number');
+			expect(internalService.CapacityThresholdCrossedCount).toBeDefined();
+			expect(typeof internalService.CapacityThresholdCrossedCount).toBe('number');
 		});
 
 		it('should have necessary data structures for rate limiting', () => {
-			// Verify tokenGenTimestamps and ipLocks are initialized
+			// Verify TokenGenTimestamps and IpLocks are initialized
 			const internalService = service as any;
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 	});
 
@@ -572,8 +572,8 @@ describe('CSRFService', () => {
 			const internalService = service as any;
 
 			// Verify rate limit tracking is initialized
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 
 		it('should track timestamps for rate limiting', async () => {
@@ -597,7 +597,7 @@ describe('CSRFService', () => {
 			}
 
 			// Verify timestamps were recorded
-			const timestamps = internalService.tokenGenTimestamps.get('192.168.1.222');
+			const timestamps = internalService.TokenGenTimestamps.get('192.168.1.222');
 			expect(timestamps).toBeDefined();
 			expect(timestamps.length).toBe(5);
 		});
@@ -607,10 +607,10 @@ describe('CSRFService', () => {
 
 			// Clear any existing rate limit data for this IP
 			const testIp = '192.168.1.333';
-			internalService.tokenGenTimestamps.delete(testIp);
+			internalService.TokenGenTimestamps.delete(testIp);
 
 			// Verify starting state
-			expect(internalService.tokenGenTimestamps.has(testIp)).toBe(false);
+			expect(internalService.TokenGenTimestamps.has(testIp)).toBe(false);
 		});
 	});
 
@@ -619,29 +619,29 @@ describe('CSRFService', () => {
 			const internalService = service as any;
 
 			// Verify capacity tracking exists
-			expect(internalService.capacityThresholdCrossedCount).toBeDefined();
-			expect(typeof internalService.capacityThresholdCrossedCount).toBe('number');
+			expect(internalService.CapacityThresholdCrossedCount).toBeDefined();
+			expect(typeof internalService.CapacityThresholdCrossedCount).toBe('number');
 		});
 
-		it('should maintain tokenGenTimestamps map', () => {
+		it('should maintain TokenGenTimestamps map', () => {
 			const internalService = service as any;
 
 			// Verify the tracking map is initialized
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 
 		it('should handle capacity thresholds correctly', () => {
 			const internalService = service as any;
 
 			// Add some test entries
-			internalService.tokenGenTimestamps.set('test-capacity-ip', [Date.now()]);
+			internalService.TokenGenTimestamps.set('test-capacity-ip', [Date.now()]);
 
 			// Verify they exist
-			expect(internalService.tokenGenTimestamps.has('test-capacity-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('test-capacity-ip')).toBe(true);
 
 			// Clean up
-			internalService.tokenGenTimestamps.delete('test-capacity-ip');
+			internalService.TokenGenTimestamps.delete('test-capacity-ip');
 		});
 	});
 
@@ -667,36 +667,36 @@ describe('CSRFService', () => {
 
 			// Manually add old timestamps
 			const oldTime = Date.now() - 61_000;
-			internalService.tokenGenTimestamps.set('prune-test-ip', [oldTime]);
+			internalService.TokenGenTimestamps.set('prune-test-ip', [oldTime]);
 
 			// Verify it exists
-			expect(internalService.tokenGenTimestamps.has('prune-test-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(true);
 
 			// Call prune
 			internalService.pruneTokenTimestamps();
 
 			// Old entry should be deleted
-			expect(internalService.tokenGenTimestamps.has('prune-test-ip')).toBe(false);
+			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(false);
 		});
 
-		it('should clean up ipLocks when pruning', () => {
+		it('should clean up IpLocks when pruning', () => {
 			const internalService = service as any;
 
 			// Manually add a lock and old timestamp
 			const oldTime = Date.now() - 61_000;
-			internalService.tokenGenTimestamps.set('lock-prune-ip', [oldTime]);
-			internalService.ipLocks.set('lock-prune-ip', Promise.resolve());
+			internalService.TokenGenTimestamps.set('lock-prune-ip', [oldTime]);
+			internalService.IpLocks.set('lock-prune-ip', Promise.resolve());
 
 			// Verify both exist
-			expect(internalService.tokenGenTimestamps.has('lock-prune-ip')).toBe(true);
-			expect(internalService.ipLocks.has('lock-prune-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('lock-prune-ip')).toBe(true);
+			expect(internalService.IpLocks.has('lock-prune-ip')).toBe(true);
 
 			// Prune
 			internalService.pruneTokenTimestamps();
 
 			// Both should be deleted
-			expect(internalService.tokenGenTimestamps.has('lock-prune-ip')).toBe(false);
-			expect(internalService.ipLocks.has('lock-prune-ip')).toBe(false);
+			expect(internalService.TokenGenTimestamps.has('lock-prune-ip')).toBe(false);
+			expect(internalService.IpLocks.has('lock-prune-ip')).toBe(false);
 		});
 
 		it('should preserve recent timestamps', () => {
@@ -704,16 +704,16 @@ describe('CSRFService', () => {
 
 			// Add recent timestamp
 			const recentTime = Date.now() - 30_000; // 30 seconds ago
-			internalService.tokenGenTimestamps.set('recent-ip', [recentTime]);
+			internalService.TokenGenTimestamps.set('recent-ip', [recentTime]);
 
 			// Call prune
 			internalService.pruneTokenTimestamps();
 
 			// Recent entry should still exist
-			expect(internalService.tokenGenTimestamps.has('recent-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('recent-ip')).toBe(true);
 
 			// Clean up
-			internalService.tokenGenTimestamps.delete('recent-ip');
+			internalService.TokenGenTimestamps.delete('recent-ip');
 		});
 	});
 });

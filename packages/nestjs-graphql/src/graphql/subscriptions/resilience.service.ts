@@ -1,40 +1,41 @@
 declare global {
 	namespace NodeJS {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		interface Timeout {}
 	}
 }
 
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
-import type { SubscriptionConfig } from './subscription-config.interface.js';
+import type { ISubscriptionConfig } from './subscription-config.interface.js';
 import { REDIS_PUBSUB_CLEANUP_INTERVAL } from '../constants/subscriptions.constants.js';
 
 /**
  * Service for handling resilience patterns (keepalive, reconnection, error recovery)
  */
 @Injectable()
-export class ResilienceService implements OnModuleDestroy, LazyModuleRefService {
+export class ResilienceService implements OnModuleDestroy, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	// eslint-disable-next-line no-undef
-	private readonly keepaliveTimers = new Map<string, NodeJS.Timeout>();
+	private readonly KeepaliveTimers = new Map<string, NodeJS.Timeout>();
 
 	// eslint-disable-next-line no-undef
-	private readonly reconnectionTimers = new Map<string, NodeJS.Timeout>();
+	private readonly ReconnectionTimers = new Map<string, NodeJS.Timeout>();
 
 	// eslint-disable-next-line no-undef
-	private shutdownTimeout?: NodeJS.Timeout;
+	private ShutdownTimeout?: NodeJS.Timeout;
 
-	public get SubscriptionConfig(): SubscriptionConfig {
-		return this.Module.get<SubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
+	public get ISubscriptionConfig(): ISubscriptionConfig {
+		return this.Module.get<ISubscriptionConfig>('SUBSCRIPTION_CONFIG', { strict: false });
 	}
 
 	constructor(moduleRef: ModuleRef) {
 		this.Module = moduleRef;
-		this.logger = new AppLogger(undefined, ResilienceService.name);
+		this.Logger = new AppLogger(undefined, ResilienceService.name);
 	}
 
 	/**
@@ -43,7 +44,7 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @param callback Keepalive callback function
    */
 	public startKeepalive(connectionId: string, callback: () => void): void {
-		if (!this.SubscriptionConfig.resilience.keepalive.enabled) {
+		if (!this.ISubscriptionConfig.resilience.keepalive.enabled) {
 			return;
 		}
 
@@ -51,12 +52,12 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 			try {
 				callback();
 			} catch (error: unknown) {
-				this.logger.error(`Keepalive error for connection ${connectionId}: ${getErrorMessage(error)}`);
+				this.Logger.error(`Keepalive error for connection ${connectionId}: ${getErrorMessage(error)}`);
 			}
-		}, this.SubscriptionConfig.resilience.keepalive.interval);
+		}, this.ISubscriptionConfig.resilience.keepalive.interval);
 
-		this.keepaliveTimers.set(connectionId, timer);
-		this.logger.debug(`Started keepalive for connection: ${connectionId}`);
+		this.KeepaliveTimers.set(connectionId, timer);
+		this.Logger.debug(`Started keepalive for connection: ${connectionId}`);
 	}
 
 	/**
@@ -64,11 +65,11 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @param connectionId Connection identifier
    */
 	public stopKeepalive(connectionId: string): void {
-		const timer = this.keepaliveTimers.get(connectionId);
+		const timer = this.KeepaliveTimers.get(connectionId);
 		if (timer) {
 			clearInterval(timer);
-			this.keepaliveTimers.delete(connectionId);
-			this.logger.debug(`Stopped keepalive for connection: ${connectionId}`);
+			this.KeepaliveTimers.delete(connectionId);
+			this.Logger.debug(`Stopped keepalive for connection: ${connectionId}`);
 		}
 	}
 
@@ -83,12 +84,12 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		callback: () => Promise<void>,
 		attempt: number = 1,
 	): void {
-		if (!this.SubscriptionConfig.resilience.reconnection.enabled) {
+		if (!this.ISubscriptionConfig.resilience.reconnection.enabled) {
 			return;
 		}
 
-		if (attempt > this.SubscriptionConfig.resilience.reconnection.attempts) {
-			this.logger.warn(`Max reconnection attempts reached for connection: ${connectionId}`);
+		if (attempt > this.ISubscriptionConfig.resilience.reconnection.attempts) {
+			this.Logger.warn(`Max reconnection attempts reached for connection: ${connectionId}`);
 			return;
 		}
 
@@ -97,16 +98,16 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		const timer = setTimeout(async () => {
 			try {
 				await callback();
-				this.logger.info(`Reconnection successful for connection: ${connectionId}`);
+				this.Logger.info(`Reconnection successful for connection: ${connectionId}`);
 			} catch (error: unknown) {
-				this.logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${getErrorMessage(error)}`);
+				this.Logger.warn(`Reconnection attempt ${attempt} failed for ${connectionId}: ${getErrorMessage(error)}`);
 				// Schedule next attempt
 				this.scheduleReconnection(connectionId, callback, attempt + 1);
 			}
 		}, delay);
 
-		this.reconnectionTimers.set(connectionId, timer);
-		this.logger.debug(`Scheduled reconnection attempt ${attempt} for connection: ${connectionId} in ${delay}ms`);
+		this.ReconnectionTimers.set(connectionId, timer);
+		this.Logger.debug(`Scheduled reconnection attempt ${attempt} for connection: ${connectionId} in ${delay}ms`);
 	}
 
 	/**
@@ -114,11 +115,11 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @param connectionId Connection identifier
    */
 	public cancelReconnection(connectionId: string): void {
-		const timer = this.reconnectionTimers.get(connectionId);
+		const timer = this.ReconnectionTimers.get(connectionId);
 		if (timer) {
 			clearTimeout(timer);
-			this.reconnectionTimers.delete(connectionId);
-			this.logger.debug(`Cancelled reconnection for connection: ${connectionId}`);
+			this.ReconnectionTimers.delete(connectionId);
+			this.Logger.debug(`Cancelled reconnection for connection: ${connectionId}`);
 		}
 	}
 
@@ -133,9 +134,9 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		error: Error,
 		recoveryCallback: () => Promise<void>,
 	): Promise<void> {
-		this.logger.error(`Connection error for ${connectionId}: ${getErrorMessage(error)}`, getErrorStack(error));
+		this.Logger.error(`Connection error for ${connectionId}: ${getErrorMessage(error)}`, getErrorStack(error));
 
-		if (!this.SubscriptionConfig.resilience.errorRecovery.enabled) {
+		if (!this.ISubscriptionConfig.resilience.errorRecovery.enabled) {
 			return;
 		}
 
@@ -144,21 +145,21 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 
 		// Attempt recovery
 		let attempt = 1;
-		const { maxRetries } = this.SubscriptionConfig.resilience.errorRecovery;
+		const { maxRetries } = this.ISubscriptionConfig.resilience.errorRecovery;
 
 		while (attempt <= maxRetries) {
 			try {
-				await new Promise(resolve => setTimeout(resolve, this.SubscriptionConfig.resilience.errorRecovery.retryDelay));
+				await new Promise(resolve => setTimeout(resolve, this.ISubscriptionConfig.resilience.errorRecovery.retryDelay));
 				await recoveryCallback();
-				this.logger.info(`Error recovery successful for connection: ${connectionId}`);
+				this.Logger.info(`Error recovery successful for connection: ${connectionId}`);
 				return;
 			} catch (recoveryError: unknown) {
-				this.logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${getErrorMessage(recoveryError)}`);
+				this.Logger.warn(`Error recovery attempt ${attempt} failed for ${connectionId}: ${getErrorMessage(recoveryError)}`);
 				attempt++;
 			}
 		}
 
-		this.logger.error(`Error recovery failed for connection: ${connectionId} after ${maxRetries} attempts`);
+		this.Logger.error(`Error recovery failed for connection: ${connectionId} after ${maxRetries} attempts`);
 	}
 
 	/**
@@ -166,22 +167,22 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @param shutdownCallback Shutdown callback function
    */
 	public async gracefulShutdown(shutdownCallback: () => Promise<void>): Promise<void> {
-		this.logger.info('Initiating graceful shutdown');
+		this.Logger.info('Initiating graceful shutdown');
 
 		// Set shutdown timeout
-		this.shutdownTimeout = setTimeout(() => {
-			this.logger.error('Graceful shutdown timeout exceeded, forcing shutdown');
+		this.ShutdownTimeout = setTimeout(() => {
+			this.Logger.error('Graceful shutdown timeout exceeded, forcing shutdown');
 			process.exit(1);
-		}, this.SubscriptionConfig.resilience.shutdown.timeout);
+		}, this.ISubscriptionConfig.resilience.shutdown.timeout);
 
 		try {
 			await shutdownCallback();
-			this.logger.info('Graceful shutdown completed');
+			this.Logger.info('Graceful shutdown completed');
 		} catch (error: unknown) {
-			this.logger.error(`Shutdown error: ${getErrorMessage(error)}`, getErrorStack(error));
+			this.Logger.error(`Shutdown error: ${getErrorMessage(error)}`, getErrorStack(error));
 		} finally {
-			if (this.shutdownTimeout) {
-				clearTimeout(this.shutdownTimeout);
+			if (this.ShutdownTimeout) {
+				clearTimeout(this.ShutdownTimeout);
 			}
 		}
 	}
@@ -192,9 +193,9 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * @returns Delay in milliseconds
    */
 	private calculateReconnectionDelay(attempt: number): number {
-		const baseDelay = this.SubscriptionConfig.resilience.reconnection.delay;
+		const baseDelay = this.ISubscriptionConfig.resilience.reconnection.delay;
 
-		if (this.SubscriptionConfig.resilience.reconnection.backoff === 'exponential') {
+		if (this.ISubscriptionConfig.resilience.reconnection.backoff === 'exponential') {
 			return Math.min(baseDelay * Math.pow(2, attempt - 1), REDIS_PUBSUB_CLEANUP_INTERVAL); // Max 30 seconds
 		} else {
 			return baseDelay;
@@ -211,9 +212,9 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
 		shutdownInProgress: boolean;
 	} {
 		return {
-			activeKeepalives: this.keepaliveTimers.size,
-			pendingReconnections: this.reconnectionTimers.size,
-			shutdownInProgress: this.shutdownTimeout !== undefined,
+			activeKeepalives: this.KeepaliveTimers.size,
+			pendingReconnections: this.ReconnectionTimers.size,
+			shutdownInProgress: this.ShutdownTimeout !== undefined,
 		};
 	}
 
@@ -221,23 +222,23 @@ export class ResilienceService implements OnModuleDestroy, LazyModuleRefService 
    * Cleanup method called when module is destroyed
    */
 	public onModuleDestroy(): void {
-		this.logger.info('Destroying resilience service');
+		this.Logger.info('Destroying resilience service');
 
 		// Clear all timers
-		for (const timer of this.keepaliveTimers.values()) {
+		for (const timer of this.KeepaliveTimers.values()) {
 			clearInterval(timer);
 		}
-		this.keepaliveTimers.clear();
+		this.KeepaliveTimers.clear();
 
-		for (const timer of this.reconnectionTimers.values()) {
+		for (const timer of this.ReconnectionTimers.values()) {
 			clearTimeout(timer);
 		}
-		this.reconnectionTimers.clear();
+		this.ReconnectionTimers.clear();
 
-		if (this.shutdownTimeout) {
-			clearTimeout(this.shutdownTimeout);
+		if (this.ShutdownTimeout) {
+			clearTimeout(this.ShutdownTimeout);
 		}
 
-		this.logger.info('Resilience service destroyed');
+		this.Logger.info('Resilience service destroyed');
 	}
 }

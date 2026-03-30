@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import * as https from 'https';
 import * as http from 'http';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
 import { getHttpClientTimeout } from '../constants/timeout.constants.js';
 import { HTTP_STATUS_OK } from '../constants/http-status.constants.js';
@@ -10,7 +10,7 @@ import { HTTP_STATUS_OK } from '../constants/http-status.constants.js';
 /**
  * HTTP request options.
  */
-interface HttpRequestOptions {
+interface IHttpRequestOptions {
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 	url: string;
 	headers?: Record<string, string>;
@@ -47,7 +47,7 @@ interface HttpRequestOptions {
 /**
  * HTTP response wrapper.
  */
-interface HttpResponse<T = Record<string, unknown>> {
+interface IHttpResponse<T = Record<string, unknown>> {
 	data: T;
 	status: number;
 	statusText: string;
@@ -94,8 +94,8 @@ interface HttpResponse<T = Record<string, unknown>> {
  * ```
  */
 @Injectable()
-export class HttpClientService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class HttpClientService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -104,11 +104,11 @@ export class HttpClientService implements LazyModuleRefService {
 	}
 
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
+		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(HttpClientService.name);
+			this._ContextualLogger = baseLogger.createContextualLogger(HttpClientService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
@@ -116,7 +116,7 @@ export class HttpClientService implements LazyModuleRefService {
 	 * are sanitized before logging.
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public request<T = Record<string, unknown>>(options: HttpRequestOptions): Promise<HttpResponse<T>> {
+	public request<T = Record<string, unknown>>(options: IHttpRequestOptions): Promise<IHttpResponse<T>> {
 		const { method, url: requestUrl, headers, data, timeout = getHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
 		const startTime = Date.now();
 		const MAX_PAYLOAD_SIZE = 10_485_760; // 10MB in bytes
@@ -290,22 +290,22 @@ export class HttpClientService implements LazyModuleRefService {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public get<T = Record<string, unknown>>(url: string, options: Omit<HttpRequestOptions, 'method' | 'url'> = {}): Promise<HttpResponse<T>> {
+	public get<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
 		return this.request<T>({ ...options, method: 'GET', url });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public post<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<HttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<HttpResponse<T>> {
+	public Post<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<IHttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<IHttpResponse<T>> {
 		return this.request<T>({ ...options, method: 'POST', url, data });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public put<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<HttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<HttpResponse<T>> {
+	public put<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<IHttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<IHttpResponse<T>> {
 		return this.request<T>({ ...options, method: 'PUT', url, data });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public delete<T = Record<string, unknown>>(url: string, options: Omit<HttpRequestOptions, 'method' | 'url'> = {}): Promise<HttpResponse<T>> {
+	public delete<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
 		return this.request<T>({ ...options, method: 'DELETE', url });
 	}
 

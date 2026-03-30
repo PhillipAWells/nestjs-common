@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ErrorSanitizerService, ErrorSanitizerOptions, ERROR_SANITIZER_OPTIONS } from '../error-sanitizer.service.js';
+import { ErrorSanitizerService, IErrorSanitizerOptions, ERROR_SANITIZER_OPTIONS } from '../error-sanitizer.service.js';
 
 describe('ErrorSanitizerService - Additional Coverage', () => {
 	let service: ErrorSanitizerService;
 
-	function makeMockModuleRef(options?: ErrorSanitizerOptions) {
+	function makeMockModuleRef(options?: IErrorSanitizerOptions) {
 		return {
 			get: (token: any) => {
 				if (token === ERROR_SANITIZER_OPTIONS) {
@@ -24,7 +24,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 
 	describe('additionalSensitiveKeys option', () => {
 		it('should accept additional sensitive keys in options', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customSecret', 'internalKey'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -43,7 +43,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 		});
 
 		it('should combine default and additional sensitive keys', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customField'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -61,7 +61,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 		});
 
 		it('should handle empty additional sensitive keys array', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: [],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -77,7 +77,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 		});
 
 		it('should match case-insensitively for additional keys', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['CustomSecret'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -100,7 +100,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 
 	describe('additionalPatterns option', () => {
 		it('should apply additional patterns to message sanitization', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [/custom_secret_[a-z0-9]+/gi],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -116,7 +116,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 		});
 
 		it('should handle multiple additional patterns', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [
 					/secret_[a-z0-9]+/gi,
 					/token_[a-z0-9]+/gi,
@@ -134,7 +134,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 		});
 
 		it('should handle empty patterns array', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -174,7 +174,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 
 		it('should remove email addresses', () => {
 			const error = {
-				message: 'User admin@example.com not found',
+				message: 'IUser admin@example.com not found',
 				statusCode: 404,
 			};
 

@@ -1,14 +1,14 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 import { AppLogger, getErrorMessage } from '../common/index.js';
 
 /**
  * Configuration schema definition interface.
  * Used for validating configuration structure.
  */
-export interface ConfigSchemaDefinition {
+export interface IConfigSchemaDefinition {
 	[key: string]: {
 		required: boolean;
 		[key: string]: any;
@@ -43,8 +43,8 @@ export interface ConfigSchemaDefinition {
  * ```
  */
 @Injectable()
-export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModuleDestroy {
-	private _contextualLogger: AppLogger | undefined;
+export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnModuleDestroy {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -57,13 +57,13 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	}
 
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
+		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger, { strict: false });
 			if (baseLogger) {
-				this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
+				this._ContextualLogger = baseLogger.createContextualLogger(ConfigService.name);
 			}
 		}
-		return this._contextualLogger ?? this.Module.get(AppLogger);
+		return this._ContextualLogger ?? this.Module.get(AppLogger);
 	}
 
 	private get NestConfig(): NestConfigService {
@@ -73,7 +73,7 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	/**
 	 * Validate configuration against schema
 	 */
-	public validate(schema: ConfigSchemaDefinition): void {
+	public validate(schema: IConfigSchemaDefinition): void {
 		const startTime = Date.now();
 		this.Logger.debug('Starting configuration validation', {
 			schemaKeys: Object.keys(schema).length,
@@ -149,6 +149,6 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	 * Cleanup resources on module destruction
 	 */
 	public onModuleDestroy(): void {
-		this._contextualLogger = undefined;
+		this._ContextualLogger = undefined;
 	}
 }

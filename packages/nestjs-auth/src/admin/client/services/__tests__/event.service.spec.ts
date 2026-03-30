@@ -2,13 +2,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { EventService } from '../event.service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('EventService', () => {
 	let service: EventService;
 	let mockAdminClient: any;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -20,8 +20,8 @@ describe('EventService', () => {
 			realmName: 'test-realm',
 		} as unknown as KcAdminClient;
 
-		readOnlyScopes = new Set(['events:read'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		readOnlyScopes = new Set(['events:read'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('getAdminEvents', () => {

@@ -3,11 +3,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwksCacheService } from '../jwks-cache.service.js';
 import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak.constants.js';
-import type { KeycloakModuleOptions } from '../../keycloak.types.js';
+import type { IKeycloakModuleOptions } from '../../keycloak.types.js';
 
 describe('JwksCacheService', () => {
 	let service: JwksCacheService;
-	let options: KeycloakModuleOptions;
+	let options: IKeycloakModuleOptions;
 
 	const mockJwksResponse = {
 		keys: [

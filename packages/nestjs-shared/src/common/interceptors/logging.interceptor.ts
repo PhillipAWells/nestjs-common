@@ -9,7 +9,7 @@ import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { escapeNewlines } from '../utils/sanitization.utils.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 
@@ -25,7 +25,7 @@ import { getErrorMessage } from '../utils/error.utils.js';
  * - Uses INFO level for other requests
  */
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor, LazyModuleRefService {
+export class LoggingInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {

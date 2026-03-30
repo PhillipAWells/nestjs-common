@@ -91,9 +91,9 @@ describe('GraphQLService', () => {
 
 	describe('paginateItems', () => {
 		const items = [
-			{ id: '1', name: 'Item 1', createdAt: new Date('2023-01-01') },
-			{ id: '2', name: 'Item 2', createdAt: new Date('2023-01-02') },
-			{ id: '3', name: 'Item 3', createdAt: new Date('2023-01-03') },
+			{ id: '1', name: 'IItem 1', createdAt: new Date('2023-01-01') },
+			{ id: '2', name: 'IItem 2', createdAt: new Date('2023-01-02') },
+			{ id: '3', name: 'IItem 3', createdAt: new Date('2023-01-03') },
 		];
 
 		it('should return all items when no pagination', () => {

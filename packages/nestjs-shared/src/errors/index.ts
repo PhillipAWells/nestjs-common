@@ -1,7 +1,7 @@
 // Error base classes and factories
 export { BaseApplicationError, createError } from '../common/errors/index.js';
 export { ERROR_CONFIGS } from '../common/errors/index.js';
-export type { ErrorConfig, ErrorType } from '../common/errors/index.js';
+export type { IErrorConfig, TErrorType } from '../common/errors/index.js';
 
 // Typed HTTP error classes
 export {

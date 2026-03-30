@@ -14,13 +14,13 @@ export function Edge<T>(classRef: Type<T>): any {
      * Cursor for this edge
      */
 		@Field(() => String)
-		public cursor!: string;
+		public Cursor!: string;
 
 		/**
      * The node for this edge
      */
 		@Field(() => classRef)
-		public node!: T;
+		public Node!: T;
 	}
 
 	return EdgeClass;
@@ -40,19 +40,19 @@ export function Connection<T>(classRef: Type<T>): any {
      * Edges in this connection
      */
 		@Field(() => [EdgeClass])
-		public edges!: InstanceType<typeof EdgeClass>[];
+		public Edges!: InstanceType<typeof EdgeClass>[];
 
 		/**
      * Page information for this connection
      */
 		@Field(() => PageInfo)
-		public pageInfo!: PageInfo;
+		public PageInfo!: PageInfo;
 
 		/**
      * Total count of items
      */
 		@Field(() => Int)
-		public totalCount!: number;
+		public TotalCount!: number;
 	}
 
 	return ConnectionClass;

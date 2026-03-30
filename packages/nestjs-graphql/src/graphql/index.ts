@@ -17,7 +17,7 @@
 
 // GraphQL Core
 export { GraphQLModule, GraphQLService } from './graphql/index.js';
-export type { GraphQLConfigOptions, GraphQLAsyncConfig } from './graphql/index.js';
+export type { IGraphQLConfigOptions, IGraphQLAsyncConfig } from './graphql/index.js';
 
 // Scalars
 export { ObjectIdScalar, DateTimeScalar, JSONScalar } from './graphql/index.js';
@@ -30,7 +30,7 @@ export { SortDirection } from './graphql/index.js';
 
 // Error Handling
 export { GraphQLErrorFormatter, GraphQLErrorCode } from './graphql/index.js';
-export type { GraphQLErrorExtensions, ValidationError } from './graphql/index.js';
+export type { IGraphQLErrorExtensions, IValidationError } from './graphql/index.js';
 
 // Subscriptions
 export * from './subscriptions/index.js';

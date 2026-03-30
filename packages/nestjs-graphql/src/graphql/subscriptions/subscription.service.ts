@@ -1,21 +1,21 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
  * Service for managing GraphQL subscriptions with Redis PubSub
  */
 @Injectable()
-export class SubscriptionService implements OnModuleDestroy, LazyModuleRefService {
+export class SubscriptionService implements OnModuleDestroy, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(SubscriptionService.name);
 	}
 
@@ -43,13 +43,13 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 			if (!/^[\w.-]+$/.test(topic)) {
 				throw new Error('Invalid topic format');
 			}
-			this.logger.debug(`Publishing to topic: ${topic}`);
+			this.Logger.debug(`Publishing to topic: ${topic}`);
 			if (!this.pubSub) {
 				throw new Error('PubSub instance not configured');
 			}
 			await this.pubSub.publish(topic, data);
 		} catch (error) {
-			this.logger.error(
+			this.Logger.error(
 				`Failed to publish to topic ${topic}: ${getErrorMessage(error)}`,
 				getErrorStack(error),
 			);
@@ -65,7 +65,7 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 	 */
 	public subscribe(topic: string): AsyncIterable<unknown> {
 		try {
-			this.logger.debug(`Subscribing to topic: ${topic}`);
+			this.Logger.debug(`Subscribing to topic: ${topic}`);
 			if (!this.pubSub) {
 				throw new Error('PubSub instance not configured');
 			}
@@ -80,7 +80,7 @@ export class SubscriptionService implements OnModuleDestroy, LazyModuleRefServic
 			}
 			return iterator;
 		} catch (error) {
-			this.logger.error(
+			this.Logger.error(
 				`Failed to subscribe to topic ${topic}: ${getErrorMessage(error)}`,
 				getErrorStack(error),
 			);

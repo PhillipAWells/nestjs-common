@@ -16,7 +16,7 @@ import { AppLogger } from './logger.service.js';
  * ```
  */
 export class NestLoggerAdapter implements LoggerService {
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	/**
 	 * @param logger - Optional existing `AppLogger` instance to delegate to.
@@ -24,13 +24,13 @@ export class NestLoggerAdapter implements LoggerService {
 	 *   (`SERVICE_NAME`, `LOG_LEVEL`, `LOG_FORMAT`).
 	 */
 	constructor(logger?: AppLogger) {
-		this.logger = logger ?? new AppLogger();
+		this.Logger = logger ?? new AppLogger();
 	}
 
 	/** Maps NestJS `log()` (INFO level) to {@link AppLogger.info}. */
 	public log(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
-		this.logger.info(this.formatMessage(message), context);
+		this.Logger.info(this.formatMessage(message), context);
 	}
 
 	/**
@@ -43,22 +43,22 @@ export class NestLoggerAdapter implements LoggerService {
 		const { context, stack } = this.extractErrorParams(optionalParams);
 		const msg = this.formatMessage(message);
 		if (stack !== undefined) {
-			this.logger.error(msg, context, { stack });
+			this.Logger.error(msg, context, { stack });
 		} else {
-			this.logger.error(msg, context);
+			this.Logger.error(msg, context);
 		}
 	}
 
 	/** Maps NestJS `warn()` to {@link AppLogger.warn}. */
 	public warn(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
-		this.logger.warn(this.formatMessage(message), context);
+		this.Logger.warn(this.formatMessage(message), context);
 	}
 
 	/** Maps NestJS `debug()` to {@link AppLogger.debug}. */
 	public debug(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
-		this.logger.debug(this.formatMessage(message), context);
+		this.Logger.debug(this.formatMessage(message), context);
 	}
 
 	/**
@@ -67,13 +67,13 @@ export class NestLoggerAdapter implements LoggerService {
 	 */
 	public verbose(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
-		this.logger.debug(this.formatMessage(message), context);
+		this.Logger.debug(this.formatMessage(message), context);
 	}
 
 	/** Maps NestJS `fatal()` to {@link AppLogger.fatal}. */
 	public fatal(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
-		this.logger.fatal(this.formatMessage(message), context);
+		this.Logger.fatal(this.formatMessage(message), context);
 	}
 
 	/**

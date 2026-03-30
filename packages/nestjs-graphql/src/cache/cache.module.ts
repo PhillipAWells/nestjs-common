@@ -5,7 +5,7 @@ import RedisStore from '@keyv/redis';
 import { CacheService } from './cache.service.js';
 import { getRedisConnectionOptions } from './redis.config.js';
 import { CommonModule, CACHE_PROVIDER, AppLogger } from '@pawells/nestjs-shared/common';
-import type { CacheModuleAsyncOptions } from './cache.interfaces.js';
+import type { ICacheModuleAsyncOptions } from './cache.interfaces.js';
 
 // Default TTL for cache entries (1 hour in milliseconds)
 // cache-manager v7 and @keyv/redis require TTL in milliseconds
@@ -95,7 +95,7 @@ export class CacheModule {
 	 * @param options Async configuration options
 	 * @returns Dynamic module configuration
 	 */
-	public static forRootAsync(options: CacheModuleAsyncOptions): DynamicModule {
+	public static forRootAsync(options: ICacheModuleAsyncOptions): DynamicModule {
 		const providers: Provider[] = [
 			CacheService,
 			{

@@ -4,7 +4,7 @@ import type { ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
 
@@ -17,21 +17,21 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLPerformanceInterceptor)
- * @Query(() => [User], { name: 'GetUsers' })
- * async getUsers(): Promise<User[]> {
+ * @Query(() => [IUser], { name: 'GetUsers' })
+ * async getUsers(): Promise<IUser[]> {
  *   // This operation's performance will be monitored
  * }
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModuleRefService {
+export class GraphQLPerformanceInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceInterceptor.name);
 	}
 
@@ -39,9 +39,9 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModul
 		this.Module = moduleRef;
 	}
 
-	private readonly slowOperationThreshold = SLOW_OPERATION_THRESHOLD_MS; // 1 second
+	private readonly SlowOperationThreshold = SLOW_OPERATION_THRESHOLD_MS; // 1 second
 
-	private readonly verySlowOperationThreshold = PERFORMANCE_WARNING_THRESHOLD_MS; // 5 seconds
+	private readonly VerySlowOperationThreshold = PERFORMANCE_WARNING_THRESHOLD_MS; // 5 seconds
 
 	/**
 	 * Intercepts GraphQL operations for performance monitoring
@@ -76,7 +76,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModul
 				},
 				error: () => {
 					const duration = Date.now() - startTime;
-					this.logger?.warn(
+					this.Logger?.warn(
 						`GraphQL ${operationType} failed after ${duration}ms: ${operationName}.${fieldName}`,
 					);
 				},
@@ -99,12 +99,12 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModul
 		duration: number,
 	): void {
 		// Log performance data for monitoring
-		this.logger?.debug(
+		this.Logger?.debug(
 			`GraphQL ${operationType} performance: ${operationName}.${fieldName} took ${duration}ms`,
 		);
 
 		// In a real application, you might send this to a metrics service
-		// this.metricsService.recordGraphQLOperation(operationType, duration);
+		// this.MetricsService.recordGraphQLOperation(operationType, duration);
 	}
 
 	/**
@@ -121,13 +121,13 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, LazyModul
 		fieldName: string,
 		duration: number,
 	): void {
-		if (duration >= this.verySlowOperationThreshold) {
-			this.logger?.error(
-				`VERY SLOW GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.verySlowOperationThreshold}ms)`,
+		if (duration >= this.VerySlowOperationThreshold) {
+			this.Logger?.error(
+				`VERY SLOW GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.VerySlowOperationThreshold}ms)`,
 			);
-		} else if (duration >= this.slowOperationThreshold) {
-			this.logger?.warn(
-				`Slow GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.slowOperationThreshold}ms)`,
+		} else if (duration >= this.SlowOperationThreshold) {
+			this.Logger?.warn(
+				`Slow GraphQL ${operationType}: ${operationName}.${fieldName} took ${duration}ms (threshold: ${this.SlowOperationThreshold}ms)`,
 			);
 		}
 	}

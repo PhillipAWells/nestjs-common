@@ -1,4 +1,4 @@
-import { createGraphQLError, GRAPHQL_ERROR_CONFIGS, type GraphQLErrorType } from '../graphql-error-factory.js';
+import { createGraphQLError, GRAPHQL_ERROR_CONFIGS, type TGraphQLErrorType } from '../graphql-error-factory.js';
 
 describe('createGraphQLError', () => {
 	describe('factory function', () => {
@@ -13,9 +13,9 @@ describe('createGraphQLError', () => {
 			const error = new TestError();
 
 			expect(error.message).toBe('Test GraphQL error occurred');
-			expect((error as any).code).toBe('TEST_ERROR');
-			expect((error as any).statusCode).toBe(400);
-			expect((error as any).context).toEqual({});
+			expect((error as any).Code).toBe('TEST_ERROR');
+			expect((error as any).StatusCode).toBe(400);
+			expect((error as any).Context).toEqual({});
 			expect(error.extensions).toBeDefined();
 		});
 
@@ -43,7 +43,7 @@ describe('createGraphQLError', () => {
 			const context = { userId: '123' };
 			const error = new TestError('Custom message', context);
 
-			expect(error.context).toEqual(context);
+			expect(error.Context).toEqual(context);
 		});
 
 		it('should set correct class name', () => {
@@ -130,7 +130,7 @@ describe('createGraphQLError', () => {
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('Test error');
-			expect(newError.context).toEqual({ userId: '123', action: 'login' });
+			expect(newError.Context).toEqual({ userId: '123', action: 'login' });
 		});
 	});
 
@@ -147,7 +147,7 @@ describe('createGraphQLError', () => {
 			const newError = (originalError as any).withMessage('New message');
 
 			expect(newError.message).toBe('New message');
-			expect(newError.code).toBe('TEST_ERROR');
+			expect(newError.Code).toBe('TEST_ERROR');
 		});
 	});
 
@@ -183,9 +183,9 @@ describe('createGraphQLError', () => {
 		});
 	});
 
-	describe('GraphQLErrorType', () => {
+	describe('TGraphQLErrorType', () => {
 		it('should include all GraphQL error configuration keys', () => {
-			const graphqlErrorTypes: GraphQLErrorType[] = [
+			const graphqlErrorTypes: TGraphQLErrorType[] = [
 				'UNAUTHENTICATED',
 				'FORBIDDEN',
 				'NOT_FOUND',

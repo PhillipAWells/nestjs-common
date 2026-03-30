@@ -3,7 +3,7 @@
  *
  * Decorators for GraphQL resolvers:
  * - Authentication and authorization (@Auth, @Public, @Roles)
- * - User context extraction (@CurrentUser, @AuthToken, @GraphQLContextParam)
+ * - IUser context extraction (@CurrentUser, @AuthToken, @GraphQLContextParam)
  * - Subscription management (@Subscription)
  * - Caching decorators (@Cacheable, @CacheInvalidate)
  *
@@ -11,7 +11,7 @@
  */
 
 export { Subscription, SubscriptionFilter, SubscriptionAuth, SUBSCRIPTION_METADATA } from './subscription.decorator.js';
-export type { SubscriptionOptions } from './subscription.decorator.js';
+export type { ISubscriptionOptions } from './subscription.decorator.js';
 
 export {
 	Auth,
@@ -31,6 +31,6 @@ export {
 } from './graphql-auth-decorators.js';
 
 export { Cacheable, CACHEABLE_METADATA } from './cacheable.decorator.js';
-export type { CacheableOptions } from './cacheable.decorator.js';
+export type { ICacheableOptions } from './cacheable.decorator.js';
 export { CacheInvalidate, CACHE_INVALIDATE_METADATA } from './cache-invalidate.decorator.js';
-export type { CacheInvalidateOptions } from './cache-invalidate.decorator.js';
+export type { ICacheInvalidateOptions } from './cache-invalidate.decorator.js';

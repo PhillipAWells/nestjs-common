@@ -8,10 +8,10 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import { QdrantModule } from '../qdrant.module.js';
 import { QdrantService } from '../qdrant.service.js';
 import { QDRANT_CLIENT_TOKEN, QDRANT_MODULE_OPTIONS, getQdrantClientToken, getQdrantModuleOptionsToken } from '../qdrant.constants.js';
-import type { QdrantModuleOptions, QdrantOptionsFactory } from '../qdrant.interfaces.js';
+import type { TQdrantModuleOptions, IQdrantOptionsFactory } from '../qdrant.interfaces.js';
 
 describe('QdrantModule', () => {
-	const mockQdrantOptions: QdrantModuleOptions = {
+	const mockQdrantOptions: TQdrantModuleOptions = {
 		url: 'http://localhost:6333',
 		apiKey: 'test-api-key',
 	};
@@ -34,7 +34,7 @@ describe('QdrantModule', () => {
 		});
 
 		it('should provide QDRANT_MODULE_OPTIONS', () => {
-			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+			const options = module.get<TQdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
 			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
@@ -79,7 +79,7 @@ describe('QdrantModule', () => {
 		});
 
 		it('should provide QDRANT_MODULE_OPTIONS from factory', () => {
-			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+			const options = module.get<TQdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
 			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
@@ -99,7 +99,7 @@ describe('QdrantModule', () => {
 
 	describe('forRootAsync with useClass', () => {
 		class TestOptionsFactory {
-			public createQdrantOptions(): QdrantModuleOptions {
+			public createQdrantOptions(): TQdrantModuleOptions {
 				return mockQdrantOptions;
 			}
 		}
@@ -125,7 +125,7 @@ describe('QdrantModule', () => {
 		});
 
 		it('should provide QDRANT_MODULE_OPTIONS from factory class', () => {
-			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+			const options = module.get<TQdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
 			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
@@ -144,8 +144,8 @@ describe('QdrantModule', () => {
 	});
 
 	describe('forRootAsync with useExisting', () => {
-		class TestOptionsFactory implements QdrantOptionsFactory {
-			public createQdrantOptions(): QdrantModuleOptions {
+		class TestOptionsFactory implements IQdrantOptionsFactory {
+			public createQdrantOptions(): TQdrantModuleOptions {
 				return mockQdrantOptions;
 			}
 		}
@@ -178,7 +178,7 @@ describe('QdrantModule', () => {
 		});
 
 		it('should provide QDRANT_MODULE_OPTIONS from existing provider', () => {
-			const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+			const options = module.get<TQdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 			// Note: apiKey is stripped for security when storing options
 			expect(options).toStrictEqual({ url: 'http://localhost:6333' });
 		});
@@ -207,7 +207,7 @@ describe('QdrantModule', () => {
 	describe('named clients', () => {
 		describe('forRoot with name', () => {
 			let module: TestingModule;
-			const namedOptions: QdrantModuleOptions = {
+			const namedOptions: TQdrantModuleOptions = {
 				url: 'http://qdrant-archive:6333',
 				apiKey: 'archive-api-key',
 				name: 'archive',
@@ -233,7 +233,7 @@ describe('QdrantModule', () => {
 
 			it('should register options under named token without name field', () => {
 				const namedOptionsToken = getQdrantModuleOptionsToken('archive');
-				const options = module.get<QdrantModuleOptions>(namedOptionsToken);
+				const options = module.get<TQdrantModuleOptions>(namedOptionsToken);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://qdrant-archive:6333');
 				// Note: apiKey is stripped for security when storing options
@@ -268,7 +268,7 @@ describe('QdrantModule', () => {
 			});
 
 			it('should still register options under default token', () => {
-				const options = module.get<QdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
+				const options = module.get<TQdrantModuleOptions>(QDRANT_MODULE_OPTIONS);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://localhost:6333');
 			});
@@ -276,7 +276,7 @@ describe('QdrantModule', () => {
 
 		describe('forRootAsync with name', () => {
 			let module: TestingModule;
-			const namedOptions: QdrantModuleOptions = {
+			const namedOptions: TQdrantModuleOptions = {
 				url: 'http://qdrant-archive:6333',
 				apiKey: 'archive-api-key',
 				name: 'archive',
@@ -307,7 +307,7 @@ describe('QdrantModule', () => {
 
 			it('should register options under named token without name field', () => {
 				const namedOptionsToken = getQdrantModuleOptionsToken('archive');
-				const options = module.get<QdrantModuleOptions>(namedOptionsToken);
+				const options = module.get<TQdrantModuleOptions>(namedOptionsToken);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://qdrant-archive:6333');
 				expect((options as any).name).toBeUndefined();

@@ -6,14 +6,14 @@ import { GraphQLErrorCode } from '../error-codes.js';
 export { GraphQLErrorCode } from '../error-codes.js';
 
 /**
- * User information interface for GraphQL context
+ * IUser information interface for GraphQL context
  */
 export interface IGraphQLUser {
-	/** User ID */
+	/** IUser ID */
 	id: string;
-	/** User email */
+	/** IUser email */
 	email?: string;
-	/** User roles */
+	/** IUser roles */
 	roles?: string[];
 	/** Additional user properties */
 	[key: string]: unknown;
@@ -151,12 +151,12 @@ export interface ICORSConfig {
 /**
  * Error formatting callback type
  */
-export type ErrorFormatterFn = (error: GraphQLError | Error) => IFormattedGraphQLError;
+export type TErrorFormatterFn = (error: GraphQLError | Error) => IFormattedGraphQLError;
 
 /**
  * Context factory callback type
  */
-export type ContextFactoryFn = (req: Request, res: Response) => Promise<IGraphQLContextExtended> | IGraphQLContextExtended;
+export type TContextFactoryFn = (req: Request, res: Response) => Promise<IGraphQLContextExtended> | IGraphQLContextExtended;
 
 /**
  * Connection context for WebSocket

@@ -62,7 +62,7 @@ describe('PrometheusExporter', () => {
 
 			// The instrument should be created and stored
 			expect(exporter).toBeDefined();
-			expect(exporter['instruments'].has('test_counter')).toBe(true);
+			expect(exporter['Instruments'].has('test_counter')).toBe(true);
 		});
 
 		it('should create Histogram for histogram type descriptor', () => {
@@ -75,7 +75,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
-			expect(exporter['instruments'].has('test_histogram')).toBe(true);
+			expect(exporter['Instruments'].has('test_histogram')).toBe(true);
 		});
 
 		it('should create Gauge for gauge type descriptor', () => {
@@ -87,7 +87,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
-			expect(exporter['instruments'].has('test_gauge')).toBe(true);
+			expect(exporter['Instruments'].has('test_gauge')).toBe(true);
 		});
 
 		it('should create Gauge for updown_counter type descriptor', () => {
@@ -99,7 +99,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			expect(exporter).toBeDefined();
-			expect(exporter['instruments'].has('test_updown')).toBe(true);
+			expect(exporter['Instruments'].has('test_updown')).toBe(true);
 		});
 
 		it('should throw error for unsupported metric type', () => {
@@ -135,12 +135,12 @@ describe('PrometheusExporter', () => {
 
 			// Verify that the metric was buffered in the pending map
 			expect(exporter).toBeDefined();
-			expect(exporter['pending'].has('test_metric')).toBe(true);
-			expect(exporter['pending'].get('test_metric')).toHaveLength(1);
+			expect(exporter['Pending'].has('test_metric')).toBe(true);
+			expect(exporter['Pending'].get('test_metric')).toHaveLength(1);
 		});
 
 		it('should warn when metric is recorded before descriptor registration', () => {
-			const warnSpy = vi.spyOn(exporter['logger'], 'warn').mockImplementation(() => {});
+			const warnSpy = vi.spyOn(exporter['Logger'], 'warn').mockImplementation(() => {});
 
 			const descriptor = {
 				name: 'unregistered_metric',
@@ -189,7 +189,7 @@ describe('PrometheusExporter', () => {
 
 			// Should have at most MAX_PENDING_PER_METRIC items
 
-			expect(exporter['pending'].get('test_metric')).toHaveLength(1000);
+			expect(exporter['Pending'].get('test_metric')).toHaveLength(1000);
 		});
 	});
 
@@ -336,7 +336,7 @@ describe('PrometheusExporter', () => {
 			exporter.onMetricRecorded(metricValue);
 
 			// Remove the instrument before calling getMetrics
-			exporter['instruments'].delete('test_counter');
+			exporter['Instruments'].delete('test_counter');
 
 			await exporter.getMetrics();
 
@@ -355,7 +355,7 @@ describe('PrometheusExporter', () => {
 			exporter.onDescriptorRegistered(descriptor);
 
 			// Manually add a pending array with an entry that has no descriptor
-			exporter['pending'].set('test_no_descriptor', [
+			exporter['Pending'].set('test_no_descriptor', [
 				{
 					descriptor: undefined as any,
 					value: 5,
@@ -421,8 +421,8 @@ describe('PrometheusExporter', () => {
 
 			await exporter.shutdown();
 
-			expect(exporter['instruments'].size).toBe(0);
-			expect(exporter['pending'].size).toBe(0);
+			expect(exporter['Instruments'].size).toBe(0);
+			expect(exporter['Pending'].size).toBe(0);
 		});
 	});
 

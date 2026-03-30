@@ -7,8 +7,8 @@ import { getErrorMessage } from '@pawells/nestjs-shared/common';
  */
 @Injectable()
 export class BsonSerializationService {
-	private bsonLib: any = null;
-	private loadPromise: Promise<any> | null = null;
+	private BsonLib: any = null;
+	private LoadPromise: Promise<any> | null = null;
 
 	/**
 	 * Check if bson package is available
@@ -16,7 +16,7 @@ export class BsonSerializationService {
 	public isAvailable(): boolean {
 		// Use the cached bson instance if available
 		// If getBson() has already been called and succeeded, the module is cached
-		return this.bsonLib !== null;
+		return this.BsonLib !== null;
 	}
 
 	/**
@@ -24,19 +24,19 @@ export class BsonSerializationService {
 	 */
 	// eslint-disable-next-line require-await
 	private async getBson(): Promise<any> {
-		if (this.bsonLib) {
-			return this.bsonLib;
+		if (this.BsonLib) {
+			return this.BsonLib;
 		}
 
-		if (this.loadPromise) {
-			return this.loadPromise;
+		if (this.LoadPromise) {
+			return this.LoadPromise;
 		}
 
-		this.loadPromise = (async () => {
+		this.LoadPromise = (async () => {
 			try {
 				// Dynamic import to load bson
 				const bson = await import('bson');
-				this.bsonLib = bson;
+				this.BsonLib = bson;
 				return bson;
 			} catch (error) {
 				throw new Error(
@@ -46,7 +46,7 @@ export class BsonSerializationService {
 			}
 		})();
 
-		return this.loadPromise;
+		return this.LoadPromise;
 	}
 
 	/**

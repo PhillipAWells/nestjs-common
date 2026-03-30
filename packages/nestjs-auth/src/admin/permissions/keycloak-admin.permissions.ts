@@ -8,7 +8,7 @@
  * @see {@link KEYCLOAK_DEFAULT_SCOPES} for the default read-only set
  * @see {@link KEYCLOAK_ALL_SCOPES} for the full set including all write scopes
  */
-export type KeycloakAdminScope =
+export type TKeycloakAdminScope =
 	| 'users:read'
 	| 'users:write'
 	| 'roles:read'
@@ -31,7 +31,7 @@ export type KeycloakAdminScope =
  * The default set of scopes granted when no `permissions` array is configured.
  * Contains all read-only scopes. No write scopes are included.
  */
-export const KEYCLOAK_DEFAULT_SCOPES: readonly KeycloakAdminScope[] = Object.freeze([
+export const KEYCLOAK_DEFAULT_SCOPES: readonly TKeycloakAdminScope[] = Object.freeze([
 	'users:read',
 	'roles:read',
 	'groups:read',
@@ -48,7 +48,7 @@ export const KEYCLOAK_DEFAULT_SCOPES: readonly KeycloakAdminScope[] = Object.fre
  * Use this as a convenience constant for adapter microservices that require
  * full access. Ensure the Keycloak service account has all corresponding roles.
  */
-export const KEYCLOAK_ALL_SCOPES: readonly KeycloakAdminScope[] = Object.freeze([
+export const KEYCLOAK_ALL_SCOPES: readonly TKeycloakAdminScope[] = Object.freeze([
 	'users:read',
 	'users:write',
 	'roles:read',
@@ -87,15 +87,15 @@ export const KEYCLOAK_ALL_SCOPES: readonly KeycloakAdminScope[] = Object.freeze(
  * ```
  */
 export class KeycloakAdminScopeError extends Error {
-	public readonly scope: KeycloakAdminScope;
+	public readonly Scope: TKeycloakAdminScope;
 
-	constructor(scope: KeycloakAdminScope) {
+	constructor(scope: TKeycloakAdminScope) {
 		super(
 			`Keycloak admin mutation blocked: scope '${scope}' is not granted. ` +
 			`Add '${scope}' to the permissions array in KeycloakAdminModule.forRoot() config.`,
 		);
 		this.name = 'KeycloakAdminScopeError';
-		this.scope = scope;
+		this.Scope = scope;
 		Error.captureStackTrace(this, this.constructor);
 	}
 }

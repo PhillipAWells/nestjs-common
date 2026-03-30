@@ -38,7 +38,7 @@ describe('ErrorCategorizerService', () => {
 
 		service = new ErrorCategorizerService(mockModuleRef);
 		// Mock the logger property
-		Object.defineProperty(service, '_contextualLogger', {
+		Object.defineProperty(service, '_ContextualLogger', {
 			value: mockAppLogger,
 			writable: true,
 		});
@@ -174,9 +174,9 @@ describe('ErrorCategorizerService', () => {
 				expect(result.retryable).toBe(false);
 			});
 
-			it('should categorize ValidationError name as permanent', () => {
+			it('should categorize IValidationError name as permanent', () => {
 				const error = new Error('Invalid input');
-				(error as any).name = 'ValidationError';
+				(error as any).name = 'IValidationError';
 
 				const result = service.categorizeError(error);
 
@@ -260,7 +260,7 @@ describe('ErrorCategorizerService', () => {
 			});
 
 			it('should categorize not found message as permanent', () => {
-				const error = new Error('User not found');
+				const error = new Error('IUser not found');
 
 				const result = service.categorizeError(error);
 
@@ -729,7 +729,7 @@ describe('ErrorCategorizerService', () => {
 		});
 
 		it('should detect "unauthorized" in message', () => {
-			const error = new Error('User is unauthorized to access');
+			const error = new Error('IUser is unauthorized to access');
 
 			const result = service.categorizeError(error);
 

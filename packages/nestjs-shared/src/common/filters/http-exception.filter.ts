@@ -9,7 +9,7 @@ import { Response } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
 import { ErrorCategorizerService } from '../services/error-categorizer.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Development environments where stack traces and full error details are shown
@@ -38,11 +38,11 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  * throw new BadRequestException('Invalid input'); // 400
  * throw new UnauthorizedException('Invalid token'); // 401
  * throw new ForbiddenException('Access denied'); // 403
- * throw new NotFoundException('User not found'); // 404
+ * throw new NotFoundException('IUser not found'); // 404
  * ```
  */
 @Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefService {
+export class HttpExceptionFilter implements ExceptionFilter, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {

@@ -1,4 +1,4 @@
-import { createError, ERROR_CONFIGS, type ErrorType } from '../error-factory.js';
+import { createError, ERROR_CONFIGS, type TErrorType } from '../error-factory.js';
 
 describe('createError', () => {
 	describe('factory function', () => {
@@ -12,9 +12,9 @@ describe('createError', () => {
 			const error = new TestError('Test error occurred');
 
 			expect(error.message).toBe('Test error occurred');
-			expect(error.code).toBe('TEST_ERROR');
-			expect(error.statusCode).toBe(400);
-			expect(error.context).toEqual({});
+			expect(error.Code).toBe('TEST_ERROR');
+			expect(error.StatusCode).toBe(400);
+			expect(error.Context).toEqual({});
 		});
 
 		it('should create error class with custom message', () => {
@@ -27,7 +27,7 @@ describe('createError', () => {
 			const error = new TestError('Custom message');
 
 			expect(error.message).toBe('Custom message');
-			expect(error.code).toBe('TEST_ERROR');
+			expect(error.Code).toBe('TEST_ERROR');
 		});
 
 		it('should create error class with context', () => {
@@ -40,7 +40,7 @@ describe('createError', () => {
 			const context: Record<string, any> = { userId: '123' };
 			const error = new TestError('Custom message', context);
 
-			expect(error.context).toEqual(context);
+			expect(error.Context).toEqual(context);
 		});
 
 		it('should set correct class name', () => {
@@ -120,9 +120,9 @@ describe('createError', () => {
 		});
 	});
 
-	describe('ErrorType', () => {
+	describe('TErrorType', () => {
 		it('should include all error configuration keys', () => {
-			const errorTypes: ErrorType[] = [
+			const errorTypes: TErrorType[] = [
 				'BAD_REQUEST',
 				'UNAUTHORIZED',
 				'FORBIDDEN',
@@ -146,16 +146,16 @@ describe('createError', () => {
 			const { BadRequestError, NotFoundError, InternalServerError } = await import('../index.js');
 
 			const badRequest = new BadRequestError('Bad request');
-			expect(badRequest.code).toBe('BAD_REQUEST');
-			expect(badRequest.statusCode).toBe(400);
+			expect(badRequest.Code).toBe('BAD_REQUEST');
+			expect(badRequest.StatusCode).toBe(400);
 
 			const notFound = new NotFoundError('Not found');
-			expect(notFound.code).toBe('NOT_FOUND');
-			expect(notFound.statusCode).toBe(404);
+			expect(notFound.Code).toBe('NOT_FOUND');
+			expect(notFound.StatusCode).toBe(404);
 
 			const internalError = new InternalServerError('Internal server error');
-			expect(internalError.code).toBe('INTERNAL_SERVER_ERROR');
-			expect(internalError.statusCode).toBe(500);
+			expect(internalError.Code).toBe('INTERNAL_SERVER_ERROR');
+			expect(internalError.StatusCode).toBe(500);
 		});
 	});
 });

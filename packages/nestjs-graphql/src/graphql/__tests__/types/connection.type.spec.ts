@@ -62,9 +62,9 @@ describe('Connection Types', () => {
 
 	describe('Connection and Edge factories', () => {
 		class TestEntity {
-			public id!: string;
+			public Id!: string;
 
-			public name!: string;
+			public Name!: string;
 		}
 
 		it('should create Edge type', () => {

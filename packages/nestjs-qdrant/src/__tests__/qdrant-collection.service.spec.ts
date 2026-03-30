@@ -25,7 +25,7 @@ describe('QdrantCollectionService', () => {
 	describe('initialization', () => {
 		it('should be instantiated with client and collection name', () => {
 			expect(service).toBeDefined();
-			expect(service.collectionName).toBe(collectionName);
+			expect(service.CollectionName).toBe(collectionName);
 		});
 	});
 
@@ -130,8 +130,8 @@ describe('QdrantCollectionService', () => {
 			const productsService = new QdrantCollectionService(mockClient, 'products');
 			const usersService = new QdrantCollectionService(mockClient, 'users');
 
-			expect(productsService.collectionName).toBe('products');
-			expect(usersService.collectionName).toBe('users');
+			expect(productsService.CollectionName).toBe('products');
+			expect(usersService.CollectionName).toBe('users');
 			expect(productsService).not.toBe(usersService);
 		});
 

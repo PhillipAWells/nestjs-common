@@ -6,7 +6,7 @@ import { QUERY_COMPLEXITY_THRESHOLD, QUERY_DEPTH_LIMIT, QUERY_COMPLEXITY_SCALAR_
 /**
  * Interface for complexity configuration
  */
-export interface ComplexityConfig {
+export interface IComplexityConfig {
 	defaultComplexity?: number;
 	multipliers?: {
 		depth?: number;
@@ -21,7 +21,7 @@ export interface ComplexityConfig {
 /**
  * Default complexity configuration
  */
-export const DEFAULT_COMPLEXITY_CONFIG: ComplexityConfig = {
+export const DEFAULT_COMPLEXITY_CONFIG: IComplexityConfig = {
 	defaultComplexity: 1,
 	multipliers: {
 		depth: QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER,
@@ -47,7 +47,7 @@ export function calculateQueryComplexity(
 	query: any,
 	variables: Record<string, any> | undefined,
 	operationName: string | undefined,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	const { defaultComplexity = 1 } = config;
 
@@ -80,7 +80,7 @@ export function calculateQueryComplexity(
  */
 export function exceedsComplexityLimit(
 	complexity: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
 	const { maxComplexity } = config.limits ?? {};
 	return maxComplexity ? complexity > maxComplexity : false;
@@ -124,7 +124,7 @@ export function calculateQueryDepth(
  */
 export function exceedsDepthLimit(
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
 	const { maxDepth } = config.limits ?? {};
 	return maxDepth ? depth > maxDepth : false;
@@ -152,7 +152,7 @@ export function getFieldComplexity(
 export function applyListMultiplier(
 	complexity: number,
 	isList: boolean,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	if (!isList) return complexity;
 
@@ -170,7 +170,7 @@ export function applyListMultiplier(
 export function applyDepthMultiplier(
 	complexity: number,
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
 	const { depth: depthMultiplier = QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } = config.multipliers ?? {};
 	return complexity * Math.pow(depthMultiplier, depth - 1);

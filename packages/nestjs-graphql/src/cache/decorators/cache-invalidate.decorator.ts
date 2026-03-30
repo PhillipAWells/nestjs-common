@@ -5,7 +5,7 @@ import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 /**
  * Options for @CacheInvalidate decorator
  */
-export interface CacheInvalidateOptions {
+export interface ICacheInvalidateOptions {
 	/**
 	 * Cache key(s) to invalidate — can be a string, array of strings, or a function
 	 * that generates keys dynamically based on method arguments
@@ -54,7 +54,7 @@ export interface CacheInvalidateOptions {
  * - Method result is not affected by failed cache invalidation
  * - Uses del() method which safely handles non-existent keys
  */
-export function CacheInvalidate(options: CacheInvalidateOptions) {
+export function CacheInvalidate(options: ICacheInvalidateOptions) {
 	const logger = new AppLogger(undefined, 'CacheInvalidateDecorator');
 
 	return function(

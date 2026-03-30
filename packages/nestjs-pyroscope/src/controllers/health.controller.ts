@@ -2,7 +2,7 @@ import { Controller, Get, Header, Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from '../service.js';
 import { MetricsService } from '../services/metrics.service.js';
-import type { MetricsResponse } from '../services/metrics.service.js';
+import type { IMetricsResponse } from '../services/metrics.service.js';
 import { PYROSCOPE_CONFIG_TOKEN } from '../constants.js';
 import { PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD } from '../constants/profiling.constants.js';
 import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
@@ -10,7 +10,7 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 /**
  * Health response interface
  */
-export interface HealthResponse {
+export interface IHealthResponse {
 	status: 'healthy' | 'unhealthy' | 'degraded';
 	timestamp: number;
 	uptime: number;
@@ -50,22 +50,22 @@ export interface HealthResponse {
  */
 @Controller('profiling')
 export class HealthController {
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
 	constructor(@Inject(ModuleRef) moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
 	private get pyroscopeService(): PyroscopeService {
-		return this.moduleRef.get(PyroscopeService, { strict: false });
+		return this.ModuleRef.get(PyroscopeService, { strict: false });
 	}
 
 	private get metricsService(): MetricsService {
-		return this.moduleRef.get(MetricsService, { strict: false });
+		return this.ModuleRef.get(MetricsService, { strict: false });
 	}
 
 	private get config(): IPyroscopeConfig {
-		return this.moduleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
+		return this.ModuleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 	}
 
 	/**
@@ -78,7 +78,7 @@ export class HealthController {
 	 * application name, active profiles). It should be protected at the network
 	 * level (firewall, VPN, internal network only).
 	 *
-	 * @returns HealthResponse with comprehensive health information
+	 * @returns IHealthResponse with comprehensive health information
 	 *
 	 * @example
 	 * ```
@@ -103,7 +103,7 @@ export class HealthController {
 	 */
 	@Get('health')
 	@Header('Cache-Control', 'no-store')
-	public getHealth(): HealthResponse {
+	public getHealth(): IHealthResponse {
 		const pyroscopeHealth = this.pyroscopeService.getHealth();
 		const metrics = this.metricsService.getMetrics();
 
@@ -145,7 +145,7 @@ export class HealthController {
 	 * characteristics. It should be protected at the network level (firewall, VPN,
 	 * internal network only).
 	 *
-	 * @returns MetricsResponse with aggregated profiling data
+	 * @returns IMetricsResponse with aggregated profiling data
 	 *
 	 * @example
 	 * ```
@@ -171,7 +171,7 @@ export class HealthController {
 	 */
 	@Get('metrics')
 	@Header('Cache-Control', 'no-store')
-	public getMetrics(): MetricsResponse {
+	public getMetrics(): IMetricsResponse {
 		return this.metricsService.getMetrics();
 	}
 
@@ -188,7 +188,7 @@ export class HealthController {
 	 */
 	@Get('status')
 	@Header('Cache-Control', 'no-store')
-	public getStatus(): { health: HealthResponse; metrics: MetricsResponse } {
+	public getStatus(): { health: IHealthResponse; metrics: IMetricsResponse } {
 		return {
 			health: this.getHealth(),
 			metrics: this.getMetrics(),

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GraphQLSchema } from 'graphql';
-import type { GraphQLConfigOptions } from './graphql-config.interface.js';
+import type { IGraphQLConfigOptions } from './graphql-config.interface.js';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLErrorCode } from './error-codes.js';
@@ -13,21 +13,21 @@ import { GraphQLErrorCode } from './error-codes.js';
 @Injectable()
 export class GraphQLService {
 	// eslint-disable-next-line @typescript-eslint/prefer-readonly
-	private moduleRef?: ModuleRef;
+	private ModuleRef?: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
-		return this.moduleRef?.get(AppLogger, { strict: false });
+		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLService.name);
 	}
 
 	constructor(moduleRef?: ModuleRef) {
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
-	private schema: GraphQLSchema | null = null;
+	private Schema: GraphQLSchema | null = null;
 
 	/**
     * Validate GraphQL schema
@@ -45,8 +45,8 @@ export class GraphQLService {
 			throw new Error('GraphQL schema must have a query type');
 		}
 
-		this.schema = schema;
-		this.logger?.info('GraphQL schema validated successfully');
+		this.Schema = schema;
+		this.Logger?.info('GraphQL schema validated successfully');
 	}
 
 	/**
@@ -54,7 +54,7 @@ export class GraphQLService {
    * @returns The GraphQL schema or null if not set
    */
 	public getSchema(): GraphQLSchema | null {
-		return this.schema;
+		return this.Schema;
 	}
 
 	/**
@@ -64,7 +64,7 @@ export class GraphQLService {
     * @returns Formatted error
     */
 	@Traced({ name: 'graphql.formatError' })
-	public formatError(error: Error | Record<string, unknown>, config?: GraphQLConfigOptions): Record<string, unknown> {
+	public formatError(error: Error | Record<string, unknown>, config?: IGraphQLConfigOptions): Record<string, unknown> {
 		const errorRecord = error as Record<string, unknown>;
 		let message: string;
 		if (error instanceof Error) {

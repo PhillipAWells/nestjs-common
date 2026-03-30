@@ -49,19 +49,19 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
  */
 @Injectable()
 export class ProfilingHealthIndicator extends HealthIndicator {
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
 	constructor(moduleRef: ModuleRef) {
 		super();
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
 	private get pyroscopeService(): PyroscopeService {
-		return this.moduleRef.get(PyroscopeService, { strict: false });
+		return this.ModuleRef.get(PyroscopeService, { strict: false });
 	}
 
 	private get config(): IPyroscopeConfig {
-		return this.moduleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
+		return this.ModuleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 	}
 
 	/**

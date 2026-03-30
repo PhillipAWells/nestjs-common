@@ -5,52 +5,52 @@
  * Redis for distributed pub/sub, WebSocket server settings, authentication,
  * connection limits, and resilience behavior.
  */
-export interface SubscriptionConfig {
+export interface ISubscriptionConfig {
 	/**
 	 * Redis connection configuration
 	 *
 	 * Defines how the subscription service connects to Redis for pub/sub functionality.
-	 * Required for multi-instance deployments. See {@link RedisConfig}.
+	 * Required for multi-instance deployments. See {@link IRedisConfig}.
 	 */
-	redis: RedisConfig;
+	redis: IRedisConfig;
 
 	/**
 	 * WebSocket server configuration
 	 *
 	 * Controls the WebSocket server behavior including path, payload limits,
-	 * keepalive intervals, and connection timeouts. See {@link WebSocketConfig}.
+	 * keepalive intervals, and connection timeouts. See {@link IWebSocketConfig}.
 	 */
-	websocket: WebSocketConfig;
+	websocket: IWebSocketConfig;
 
 	/**
 	 * Authentication configuration
 	 *
 	 * Specifies JWT validation, token expiration, and header/parameter names
-	 * for WebSocket subscription authentication. See {@link AuthConfig}.
+	 * for WebSocket subscription authentication. See {@link IAuthConfig}.
 	 */
-	auth: AuthConfig;
+	auth: IAuthConfig;
 
 	/**
 	 * Connection management configuration
 	 *
 	 * Controls per-user subscription limits, cleanup intervals, and optional
-	 * statistics collection. See {@link ConnectionConfig}.
+	 * statistics collection. See {@link IConnectionConfig}.
 	 */
-	connection: ConnectionConfig;
+	connection: IConnectionConfig;
 
 	/**
 	 * Resilience configuration
 	 *
 	 * Specifies keepalive, reconnection, error recovery, and graceful shutdown
-	 * behavior for robust subscription handling. See {@link ResilienceConfig}.
+	 * behavior for robust subscription handling. See {@link IResilienceConfig}.
 	 */
-	resilience: ResilienceConfig;
+	resilience: IResilienceConfig;
 }
 
 /**
  * Redis connection configuration
  */
-export interface RedisConfig {
+export interface IRedisConfig {
 	/** Redis host */
 	host: string;
 
@@ -101,7 +101,7 @@ export interface RedisConfig {
 /**
  * WebSocket server configuration
  */
-export interface WebSocketConfig {
+export interface IWebSocketConfig {
 	/** WebSocket path */
 	path: string;
 
@@ -128,7 +128,7 @@ export interface WebSocketConfig {
 /**
  * Authentication configuration
  */
-export interface AuthConfig {
+export interface IAuthConfig {
 	/** JWT secret for token validation */
 	jwtSecret: string;
 
@@ -151,7 +151,7 @@ export interface AuthConfig {
 /**
  * Connection management configuration
  */
-export interface ConnectionConfig {
+export interface IConnectionConfig {
 	/** Maximum subscriptions per user */
 	maxSubscriptionsPerUser: number;
 
@@ -171,7 +171,7 @@ export interface ConnectionConfig {
 /**
  * Resilience configuration
  */
-export interface ResilienceConfig {
+export interface IResilienceConfig {
 	/** Keepalive configuration */
 	keepalive: {
 		enabled: boolean;

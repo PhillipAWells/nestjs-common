@@ -8,7 +8,7 @@ import type { Cache } from 'cache-manager';
 import { Observable, of, from } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
 import { CACHE_INTERCEPTOR_DEFAULT_TTL, CACHE_ETAG_BASE64_SUBSTRING_LENGTH } from '../constants/cache-config.constants.js';
@@ -16,14 +16,14 @@ import { CACHE_INTERCEPTOR_DEFAULT_TTL, CACHE_ETAG_BASE64_SUBSTRING_LENGTH } fro
 /**
  * Interface for cache key generation strategies
  */
-export interface CacheKeyGenerator {
+export interface ICacheKeyGenerator {
 	generate(context: ExecutionContext, options?: any): string;
 }
 
 /**
  * Interface for cache metadata extraction
  */
-export interface CacheMetadataExtractor {
+export interface ICacheMetadataExtractor {
 	getCacheDisabled(context: ExecutionContext): boolean;
 	getCacheTtl(context: ExecutionContext): number | undefined;
 }
@@ -31,7 +31,7 @@ export interface CacheMetadataExtractor {
 /**
  * Interface for context-specific cache operations
  */
-export interface CacheContextHandler {
+export interface ICacheContextHandler {
 	setCacheHeaders(context: ExecutionContext, hit: boolean, ttl?: number): void;
 	shouldCacheRequest(context: ExecutionContext): boolean;
 }
@@ -43,9 +43,9 @@ export interface CacheContextHandler {
  * subclasses to provide context-specific behavior through strategy interfaces.
  */
 @Injectable()
-export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModuleRefService {
+export abstract class BaseCacheInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
-	protected logger: AppLogger | null = null;
+	protected Logger: AppLogger | null = null;
 
 	public get CacheManager(): Cache {
 		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
@@ -56,8 +56,8 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 	}
 
 	protected getLogger(): AppLogger {
-		this.logger ??= this.AppLogger.createContextualLogger(BaseCacheInterceptor.name);
-		return this.logger;
+		this.Logger ??= this.AppLogger.createContextualLogger(BaseCacheInterceptor.name);
+		return this.Logger;
 	}
 
 	constructor(moduleRef: ModuleRef) {
@@ -67,17 +67,17 @@ export abstract class BaseCacheInterceptor implements NestInterceptor, LazyModul
 	/**
 	 * Abstract method to get cache key generator
 	 */
-	protected abstract getCacheKeyGenerator(): CacheKeyGenerator;
+	protected abstract getCacheKeyGenerator(): ICacheKeyGenerator;
 
 	/**
 	 * Abstract method to get cache metadata extractor
 	 */
-	protected abstract getCacheMetadataExtractor(): CacheMetadataExtractor;
+	protected abstract getCacheMetadataExtractor(): ICacheMetadataExtractor;
 
 	/**
 	 * Abstract method to get context handler
 	 */
-	protected abstract getCacheContextHandler(): CacheContextHandler;
+	protected abstract getCacheContextHandler(): ICacheContextHandler;
 
 	/**
 	 * Main interception logic

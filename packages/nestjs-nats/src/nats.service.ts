@@ -21,7 +21,7 @@ import {
 } from '@nats-io/jetstream';
 import { getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { NATS_MODULE_OPTIONS_RAW } from './nats.constants.js';
-import type { NatsModuleOptions } from './nats.interfaces.js';
+import type { TNatsModuleOptions } from './nats.interfaces.js';
 import { NatsLogger } from './logger.js';
 
 /**
@@ -36,26 +36,26 @@ import { NatsLogger } from './logger.js';
  * ```typescript
  * @Injectable()
  * export class OrderService {
- *   constructor(private readonly natsService: NatsService) {}
+ *   constructor(private readonly NatsService: NatsService) {}
  *
- *   publishOrder(order: Order): void {
- *     this.natsService.publishJson('orders.created', order);
+ *   publishOrder(order: IOrder): void {
+ *     this.NatsService.publishJson('orders.created', order);
  *   }
  * }
  * ```
  */
 @Injectable()
 export class NatsService implements OnModuleInit, OnApplicationShutdown {
-	private readonly logger: NatsLogger;
-	private readonly options: NatsModuleOptions;
-	private connection: NatsConnection | null = null;
+	private readonly Logger: NatsLogger;
+	private readonly Options: TNatsModuleOptions;
+	private Connection: NatsConnection | null = null;
 
 	constructor(
 		@Inject(NATS_MODULE_OPTIONS_RAW)
-		options: NatsModuleOptions,
+		options: TNatsModuleOptions,
 	) {
-		this.logger = new NatsLogger(NatsService.name);
-		this.options = options;
+		this.Logger = new NatsLogger(NatsService.name);
+		this.Options = options;
 	}
 
 	/**
@@ -63,8 +63,8 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 * Called automatically by NestJS on module initialization.
 	 */
 	public async onModuleInit(): Promise<void> {
-		this.connection = await connect(this.options);
-		this.logger.info('Connected to NATS');
+		this.Connection = await connect(this.Options);
+		this.Logger.info('Connected to NATS');
 		this.monitorStatus();
 	}
 
@@ -74,9 +74,9 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 * Requires app.enableShutdownHooks() to be called on the NestJS application.
 	 */
 	public async onApplicationShutdown(_signal?: string): Promise<void> {
-		if (this.connection !== null && !this.connection.isClosed()) {
-			await this.connection.drain();
-			this.logger.info('NATS connection drained and closed');
+		if (this.Connection !== null && !this.Connection.isClosed()) {
+			await this.Connection.drain();
+			this.Logger.info('NATS connection drained and closed');
 		}
 	}
 
@@ -86,9 +86,9 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public isConnected(): boolean {
 		return (
-			this.connection !== null &&
-			!this.connection.isClosed() &&
-			!this.connection.isDraining()
+			this.Connection !== null &&
+			!this.Connection.isClosed() &&
+			!this.Connection.isDraining()
 		);
 	}
 
@@ -98,7 +98,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public getConnection(): NatsConnection {
 		this.assertConnected();
-		return this.connection as NatsConnection;
+		return this.Connection as NatsConnection;
 	}
 
 	/**
@@ -110,7 +110,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public publish(subject: string, data?: Uint8Array | string, options?: PublishOptions): void {
 		this.assertConnected();
-		(this.connection as NatsConnection).publish(subject, data, options);
+		(this.Connection as NatsConnection).publish(subject, data, options);
 	}
 
 	/**
@@ -141,7 +141,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		options?: Omit<SubscriptionOptions, 'callback'>,
 	): Subscription {
 		this.assertConnected();
-		const sub = (this.connection as NatsConnection).subscribe(subject, options as SubscriptionOptions);
+		const sub = (this.Connection as NatsConnection).subscribe(subject, options as SubscriptionOptions);
 		this.consumeSubscription(sub, handler, subject);
 		return sub;
 	}
@@ -161,7 +161,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 		options?: RequestOptions,
 	): Promise<Msg> {
 		this.assertConnected();
-		return (this.connection as NatsConnection).request(subject, data, options);
+		return (this.Connection as NatsConnection).request(subject, data, options);
 	}
 
 	/**
@@ -187,7 +187,7 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public jetstream(): JetStreamClient {
 		this.assertConnected();
-		return createJetStream(this.connection as NatsConnection);
+		return createJetStream(this.Connection as NatsConnection);
 	}
 
 	/**
@@ -197,12 +197,12 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	public async jetstreamManager(): Promise<JetStreamManager> {
 		this.assertConnected();
-		const manager = await createJetStreamManager(this.connection as NatsConnection);
+		const manager = await createJetStreamManager(this.Connection as NatsConnection);
 		return manager;
 	}
 
 	private assertConnected(): void {
-		if (this.connection === null || this.connection.isClosed() || this.connection.isDraining()) {
+		if (this.Connection === null || this.Connection.isClosed() || this.Connection.isDraining()) {
 			throw new Error(
 				'NATS connection is not established or is draining. Ensure NatsModule is imported and the application has fully initialized.',
 			);
@@ -219,14 +219,14 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 				try {
 					await handler(msg);
 				} catch (err) {
-					this.logger.error(
+					this.Logger.error(
 						`Handler error on subject "${subject}"`,
 						getErrorStack(err),
 					);
 				}
 			}
 		})().catch((err: unknown): void => {
-			this.logger.error(
+			this.Logger.error(
 				`Subscription iterator closed for subject "${subject}"`,
 				getErrorStack(err),
 			);
@@ -234,39 +234,39 @@ export class NatsService implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	private monitorStatus(): void {
-		if (!this.connection) {
+		if (!this.Connection) {
 			return;
 		}
-		const { connection } = this;
+		const { Connection } = this;
 		void (async (): Promise<void> => {
-			for await (const status of connection.status()) {
+			for await (const status of Connection.status()) {
 				switch (status.type) {
 					case 'disconnect':
-						this.logger.warn('NATS disconnected');
+						this.Logger.warn('NATS disconnected');
 						break;
 					case 'reconnect':
-						this.logger.info('NATS reconnected');
+						this.Logger.info('NATS reconnected');
 						break;
 					case 'reconnecting':
-						this.logger.warn('NATS reconnecting...');
+						this.Logger.warn('NATS reconnecting...');
 						break;
 					case 'error': {
 						const errorStatus = status as { error?: unknown };
 						const errorInfo = errorStatus.error ?? status;
-						this.logger.error('NATS async error', getErrorStack(errorInfo));
+						this.Logger.error('NATS async error', getErrorStack(errorInfo));
 						break;
 					}
 					case 'ldm':
-						this.logger.warn('NATS server entering lame duck mode');
+						this.Logger.warn('NATS server entering lame duck mode');
 						break;
 					default: {
 						const defaultStatus = status as Record<string, unknown>;
-						this.logger.debug(`NATS status: ${defaultStatus.type}`);
+						this.Logger.debug(`NATS status: ${defaultStatus.type}`);
 					}
 				}
 			}
 		})().catch((err: unknown): void => {
-			this.logger.debug(
+			this.Logger.debug(
 				'NATS status monitor closed',
 				getErrorMessage(err),
 			);

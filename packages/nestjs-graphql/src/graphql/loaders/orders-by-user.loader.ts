@@ -1,24 +1,24 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
-import { Order } from './order.loader.js';
+import { IOrder } from './order.loader.js';
 
 /**
  * DataLoader for loading orders by user ID
  * Prevents N+1 query problems when resolving user's orders in GraphQL
  */
 @Injectable()
-export class OrdersByUserLoader implements LazyModuleRefService {
+export class OrdersByUserLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(OrdersByUserLoader.name);
 	}
 
@@ -36,8 +36,8 @@ export class OrdersByUserLoader implements LazyModuleRefService {
    * @returns DataLoader for orders by user
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Order[] | Error)[]>,
-	): DataLoader<string, Order[]> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IOrder[] | Error)[]>,
+	): DataLoader<string, IOrder[]> {
 		return this.DataLoaderRegistry.createWithCache(
 			'orders-by-user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -53,8 +53,8 @@ export class OrdersByUserLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
-	): Promise<(Order[] | Error)[]> {
-		this.logger.warn(
+	): Promise<(IOrder[] | Error)[]> {
+		this.Logger.warn(
 			'Using default orders by user batch loader. Override with actual implementation.',
 		);
 
@@ -68,15 +68,15 @@ export class OrdersByUserLoader implements LazyModuleRefService {
 
 	/**
    * Loads orders for a single user by user ID
-   * @param userId User ID to load orders for
+   * @param userId IUser ID to load orders for
    * @returns Promise resolving to array of orders or undefined
    */
-	public async load(userId: string): Promise<Order[] | undefined> {
+	public async load(userId: string): Promise<IOrder[] | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
 		} catch (error) {
-			this.logger.error(`Failed to load orders for user ${userId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load orders for user ${userId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -86,24 +86,24 @@ export class OrdersByUserLoader implements LazyModuleRefService {
    * @param userIds Array of user IDs to load orders for
    * @returns Promise resolving to arrays of orders
    */
-	public async loadMany(userIds: string[]): Promise<(Order[] | Error)[]> {
+	public async loadMany(userIds: string[]): Promise<(IOrder[] | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
 		} catch (error) {
-			this.logger.error(`Failed to load orders for users ${userIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load orders for users ${userIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return userIds.map(() => error as Error);
 		}
 	}
 
 	/**
    * Clears the cache for a specific user's orders
-   * @param userId User ID to clear orders cache for
+   * @param userId IUser ID to clear orders cache for
    */
 	public clear(userId: string): void {
 		const loader = this.getLoader();
 		loader.clear(userId);
-		this.logger.debug(`Cleared cache for orders of user ${userId}`);
+		this.Logger.debug(`Cleared cache for orders of user ${userId}`);
 	}
 
 	/**

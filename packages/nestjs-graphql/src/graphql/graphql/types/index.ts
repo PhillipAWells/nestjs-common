@@ -12,9 +12,9 @@ export { BasePost } from './base-post.type.js';
 export { BaseComment } from './base-comment.type.js';
 
 // Extended types with relationships
-export { User } from './user.type.js';
+export { IUser } from './user.type.js';
 export { Post } from './post.type.js';
-export { Comment } from './comment.type.js';
+export { IComment } from './comment.type.js';
 
 // Type registry and utilities
 export {
@@ -41,7 +41,7 @@ export type {
 	ICursorData,
 	IPaginationResult,
 	ICORSConfig,
-	ErrorFormatterFn,
-	ContextFactoryFn,
+	TErrorFormatterFn,
+	TContextFactoryFn,
 	IWebSocketConnection,
 } from './graphql-safety.types.js';

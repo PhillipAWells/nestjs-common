@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { GraphQLPerformanceService } from '../services/performance.service.js';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
@@ -18,14 +18,14 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLPerformanceMonitoringInterceptor)
- * @Query(() => User, { name: 'GetUser' })
- * async getUser(@Args('id') id: string): Promise<User> {
+ * @Query(() => IUser, { name: 'GetUser' })
+ * async getUser(@Args('id') id: string): Promise<IUser> {
  *   return this.userService.findById(id);
  * }
  * ```
  */
 @Injectable()
-export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor, LazyModuleRefService {
+export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get GraphQLPerformanceService(): GraphQLPerformanceService {
@@ -36,7 +36,7 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceMonitoringInterceptor.name);
 	}
 
@@ -70,14 +70,14 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 					userId: gqlContext.getContext().user?.id,
 					duration,
 				}).catch((err) => {
-					this.logger?.error(`Failed to record performance metrics: ${getErrorMessage(err)}`);
+					this.Logger?.error(`Failed to record performance metrics: ${getErrorMessage(err)}`);
 				});
 
 				// Log performance warnings
 				if (duration > PERFORMANCE_WARNING_THRESHOLD_MS) { // > 5 seconds
-					this.logger?.warn(`Very slow GraphQL operation: ${operation} took ${duration}ms`);
+					this.Logger?.warn(`Very slow GraphQL operation: ${operation} took ${duration}ms`);
 				} else if (duration > SLOW_OPERATION_THRESHOLD_MS) { // > 1 second
-					this.logger?.debug(`Slow GraphQL operation: ${operation} took ${duration}ms`);
+					this.Logger?.debug(`Slow GraphQL operation: ${operation} took ${duration}ms`);
 				}
 			}),
 			catchError((error) => {
@@ -98,10 +98,10 @@ export class GraphQLPerformanceMonitoringInterceptor implements NestInterceptor,
 						error: getErrorMessage(error),
 					},
 				).catch((err) => {
-					this.logger?.error(`Failed to record performance metrics: ${getErrorMessage(err)}`);
+					this.Logger?.error(`Failed to record performance metrics: ${getErrorMessage(err)}`);
 				});
 
-				this.logger?.error(`GraphQL operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
+				this.Logger?.error(`GraphQL operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
 
 				throw error;
 			}),

@@ -1,4 +1,4 @@
-import type { GroupRepresentation } from '../types/index.js';
+import type { IGroupRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -22,10 +22,10 @@ export class GroupService extends BaseService {
 	/**
 	 * List all groups in a realm
 	 */
-	public async list(realm: string): Promise<GroupRepresentation[]> {
+	public async list(realm: string): Promise<IGroupRepresentation[]> {
 		this.requireScope('groups:read');
 		try {
-			return (await this.withRetry(() => this.adminClient.groups.find({ realm }))) as any;
+			return (await this.withRetry(() => this.AdminClient.groups.find({ realm }))) as any;
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -34,11 +34,11 @@ export class GroupService extends BaseService {
 	/**
 	 * Get a group by ID
 	 */
-	public async get(realm: string, groupId: string): Promise<GroupRepresentation> {
+	public async get(realm: string, groupId: string): Promise<IGroupRepresentation> {
 		this.requireScope('groups:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.groups.findOne({ realm, id: groupId }),
+				this.AdminClient.groups.findOne({ realm, id: groupId }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -48,11 +48,11 @@ export class GroupService extends BaseService {
 	/**
 	 * Create a new group
 	 */
-	public async create(realm: string, group: GroupRepresentation): Promise<{ id: string }> {
+	public async create(realm: string, group: IGroupRepresentation): Promise<{ id: string }> {
 		this.requireScope('groups:write');
 		try {
 			return await this.withRetry(() =>
-				this.adminClient.groups.create({ ...group, realm }),
+				this.AdminClient.groups.create({ ...group, realm }),
 			);
 		} catch (error) {
 			return this.handleError(error);
@@ -62,11 +62,11 @@ export class GroupService extends BaseService {
 	/**
 	 * Update a group
 	 */
-	public async update(realm: string, groupId: string, group: GroupRepresentation): Promise<void> {
+	public async update(realm: string, groupId: string, group: IGroupRepresentation): Promise<void> {
 		this.requireScope('groups:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.groups.update({ realm, id: groupId }, group),
+				this.AdminClient.groups.update({ realm, id: groupId }, group),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -80,7 +80,7 @@ export class GroupService extends BaseService {
 		this.requireScope('groups:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.groups.del({ realm, id: groupId }),
+				this.AdminClient.groups.del({ realm, id: groupId }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -94,7 +94,7 @@ export class GroupService extends BaseService {
 		this.requireScope('groups:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.addToGroup({ realm, id: userId, groupId }),
+				this.AdminClient.users.addToGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -108,7 +108,7 @@ export class GroupService extends BaseService {
 		this.requireScope('groups:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.delFromGroup({ realm, id: userId, groupId }),
+				this.AdminClient.users.delFromGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
 			this.handleError(error);

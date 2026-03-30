@@ -3,13 +3,13 @@ import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { BaseService } from '../base-service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 import {
 	KeycloakClientError,
 	AuthenticationError,
 	AuthorizationError,
 	NotFoundError,
-	ValidationError,
+	IValidationError,
 	TimeoutError,
 	NetworkError,
 } from '../../errors/index.js';
@@ -18,7 +18,7 @@ import {
  * Concrete test subclass of BaseService that exposes requireScope and handleError for testing
  */
 class TestService extends BaseService {
-	public testRequireScope(scope: KeycloakAdminScope): void {
+	public testRequireScope(scope: TKeycloakAdminScope): void {
 		this.requireScope(scope);
 	}
 
@@ -30,14 +30,14 @@ class TestService extends BaseService {
 describe('BaseService', () => {
 	let service: TestService;
 	let mockAdminClient: Partial<KcAdminClient>;
-	let grantedScopes: Set<KeycloakAdminScope>;
+	let grantedScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {};
 		grantedScopes = new Set(['users:read', 'users:write']);
 		service = new TestService(
 			mockAdminClient as KcAdminClient,
-			grantedScopes as ReadonlySet<KeycloakAdminScope>,
+			grantedScopes as ReadonlySet<TKeycloakAdminScope>,
 		);
 
 		// Spy on the logger to verify calls
@@ -64,7 +64,7 @@ describe('BaseService', () => {
 				expect.fail('Should have thrown');
 			} catch (error) {
 				expect(error).toBeInstanceOf(KeycloakAdminScopeError);
-				expect((error as KeycloakAdminScopeError).scope).toBe('roles:write');
+				expect((error as KeycloakAdminScopeError).Scope).toBe('roles:write');
 			}
 		});
 
@@ -133,11 +133,11 @@ describe('BaseService', () => {
 			}).toThrow(NotFoundError);
 		});
 
-		it('should throw ValidationError on 400 status', () => {
+		it('should throw IValidationError on 400 status', () => {
 			const error = { response: { status: 400 }, message: 'Bad Request' };
 			expect(() => {
 				service.testHandleError(error);
-			}).toThrow(ValidationError);
+			}).toThrow(IValidationError);
 		});
 
 		it('should throw TimeoutError on 408 status', () => {
@@ -188,8 +188,8 @@ describe('BaseService', () => {
 				service.testHandleError(error);
 				expect.fail('Should have thrown');
 			} catch (e) {
-				expect(e).toBeInstanceOf(ValidationError);
-				expect((e as ValidationError).response).toEqual(data);
+				expect(e).toBeInstanceOf(IValidationError);
+				expect((e as IValidationError).Response).toEqual(data);
 			}
 		});
 
@@ -201,7 +201,7 @@ describe('BaseService', () => {
 				expect.fail('Should have thrown');
 			} catch (e) {
 				expect(e).toBeInstanceOf(KeycloakClientError);
-				expect((e as KeycloakClientError).cause).toBe(cause);
+				expect((e as KeycloakClientError).Cause).toBe(cause);
 			}
 		});
 

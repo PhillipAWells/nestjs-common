@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { RateLimitService } from '../services/rate-limit.service.js';
 
@@ -23,7 +23,7 @@ const MS_PER_SECOND = 1000;
  * ```
  */
 @Injectable()
-export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService {
+export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
@@ -34,7 +34,7 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLRateLimitGuard.name);
 		} catch {
@@ -69,7 +69,7 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 			const result = await this.RateLimitService.checkLimit(clientId);
 
 			if (!result.allowed) {
-				this.logger?.warn(
+				this.Logger?.warn(
 					`Rate limit exceeded for client ${clientId}. Reset in ${result.resetTime - Date.now()}ms`,
 				);
 
@@ -97,7 +97,7 @@ export class GraphQLRateLimitGuard implements CanActivate, LazyModuleRefService 
 				throw error;
 			}
 
-			this.logger?.error(`Rate limit check failed for client ${clientId}: ${getErrorMessage(error)}`);
+			this.Logger?.error(`Rate limit check failed for client ${clientId}: ${getErrorMessage(error)}`);
 			throw new HttpException('Rate limit service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}

@@ -43,6 +43,9 @@ import { MetricsController } from './controllers/metrics.controller.js';
 	controllers: [MetricsController],
 })
 export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
+	private readonly Exporter: PrometheusExporter;
+	private readonly Registry: InstrumentationRegistry;
+
 	/**
 	 * Create a global PrometheusModule with automatic registration
 	 *
@@ -66,9 +69,12 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	}
 
 	constructor(
-		private readonly exporter: PrometheusExporter,
-		private readonly registry: InstrumentationRegistry,
-	) {}
+		exporter: PrometheusExporter,
+		registry: InstrumentationRegistry,
+	) {
+		this.Exporter = exporter;
+		this.Registry = registry;
+	}
 
 	/**
 	 * Initialize the module and register the Prometheus exporter
@@ -86,7 +92,7 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	 * ```
 	 */
 	public onModuleInit(): void {
-		this.registry.registerExporter(this.exporter);
+		this.Registry.registerExporter(this.Exporter);
 	}
 
 	/**
@@ -103,6 +109,6 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	 * ```
 	 */
 	public async onApplicationShutdown(): Promise<void> {
-		await this.exporter.shutdown();
+		await this.Exporter.shutdown();
 	}
 }

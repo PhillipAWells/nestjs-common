@@ -13,7 +13,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 	let mockConfig: any;
 
 	beforeEach(() => {
-		// Manual mock for SubscriptionConfig
+		// Manual mock for ISubscriptionConfig
 		mockConfig = {
 			resilience: {
 				keepalive: {

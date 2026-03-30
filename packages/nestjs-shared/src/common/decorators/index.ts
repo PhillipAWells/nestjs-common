@@ -1,5 +1,5 @@
 export { RequestProperty } from './request-property.decorator.js';
-export type { RequestPropertyOptions } from './request-property.decorator.js';
+export type { IRequestPropertyOptions } from './request-property.decorator.js';
 
 // Decorator factories
 export {
@@ -11,10 +11,10 @@ export {
 } from './decorator-factory.js';
 export { ObjectGetPropertyByPath as GetNestedProperty, ObjectGetPropertyByPath as getNestedProperty } from '@pawells/typescript-common';
 export type {
-	BaseDecoratorOptions,
-	ConditionalDecoratorOptions,
-	ValidatingDecoratorOptions,
-	TransformingDecoratorOptions,
+	IBaseDecoratorOptions,
+	IConditionalDecoratorOptions,
+	IValidatingDecoratorOptions,
+	ITransformingDecoratorOptions,
 } from './decorator-factory.js';
 
 // Common decorators
@@ -31,4 +31,4 @@ export * from './guard.decorators.js';
 
 // Instrumentation
 export { InstrumentationRegistryHolder, Instrument } from './instrument.decorator.js';
-export type { InstrumentOptions } from './instrument.decorator.js';
+export type { IInstrumentOptions } from './instrument.decorator.js';

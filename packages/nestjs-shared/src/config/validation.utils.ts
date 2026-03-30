@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import Joi from 'joi';
-import type { ConfigSchema, ValidationResult } from './config.types.js';
+import type { IConfigSchema, IValidationResult } from './config.types.js';
 import { AppLogger } from '../common/index.js';
-import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 
 /**
  * Configuration Validation Service
  * Provides validation utilities with logging
  */
 @Injectable()
-export class ValidationService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class ValidationService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -19,12 +19,12 @@ export class ValidationService implements LazyModuleRefService {
 		this.Module = module;
 	}
 
-	private get logger(): AppLogger {
-		if (!this._contextualLogger) {
+	private get Logger(): AppLogger {
+		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			this._contextualLogger = baseLogger.createContextualLogger(ValidationService.name);
+			this._ContextualLogger = baseLogger.createContextualLogger(ValidationService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
@@ -32,10 +32,10 @@ export class ValidationService implements LazyModuleRefService {
 	 * @param schema - Joi schema definition object with validation rules
 	 * @returns Compiled Joi ObjectSchema ready for validation
 	 */
-	public createValidationSchema(schema: ConfigSchema): Joi.ObjectSchema {
-		this.logger.debug('Creating validation schema');
+	public createValidationSchema(schema: IConfigSchema): Joi.ObjectSchema {
+		this.Logger.debug('Creating validation schema');
 		const joiSchema = Joi.object(schema);
-		this.logger.debug('Validation schema created successfully');
+		this.Logger.debug('Validation schema created successfully');
 		return joiSchema;
 	}
 
@@ -43,25 +43,25 @@ export class ValidationService implements LazyModuleRefService {
 	 * Validate configuration against a schema.
 	 * @param config - Configuration object to validate
 	 * @param schema - Joi validation schema
-	 * @returns ValidationResult with isValid flag and optional errors array
+	 * @returns IValidationResult with isValid flag and optional errors array
 	 */
-	public validateConfig(config: any, schema: Joi.ObjectSchema): ValidationResult {
-		this.logger.debug('Starting configuration validation');
+	public validateConfig(config: any, schema: Joi.ObjectSchema): IValidationResult {
+		this.Logger.debug('Starting configuration validation');
 		const { error } = schema.validate(config, {
 			allowUnknown: true,
 			stripUnknown: false,
 		});
 
 		if (error) {
-			this.logger.error(`Configuration validation failed with ${error.details.length} errors`);
-			this.logger.debug(`Validation errors: ${error.details.map(detail => detail.message).join(', ')}`);
+			this.Logger.error(`Configuration validation failed with ${error.details.length} errors`);
+			this.Logger.debug(`Validation errors: ${error.details.map(detail => detail.message).join(', ')}`);
 			return {
 				isValid: false,
 				errors: error.details.map(detail => detail.message),
 			};
 		}
 
-		this.logger.info('Configuration validation passed');
+		this.Logger.info('Configuration validation passed');
 		return {
 			isValid: true,
 		};
@@ -74,7 +74,7 @@ export class ValidationService implements LazyModuleRefService {
  * @param schema - Joi schema definition object with validation rules
  * @returns Compiled Joi ObjectSchema ready for validation
  */
-export function CreateValidationSchema(schema: ConfigSchema): Joi.ObjectSchema {
+export function CreateValidationSchema(schema: IConfigSchema): Joi.ObjectSchema {
 	return Joi.object(schema);
 }
 
@@ -83,9 +83,9 @@ export function CreateValidationSchema(schema: ConfigSchema): Joi.ObjectSchema {
  * Utility function to validate a configuration object using a Joi schema.
  * @param config - Configuration object to validate
  * @param schema - Joi validation schema
- * @returns ValidationResult with isValid flag and optional errors array
+ * @returns IValidationResult with isValid flag and optional errors array
  */
-export function ValidateConfig(config: any, schema: Joi.ObjectSchema): ValidationResult {
+export function ValidateConfig(config: any, schema: Joi.ObjectSchema): IValidationResult {
 	const { error } = schema.validate(config, {
 		allowUnknown: true,
 		stripUnknown: false,

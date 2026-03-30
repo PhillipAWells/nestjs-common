@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Reflector } from '@nestjs/core';
-import { Subscribe, type NatsSubscribeOptions } from '../decorators/subscribe.decorator.js';
+import { Subscribe, type INatsSubscribeOptions } from '../decorators/subscribe.decorator.js';
 import { NATS_SUBSCRIBE_METADATA } from '../nats.constants.js';
 
 describe('Subscribe decorator', () => {
@@ -12,7 +12,7 @@ describe('Subscribe decorator', () => {
 			public handler(): void { /* no-op */ }
 		}
 
-		const meta = reflector.get<NatsSubscribeOptions>(
+		const meta = reflector.get<INatsSubscribeOptions>(
 			NATS_SUBSCRIBE_METADATA,
 			TestClass.prototype.handler,
 		);
@@ -25,7 +25,7 @@ describe('Subscribe decorator', () => {
 			public handler(): void { /* no-op */ }
 		}
 
-		const meta = reflector.get<NatsSubscribeOptions>(
+		const meta = reflector.get<INatsSubscribeOptions>(
 			NATS_SUBSCRIBE_METADATA,
 			TestClass.prototype.handler,
 		);
@@ -37,7 +37,7 @@ describe('Subscribe decorator', () => {
 			public handler(): void { /* no-op */ }
 		}
 
-		const meta = reflector.get<NatsSubscribeOptions | undefined>(
+		const meta = reflector.get<INatsSubscribeOptions | undefined>(
 			NATS_SUBSCRIBE_METADATA,
 			TestClass.prototype.handler,
 		);
@@ -50,7 +50,7 @@ describe('Subscribe decorator', () => {
 			public handler(): void { /* no-op */ }
 		}
 
-		const meta = reflector.get<NatsSubscribeOptions>(
+		const meta = reflector.get<INatsSubscribeOptions>(
 			NATS_SUBSCRIBE_METADATA,
 			TestClass.prototype.handler,
 		);

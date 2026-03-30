@@ -22,7 +22,7 @@ import {
 /**
  * Redis connection configuration interface
  */
-export interface RedisConfig {
+export interface IRedisConfig {
 	host: string;
 	port: number;
 	password?: string;
@@ -41,7 +41,7 @@ export interface RedisConfig {
 /**
  * Redis connection options for cache-manager-redis-store
  */
-export interface RedisConnectionOptions {
+export interface IRedisConnectionOptions {
 	host: string;
 	port: number;
 	password?: string;
@@ -103,9 +103,9 @@ export function validateRedisConfig(config: Record<string, any>): Record<string,
 
 /**
  * Get Redis configuration from environment variables with defaults
- * @returns RedisConfig object
+ * @returns IRedisConfig object
  */
-export function getRedisConfig(): RedisConfig {
+export function getRedisConfig(): IRedisConfig {
 	// Validate environment variables - Joi will handle optional fields properly
 	const envVars: Record<string, any> = {
 		REDIS_HOST: process.env['REDIS_HOST'],
@@ -140,14 +140,14 @@ export function getRedisConfig(): RedisConfig {
 		commandTimeout: parseInt(process.env['REDIS_COMMAND_TIMEOUT'] ?? `${REDIS_DEFAULT_COMMAND_TIMEOUT}`, 10),
 		family: parseInt(process.env['REDIS_FAMILY'] ?? `${REDIS_DEFAULT_FAMILY}`, 10),
 		keepAlive: parseInt(process.env['REDIS_KEEP_ALIVE'] ?? `${REDIS_DEFAULT_KEEP_ALIVE}`, 10),
-	} as RedisConfig;
+	} as IRedisConfig;
 }
 
 /**
  * Get Redis connection options for cache-manager-redis-store
- * @returns RedisConnectionOptions object
+ * @returns IRedisConnectionOptions object
  */
-export function getRedisConnectionOptions(): RedisConnectionOptions {
+export function getRedisConnectionOptions(): IRedisConnectionOptions {
 	const config = getRedisConfig();
 	return {
 		...config,
@@ -157,10 +157,10 @@ export function getRedisConnectionOptions(): RedisConnectionOptions {
 
 /**
  * Create RedisOptions for ioredis client
- * @param config RedisConfig
+ * @param config IRedisConfig
  * @returns RedisOptions
  */
-export function createRedisOptions(config: RedisConfig): RedisOptions {
+export function createRedisOptions(config: IRedisConfig): RedisOptions {
 	return {
 		host: config.host,
 		port: config.port,

@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Unauthor
 import { Reflector } from '@nestjs/core';
 import { ExtractRequestFromContext } from '../decorators/context-utils.js';
 import { PERMISSIONS_KEY } from '../decorators/auth-decorators.js';
-import type { KeycloakUser } from '../keycloak/keycloak.types.js';
+import type { IKeycloakUser } from '../keycloak/keycloak.types.js';
 
 /**
  * Permission-based Authorization Guard
@@ -27,7 +27,7 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  *   @Permissions('read:data', 'write:data')
  *   @Get(':id')
  *   getData(@Param('id') id: string) {
- *     // User must have a role named 'read:data' OR 'write:data' (roles-as-permissions)
+ *     // IUser must have a role named 'read:data' OR 'write:data' (roles-as-permissions)
  *     return {};
  *   }
  * }
@@ -35,14 +35,14 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  */
 @Injectable()
 export class PermissionGuard implements CanActivate {
-	private readonly reflector: Reflector;
+	private readonly Reflector: Reflector;
 
 	constructor(reflector: Reflector) {
-		this.reflector = reflector;
+		this.Reflector = reflector;
 	}
 
 	public canActivate(context: ExecutionContext): boolean {
-		const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+		const requiredPermissions = this.Reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
 		if (!requiredPermissions || requiredPermissions.length === 0) {
 			// No permissions required, allow access
@@ -50,10 +50,10 @@ export class PermissionGuard implements CanActivate {
 		}
 
 		const request = ExtractRequestFromContext(context);
-		const user = request.user as KeycloakUser | undefined;
+		const user = request.user as IKeycloakUser | undefined;
 
 		if (!user) {
-			throw new UnauthorizedException('User not authenticated');
+			throw new UnauthorizedException('IUser not authenticated');
 		}
 
 		// Check if user has any of the required permissions in realmRoles or clientRoles

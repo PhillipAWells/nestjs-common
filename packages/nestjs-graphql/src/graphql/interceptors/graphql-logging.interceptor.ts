@@ -2,7 +2,7 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const RESULT_SUMMARY_MAX_KEYS = 3;
@@ -16,21 +16,21 @@ const RESULT_SUMMARY_MAX_KEYS = 3;
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLLoggingInterceptor)
- * @Query(() => User, { name: 'GetUser' })
- * async getUser(): Promise<User> {
+ * @Query(() => IUser, { name: 'GetUser' })
+ * async getUser(): Promise<IUser> {
  *   // This operation will be logged
  * }
  * ```
  */
 @Injectable()
-export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRefService {
+export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(GraphQLLoggingInterceptor.name);
 	}
 
@@ -63,33 +63,33 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, LazyModuleRef
 		const userId = user?.id ?? user?.sub ?? 'anonymous';
 
 		// Log operation start
-		this.logger?.info(
+		this.Logger?.info(
 			`GraphQL ${operationType} started: ${operationName}.${fieldName} by user ${userId}`,
 		);
 
 		// Log variables in debug mode (avoid logging sensitive data in production)
 		if (process.env['NODE_ENV'] !== 'production' && args) {
 			const safeArgs = this.sanitizeArgs(args);
-			this.logger?.debug(`Operation variables: ${JSON.stringify(safeArgs)}`);
+			this.Logger?.debug(`Operation variables: ${JSON.stringify(safeArgs)}`);
 		}
 
 		return next.handle().pipe(
 			tap({
 				next: (result) => {
 					const duration = Date.now() - startTime;
-					this.logger?.info(
+					this.Logger?.info(
 						`GraphQL ${operationType} completed: ${operationName}.${fieldName} in ${duration}ms`,
 					);
 
 					// Log result summary in debug mode
 					if (process.env['NODE_ENV'] !== 'production') {
 						const resultSummary = this.summarizeResult(result);
-						this.logger?.debug(`Operation result: ${resultSummary}`);
+						this.Logger?.debug(`Operation result: ${resultSummary}`);
 					}
 				},
 				error: (error) => {
 					const duration = Date.now() - startTime;
-					this.logger?.error(
+					this.Logger?.error(
 						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${getErrorMessage(error)}`,
 					);
 				},

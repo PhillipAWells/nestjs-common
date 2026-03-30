@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Unauthor
 import { Reflector } from '@nestjs/core';
 import { ExtractRequestFromContext } from '../decorators/context-utils.js';
 import { ROLES_KEY } from '../decorators/auth-decorators.js';
-import type { KeycloakUser } from '../keycloak/keycloak.types.js';
+import type { IKeycloakUser } from '../keycloak/keycloak.types.js';
 
 /**
  * Role-based Authorization Guard
@@ -23,7 +23,7 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  *   @Roles('admin', 'moderator')
  *   @Get('users')
  *   listUsers() {
- *     // User must have 'admin' OR 'moderator' role
+ *     // IUser must have 'admin' OR 'moderator' role
  *     return [];
  *   }
  * }
@@ -31,14 +31,14 @@ import type { KeycloakUser } from '../keycloak/keycloak.types.js';
  */
 @Injectable()
 export class RoleGuard implements CanActivate {
-	private readonly reflector: Reflector;
+	private readonly Reflector: Reflector;
 
 	constructor(reflector: Reflector) {
-		this.reflector = reflector;
+		this.Reflector = reflector;
 	}
 
 	public canActivate(context: ExecutionContext): boolean {
-		const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
+		const requiredRoles = this.Reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
 		if (!requiredRoles || requiredRoles.length === 0) {
 			// No roles required, allow access
@@ -46,10 +46,10 @@ export class RoleGuard implements CanActivate {
 		}
 
 		const request = ExtractRequestFromContext(context);
-		const user = request.user as KeycloakUser | undefined;
+		const user = request.user as IKeycloakUser | undefined;
 
 		if (!user) {
-			throw new UnauthorizedException('User not authenticated');
+			throw new UnauthorizedException('IUser not authenticated');
 		}
 
 		// Check if user has any of the required roles in realmRoles or clientRoles

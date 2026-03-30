@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { ClientService } from '../client.service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('ClientService', () => {
 	let service: ClientService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -30,9 +30,9 @@ describe('ClientService', () => {
 			},
 		} as unknown as KcAdminClient;
 
-		allScopes = new Set(['clients:read', 'clients:write'] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['clients:read'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		allScopes = new Set(['clients:read', 'clients:write'] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['clients:read'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('list', () => {

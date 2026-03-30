@@ -1,7 +1,7 @@
 /**
  * Cache statistics interface
  */
-export interface CacheStats {
+export interface ICacheStats {
 	hits: number;
 	misses: number;
 	sets: number;
@@ -14,7 +14,7 @@ export interface CacheStats {
 /**
  * Cache configuration interface
  */
-export interface CacheConfig {
+export interface ICacheConfig {
 	defaultTtl: number;
 	enableMetrics: boolean;
 	keyPrefix: string;
@@ -23,7 +23,7 @@ export interface CacheConfig {
 /**
  * Cache key builder function type
  */
-export type CacheKeyBuilder = (...args: any[]) => string;
+export type TCacheKeyBuilder = (...args: any[]) => string;
 
 /**
  * Cache invalidation strategy enum
@@ -38,7 +38,7 @@ export enum CacheInvalidationStrategy {
 /**
  * Cache metrics interface
  */
-export interface CacheMetrics {
+export interface ICacheMetrics {
 	totalRequests: number;
 	cacheHits: number;
 	cacheMisses: number;
@@ -51,7 +51,7 @@ export interface CacheMetrics {
 /**
  * Cache entry metadata
  */
-export interface CacheEntryMetadata {
+export interface ICacheEntryMetadata {
 	key: string;
 	ttl: number;
 	createdAt: Date;
@@ -63,7 +63,7 @@ export interface CacheEntryMetadata {
 /**
  * Cache operation result
  */
-export interface CacheOperationResult<T = any> {
+export interface ICacheOperationResult<T = any> {
 	success: boolean;
 	data?: T;
 	error?: string;
@@ -73,7 +73,7 @@ export interface CacheOperationResult<T = any> {
 /**
  * Cache warming options
  */
-export interface CacheWarmingOptions {
+export interface ICacheWarmingOptions {
 	enabled: boolean;
 	interval: number; // in milliseconds
 	keys: string[];
@@ -83,7 +83,7 @@ export interface CacheWarmingOptions {
 /**
  * Cache invalidation options
  */
-export interface CacheInvalidationOptions {
+export interface ICacheInvalidationOptions {
 	strategy: CacheInvalidationStrategy;
 	delay?: number; // for delayed invalidation
 	pattern?: string; // for pattern-based invalidation
@@ -112,7 +112,7 @@ export enum RedisConnectionStatus {
 /**
  * Redis connection info
  */
-export interface RedisConnectionInfo {
+export interface IRedisConnectionInfo {
 	status: RedisConnectionStatus;
 	host: string;
 	port: number;

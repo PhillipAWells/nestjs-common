@@ -7,7 +7,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
  * Defines options for context-aware parameter extraction in authentication decorators.
  * Supports automatic context detection and explicit context type specification.
  */
-export interface ContextOptions {
+export interface IContextOptions {
 	/**
 	 * The execution context type. If not specified, context will be auto-detected.
 	 */
@@ -24,7 +24,7 @@ export interface ContextOptions {
 /**
  * Default context options with auto-detection enabled
  */
-export const DEFAULT_CONTEXT_OPTIONS: ContextOptions = {
+export const DEFAULT_CONTEXT_OPTIONS: IContextOptions = {
 	autoDetect: true,
 };
 
@@ -93,7 +93,7 @@ export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | '
  */
 export function ExtractRequestFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS,
+	options: IContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): any {
 	const contextType = options.autoDetect
 		? DetectContextType(ctx)
@@ -147,7 +147,7 @@ export function ExtractRequestFromContext(
  * ```typescript
  * const user = extractUserFromContext(ctx);
  * if (user) {
- *   console.log('User ID:', user.id);
+ *   console.log('IUser ID:', user.id);
  * }
  * ```
  *
@@ -158,7 +158,7 @@ export function ExtractRequestFromContext(
  */
 export function ExtractUserFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions & { property?: string } = DEFAULT_CONTEXT_OPTIONS,
+	options: IContextOptions & { property?: string } = DEFAULT_CONTEXT_OPTIONS,
 ): any {
 	const request = ExtractRequestFromContext(ctx, options);
 
@@ -200,7 +200,7 @@ export function ExtractUserFromContext(
  */
 export function ExtractAuthTokenFromContext(
 	ctx: ExecutionContext,
-	options: ContextOptions = DEFAULT_CONTEXT_OPTIONS,
+	options: IContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): string | undefined {
 	const request = ExtractRequestFromContext(ctx, options);
 

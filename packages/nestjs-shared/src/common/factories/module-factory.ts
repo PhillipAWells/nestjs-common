@@ -11,7 +11,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE, APP_GUARD } from '@nestjs/core';
 /**
  * Configuration interface for global modules
  */
-export interface GlobalModuleConfig {
+export interface IGlobalModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Providers to include in the module */
@@ -27,7 +27,7 @@ export interface GlobalModuleConfig {
 /**
  * Configuration interface for feature modules
  */
-export interface FeatureModuleConfig {
+export interface IFeatureModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Providers to include in the module */
@@ -43,7 +43,7 @@ export interface FeatureModuleConfig {
 /**
  * Configuration interface for service modules
  */
-export interface ServiceModuleConfig {
+export interface IServiceModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Service providers */
@@ -57,7 +57,7 @@ export interface ServiceModuleConfig {
 /**
  * Configuration interface for application modules
  */
-export interface ApplicationModuleConfig {
+export interface IApplicationModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Global filters to apply */
@@ -88,7 +88,7 @@ export interface ApplicationModuleConfig {
  * }) {}
  * ```
  */
-export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
+export function CreateGlobalModule(config: IGlobalModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], imports = [], isGlobal = true } = config;
 
 	const moduleConfig: any = {
@@ -137,7 +137,7 @@ export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
  * }) {}
  * ```
  */
-export function CreateFeatureModule(config: FeatureModuleConfig): DynamicModule {
+export function CreateFeatureModule(config: IFeatureModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], controllers = [], imports = [] } = config;
 
 	return {
@@ -174,7 +174,7 @@ export function CreateFeatureModule(config: FeatureModuleConfig): DynamicModule 
  * }) {}
  * ```
  */
-export function CreateServiceModule(config: ServiceModuleConfig): DynamicModule {
+export function CreateServiceModule(config: IServiceModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], imports = [] } = config;
 
 	return {
@@ -213,7 +213,7 @@ export function CreateServiceModule(config: ServiceModuleConfig): DynamicModule 
  * }) {}
  * ```
  */
-export function CreateApplicationModule(config: ApplicationModuleConfig): DynamicModule {
+export function CreateApplicationModule(config: IApplicationModuleConfig): DynamicModule {
 	const { name, filters = [], interceptors = [], pipes = [], guards = [], imports = [] } = config;
 
 	const providers: any[] = [
@@ -286,7 +286,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
  * ```
  */
 export function CreateConditionalModule(
-	baseConfig: Partial<GlobalModuleConfig & FeatureModuleConfig & ServiceModuleConfig>,
+	baseConfig: Partial<IGlobalModuleConfig & IFeatureModuleConfig & IServiceModuleConfig>,
 	conditions: Array<{
 		condition: (config?: any) => boolean;
 		providers?: any[];

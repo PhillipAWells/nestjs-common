@@ -43,8 +43,8 @@ export const GraphQLPublic = Public;
  * @example
  * ```typescript
  * @GraphQLAuth()
- * @Query(() => User, { name: 'GetCurrentUser' })
- * async getCurrentUser(@GraphQLCurrentUser() user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@GraphQLCurrentUser() user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -63,8 +63,8 @@ export const GraphQLAuth = Auth;
  * @example
  * ```typescript
  * @GraphQLRoles('admin', 'moderator')
- * @Query(() => [User], { name: 'GetUsers' })
- * async getUsers(): Promise<User[]> {
+ * @Query(() => [IUser], { name: 'GetUsers' })
+ * async getUsers(): Promise<IUser[]> {
  *   // Only users with 'admin' or 'moderator' roles can access
  * }
  * ```
@@ -82,8 +82,8 @@ export const GraphQLRoles = Roles;
  *
  * @example
  * ```typescript
- * @Query(() => User, { name: 'GetCurrentUser' })
- * async getCurrentUser(@GraphQLCurrentUser() user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@GraphQLCurrentUser() user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -142,7 +142,7 @@ export const GraphQLContextParam = (): ParameterDecorator => createParamDecorato
 )();
 
 /**
- * GraphQL User alias for GraphQLCurrentUser
+ * GraphQL IUser alias for GraphQLCurrentUser
  *
  * Alternative name for GraphQLCurrentUser decorator specifically for GraphQL contexts.
  * Provides the same functionality with a more explicit name.
@@ -152,8 +152,8 @@ export const GraphQLContextParam = (): ParameterDecorator => createParamDecorato
  *
  * @example
  * ```typescript
- * @Query(() => User, { name: 'GetCurrentUser' })
- * async getCurrentUser(@GraphQLUser() user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@GraphQLUser() user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```

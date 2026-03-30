@@ -22,16 +22,16 @@ import { MetricsRegistryService } from '../services/metrics-registry.service.js'
  * ```
  */
 export abstract class BaseMetricsCollector {
-	protected readonly logger: AppLogger = new AppLogger(undefined, this.constructor.name);
+	protected readonly Logger: AppLogger = new AppLogger(undefined, this.constructor.name);
 
-	private readonly metricsRegistry: MetricsRegistryService;
+	private readonly MetricsRegistry: MetricsRegistryService;
 
-	private readonly metrics: Map<string, Counter<string> | Gauge<string> | Histogram<string>> = new Map();
+	private readonly Metrics: Map<string, Counter<string> | Gauge<string> | Histogram<string>> = new Map();
 
 	constructor(metricsRegistry: MetricsRegistryService) {
-		this.metricsRegistry = metricsRegistry;
+		this.MetricsRegistry = metricsRegistry;
 		this.initializeMetrics();
-		this.logger.info(`${this.constructor.name} initialized with ${this.metrics.size} metrics`);
+		this.Logger.info(`${this.constructor.name} initialized with ${this.Metrics.size} metrics`);
 	}
 
 	/**
@@ -55,8 +55,8 @@ export abstract class BaseMetricsCollector {
 	 * @returns The registered counter metric
 	 */
 	protected registerCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
-		const counter = this.metricsRegistry.createCounter(name, help, labelNames);
-		this.metrics.set(name, counter);
+		const counter = this.MetricsRegistry.createCounter(name, help, labelNames);
+		this.Metrics.set(name, counter);
 		return counter;
 	}
 
@@ -69,8 +69,8 @@ export abstract class BaseMetricsCollector {
 	 * @returns The registered gauge metric
 	 */
 	protected registerGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
-		const gauge = this.metricsRegistry.createGauge(name, help, labelNames);
-		this.metrics.set(name, gauge);
+		const gauge = this.MetricsRegistry.createGauge(name, help, labelNames);
+		this.Metrics.set(name, gauge);
 		return gauge;
 	}
 
@@ -89,8 +89,8 @@ export abstract class BaseMetricsCollector {
 		labelNames: string[] = [],
 		buckets?: number[],
 	): Histogram<string> {
-		const histogram = this.metricsRegistry.createHistogram(name, help, labelNames, buckets);
-		this.metrics.set(name, histogram);
+		const histogram = this.MetricsRegistry.createHistogram(name, help, labelNames, buckets);
+		this.Metrics.set(name, histogram);
 		return histogram;
 	}
 
@@ -101,7 +101,7 @@ export abstract class BaseMetricsCollector {
 	 * @returns The metric instance, or undefined if not found
 	 */
 	public getMetric(name: string): Counter<string> | Gauge<string> | Histogram<string> | undefined {
-		return this.metrics.get(name);
+		return this.Metrics.get(name);
 	}
 
 	/**
@@ -110,6 +110,6 @@ export abstract class BaseMetricsCollector {
 	 * @returns A Map of all registered metrics keyed by name
 	 */
 	public getAllMetrics(): Map<string, Counter<string> | Gauge<string> | Histogram<string>> {
-		return new Map(this.metrics);
+		return new Map(this.Metrics);
 	}
 }

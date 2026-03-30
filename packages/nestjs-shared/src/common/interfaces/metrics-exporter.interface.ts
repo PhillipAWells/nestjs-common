@@ -16,7 +16,7 @@
  * type CounterWithDownType = 'updown_counter'; // Can increment or decrement
  * ```
  */
-export type MetricType = 'counter' | 'histogram' | 'gauge' | 'updown_counter';
+export type TMetricType = 'counter' | 'histogram' | 'gauge' | 'updown_counter';
 
 /**
  * Metric descriptor — registered once per metric, defines the shape of the metric
@@ -36,7 +36,7 @@ export type MetricType = 'counter' | 'histogram' | 'gauge' | 'updown_counter';
  *
  * @example
  * ```typescript
- * const httpDurationDescriptor: MetricDescriptor = {
+ * const httpDurationDescriptor: IMetricDescriptor = {
  *   name: 'http_request_duration_seconds',
  *   type: 'histogram',
  *   help: 'Duration of HTTP requests in seconds',
@@ -46,7 +46,7 @@ export type MetricType = 'counter' | 'histogram' | 'gauge' | 'updown_counter';
  * };
  * ```
  */
-export interface MetricDescriptor {
+export interface IMetricDescriptor {
 	/**
 	 * Unique identifier for the metric
 	 * Convention: snake_case with unit suffix (e.g., 'request_duration_seconds')
@@ -56,7 +56,7 @@ export interface MetricDescriptor {
 	/**
 	 * Type of metric instrument
 	 */
-	type: MetricType;
+	type: TMetricType;
 
 	/**
 	 * Human-readable description
@@ -100,7 +100,7 @@ export interface MetricDescriptor {
  *
  * @example
  * ```typescript
- * const httpDurationValue: MetricValue = {
+ * const httpDurationValue: IMetricValue = {
  *   descriptor: httpDurationDescriptor,
  *   value: 0.125,  // seconds
  *   labels: {
@@ -112,11 +112,11 @@ export interface MetricDescriptor {
  * };
  * ```
  */
-export interface MetricValue {
+export interface IMetricValue {
 	/**
 	 * Descriptor that defines this metric's structure
 	 */
-	descriptor: MetricDescriptor;
+	descriptor: IMetricDescriptor;
 
 	/**
 	 * Numeric value of the metric
@@ -149,35 +149,35 @@ export interface MetricValue {
  * (Prometheus, OpenTelemetry, CloudWatch, etc.).
  *
  * An exporter can support two modes:
- * - **Event-based** (`supportsEventBased`): Receives metrics as they're recorded
- * - **Pull-based** (`supportsPull`): Provides metrics on-demand during scrape/pull requests
+ * - **Event-based** (`SupportsEventBased`): Receives metrics as they're recorded
+ * - **Pull-based** (`SupportsPull`): Provides metrics on-demand during scrape/pull requests
  *
  * @example
  * ```typescript
  * // Prometheus exporter (event-based push + pull-based scrape)
  * class PrometheusExporter implements IMetricsExporter {
- *   readonly supportsEventBased = true;
- *   readonly supportsPull = true;
+ *   readonly SupportsEventBased = true;
+ *   readonly SupportsPull = true;
  *
- *   onMetricRecorded(value: MetricValue) {
+ *   onMetricRecorded(value: IMetricValue) {
  *     // Update Prometheus registry
- *     this.registry.observe(value);
+ *     this.Registry.observe(value);
  *   }
  *
  *   getMetrics(): string {
  *     // Return Prometheus text format
- *     return this.registry.metrics();
+ *     return this.Registry.metrics();
  *   }
  * }
  *
  * // OpenTelemetry exporter (event-based only)
  * class OTelExporter implements IMetricsExporter {
- *   readonly supportsEventBased = true;
- *   readonly supportsPull = false;
+ *   readonly SupportsEventBased = true;
+ *   readonly SupportsPull = false;
  *
- *   onMetricRecorded(value: MetricValue) {
+ *   onMetricRecorded(value: IMetricValue) {
  *     // Send to OTEL collector
- *     this.client.send(value);
+ *     this.Client.send(value);
  *   }
  * }
  * ```
@@ -191,7 +191,7 @@ export interface IMetricsExporter {
 	 *
 	 * @readonly
 	 */
-	readonly supportsEventBased: boolean;
+	readonly SupportsEventBased: boolean;
 
 	/**
 	 * Whether this exporter supports pull-based reads (e.g., Prometheus scrape endpoint)
@@ -201,12 +201,12 @@ export interface IMetricsExporter {
 	 *
 	 * @readonly
 	 */
-	readonly supportsPull: boolean;
+	readonly SupportsPull: boolean;
 
 	/**
 	 * Called when a metric value is recorded
 	 *
-	 * Only called if supportsEventBased = true.
+	 * Only called if SupportsEventBased = true.
 	 * Implementations should process the metric quickly to avoid blocking the request.
 	 * If processing needs to be async, implementations should queue work and return immediately.
 	 *
@@ -214,17 +214,17 @@ export interface IMetricsExporter {
 	 *
 	 * @example
 	 * ```typescript
-	 * onMetricRecorded(value: MetricValue): void {
+	 * onMetricRecorded(value: IMetricValue): void {
 	 *   // Update in-memory registry
 	 *   const key = this.buildKey(value);
-	 *   this.registry.update(key, value);
+	 *   this.Registry.update(key, value);
 	 *
 	 *   // If async work needed, queue it
 	 *   this.queue.push(value);
 	 * }
 	 * ```
 	 */
-	onMetricRecorded?(value: MetricValue): void;
+	onMetricRecorded?(value: IMetricValue): void;
 
 	/**
 	 * Called when a new metric descriptor is registered
@@ -236,18 +236,18 @@ export interface IMetricsExporter {
 	 *
 	 * @example
 	 * ```typescript
-	 * onDescriptorRegistered(descriptor: MetricDescriptor): void {
+	 * onDescriptorRegistered(descriptor: IMetricDescriptor): void {
 	 *   // Pre-create Prometheus gauge/counter/histogram
-	 *   this.registry.register(descriptor);
+	 *   this.Registry.register(descriptor);
 	 * }
 	 * ```
 	 */
-	onDescriptorRegistered?(descriptor: MetricDescriptor): void;
+	onDescriptorRegistered?(descriptor: IMetricDescriptor): void;
 
 	/**
 	 * Retrieve all current metric values (pull-based)
 	 *
-	 * Only required if supportsPull = true.
+	 * Only required if SupportsPull = true.
 	 * Called by scrape endpoints or pull-based collectors to fetch metrics.
 	 * Should return metrics in the format expected by the external system
 	 * (e.g., Prometheus text format, JSON, etc.).
@@ -258,12 +258,12 @@ export interface IMetricsExporter {
 	 * ```typescript
 	 * // Prometheus exporter
 	 * getMetrics(): string {
-	 *   return this.registry.metrics(); // Returns Prometheus text format
+	 *   return this.Registry.metrics(); // Returns Prometheus text format
 	 * }
 	 *
 	 * // Async exporter
 	 * getMetrics(): Promise<string> {
-	 *   return this.client.fetchMetrics(); // Fetch from remote backend
+	 *   return this.Client.fetchMetrics(); // Fetch from remote backend
 	 * }
 	 * ```
 	 */
@@ -281,8 +281,8 @@ export interface IMetricsExporter {
 	 * ```typescript
 	 * shutdown(): Promise<void> {
 	 *   return Promise.all([
-	 *     this.client.flush(),
-	 *     this.client.close(),
+	 *     this.Client.flush(),
+	 *     this.Client.close(),
 	 *   ]);
 	 * }
 	 * ```

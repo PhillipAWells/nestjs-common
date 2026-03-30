@@ -46,9 +46,9 @@ describe('BaseValidationPipe', () => {
 			metadata = {
 				type: 'body',
 				metatype: class TestDto {
-					public name: string = '';
+					public Name: string = '';
 
-					public email: string = '';
+					public Email: string = '';
 				},
 				data: '',
 			};

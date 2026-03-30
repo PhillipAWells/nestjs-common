@@ -1,6 +1,6 @@
-import type { KeycloakAdminScope } from '../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../permissions/keycloak-admin.permissions.js';
 
-export interface KeycloakAdminConfig {
+export interface IKeycloakAdminConfig {
 	enabled: boolean;
 	baseUrl: string;
 	realmName: string;
@@ -31,5 +31,5 @@ export interface KeycloakAdminConfig {
 	 * permissions: ['users:read', 'users:write', 'federated-identity:read', 'federated-identity:write']
 	 * ```
 	 */
-	permissions?: KeycloakAdminScope[];
+	permissions?: TKeycloakAdminScope[];
 }

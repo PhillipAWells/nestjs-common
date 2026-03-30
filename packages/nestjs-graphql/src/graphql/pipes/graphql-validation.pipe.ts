@@ -12,8 +12,8 @@ import { AppLogger, BaseValidationPipe } from '@pawells/nestjs-shared/common';
  * @example
  * ```typescript
  * @UsePipes(GraphqlValidationPipe)
- * @Mutation(() => User, { name: 'CreateUser' })
- * async createUser(@Args('input') input: CreateUserInput): Promise<User> {
+ * @Mutation(() => IUser, { name: 'CreateUser' })
+ * async createUser(@Args('input') input: CreateUserInput): Promise<IUser> {
  *   // Input will be validated automatically
  * }
  * ```
@@ -21,19 +21,19 @@ import { AppLogger, BaseValidationPipe } from '@pawells/nestjs-shared/common';
 @Injectable()
 export class GraphQLValidationPipe extends BaseValidationPipe {
 	// eslint-disable-next-line @typescript-eslint/prefer-readonly
-	private moduleRef?: ModuleRef;
+	private ModuleRef?: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
-		return this.moduleRef?.get(AppLogger, { strict: false });
+		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLValidationPipe.name);
 	}
 
 	constructor(moduleRef?: ModuleRef) {
 		super();
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
 	/**
@@ -56,7 +56,7 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 	 */
 	protected override handleValidationErrors(errors: ValidationError[]): void {
 		const formattedErrors = this.formatValidationErrors(errors);
-		this.logger?.warn(`Validation failed: ${JSON.stringify(formattedErrors)}`);
+		this.Logger?.warn(`Validation failed: ${JSON.stringify(formattedErrors)}`);
 	}
 
 	/**

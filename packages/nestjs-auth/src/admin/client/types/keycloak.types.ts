@@ -1,7 +1,7 @@
 /**
  * Keycloak realm representation
  */
-export interface RealmRepresentation {
+export interface IRealmRepresentation {
 	id?: string;
 	realm?: string;
 	displayName?: string;
@@ -19,7 +19,7 @@ export interface RealmRepresentation {
 /**
  * Keycloak user representation
  */
-export interface UserRepresentation {
+export interface IUserRepresentation {
 	id?: string;
 	username?: string;
 	email?: string;
@@ -29,7 +29,7 @@ export interface UserRepresentation {
 	emailVerified?: boolean;
 	attributes?: Record<string, string[]>;
 	requiredActions?: string[];
-	credentials?: CredentialRepresentation[];
+	credentials?: ICredentialRepresentation[];
 	groups?: string[];
 	[key: string]: unknown;
 }
@@ -37,7 +37,7 @@ export interface UserRepresentation {
 /**
  * Keycloak credential representation
  */
-export interface CredentialRepresentation {
+export interface ICredentialRepresentation {
 	type?: string;
 	value?: string;
 	temporary?: boolean;
@@ -47,7 +47,7 @@ export interface CredentialRepresentation {
 /**
  * Keycloak client representation
  */
-export interface ClientRepresentation {
+export interface IClientRepresentation {
 	id?: string;
 	clientId?: string;
 	name?: string;
@@ -72,7 +72,7 @@ export interface ClientRepresentation {
 /**
  * Keycloak role representation
  */
-export interface RoleRepresentation {
+export interface IRoleRepresentation {
 	id?: string;
 	name?: string;
 	description?: string;
@@ -86,21 +86,21 @@ export interface RoleRepresentation {
 /**
  * Keycloak group representation
  */
-export interface GroupRepresentation {
+export interface IGroupRepresentation {
 	id?: string;
 	name?: string;
 	path?: string;
 	attributes?: Record<string, string[]>;
 	realmRoles?: string[];
 	clientRoles?: Record<string, string[]>;
-	subGroups?: GroupRepresentation[];
+	subGroups?: IGroupRepresentation[];
 	[key: string]: unknown;
 }
 
 /**
  * Keycloak identity provider representation
  */
-export interface IdentityProviderRepresentation {
+export interface IIdentityProviderRepresentation {
 	alias?: string;
 	displayName?: string;
 	providerId?: string;
@@ -118,21 +118,21 @@ export interface IdentityProviderRepresentation {
 /**
  * Keycloak authentication flow representation
  */
-export interface AuthenticationFlowRepresentation {
+export interface IAuthenticationFlowRepresentation {
 	id?: string;
 	alias?: string;
 	description?: string;
 	providerId?: string;
 	topLevel?: boolean;
 	builtIn?: boolean;
-	authenticationExecutions?: AuthenticationExecutionInfoRepresentation[];
+	authenticationExecutions?: IAuthenticationExecutionInfoRepresentation[];
 	[key: string]: unknown;
 }
 
 /**
  * Keycloak authentication execution representation
  */
-export interface AuthenticationExecutionInfoRepresentation {
+export interface IAuthenticationExecutionInfoRepresentation {
 	id?: string;
 	requirement?: string;
 	displayName?: string;
@@ -149,7 +149,7 @@ export interface AuthenticationExecutionInfoRepresentation {
 /**
  * Keycloak protocol mapper representation
  */
-export interface ProtocolMapperRepresentation {
+export interface IProtocolMapperRepresentation {
 	id?: string;
 	name?: string;
 	protocol?: string;
@@ -160,9 +160,9 @@ export interface ProtocolMapperRepresentation {
 }
 
 /**
- * User query parameters
+ * IUser query parameters
  */
-export interface UserQuery {
+export interface IUserQuery {
 	briefRepresentation?: boolean;
 	email?: string;
 	emailVerified?: boolean;

@@ -1,24 +1,24 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
-import { Comment } from './comment.loader.js';
+import { IComment } from './comment.loader.js';
 
 /**
  * DataLoader for loading comments by post ID
  * Prevents N+1 query problems when resolving post's comments in GraphQL
  */
 @Injectable()
-export class CommentsByPostLoader implements LazyModuleRefService {
+export class CommentsByPostLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(CommentsByPostLoader.name);
 	}
 
@@ -36,8 +36,8 @@ export class CommentsByPostLoader implements LazyModuleRefService {
    * @returns DataLoader for comments by post
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>,
-	): DataLoader<string, Comment[]> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IComment[] | Error)[]>,
+	): DataLoader<string, IComment[]> {
 		return this.DataLoaderRegistry.createWithCache(
 			'comments-by-post-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -53,8 +53,8 @@ export class CommentsByPostLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		postIds: readonly string[],
-	): Promise<(Comment[] | Error)[]> {
-		this.logger.warn(
+	): Promise<(IComment[] | Error)[]> {
+		this.Logger.warn(
 			'Using default comments by post batch loader. Override with actual implementation.',
 		);
 
@@ -71,12 +71,12 @@ export class CommentsByPostLoader implements LazyModuleRefService {
    * @param postId Post ID to load comments for
    * @returns Promise resolving to array of comments or undefined
    */
-	public async load(postId: string): Promise<Comment[] | undefined> {
+	public async load(postId: string): Promise<IComment[] | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(postId);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for post ${postId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load comments for post ${postId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -86,12 +86,12 @@ export class CommentsByPostLoader implements LazyModuleRefService {
    * @param postIds Array of post IDs to load comments for
    * @returns Promise resolving to arrays of comments
    */
-	public async loadMany(postIds: string[]): Promise<(Comment[] | Error)[]> {
+	public async loadMany(postIds: string[]): Promise<(IComment[] | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(postIds);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for posts ${postIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load comments for posts ${postIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return postIds.map(() => error as Error);
 		}
 	}
@@ -103,7 +103,7 @@ export class CommentsByPostLoader implements LazyModuleRefService {
 	public clear(postId: string): void {
 		const loader = this.getLoader();
 		loader.clear(postId);
-		this.logger.debug(`Cleared cache for comments of post ${postId}`);
+		this.Logger.debug(`Cleared cache for comments of post ${postId}`);
 	}
 
 	/**

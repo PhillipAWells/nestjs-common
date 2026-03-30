@@ -18,14 +18,14 @@ describe('GraphQL Error Factory - Type Safety', () => {
 	describe('Error creation with proper types', () => {
 		it('should create error with typed input', () => {
 			const errorInput: IGraphQLErrorInput = {
-				message: 'User not found',
+				message: 'IUser not found',
 				code: GraphQLErrorCode.NOT_FOUND,
 				statusCode: 404,
 				details: { userId: '123' },
 			};
 
 			expect(errorInput).toBeDefined();
-			expect(errorInput.message).toBe('User not found');
+			expect(errorInput.message).toBe('IUser not found');
 			expect(errorInput.code).toBe(GraphQLErrorCode.NOT_FOUND);
 			expect(errorInput.statusCode).toBe(404);
 			expect(errorInput.details?.userId).toBe('123');
@@ -47,19 +47,19 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create validation error with proper types', () => {
-			const ValidationError = createGraphQLError(
+			const IValidationError = createGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
-			const error = new ValidationError('Email is invalid', {
+			const error = new IValidationError('Email is invalid', {
 				field: 'email',
 				value: 'not-an-email',
 			});
 
 			expect(error.message).toBe('Email is invalid');
-			expect(error.code).toBe('VALIDATION_ERROR');
-			expect(error.statusCode).toBe(400);
-			expect(error.context.field).toBe('email');
+			expect(error.Code).toBe('VALIDATION_ERROR');
+			expect(error.StatusCode).toBe(400);
+			expect(error.Context.field).toBe('email');
 		});
 
 		it('should create authentication error with proper types', () => {
@@ -70,8 +70,8 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			const error = new AuthError('Token expired');
 
 			expect(error.message).toBe('Token expired');
-			expect(error.code).toBe('UNAUTHORIZED');
-			expect(error.statusCode).toBe(401);
+			expect(error.Code).toBe('UNAUTHORIZED');
+			expect(error.StatusCode).toBe(401);
 		});
 
 		it('should create forbidden error with proper types', () => {
@@ -84,9 +84,9 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			});
 
 			expect(error.message).toBe('Access denied');
-			expect(error.code).toBe('FORBIDDEN');
-			expect(error.statusCode).toBe(403);
-			expect(error.context.requiredRole).toBe('admin');
+			expect(error.Code).toBe('FORBIDDEN');
+			expect(error.StatusCode).toBe(403);
+			expect(error.Context.requiredRole).toBe('admin');
 		});
 
 		it('should create rate limit error with proper types', () => {
@@ -99,9 +99,9 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			});
 
 			expect(error.message).toBe('Rate limit exceeded');
-			expect(error.code).toBe('RATE_LIMIT_EXCEEDED');
-			expect(error.statusCode).toBe(429);
-			expect(error.context.retryAfter).toBe(60);
+			expect(error.Code).toBe('RATE_LIMIT_EXCEEDED');
+			expect(error.StatusCode).toBe(429);
+			expect(error.Context.retryAfter).toBe(60);
 		});
 	});
 
@@ -132,16 +132,16 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 	describe('Error with method chaining and type safety', () => {
 		it('should create error with context and maintain types', () => {
-			const ValidationError = createGraphQLError(
+			const IValidationError = createGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
-			const error = new ValidationError('Invalid input');
+			const error = new IValidationError('Invalid input');
 			const errorWithContext = error.withContext({ field: 'name' });
 
 			expect(errorWithContext.message).toBe('Invalid input');
-			expect(errorWithContext.context.field).toBe('name');
-			expect(errorWithContext.statusCode).toBe(400);
+			expect(errorWithContext.Context.field).toBe('name');
+			expect(errorWithContext.StatusCode).toBe(400);
 		});
 
 		it('should create error with new message and maintain types', () => {
@@ -149,12 +149,12 @@ describe('GraphQL Error Factory - Type Safety', () => {
 				GRAPHQL_ERROR_CONFIGS.NOT_FOUND,
 			);
 
-			const error = new NotFoundError('User not found', { userId: '123' });
+			const error = new NotFoundError('IUser not found', { userId: '123' });
 			const errorWithNewMessage = error.withMessage('Resource does not exist');
 
 			expect(errorWithNewMessage.message).toBe('Resource does not exist');
-			expect(errorWithNewMessage.context.userId).toBe('123');
-			expect(errorWithNewMessage.statusCode).toBe(404);
+			expect(errorWithNewMessage.Context.userId).toBe('123');
+			expect(errorWithNewMessage.StatusCode).toBe(404);
 		});
 	});
 

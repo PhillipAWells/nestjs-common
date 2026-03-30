@@ -17,5 +17,5 @@ export { GraphQLWebSocketServer as WebSocketServer } from './websocket.server.js
 export { WebSocketAuthService } from './websocket-auth.service.js';
 export { ConnectionManagerService } from './connection-manager.service.js';
 export { ResilienceService } from './resilience.service.js';
-export type { SubscriptionConfig, RedisConfig, WebSocketConfig, AuthConfig, ConnectionConfig, ResilienceConfig } from './subscription-config.interface.js';
-export type { WebSocketServerConfig } from './websocket-config.interface.js';
+export type { ISubscriptionConfig, IRedisConfig, IWebSocketConfig, IAuthConfig, IConnectionConfig, IResilienceConfig } from './subscription-config.interface.js';
+export type { IWebSocketServerConfig } from './websocket-config.interface.js';

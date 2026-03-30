@@ -2,12 +2,12 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { Msg } from '@nats-io/transport-node';
 import { NATS_SUBSCRIBE_METADATA } from './nats.constants.js';
-import type { NatsSubscribeOptions } from './decorators/subscribe.decorator.js';
+import type { INatsSubscribeOptions } from './decorators/subscribe.decorator.js';
 import { NatsService } from './nats.service.js';
 import { NatsLogger } from './logger.js';
 
 /** Minimal interface for provider/controller wrappers returned by DiscoveryService. */
-interface ProviderWrapper {
+interface IProviderWrapper {
 	instance: unknown;
 }
 
@@ -27,11 +27,11 @@ interface ProviderWrapper {
  */
 @Injectable()
 export class NatsSubscriberRegistry implements OnModuleInit {
-	private readonly logger: NatsLogger;
-	private readonly discoveryService: DiscoveryService;
-	private readonly metadataScanner: MetadataScanner;
-	private readonly reflector: Reflector;
-	private readonly natsService: NatsService;
+	private readonly Logger: NatsLogger;
+	private readonly DiscoveryService: DiscoveryService;
+	private readonly MetadataScanner: MetadataScanner;
+	private readonly Reflector: Reflector;
+	private readonly NatsService: NatsService;
 
 	constructor(
 		discoveryService: DiscoveryService,
@@ -39,17 +39,17 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 		reflector: Reflector,
 		natsService: NatsService,
 	) {
-		this.logger = new NatsLogger(NatsSubscriberRegistry.name);
-		this.discoveryService = discoveryService;
-		this.metadataScanner = metadataScanner;
-		this.reflector = reflector;
-		this.natsService = natsService;
+		this.Logger = new NatsLogger(NatsSubscriberRegistry.name);
+		this.DiscoveryService = discoveryService;
+		this.MetadataScanner = metadataScanner;
+		this.Reflector = reflector;
+		this.NatsService = natsService;
 	}
 
 	public onModuleInit(): void {
-		const wrappers: ProviderWrapper[] = [
-			...this.discoveryService.getProviders(),
-			...this.discoveryService.getControllers(),
+		const wrappers: IProviderWrapper[] = [
+			...this.DiscoveryService.getProviders(),
+			...this.DiscoveryService.getControllers(),
 		];
 
 		for (const wrapper of wrappers) {
@@ -59,7 +59,7 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 			}
 
 			const prototype = Object.getPrototypeOf(instance) as Record<string, unknown>;
-			const methodNames = this.metadataScanner.getAllMethodNames(prototype);
+			const methodNames = this.MetadataScanner.getAllMethodNames(prototype);
 
 			for (const methodName of methodNames) {
 				const handler = prototype[methodName];
@@ -67,7 +67,7 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 					continue;
 				}
 
-				const meta = this.reflector.get<NatsSubscribeOptions | undefined>(
+				const meta = this.Reflector.get<INatsSubscribeOptions | undefined>(
 					NATS_SUBSCRIBE_METADATA,
 					handler as (...args: unknown[]) => unknown,
 				);
@@ -86,13 +86,13 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 	private registerHandler(
 		instance: Record<string, (...args: unknown[]) => unknown>,
 		methodName: string,
-		options: NatsSubscribeOptions,
+		options: INatsSubscribeOptions,
 	): void {
 		const boundHandler = instance[methodName].bind(instance) as (msg: Msg) => Promise<void> | void;
-		this.natsService.subscribe(options.subject, boundHandler, {
+		this.NatsService.subscribe(options.subject, boundHandler, {
 			queue: options.queue,
 		});
-		this.logger.info(
+		this.Logger.info(
 			`Registered handler "${methodName}" for NATS subject "${options.subject}"${options.queue !== undefined ? ` [queue: ${options.queue}]` : ''}`,
 		);
 	}

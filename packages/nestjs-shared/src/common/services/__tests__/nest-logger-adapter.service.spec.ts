@@ -20,12 +20,12 @@ describe('NestLoggerAdapter', () => {
 		it('should create own AppLogger when none provided', () => {
 			adapter = new NestLoggerAdapter();
 			expect(adapter).toBeDefined();
-			expect((adapter as any).logger).toBeInstanceOf(AppLogger);
+			expect((adapter as any).Logger).toBeInstanceOf(AppLogger);
 		});
 
 		it('should use provided AppLogger instance', () => {
 			adapter = new NestLoggerAdapter(mockLogger);
-			expect((adapter as any).logger).toBe(mockLogger);
+			expect((adapter as any).Logger).toBe(mockLogger);
 		});
 	});
 
@@ -253,7 +253,7 @@ describe('NestLoggerAdapter', () => {
 	describe('integration with real AppLogger', () => {
 		it('should create adapter with real AppLogger', () => {
 			adapter = new NestLoggerAdapter();
-			expect((adapter as any).logger).toBeInstanceOf(AppLogger);
+			expect((adapter as any).Logger).toBeInstanceOf(AppLogger);
 		});
 
 		it('should not throw when logging with real AppLogger', () => {

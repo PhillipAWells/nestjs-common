@@ -3,7 +3,7 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from '../jwt-auth.guard.js';
 import { KeycloakTokenValidationService } from '../../keycloak/services/keycloak-token-validation.service.js';
-import type { KeycloakUser, KeycloakTokenClaims } from '../../keycloak/keycloak.types.js';
+import type { IKeycloakUser, IKeycloakTokenClaims } from '../../keycloak/keycloak.types.js';
 
 describe('JwtAuthGuard', () => {
 	let guard: JwtAuthGuard;
@@ -102,16 +102,16 @@ describe('JwtAuthGuard', () => {
 			});
 
 			it('should set request.user and request.keycloakClaims on successful validation', async () => {
-				const mockClaims: KeycloakTokenClaims = {
+				const mockClaims: IKeycloakTokenClaims = {
 					sub: 'user-123',
 					email: 'user@example.com',
 					preferred_username: 'john_doe',
 					name: 'John Doe',
 					realm_access: { roles: ['admin'] },
 					aud: ['my-client'],
-				} as KeycloakTokenClaims;
+				} as IKeycloakTokenClaims;
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john_doe',

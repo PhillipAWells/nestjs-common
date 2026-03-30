@@ -40,7 +40,7 @@ import {
 } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
-export interface SharedThrottlerConfig {
+export interface ISharedThrottlerConfig {
 	/** Time window in milliseconds (default: 15 * 60 * 1000 = 15 minutes) */
 	ttl?: number;
 	/** Maximum number of requests per window (default: 100) */
@@ -58,7 +58,7 @@ export interface SharedThrottlerConfig {
 
 @Module({})
 export class SharedThrottlerModule {
-	private static readonly logger = new Logger(SharedThrottlerModule.name);
+	private static readonly Logger = new Logger(SharedThrottlerModule.name);
 
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly DEFAULT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -72,11 +72,11 @@ export class SharedThrottlerModule {
 	/**
 	 * Configure in-memory throttling (default)
 	 */
-	public static forRoot(config?: SharedThrottlerConfig): DynamicModule {
+	public static forRoot(config?: ISharedThrottlerConfig): DynamicModule {
 		const ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
 		const limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
 
-		SharedThrottlerModule.logger.log(
+		SharedThrottlerModule.Logger.log(
 			`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
 		);
 
@@ -97,8 +97,8 @@ export class SharedThrottlerModule {
 	 */
 	public static forRootAsync(
 		options: {
-			useFactory?: (...args: any[]) => SharedThrottlerConfig | Promise<SharedThrottlerConfig>;
-			useClass?: Type<{ createThrottlerConfig(): SharedThrottlerConfig | Promise<SharedThrottlerConfig> }>;
+			useFactory?: (...args: any[]) => ISharedThrottlerConfig | Promise<ISharedThrottlerConfig>;
+			useClass?: Type<{ createThrottlerConfig(): ISharedThrottlerConfig | Promise<ISharedThrottlerConfig> }>;
 			inject?: any[];
 			imports?: ModuleMetadata['imports'];
 		},
@@ -128,7 +128,7 @@ export class SharedThrottlerModule {
 			imports: [
 				ThrottlerModule.forRootAsync({
 					inject: ['SHARED_THROTTLER_CONFIG'],
-					useFactory: (config: SharedThrottlerConfig) => {
+					useFactory: (config: ISharedThrottlerConfig) => {
 						const ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
 						const limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
 
@@ -136,7 +136,7 @@ export class SharedThrottlerModule {
 							throw new Error('Redis backend for SharedThrottlerModule is not yet implemented. Remove the redis config or wait for the implementation.');
 						}
 
-						SharedThrottlerModule.logger.log(
+						SharedThrottlerModule.Logger.log(
 							`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
 						);
 

@@ -3,7 +3,7 @@ import { ApolloDriverConfig } from '@nestjs/apollo';
 /**
  * Configuration options for the GraphQL module
  */
-export interface GraphQLConfigOptions extends Omit<ApolloDriverConfig, 'driver'> {
+export interface IGraphQLConfigOptions extends Omit<ApolloDriverConfig, 'driver'> {
 	/**
    * Path to auto-generated schema file or false to disable
    * @default './schema.gql'
@@ -80,11 +80,11 @@ export interface GraphQLConfigOptions extends Omit<ApolloDriverConfig, 'driver'>
 /**
  * Asynchronous configuration options for the GraphQL module
  */
-export interface GraphQLAsyncConfig {
+export interface IGraphQLAsyncConfig {
 	/**
    * Factory function that returns configuration options
    */
-	useFactory: (...args: any[]) => Promise<GraphQLConfigOptions> | GraphQLConfigOptions;
+	useFactory: (...args: any[]) => Promise<IGraphQLConfigOptions> | IGraphQLConfigOptions;
 
 	/**
    * Dependencies to inject into the factory function

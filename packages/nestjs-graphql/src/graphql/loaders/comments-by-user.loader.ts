@@ -1,24 +1,24 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
-import { Comment } from './comment.loader.js';
+import { IComment } from './comment.loader.js';
 
 /**
  * DataLoader for loading comments by user ID
  * Prevents N+1 query problems when resolving user's comments in GraphQL
  */
 @Injectable()
-export class CommentsByUserLoader implements LazyModuleRefService {
+export class CommentsByUserLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(CommentsByUserLoader.name);
 	}
 
@@ -36,8 +36,8 @@ export class CommentsByUserLoader implements LazyModuleRefService {
    * @returns DataLoader for comments by user
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Comment[] | Error)[]>,
-	): DataLoader<string, Comment[]> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IComment[] | Error)[]>,
+	): DataLoader<string, IComment[]> {
 		return this.DataLoaderRegistry.createWithCache(
 			'comments-by-user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -53,8 +53,8 @@ export class CommentsByUserLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
-	): Promise<(Comment[] | Error)[]> {
-		this.logger.warn(
+	): Promise<(IComment[] | Error)[]> {
+		this.Logger.warn(
 			'Using default comments by user batch loader. Override with actual implementation.',
 		);
 
@@ -68,15 +68,15 @@ export class CommentsByUserLoader implements LazyModuleRefService {
 
 	/**
    * Loads comments for a single user by user ID
-   * @param userId User ID to load comments for
+   * @param userId IUser ID to load comments for
    * @returns Promise resolving to array of comments or undefined
    */
-	public async load(userId: string): Promise<Comment[] | undefined> {
+	public async load(userId: string): Promise<IComment[] | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for user ${userId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load comments for user ${userId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -86,24 +86,24 @@ export class CommentsByUserLoader implements LazyModuleRefService {
    * @param userIds Array of user IDs to load comments for
    * @returns Promise resolving to arrays of comments
    */
-	public async loadMany(userIds: string[]): Promise<(Comment[] | Error)[]> {
+	public async loadMany(userIds: string[]): Promise<(IComment[] | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
 		} catch (error) {
-			this.logger.error(`Failed to load comments for users ${userIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load comments for users ${userIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return userIds.map(() => error as Error);
 		}
 	}
 
 	/**
    * Clears the cache for a specific user's comments
-   * @param userId User ID to clear comments cache for
+   * @param userId IUser ID to clear comments cache for
    */
 	public clear(userId: string): void {
 		const loader = this.getLoader();
 		loader.clear(userId);
-		this.logger.debug(`Cleared cache for comments of user ${userId}`);
+		this.Logger.debug(`Cleared cache for comments of user ${userId}`);
 	}
 
 	/**

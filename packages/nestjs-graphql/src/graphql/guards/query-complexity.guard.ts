@@ -1,5 +1,6 @@
 declare global {
 	namespace NodeJS {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		interface Timeout {}
 	}
 }
@@ -15,10 +16,10 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type {
-	ComplexityConfig,
+	IComplexityConfig,
 } from '../graphql/query-complexity.js';
 import {
 	calculateQueryComplexity,
@@ -35,7 +36,7 @@ import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVA
  * complexity for identical queries
  */
 @Injectable()
-export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyModuleRefService {
+export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
@@ -46,7 +47,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(QueryComplexityGuard.name);
 		} catch {
@@ -54,14 +55,14 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 		}
 	}
 
-	private readonly complexityCache = new Map<string, number>();
+	private readonly ComplexityCache = new Map<string, number>();
 
 	// eslint-disable-next-line no-undef
-	private cleanupIntervalRef: NodeJS.Timeout | null = null;
+	private CleanupIntervalRef: NodeJS.Timeout | null = null;
 
-	private get config(): ComplexityConfig {
+	private get Config(): IComplexityConfig {
 		try {
-			return this.Module.get<ComplexityConfig>('COMPLEXITY_CONFIG', { strict: false });
+			return this.Module.get<IComplexityConfig>('COMPLEXITY_CONFIG', { strict: false });
 		} catch {
 			return DEFAULT_COMPLEXITY_CONFIG;
 		}
@@ -89,7 +90,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 	 * @returns Cached complexity or undefined
 	 */
 	private getComplexityFromCache(query: any): number | undefined {
-		return this.complexityCache.get(this.hashQuery(query));
+		return this.ComplexityCache.get(this.hashQuery(query));
 	}
 
 	/**
@@ -102,14 +103,14 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 		const key = this.hashQuery(query);
 
 		// Clean up cache if it exceeds max size (FIFO)
-		if (this.complexityCache.size >= QUERY_COMPLEXITY_CACHE_MAX_SIZE) {
-			const firstKey = this.complexityCache.keys().next().value as string;
+		if (this.ComplexityCache.size >= QUERY_COMPLEXITY_CACHE_MAX_SIZE) {
+			const firstKey = this.ComplexityCache.keys().next().value as string;
 			if (firstKey) {
-				this.complexityCache.delete(firstKey);
+				this.ComplexityCache.delete(firstKey);
 			}
 		}
 
-		this.complexityCache.set(key, complexity);
+		this.ComplexityCache.set(key, complexity);
 	}
 
 	/**
@@ -117,13 +118,13 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 	 * Clears cache every 10 minutes to prevent stale entries
 	 */
 	private startPeriodicCleanup(): void {
-		if (this.cleanupIntervalRef) {
+		if (this.CleanupIntervalRef) {
 			return;
 		}
 
-		this.cleanupIntervalRef = setInterval(() => {
-			this.logger?.debug(`Clearing complexity cache (size: ${this.complexityCache.size})`);
-			this.complexityCache.clear();
+		this.CleanupIntervalRef = setInterval(() => {
+			this.Logger?.debug(`Clearing complexity cache (size: ${this.ComplexityCache.size})`);
+			this.ComplexityCache.clear();
 		}, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVAL_MS);
 	}
 
@@ -132,10 +133,10 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 	 * Clears interval and memory structures
 	 */
 	public onModuleDestroy(): void {
-		if (this.cleanupIntervalRef) {
-			clearInterval(this.cleanupIntervalRef);
-			this.cleanupIntervalRef = null;
-			this.complexityCache.clear();
+		if (this.CleanupIntervalRef) {
+			clearInterval(this.CleanupIntervalRef);
+			this.CleanupIntervalRef = null;
+			this.ComplexityCache.clear();
 		}
 	}
 
@@ -158,7 +159,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 
 			if (cachedComplexity !== undefined) {
 				complexity = cachedComplexity;
-				this.logger?.debug(`Query complexity from cache: ${complexity}`);
+				this.Logger?.debug(`Query complexity from cache: ${complexity}`);
 			} else {
 				// Calculate query complexity
 				complexity = calculateQueryComplexity(
@@ -166,20 +167,20 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 					document,
 					variables,
 					operationName,
-					this.config,
+					this.Config,
 				);
 
 				// Store in cache
 				this.setComplexityCache(document, complexity);
-				this.logger?.debug(`Query complexity calculated: ${complexity}`);
+				this.Logger?.debug(`Query complexity calculated: ${complexity}`);
 			}
 
 			// Check if complexity exceeds limits
-			if (exceedsComplexityLimit(complexity, this.config)) {
-				const maxComplexity = this.config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
+			if (exceedsComplexityLimit(complexity, this.Config)) {
+				const maxComplexity = this.Config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
 				const message = `Query complexity ${complexity} exceeds maximum allowed complexity of ${maxComplexity}`;
 
-				this.logger?.warn(message, {
+				this.Logger?.warn(message, {
 					complexity,
 					maxComplexity,
 					operationName,
@@ -200,7 +201,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, LazyM
 				throw error;
 			}
 
-			this.logger?.error(`Query complexity calculation failed: ${(error as Error).message}`, (error as Error).stack);
+			this.Logger?.error(`Query complexity calculation failed: ${(error as Error).message}`, (error as Error).stack);
 			throw new InternalServerErrorException('Unable to validate query complexity');
 		}
 	}

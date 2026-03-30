@@ -13,8 +13,8 @@ import {
 	LoggingInterceptor,
 	ErrorSanitizerService,
 	CSRFService,
-	type SecurityBootstrapOptions,
-	type RateLimitConfig,
+	type ISecurityBootstrapOptions,
+	type IRateLimitConfig,
 	type IHealthCheck,
 } from '../index.js';
 
@@ -529,7 +529,7 @@ describe('nestjs-shared Integration Tests', () => {
 		});
 
 		it('should handle security middleware with partial options', () => {
-			const options: SecurityBootstrapOptions = {
+			const options: ISecurityBootstrapOptions = {
 				corsOrigins: ['https://example.com'],
 			};
 			expect(() => ApplySecurityMiddleware(app, options)).not.toThrow();
@@ -537,8 +537,8 @@ describe('nestjs-shared Integration Tests', () => {
 	});
 
 	describe('Type Safety and Interfaces', () => {
-		it('should maintain type safety for RateLimitConfig', () => {
-			const config: RateLimitConfig = CreateRateLimitConfig();
+		it('should maintain type safety for IRateLimitConfig', () => {
+			const config: IRateLimitConfig = CreateRateLimitConfig();
 			expect(config.auth).toBeDefined();
 			expect(config.api).toBeDefined();
 		});
@@ -550,8 +550,8 @@ describe('nestjs-shared Integration Tests', () => {
 			expect(health.version).toBe('1.0.0');
 		});
 
-		it('should maintain type safety for SecurityBootstrapOptions', () => {
-			const options: SecurityBootstrapOptions = {
+		it('should maintain type safety for ISecurityBootstrapOptions', () => {
+			const options: ISecurityBootstrapOptions = {
 				corsOrigins: ['https://example.com'],
 				environment: 'production',
 				compressionEnabled: true,
@@ -561,7 +561,7 @@ describe('nestjs-shared Integration Tests', () => {
 		});
 	});
 
-	describe('CommonModule Integration and Import Order Validation', () => {
+	describe('CommonModule Integration and Import IOrder Validation', () => {
 		it('should export global exception filter from CommonModule', () => {
 			// Verify that GlobalExceptionFilter is exported
 			expect(GlobalExceptionFilter).toBeDefined();

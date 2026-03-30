@@ -7,7 +7,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { createAsyncProviders } from '@pawells/nestjs-shared/common';
 import { getQdrantClientToken, getQdrantModuleOptionsToken } from './qdrant.constants.js';
-import type { QdrantModuleAsyncOptions, QdrantModuleOptions, QdrantOptionsFactory } from './qdrant.interfaces.js';
+import type { IQdrantModuleAsyncOptions, TQdrantModuleOptions, IQdrantOptionsFactory } from './qdrant.interfaces.js';
 import { QdrantService } from './qdrant.service.js';
 
 /**
@@ -67,7 +67,7 @@ export class QdrantModule {
 	 * ```
 	 */
 	public static forRoot(
-		options: QdrantModuleOptions,
+		options: TQdrantModuleOptions,
 		isGlobal?: boolean,
 	): DynamicModule {
 		const global = isGlobal ?? true;
@@ -98,7 +98,7 @@ export class QdrantModule {
 	 * Supports factory functions, class-based factories, and existing service reuse.
 	 * Creates and provides the Qdrant client instance and service globally.
 	 *
-	 * The apiKey is automatically sanitized and stored separately from the public options token
+	 * The apiKey is automatically sanitized and stored separately from the public Options token
 	 * to ensure security. The client factory receives the full options including the apiKey,
 	 * but the publicly injectable options token excludes it.
 	 *
@@ -126,7 +126,7 @@ export class QdrantModule {
 	 * ```
 	 */
 	public static forRootAsync(
-		options: QdrantModuleAsyncOptions,
+		options: IQdrantModuleAsyncOptions,
 		isGlobal?: boolean,
 	): DynamicModule {
 		const global = isGlobal ?? true;
@@ -138,7 +138,7 @@ export class QdrantModule {
 		const rawProviders = createAsyncProviders(
 			options,
 			rawOptionsToken,
-			(factory: QdrantOptionsFactory): QdrantModuleOptions | Promise<QdrantModuleOptions> => {
+			(factory: IQdrantOptionsFactory): TQdrantModuleOptions | Promise<TQdrantModuleOptions> => {
 				return factory.createQdrantOptions();
 			},
 		);
@@ -152,7 +152,7 @@ export class QdrantModule {
 				// Store sanitized options (without apiKey) under the public token
 				{
 					provide: optionsToken,
-					useFactory: (opts: QdrantModuleOptions) => {
+					useFactory: (opts: TQdrantModuleOptions) => {
 						const { apiKey: _apiKey, name: _name, ...sanitized } = opts;
 						return sanitized;
 					},
@@ -161,7 +161,7 @@ export class QdrantModule {
 				// Create client with full options (including apiKey)
 				{
 					provide: clientToken,
-					useFactory: (opts: QdrantModuleOptions) => {
+					useFactory: (opts: TQdrantModuleOptions) => {
 						const { name: _name, ...clientOptions } = opts;
 						return new QdrantClient(clientOptions);
 					},

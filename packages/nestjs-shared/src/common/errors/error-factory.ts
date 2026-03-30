@@ -3,7 +3,7 @@ import { BaseApplicationError } from './base-application-error.js';
 /**
  * Configuration interface for creating error classes
  */
-export interface ErrorConfig {
+export interface IErrorConfig {
 	/** The error code for programmatic identification */
 	code: string;
 	/** The HTTP status code */
@@ -32,7 +32,7 @@ export interface ErrorConfig {
  * });
  * ```
  */
-export function createError(config: ErrorConfig): typeof BaseApplicationError {
+export function createError(config: IErrorConfig): typeof BaseApplicationError {
 	const { code, statusCode, defaultMessage, name = `${code}Error` } = config;
 
 	/**
@@ -125,4 +125,4 @@ export const ERROR_CONFIGS = {
 /**
  * Type for error configuration keys
  */
-export type ErrorType = keyof typeof ERROR_CONFIGS;
+export type TErrorType = keyof typeof ERROR_CONFIGS;

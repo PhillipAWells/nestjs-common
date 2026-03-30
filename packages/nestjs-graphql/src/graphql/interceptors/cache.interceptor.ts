@@ -4,23 +4,23 @@ import { Reflector, ModuleRef } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { getErrorMessage } from '@pawells/nestjs-shared/common';
-import { BaseCacheInterceptor, CacheKeyGenerator, CacheMetadataExtractor, CacheContextHandler } from '../../cache/interceptors/base-cache.interceptor.js';
+import { BaseCacheInterceptor, ICacheKeyGenerator, ICacheMetadataExtractor, ICacheContextHandler } from '../../cache/interceptors/base-cache.interceptor.js';
 import { GraphQLCacheService } from '../services/cache.service.js';
-import { CACHEABLE_METADATA, CacheableOptions } from '../decorators/cacheable.decorator.js';
-import { CACHE_INVALIDATE_METADATA, CacheInvalidateOptions } from '../decorators/cache-invalidate.decorator.js';
+import { CACHEABLE_METADATA, ICacheableOptions } from '../decorators/cacheable.decorator.js';
+import { CACHE_INVALIDATE_METADATA, ICacheInvalidateOptions } from '../decorators/cache-invalidate.decorator.js';
 
 /**
  * GraphQL-specific cache key generator
  */
 @Injectable()
-export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
-	private readonly cacheService: GraphQLCacheService;
+export class GraphQLCacheKeyGenerator implements ICacheKeyGenerator {
+	private readonly CacheService: GraphQLCacheService;
 
 	constructor(cacheService: GraphQLCacheService) {
-		this.cacheService = cacheService;
+		this.CacheService = cacheService;
 	}
 
-	public generate(_context: ExecutionContext, options?: CacheableOptions): string {
+	public generate(_context: ExecutionContext, options?: ICacheableOptions): string {
 		const gqlContext = GqlExecutionContext.create(_context);
 		const args = gqlContext.getArgs();
 		const info = gqlContext.getInfo();
@@ -29,7 +29,7 @@ export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
 			return options.keyGenerator(Object.values(args), gqlContext.getContext());
 		}
 
-		return this.cacheService.generateKey(info.fieldName, args, {
+		return this.CacheService.generateKey(info.fieldName, args, {
 			userId: gqlContext.getContext().user?.id ?? gqlContext.getContext().user?.sub,
 		});
 	}
@@ -39,11 +39,11 @@ export class GraphQLCacheKeyGenerator implements CacheKeyGenerator {
  * GraphQL-specific cache metadata extractor
  */
 @Injectable()
-export class GraphQLCacheMetadataExtractor implements CacheMetadataExtractor {
-	private readonly reflector: Reflector;
+export class GraphQLCacheMetadataExtractor implements ICacheMetadataExtractor {
+	private readonly Reflector: Reflector;
 
 	constructor(reflector: Reflector) {
-		this.reflector = reflector;
+		this.Reflector = reflector;
 	}
 
 	public getCacheDisabled(_context: ExecutionContext): boolean {
@@ -53,7 +53,7 @@ export class GraphQLCacheMetadataExtractor implements CacheMetadataExtractor {
 	}
 
 	public getCacheTtl(_context: ExecutionContext): number | undefined {
-		const cacheableOptions = this.reflector.getAllAndOverride<CacheableOptions>(
+		const cacheableOptions = this.Reflector.getAllAndOverride<ICacheableOptions>(
 			CACHEABLE_METADATA,
 			[_context.getHandler(), _context.getClass()],
 		);
@@ -65,7 +65,7 @@ export class GraphQLCacheMetadataExtractor implements CacheMetadataExtractor {
  * GraphQL-specific cache context handler
  */
 @Injectable()
-export class GraphQLCacheContextHandler implements CacheContextHandler {
+export class GraphQLCacheContextHandler implements ICacheContextHandler {
 	public setCacheHeaders(_context: ExecutionContext, _hit: boolean, _ttl?: number): void {
 		// GraphQL doesn't use HTTP headers for caching
 		// Could potentially add to extensions if needed
@@ -95,15 +95,15 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		super(moduleRef);
 	}
 
-	protected getCacheKeyGenerator(): CacheKeyGenerator {
+	protected getCacheKeyGenerator(): ICacheKeyGenerator {
 		return new GraphQLCacheKeyGenerator(this.GraphQLCacheService);
 	}
 
-	protected getCacheMetadataExtractor(): CacheMetadataExtractor {
+	protected getCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return new GraphQLCacheMetadataExtractor(this.Reflector);
 	}
 
-	protected getCacheContextHandler(): CacheContextHandler {
+	protected getCacheContextHandler(): ICacheContextHandler {
 		return new GraphQLCacheContextHandler();
 	}
 
@@ -141,7 +141,7 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		result: any,
 		when: 'before' | 'after',
 	): Promise<void> {
-		const invalidateOptions = this.Reflector.getAllAndOverride<CacheInvalidateOptions>(
+		const invalidateOptions = this.Reflector.getAllAndOverride<ICacheInvalidateOptions>(
 			CACHE_INVALIDATE_METADATA,
 			[context.getHandler(), context.getClass()],
 		);
@@ -170,9 +170,9 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		for (const pattern of patterns) {
 			try {
 				await this.GraphQLCacheService?.invalidatePattern(pattern);
-				this.logger?.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
+				this.Logger?.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
 			} catch (error) {
-				this.logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${getErrorMessage(error)}`);
+				this.Logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${getErrorMessage(error)}`);
 			}
 		}
 	}

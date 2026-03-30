@@ -331,7 +331,7 @@ describe('CommonModule', () => {
 			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			// Module should be able to call moduleRef methods
-			expect(commonModule).toHaveProperty('moduleRef');
+			expect(commonModule).toHaveProperty('ModuleRef');
 		});
 	});
 

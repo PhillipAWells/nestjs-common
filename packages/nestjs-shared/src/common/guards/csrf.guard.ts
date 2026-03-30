@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { CSRFService } from '../services/csrf.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * CSRF Guard.
@@ -39,7 +39,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  */
 
 @Injectable()
-export class CSRFGuard implements CanActivate, LazyModuleRefService {
+export class CSRFGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {

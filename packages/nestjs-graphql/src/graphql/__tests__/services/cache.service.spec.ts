@@ -420,7 +420,7 @@ describe('GraphQLCacheService', () => {
 
 			const listData = Array.from({ length: pageSize }, (_, i) => ({
 				id: `user-${i}`,
-				name: `User ${i}`,
+				name: `IUser ${i}`,
 			}));
 
 			mockCacheManager.get.mockResolvedValue(null);

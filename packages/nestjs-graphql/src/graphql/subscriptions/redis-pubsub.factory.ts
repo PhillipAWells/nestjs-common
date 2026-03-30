@@ -1,5 +1,6 @@
 declare global {
 	namespace NodeJS {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		interface Timeout {}
 	}
 }
@@ -8,7 +9,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Redis } from 'ioredis';
 import { AppLogger } from '@pawells/nestjs-shared/common';
-import { RedisConfig } from './subscription-config.interface.js';
+import { IRedisConfig } from './subscription-config.interface.js';
 import { REDIS_PUBSUB_RESPONSE_TIMEOUT, REDIS_PUBSUB_CLEANUP_INTERVAL, REDIS_PUBSUB_HEALTH_CHECK_TIMEOUT } from '../constants/subscriptions.constants.js';
 
 /**
@@ -16,19 +17,19 @@ import { REDIS_PUBSUB_RESPONSE_TIMEOUT, REDIS_PUBSUB_CLEANUP_INTERVAL, REDIS_PUB
  */
 @Injectable()
 export class RedisPubSubFactory implements OnModuleDestroy {
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
-	private pubSubInstances: RedisPubSub[] = [];
+	private PubSubInstances: RedisPubSub[] = [];
 
-	private readonly publisherClients: any[] = [];
+	private readonly PublisherClients: any[] = [];
 
-	private readonly subscriberClients: any[] = [];
+	private readonly SubscriberClients: any[] = [];
 
 	// eslint-disable-next-line no-undef
-	private healthCheckInterval?: NodeJS.Timeout;
+	private HealthCheckInterval?: NodeJS.Timeout;
 
 	constructor() {
-		this.logger = new AppLogger(undefined, RedisPubSubFactory.name);
+		this.Logger = new AppLogger(undefined, RedisPubSubFactory.name);
 	}
 
 	/**
@@ -36,30 +37,30 @@ export class RedisPubSubFactory implements OnModuleDestroy {
    * @param config Redis configuration
    * @returns Configured RedisPubSub instance
    */
-	public createPubSub(config: RedisConfig): RedisPubSub {
-		this.logger.info('Creating Redis PubSub instance');
+	public createPubSub(config: IRedisConfig): RedisPubSub {
+		this.Logger.info('Creating Redis PubSub instance');
 
 		// Create Redis clients with connection pooling
 		const publisher = this.createRedisClient(config);
 		const subscriber = this.createRedisClient(config);
 
 		// Store clients for cleanup
-		this.publisherClients.push(publisher);
-		this.subscriberClients.push(subscriber);
+		this.PublisherClients.push(publisher);
+		this.SubscriberClients.push(subscriber);
 
 		const pubSub = new RedisPubSub({
 			publisher,
 			subscriber,
 		});
 
-		this.pubSubInstances.push(pubSub);
+		this.PubSubInstances.push(pubSub);
 
 		// Start health checks if enabled
 		if (config.healthCheck?.enabled) {
 			this.startHealthChecks(config);
 		}
 
-		this.logger.info('Redis PubSub instance created successfully');
+		this.Logger.info('Redis PubSub instance created successfully');
 		return pubSub;
 	}
 
@@ -68,7 +69,7 @@ export class RedisPubSubFactory implements OnModuleDestroy {
    * @param config Redis configuration
    * @returns Redis client
    */
-	private createRedisClient(config: RedisConfig): any {
+	private createRedisClient(config: IRedisConfig): any {
 		const options: any = {
 			host: config.host,
 			port: config.port,
@@ -88,19 +89,19 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 
 		// Event handlers
 		client.on('connect', () => {
-			this.logger.info(`Redis client connected to ${config.host}:${config.port}`);
+			this.Logger.info(`Redis client connected to ${config.host}:${config.port}`);
 		});
 
 		client.on('error', (error: Error) => {
-			this.logger.error(`Redis client error: ${error.message}`, error.stack);
+			this.Logger.error(`Redis client error: ${error.message}`, error.stack);
 		});
 
 		client.on('ready', () => {
-			this.logger.info('Redis client ready');
+			this.Logger.info('Redis client ready');
 		});
 
 		client.on('end', () => {
-			this.logger.info('Redis client connection ended');
+			this.Logger.info('Redis client connection ended');
 		});
 
 		return client;
@@ -110,22 +111,22 @@ export class RedisPubSubFactory implements OnModuleDestroy {
    * Starts health checks for Redis connections
    * @param config Redis configuration
    */
-	private startHealthChecks(config: RedisConfig): void {
+	private startHealthChecks(config: IRedisConfig): void {
 		if (!config.healthCheck) return;
 
-		this.healthCheckInterval = setInterval(() => {
+		this.HealthCheckInterval = setInterval(() => {
 			const checks: Promise<void>[] = [];
 
-			for (const client of this.publisherClients) {
+			for (const client of this.PublisherClients) {
 				checks.push(this.checkClientHealth(client, 'publisher'));
 			}
-			for (const client of this.subscriberClients) {
+			for (const client of this.SubscriberClients) {
 				checks.push(this.checkClientHealth(client, 'subscriber'));
 			}
 
 			Promise.all(checks).catch((error: unknown) => {
 				const err = error as Error;
-				this.logger.error(`Health check failed: ${err.message}`, err.stack);
+				this.Logger.error(`Health check failed: ${err.message}`, err.stack);
 			});
 		}, config.healthCheck.interval ?? REDIS_PUBSUB_CLEANUP_INTERVAL);
 	}
@@ -167,27 +168,27 @@ export class RedisPubSubFactory implements OnModuleDestroy {
 		const status = {
 			publisher: false,
 			subscriber: false,
-			pubSubInstances: this.pubSubInstances.length,
+			pubSubInstances: this.PubSubInstances.length,
 		};
 
 		try {
-			for (const client of this.publisherClients) {
+			for (const client of this.PublisherClients) {
 				await this.checkClientHealth(client, 'publisher');
 				status.publisher = true;
 			}
 		} catch (error) {
 			const err = error as Error;
-			this.logger.warn(`Publisher health check failed: ${err.message}`);
+			this.Logger.warn(`Publisher health check failed: ${err.message}`);
 		}
 
 		try {
-			for (const client of this.subscriberClients) {
+			for (const client of this.SubscriberClients) {
 				await this.checkClientHealth(client, 'subscriber');
 				status.subscriber = true;
 			}
 		} catch (error) {
 			const err = error as Error;
-			this.logger.warn(`Subscriber health check failed: ${err.message}`);
+			this.Logger.warn(`Subscriber health check failed: ${err.message}`);
 		}
 
 		return status;
@@ -197,46 +198,46 @@ export class RedisPubSubFactory implements OnModuleDestroy {
    * Cleanup method called when module is destroyed
    */
 	public async onModuleDestroy(): Promise<void> {
-		this.logger.info('Destroying Redis PubSub factory');
+		this.Logger.info('Destroying Redis PubSub factory');
 
 		// Clear health check interval
-		if (this.healthCheckInterval) {
-			clearInterval(this.healthCheckInterval);
+		if (this.HealthCheckInterval) {
+			clearInterval(this.HealthCheckInterval);
 		}
 
 		// Close all PubSub instances
-		for (const pubSub of this.pubSubInstances) {
+		for (const pubSub of this.PubSubInstances) {
 			try {
 				await pubSub.close();
 			} catch (error) {
 				const err = error as Error;
-				this.logger.error(`Error closing PubSub instance: ${err.message}`, err.stack);
+				this.Logger.error(`Error closing PubSub instance: ${err.message}`, err.stack);
 			}
 		}
 
-		this.pubSubInstances = [];
+		this.PubSubInstances = [];
 
 		// Close all Redis clients
-		for (const client of this.publisherClients) {
+		for (const client of this.PublisherClients) {
 			try {
 				await client.quit();
 			} catch (error) {
 				const err = error as Error;
-				this.logger.error(`Error closing publisher client: ${err.message}`, err.stack);
+				this.Logger.error(`Error closing publisher client: ${err.message}`, err.stack);
 			}
 		}
-		for (const client of this.subscriberClients) {
+		for (const client of this.SubscriberClients) {
 			try {
 				await client.quit();
 			} catch (error) {
 				const err = error as Error;
-				this.logger.error(`Error closing subscriber client: ${err.message}`, err.stack);
+				this.Logger.error(`Error closing subscriber client: ${err.message}`, err.stack);
 			}
 		}
 
-		this.publisherClients.length = 0;
-		this.subscriberClients.length = 0;
+		this.PublisherClients.length = 0;
+		this.SubscriberClients.length = 0;
 
-		this.logger.info('Redis PubSub factory destroyed');
+		this.Logger.info('Redis PubSub factory destroyed');
 	}
 }

@@ -1,4 +1,4 @@
-import { AuditLoggerService, AuditLogEntry } from '../audit-logger.service.js';
+import { AuditLoggerService, IAuditLogEntry } from '../audit-logger.service.js';
 
 describe('AuditLoggerService', () => {
 	let service: AuditLoggerService;
@@ -42,7 +42,7 @@ describe('AuditLoggerService', () => {
 		expect(service).toBeDefined();
 	});
 
-	it('should implement LazyModuleRefService', () => {
+	it('should implement ILazyModuleRefService', () => {
 		expect(service.Module).toBeDefined();
 		expect(service.Logger).toBeDefined();
 	});
@@ -147,7 +147,7 @@ describe('AuditLoggerService', () => {
 		it('should log token revocation', () => {
 			logCalls = [];
 
-			service.logTokenRevocation('user-789', 'User logout');
+			service.logTokenRevocation('user-789', 'IUser logout');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Token REVOCATION');
@@ -305,7 +305,7 @@ describe('AuditLoggerService', () => {
 		it('should log custom security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				userId: 'user-123',
 				action: 'export-data',
@@ -322,7 +322,7 @@ describe('AuditLoggerService', () => {
 		it('should include action in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'permission-change',
 				resource: 'user-456',
@@ -337,7 +337,7 @@ describe('AuditLoggerService', () => {
 		it('should include resource in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'delete-user',
 				resource: '/users/789',
@@ -352,7 +352,7 @@ describe('AuditLoggerService', () => {
 		it('should include result in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'login-attempt',
 				resource: '/auth/login',
@@ -367,7 +367,7 @@ describe('AuditLoggerService', () => {
 		it('should handle optional fields in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'system-check',
 				resource: 'health-endpoint',

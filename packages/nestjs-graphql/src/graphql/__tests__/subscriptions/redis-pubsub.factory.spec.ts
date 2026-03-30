@@ -2,7 +2,7 @@
 import { vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedisPubSubFactory } from '../../subscriptions/redis-pubsub.factory.js';
-import { RedisConfig } from '../../subscriptions/subscription-config.interface.js';
+import { IRedisConfig } from '../../subscriptions/subscription-config.interface.js';
 
 const mockRedisInstance = {
 	on: vi.fn(),
@@ -70,7 +70,7 @@ describe('RedisPubSubFactory', () => {
 
 	describe('createPubSub', () => {
 		it('should create a Redis PubSub instance with basic config', () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 			};
@@ -85,7 +85,7 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should create Redis clients with full configuration', () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'redis.example.com',
 				port: 6380,
 				password: 'secret',
@@ -107,7 +107,7 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should start health checks when enabled', () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 				healthCheck: {
@@ -120,11 +120,11 @@ describe('RedisPubSubFactory', () => {
 			factory.createPubSub(config);
 
 			// Health check interval should be set
-			expect((factory as any).healthCheckInterval).toBeDefined();
+			expect((factory as any).HealthCheckInterval).toBeDefined();
 		});
 
 		it('should not start health checks when disabled', () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 				healthCheck: {
@@ -136,7 +136,7 @@ describe('RedisPubSubFactory', () => {
 
 			factory.createPubSub(config);
 
-			expect((factory as any).healthCheckInterval).toBeUndefined();
+			expect((factory as any).HealthCheckInterval).toBeUndefined();
 		});
 	});
 
@@ -148,7 +148,7 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should return healthy status when clients are connected', async () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 			};
@@ -167,7 +167,7 @@ describe('RedisPubSubFactory', () => {
 				callback(new Error('Connection failed'), null);
 			});
 
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 			};
@@ -188,7 +188,7 @@ describe('RedisPubSubFactory', () => {
 				// Don't call callback to simulate timeout
 			});
 
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 			};
@@ -209,7 +209,7 @@ describe('RedisPubSubFactory', () => {
 
 	describe('onModuleDestroy', () => {
 		it('should cleanup all resources', async () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 				healthCheck: { enabled: true, interval: 60000, timeout: 5000 },
@@ -224,7 +224,7 @@ describe('RedisPubSubFactory', () => {
 		});
 
 		it('should handle errors during cleanup', async () => {
-			const config: RedisConfig = {
+			const config: IRedisConfig = {
 				host: 'localhost',
 				port: 6379,
 			};

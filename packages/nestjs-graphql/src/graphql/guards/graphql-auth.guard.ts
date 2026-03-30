@@ -1,7 +1,7 @@
 import { Injectable, ExecutionContext, UnauthorizedException, CanActivate } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -14,14 +14,14 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * @example
  * ```typescript
  * @UseGuards(GraphQLAuthGuard)
- * @Query(() => User, { name: 'GetUser' })
- * async getUser(): Promise<User> {
+ * @Query(() => IUser, { name: 'GetUser' })
+ * async getUser(): Promise<IUser> {
  *   // This resolver is protected
  * }
  * ```
  */
 @Injectable()
-export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
+export class GraphQLAuthGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
@@ -32,7 +32,7 @@ export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLAuthGuard.name);
 		} catch {
@@ -59,14 +59,14 @@ export class GraphQLAuthGuard implements CanActivate, LazyModuleRefService {
 		const token = this.extractTokenFromHeader(request);
 
 		if (!token) {
-			this.logger?.warn('No authentication token provided');
+			this.Logger?.warn('No authentication token provided');
 			throw new UnauthorizedException('Authentication required');
 		}
 
 		// Verify request.user is populated (set by a Passport strategy upstream)
 		const { user } = request;
 		if (!user) {
-			this.logger?.warn('Authentication token invalid: user not found on request');
+			this.Logger?.warn('Authentication token invalid: user not found on request');
 			throw new UnauthorizedException('Invalid authentication token');
 		}
 

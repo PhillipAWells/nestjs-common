@@ -3,15 +3,15 @@ import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { FederatedIdentityService } from '../federated-identity.service.js';
 import { ConflictError } from '../../errors/index.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('FederatedIdentityService', () => {
 	let service: FederatedIdentityService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let writeOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let writeOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -26,10 +26,10 @@ describe('FederatedIdentityService', () => {
 		allScopes = new Set([
 			'federated-identity:read',
 			'federated-identity:write',
-		] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['federated-identity:read'] as KeycloakAdminScope[]);
-		writeOnlyScopes = new Set(['federated-identity:write'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['federated-identity:read'] as TKeycloakAdminScope[]);
+		writeOnlyScopes = new Set(['federated-identity:write'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('list', () => {

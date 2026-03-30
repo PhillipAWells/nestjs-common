@@ -1,8 +1,8 @@
 import type {
-	AdminEventQuery,
-	AccessEventQuery,
-	KeycloakAdminEvent,
-	KeycloakAccessEvent,
+	IAdminEventQuery,
+	IAccessEventQuery,
+	IKeycloakAdminEvent,
+	IKeycloakAccessEvent,
 } from '../types/event.types.js';
 import { BaseService } from './base-service.js';
 
@@ -54,14 +54,14 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAdminEvents(realm: string, query?: AdminEventQuery): Promise<KeycloakAdminEvent[]> {
+	public async getAdminEvents(realm: string, query?: IAdminEventQuery): Promise<IKeycloakAdminEvent[]> {
 		this.requireScope('events:read');
 		try {
 			const params = this.buildAdminEventQuery(query);
 
 			return (await this.withRetry(() =>
-				this.adminClient.realms.findAdminEvents({ realm, ...params }),
-			)) as KeycloakAdminEvent[];
+				this.AdminClient.realms.findAdminEvents({ realm, ...params }),
+			)) as IKeycloakAdminEvent[];
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -89,14 +89,14 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAccessEvents(realm: string, query?: AccessEventQuery): Promise<KeycloakAccessEvent[]> {
+	public async getAccessEvents(realm: string, query?: IAccessEventQuery): Promise<IKeycloakAccessEvent[]> {
 		this.requireScope('events:read');
 		try {
 			const params = this.buildAccessEventQuery(query);
 
 			return (await this.withRetry(() =>
-				this.adminClient.realms.findEvents({ realm, ...params }),
-			)) as KeycloakAccessEvent[];
+				this.AdminClient.realms.findEvents({ realm, ...params }),
+			)) as IKeycloakAccessEvent[];
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -106,7 +106,7 @@ export class EventService extends BaseService {
 	 * Build query parameters for admin events
 	 */
 	private buildAdminEventQuery(
-		query?: AdminEventQuery,
+		query?: IAdminEventQuery,
 	): Record<string, string | number | string[] | undefined> {
 		const params: Record<string, string | number | string[] | undefined> = {};
 
@@ -149,7 +149,7 @@ export class EventService extends BaseService {
 	 * Build query parameters for access events
 	 */
 	private buildAccessEventQuery(
-		query?: AccessEventQuery,
+		query?: IAccessEventQuery,
 	): Record<string, string | number | string[] | undefined> {
 		const params: Record<string, string | number | string[] | undefined> = {};
 

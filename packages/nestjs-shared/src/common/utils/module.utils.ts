@@ -3,10 +3,10 @@ import type { InjectionToken, OptionalFactoryDependency, Provider, Type } from '
 /**
  * Generic shape for forRootAsync() options.
  *
- * F is the factory interface (e.g. NatsOptionsFactory, QdrantModuleOptionsFactory).
+ * F is the factory interface (e.g. INatsOptionsFactory, QdrantModuleOptionsFactory).
  * T is the resolved options type.
  */
-export interface AsyncModuleOptions<T, F = unknown> {
+export interface IAsyncModuleOptions<T, F = unknown> {
 	useFactory?: (...args: unknown[]) => T | Promise<T>;
 	useClass?: Type<F>;
 	useExisting?: Type<F>;
@@ -23,7 +23,7 @@ export interface AsyncModuleOptions<T, F = unknown> {
  *                   e.g. `(f) => f.createNatsOptions()`
  */
 export function createAsyncOptionsProvider<T, F>(
-	options: AsyncModuleOptions<T, F>,
+	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
 ): Provider<T> {
@@ -56,7 +56,7 @@ export function createAsyncOptionsProvider<T, F>(
  * @param factoryFn  Calls the factory method on the options-factory instance
  */
 export function createAsyncProviders<T, F>(
-	options: AsyncModuleOptions<T, F>,
+	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
 ): Provider[] {

@@ -4,7 +4,7 @@ import { BaseService } from './base-service.js';
 /**
  * Federated identity link representation
  */
-export interface FederatedIdentityLink {
+export interface IFederatedIdentityLink {
 	identityProvider: string;
 	userId: string;
 	userName: string;
@@ -47,12 +47,12 @@ export class FederatedIdentityService extends BaseService {
 	 * // ]
 	 * ```
 	 */
-	public async list(userId: string): Promise<FederatedIdentityLink[]> {
+	public async list(userId: string): Promise<IFederatedIdentityLink[]> {
 		this.requireScope('federated-identity:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.users.listFederatedIdentities({ id: userId }),
-			)) as FederatedIdentityLink[];
+				this.AdminClient.users.listFederatedIdentities({ id: userId }),
+			)) as IFederatedIdentityLink[];
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -85,7 +85,7 @@ export class FederatedIdentityService extends BaseService {
 	public async link(
 		userId: string,
 		provider: string,
-		link: Omit<FederatedIdentityLink, 'identityProvider'>,
+		link: Omit<IFederatedIdentityLink, 'identityProvider'>,
 	): Promise<void> {
 		this.requireScope('federated-identity:write');
 		try {
@@ -102,7 +102,7 @@ export class FederatedIdentityService extends BaseService {
 			}
 
 			await this.withRetry(() =>
-				this.adminClient.users.addToFederatedIdentity({
+				this.AdminClient.users.addToFederatedIdentity({
 					id: userId,
 					federatedIdentityId: provider,
 					federatedIdentity: {
@@ -135,7 +135,7 @@ export class FederatedIdentityService extends BaseService {
 		this.requireScope('federated-identity:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.users.delFromFederatedIdentity({ id: userId, federatedIdentityId: provider }),
+				this.AdminClient.users.delFromFederatedIdentity({ id: userId, federatedIdentityId: provider }),
 			);
 		} catch (error) {
 			this.handleError(error);

@@ -4,7 +4,7 @@ import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
 import { ConfigService } from '../../config/config.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Optional API key guard for the /metrics endpoint
@@ -30,7 +30,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  *   or X-API-Key header. Format: "Bearer <api-key>" or header "X-API-Key: <api-key>"
  */
 @Injectable()
-export class MetricsGuard implements CanActivate, LazyModuleRefService {
+export class MetricsGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -97,7 +97,7 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 					resource: '/metrics',
 					result: 'success',
 					ipAddress: request.ip,
-					userAgent: request.get('User-Agent'),
+					userAgent: request.get('IUser-Agent'),
 					details: { authMethod: 'bearer' },
 				});
 				return true;
@@ -113,7 +113,7 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 				resource: '/metrics',
 				result: 'success',
 				ipAddress: request.ip,
-				userAgent: request.get('User-Agent'),
+				userAgent: request.get('IUser-Agent'),
 				details: { authMethod: 'x-api-key' },
 			});
 			return true;

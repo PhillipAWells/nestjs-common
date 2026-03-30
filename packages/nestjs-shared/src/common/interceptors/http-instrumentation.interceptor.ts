@@ -11,7 +11,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { performance } from 'node:perf_hooks';
 import { Request, Response } from 'express';
 import { InstrumentationRegistry } from '../registry/instrumentation-registry.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * HTTP Instrumentation Interceptor
@@ -40,7 +40,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  * ```
  */
 @Injectable()
-export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModuleRefService {
+export class HTTPInstrumentationInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {

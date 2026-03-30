@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SharedThrottlerModule, SharedThrottlerConfig } from '../throttler.module.js';
+import { SharedThrottlerModule, ISharedThrottlerConfig } from '../throttler.module.js';
 
 describe('SharedThrottlerModule', () => {
 	describe('forRoot', () => {
@@ -35,7 +35,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should accept custom ttl configuration', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -44,7 +44,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should accept custom limit configuration', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				limit: 50,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -52,7 +52,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should accept both ttl and limit configuration', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 				limit: 50,
 			};
@@ -73,7 +73,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle zero ttl', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 0,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -81,7 +81,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle zero limit', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				limit: 0,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -89,7 +89,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle very large ttl values', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 86400000, // 24 hours
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -97,7 +97,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle very large limit values', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				limit: 10000,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -129,7 +129,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should configure async throttling with useFactory', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 				limit: 50,
 			};
@@ -142,7 +142,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should support useFactory with inject array', () => {
 			const result = SharedThrottlerModule.forRootAsync({
-				useFactory: (config: SharedThrottlerConfig) => config,
+				useFactory: (config: ISharedThrottlerConfig) => config,
 				inject: ['CONFIG_SERVICE'],
 			});
 			expect(result).toBeDefined();
@@ -151,7 +151,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should support useClass configuration', () => {
 			class ThrottlerConfigService {
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return { ttl: 30000, limit: 50 };
 				}
 			}
@@ -173,7 +173,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should provide SHARED_THROTTLER_CONFIG when using useClass', () => {
 			class ConfigService {
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return {};
 				}
 			}
@@ -288,7 +288,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should support useClass with inject', () => {
 			class ConfigService {
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return {};
 				}
 			}
@@ -344,7 +344,7 @@ describe('SharedThrottlerModule', () => {
 
 	describe('Configuration edge cases', () => {
 		it('should handle negative ttl', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: -1000,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -352,7 +352,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle negative limit', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				limit: -1,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -360,7 +360,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle config with undefined values', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: undefined,
 				limit: undefined,
 			};
@@ -369,7 +369,7 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle partial config in forRoot', () => {
-			const config: SharedThrottlerConfig = {
+			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 			};
 			const result = SharedThrottlerModule.forRoot(config);
@@ -402,7 +402,7 @@ describe('SharedThrottlerModule', () => {
 	describe('useClass specific tests', () => {
 		it('should create provider from useClass', () => {
 			class CustomConfigService {
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return { ttl: 20000, limit: 25 };
 				}
 			}
@@ -420,7 +420,7 @@ describe('SharedThrottlerModule', () => {
 			class DependencyService {}
 			class ConfigService {
 				constructor(private readonly dep: DependencyService) {}
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return {};
 				}
 			}
@@ -436,7 +436,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should support useClass returning Promise', () => {
 			class ConfigService {
-				async createThrottlerConfig(): Promise<SharedThrottlerConfig> {
+				async createThrottlerConfig(): Promise<ISharedThrottlerConfig> {
 					return { ttl: 30000, limit: 50 };
 				}
 			}
@@ -799,7 +799,7 @@ describe('SharedThrottlerModule', () => {
 
 		it('should handle useClass config service properly', () => {
 			class MyConfigService {
-				createThrottlerConfig(): SharedThrottlerConfig {
+				createThrottlerConfig(): ISharedThrottlerConfig {
 					return { ttl: 25000, limit: 75 };
 				}
 			}

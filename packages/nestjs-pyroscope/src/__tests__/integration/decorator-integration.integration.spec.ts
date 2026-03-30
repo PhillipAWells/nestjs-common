@@ -238,7 +238,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 				@Get(':id')
 				@ProfileMethod({ name: 'GetItem' })
 				public getItem(id: string): { id: string; name: string } {
-					return { id, name: `Item ${id}` };
+					return { id, name: `IItem ${id}` };
 				}
 			}
 
@@ -250,7 +250,7 @@ describe('Profile Decorators in NestJS App Context (Integration)', () => {
 			const controller = module.get<ItemController>(ItemController);
 			const result = controller.getItem('42');
 
-			expect(result).toEqual({ id: '42', name: 'Item 42' });
+			expect(result).toEqual({ id: '42', name: 'IItem 42' });
 		});
 	});
 

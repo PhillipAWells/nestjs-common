@@ -54,7 +54,7 @@ describe('SubscriptionService', () => {
 	describe('publish', () => {
 		it('should publish message to topic', async () => {
 			const topic = 'user.created';
-			const payload = { id: '123', name: 'Test User' };
+			const payload = { id: '123', name: 'Test IUser' };
 
 			await service.publish(topic, payload);
 

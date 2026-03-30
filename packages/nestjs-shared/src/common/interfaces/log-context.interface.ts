@@ -6,7 +6,7 @@
  *
  * @example
  * // Basic usage
- * const context: LogContext = {
+ * const context: ILogContext = {
  *   correlationId: 'req-123',
  *   userId: 'user-456',
  *   action: 'CreateStream',
@@ -15,7 +15,7 @@
  *
  * @example
  * // Extending with domain-specific fields
- * interface StreamingContext extends LogContext {
+ * interface StreamingContext extends ILogContext {
  *   streamId: string;
  *   bitrate: number;
  *   codec: string;
@@ -32,7 +32,7 @@
  *   codec: 'h264'
  * };
  */
-export interface LogContext {
+export interface ILogContext {
 	/**
 	 * Request correlation ID for distributed tracing
 	 * Used to correlate logs across multiple services

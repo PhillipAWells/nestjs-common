@@ -33,15 +33,15 @@ import { AppLogger, InternalServerError, getErrorMessage } from '@pawells/nestjs
  * ```
  */
 export class QdrantCollectionService {
-	private readonly client: QdrantClient;
+	private readonly Client: QdrantClient;
 
-	public readonly collectionName: string;
+	public readonly CollectionName: string;
 
-	private readonly logger = new AppLogger(undefined, QdrantCollectionService.name);
+	private readonly Logger = new AppLogger(undefined, QdrantCollectionService.name);
 
 	constructor(client: QdrantClient, collectionName: string) {
-		this.client = client;
-		this.collectionName = collectionName;
+		this.Client = client;
+		this.CollectionName = collectionName;
 	}
 
 	/**
@@ -70,11 +70,11 @@ export class QdrantCollectionService {
 	 */
 	public async search(params: Parameters<QdrantClient['search']>[1]): ReturnType<QdrantClient['search']> {
 		try {
-			this.logger.debug(`Searching collection "${this.collectionName}"`);
-			return await this.client.search(this.collectionName, params);
+			this.Logger.debug(`Searching collection "${this.CollectionName}"`);
+			return await this.Client.search(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant search failed on collection "${this.collectionName}": ${getErrorMessage(error)}`;
-			this.logger.error(errorMessage);
+			const errorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(errorMessage);
 			throw new InternalServerError(errorMessage);
 		}
 	}
@@ -106,11 +106,11 @@ export class QdrantCollectionService {
 	 */
 	public async upsert(params: Parameters<QdrantClient['upsert']>[1]): ReturnType<QdrantClient['upsert']> {
 		try {
-			this.logger.debug(`Upserting points to collection "${this.collectionName}"`);
-			return await this.client.upsert(this.collectionName, params);
+			this.Logger.debug(`Upserting points to collection "${this.CollectionName}"`);
+			return await this.Client.upsert(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant upsert failed on collection "${this.collectionName}": ${getErrorMessage(error)}`;
-			this.logger.error(errorMessage);
+			const errorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(errorMessage);
 			throw new InternalServerError(errorMessage);
 		}
 	}
@@ -140,11 +140,11 @@ export class QdrantCollectionService {
 	 */
 	public async delete(params: Parameters<QdrantClient['delete']>[1]): ReturnType<QdrantClient['delete']> {
 		try {
-			this.logger.debug(`Deleting points from collection "${this.collectionName}"`);
-			return await this.client.delete(this.collectionName, params);
+			this.Logger.debug(`Deleting points from collection "${this.CollectionName}"`);
+			return await this.Client.delete(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant delete failed on collection "${this.collectionName}": ${getErrorMessage(error)}`;
-			this.logger.error(errorMessage);
+			const errorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(errorMessage);
 			throw new InternalServerError(errorMessage);
 		}
 	}
@@ -165,11 +165,11 @@ export class QdrantCollectionService {
 	 */
 	public async getInfo(): ReturnType<QdrantClient['getCollection']> {
 		try {
-			this.logger.debug(`Retrieving info for collection "${this.collectionName}"`);
-			return await this.client.getCollection(this.collectionName);
+			this.Logger.debug(`Retrieving info for collection "${this.CollectionName}"`);
+			return await this.Client.getCollection(this.CollectionName);
 		} catch (error) {
-			const errorMessage = `Qdrant getCollection failed on collection "${this.collectionName}": ${getErrorMessage(error)}`;
-			this.logger.error(errorMessage);
+			const errorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(errorMessage);
 			throw new InternalServerError(errorMessage);
 		}
 	}

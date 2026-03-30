@@ -9,8 +9,8 @@ import {
 } from '@opentelemetry/api';
 import {
 	IMetricsExporter,
-	MetricDescriptor,
-	MetricValue,
+	IMetricDescriptor,
+	IMetricValue,
 	BaseApplicationError,
 } from '@pawells/nestjs-shared';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
@@ -43,20 +43,20 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 * OpenTelemetry exporter is push-based (receives each metric as it's recorded).
 	 * @readonly
 	 */
-	public readonly supportsEventBased = true;
+	public readonly SupportsEventBased = true;
 
 	/**
 	 * Whether this exporter supports pull-based reads.
 	 * OpenTelemetry exporter is push-only (no scrape endpoint).
 	 * @readonly
 	 */
-	public readonly supportsPull = false;
+	public readonly SupportsPull = false;
 
 	/**
 	 * Cache of created OpenTelemetry instruments, keyed by metric name.
 	 * Stores Counter, Histogram, ObservableGauge, and UpDownCounter instances.
 	 */
-	private readonly instruments: Map<
+	private readonly Instruments: Map<
 		string,
 		Counter | Histogram | ObservableGauge | UpDownCounter
 	>;
@@ -66,20 +66,20 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 * a composite of metric name and serialized labels.
 	 * Used to compute the delta for UpDownCounter when emulating gauge semantics.
 	 */
-	private readonly gaugeValues: Map<string, number>;
+	private readonly GaugeValues: Map<string, number>;
 
 	/**
 	 * Application logger instance for diagnostics and error reporting.
 	 */
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	/**
 	 * Initialize the exporter with an empty instrument cache.
 	 */
 	constructor() {
-		this.logger = new AppLogger(undefined, OpenTelemetryExporter.name);
-		this.instruments = new Map();
-		this.gaugeValues = new Map();
+		this.Logger = new AppLogger(undefined, OpenTelemetryExporter.name);
+		this.Instruments = new Map();
+		this.GaugeValues = new Map();
 	}
 
 	/**
@@ -90,9 +90,9 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 *
 	 * @param descriptor - The metric descriptor being registered
 	 */
-	public onDescriptorRegistered(descriptor: MetricDescriptor): void {
+	public onDescriptorRegistered(descriptor: IMetricDescriptor): void {
 		// Only create if not already cached
-		if (this.instruments.has(descriptor.name)) {
+		if (this.Instruments.has(descriptor.name)) {
 			return;
 		}
 
@@ -133,10 +133,10 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 				}
 			}
 
-			this.instruments.set(descriptor.name, instrument);
+			this.Instruments.set(descriptor.name, instrument);
 		} catch (error) {
 			const errorMessage = getErrorMessage(error);
-			this.logger.warn(`Failed to register descriptor "${descriptor.name}": ${errorMessage}`);
+			this.Logger.warn(`Failed to register descriptor "${descriptor.name}": ${errorMessage}`);
 			return;
 		}
 	}
@@ -148,8 +148,8 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 *
 	 * @param value - The metric value being recorded, including descriptor and labels
 	 */
-	public onMetricRecorded(value: MetricValue): void {
-		const instrument = this.instruments.get(value.descriptor.name);
+	public onMetricRecorded(value: IMetricValue): void {
+		const instrument = this.Instruments.get(value.descriptor.name);
 		if (!instrument) {
 			return;
 		}
@@ -175,9 +175,9 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 						.join(',')
 					: '';
 				const gaugeKey = `${value.descriptor.name}:${sortedLabels}`;
-				const previous = this.gaugeValues.get(gaugeKey) ?? 0;
+				const previous = this.GaugeValues.get(gaugeKey) ?? 0;
 				const delta = value.value - previous;
-				this.gaugeValues.set(gaugeKey, value.value);
+				this.GaugeValues.set(gaugeKey, value.value);
 				(instrument as UpDownCounter).add(delta, attributes);
 				break;
 			}
@@ -187,7 +187,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 			default: {
 				// Exhaustiveness check — this block is unreachable if all types are handled
 				const _exhaustive: never = value.descriptor.type as never;
-				this.logger.warn(`Unhandled metric type: ${_exhaustive}`);
+				this.Logger.warn(`Unhandled metric type: ${_exhaustive}`);
 				break;
 			}
 		}
@@ -199,7 +199,7 @@ export class OpenTelemetryExporter implements IMetricsExporter {
 	 * Clears the instrument cache and allows OpenTelemetry resources to be cleaned up.
 	 */
 	public shutdown(): void {
-		this.instruments.clear();
-		this.gaugeValues.clear();
+		this.Instruments.clear();
+		this.GaugeValues.clear();
 	}
 }

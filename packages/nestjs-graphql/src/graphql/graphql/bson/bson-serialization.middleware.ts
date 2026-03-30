@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { BsonSerializationService } from './bson-serialization.service.js';
 
@@ -13,7 +13,7 @@ const HTTP_STATUS_BAD_REQUEST = 400;
  * Deserializes incoming BSON data to JSON before GraphQL processing
  */
 @Injectable()
-export class BsonSerializationMiddleware implements NestMiddleware, LazyModuleRefService {
+export class BsonSerializationMiddleware implements NestMiddleware, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get BsonSerializationService(): BsonSerializationService {

@@ -3,7 +3,7 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
 /**
  * Base Post GraphQL type without relationships
  * Contains only core post fields to avoid circular dependencies
- * Extended by Post type to include relationships with User and Comment
+ * Extended by Post type to include relationships with IUser and IComment
  */
 @ObjectType('BasePost')
 export class BasePost {
@@ -11,29 +11,29 @@ export class BasePost {
 	 * Post unique identifier
 	 */
 	@Field(() => ID)
-	public id!: string;
+	public Id!: string;
 
 	/**
 	 * Post title
 	 */
 	@Field()
-	public title!: string;
+	public Title!: string;
 
 	/**
 	 * Post content/body
 	 */
 	@Field()
-	public content!: string;
+	public Content!: string;
 
 	/**
 	 * Post creation timestamp
 	 */
 	@Field()
-	public createdAt!: Date;
+	public CreatedAt!: Date;
 
 	/**
 	 * Post last update timestamp
 	 */
 	@Field()
-	public updatedAt!: Date;
+	public UpdatedAt!: Date;
 }

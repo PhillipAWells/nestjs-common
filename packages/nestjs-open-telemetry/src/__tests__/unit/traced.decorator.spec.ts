@@ -501,7 +501,7 @@ describe('@Traced Decorator', () => {
 
 		it('should handle sync custom error subclass', () => {
 			class CustomError extends Error {
-				constructor(public code: number) {
+				constructor(public Code: number) {
 					super('Custom error occurred');
 				}
 			}
@@ -520,7 +520,7 @@ describe('@Traced Decorator', () => {
 
 		it('should handle async custom error subclass', async () => {
 			class CustomError extends Error {
-				constructor(public code: number) {
+				constructor(public Code: number) {
 					super('Async custom error');
 				}
 			}

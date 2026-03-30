@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector, ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -22,7 +22,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```
  */
 @Injectable()
-export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
+export class GraphQLPublicGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get Reflector(): Reflector {
@@ -37,7 +37,7 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLPublicGuard.name);
 		} catch {
@@ -63,7 +63,7 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		]);
 
 		if (isPublic) {
-			this.logger?.debug('Public resolver accessed');
+			this.Logger?.debug('Public resolver accessed');
 			return true;
 		}
 
@@ -72,11 +72,11 @@ export class GraphQLPublicGuard implements CanActivate, LazyModuleRefService {
 		const { user } = gqlContext.getContext();
 
 		if (!user) {
-			this.logger?.warn('Non-public resolver accessed without authentication');
+			this.Logger?.warn('Non-public resolver accessed without authentication');
 			return false;
 		}
 
-		this.logger?.debug(`Authenticated user accessing protected resolver: ${user.id ?? user.sub ?? 'unknown'}`);
+		this.Logger?.debug(`Authenticated user accessing protected resolver: ${user.id ?? user.sub ?? 'unknown'}`);
 		return true;
 	}
 }

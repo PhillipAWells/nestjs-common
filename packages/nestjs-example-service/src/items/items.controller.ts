@@ -2,7 +2,7 @@ import { Controller, Get, Post, Delete, Body, Query, Param, BadRequestException 
 import { ModuleRef } from '@nestjs/core';
 import { Auth, Public, CurrentUser } from '@pawells/nestjs-auth';
 import { LazyModuleRefBase } from '@pawells/nestjs-shared';
-import { ItemsService, type Item, type StoredItem } from './items.service.js';
+import { ItemsService, type IItem, type IStoredItem } from './items.service.js';
 
 const DEFAULT_LIMIT = 10;
 
@@ -10,7 +10,7 @@ const DEFAULT_LIMIT = 10;
  * Minimal representation of an authenticated user injected via @CurrentUser().
  * In production this comes from the JWT payload resolved by userLookupFn.
  */
-interface AppUser {
+interface IAppUser {
 	id: string;
 	email: string;
 	roles: string[];
@@ -41,8 +41,8 @@ export class ItemsController extends LazyModuleRefBase {
 	@Post()
 	@Auth()
 	public async upsertItem(
-		@Body() body: StoredItem,
-		@CurrentUser() _user: AppUser,
+		@Body() body: IStoredItem,
+		@CurrentUser() _user: IAppUser,
 	): Promise<void> {
 		await this.Items.upsertItem(body);
 	}
@@ -60,7 +60,7 @@ export class ItemsController extends LazyModuleRefBase {
 	public findSimilar(
 		@Query('vector') vectorStr: string,
 		@Query('limit') limitStr?: string,
-	): Promise<Item[]> {
+	): Promise<IItem[]> {
 		if (!vectorStr) {
 			throw new BadRequestException('vector query param is required');
 		}
@@ -83,7 +83,7 @@ export class ItemsController extends LazyModuleRefBase {
 	@Auth()
 	public async deleteItem(
 		@Param('id') id: string,
-		@CurrentUser() _user: AppUser,
+		@CurrentUser() _user: IAppUser,
 	): Promise<void> {
 		await this.Items.deleteItem(id);
 	}

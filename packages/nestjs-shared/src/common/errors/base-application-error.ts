@@ -8,7 +8,7 @@ import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.cons
  *
  * @example
  * ```typescript
- * throw new BaseApplicationError('User not found', {
+ * throw new BaseApplicationError('IUser not found', {
  *   code: 'USER_NOT_FOUND',
  *   statusCode: 404,
  *   context: { userId: '123' }
@@ -19,22 +19,22 @@ export class BaseApplicationError extends Error {
 	/**
 	 * The HTTP status code associated with this error
 	 */
-	public readonly statusCode: number;
+	public readonly StatusCode: number;
 
 	/**
 	 * The error code for programmatic error identification
 	 */
-	public readonly code: string;
+	public readonly Code: string;
 
 	/**
 	 * Additional context information for debugging and logging
 	 */
-	public readonly context: Record<string, any>;
+	public readonly Context: Record<string, any>;
 
 	/**
 	 * Timestamp when the error was created
 	 */
-	public readonly timestamp: Date;
+	public readonly Timestamp: Date;
 
 	/**
 	 * Creates a new BaseApplicationError instance
@@ -58,10 +58,10 @@ export class BaseApplicationError extends Error {
 		const { code = 'INTERNAL_SERVER_ERROR', statusCode = HTTP_STATUS_INTERNAL_SERVER_ERROR, context = {} } = options;
 
 		this.name = this.constructor.name;
-		this.statusCode = statusCode;
-		this.code = code;
-		this.context = { ...context };
-		this.timestamp = new Date();
+		this.StatusCode = statusCode;
+		this.Code = code;
+		this.Context = { ...context };
+		this.Timestamp = new Date();
 
 		// Capture stack trace
 		if (Error.captureStackTrace) {
@@ -92,10 +92,10 @@ export class BaseApplicationError extends Error {
 		return {
 			name: this.name,
 			message: this.message,
-			code: this.code,
-			statusCode: this.statusCode,
-			context: this.context,
-			timestamp: this.timestamp.toISOString(),
+			code: this.Code,
+			statusCode: this.StatusCode,
+			context: this.Context,
+			timestamp: this.Timestamp.toISOString(),
 			// Include stack trace in development
 			...(process.env['NODE_ENV'] !== 'production' ? { stack: this.stack } : {}),
 		};
@@ -110,22 +110,22 @@ export class BaseApplicationError extends Error {
 	 *
 	 * @example
 	 * ```typescript
-	 * const error = new BaseApplicationError('User error', { code: 'USER_ERROR' });
+	 * const error = new BaseApplicationError('IUser error', { code: 'USER_ERROR' });
 	 * const errorWithContext = error.withContext({ userId: '123', action: 'login' });
 	 * // errorWithContext is a new instance but still instanceof BaseApplicationError
 	 * // errorWithContext.context = { userId: '123', action: 'login' }
 	 * ```
 	 */
 	public withContext(additionalContext: Record<string, any>): this {
-		const mergedContext = { ...this.context, ...additionalContext };
+		const mergedContext = { ...this.Context, ...additionalContext };
 		const Constructor = this.constructor as new (
 			message: string,
 			options: { code?: string; statusCode?: number; context?: Record<string, any> }
 		) => this;
 
 		return new Constructor(this.message, {
-			code: this.code,
-			statusCode: this.statusCode,
+			code: this.Code,
+			statusCode: this.StatusCode,
 			context: mergedContext,
 		});
 	}
@@ -139,8 +139,8 @@ export class BaseApplicationError extends Error {
 	 * @example
 	 * ```typescript
 	 * const error = new BaseApplicationError('Generic error');
-	 * const specificError = error.withMessage('User not found');
-	 * // specificError.message = 'User not found'
+	 * const specificError = error.withMessage('IUser not found');
+	 * // specificError.message = 'IUser not found'
 	 * ```
 	 */
 	public withMessage(newMessage: string): this {
@@ -150,9 +150,9 @@ export class BaseApplicationError extends Error {
 		) => this;
 
 		return new Constructor(newMessage, {
-			code: this.code,
-			statusCode: this.statusCode,
-			context: this.context,
+			code: this.Code,
+			statusCode: this.StatusCode,
+			context: this.Context,
 		});
 	}
 }

@@ -11,7 +11,7 @@ import {
 	HTTP_STATUS_GATEWAY_TIMEOUT,
 	HTTP_STATUS_UNPROCESSABLE_ENTITY,
 } from '../constants/http-status.constants.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
 
 // Backoff times in milliseconds
@@ -23,7 +23,7 @@ const BACKOFF_RATE_LIMIT_MS = 10000;
 /**
  * Error category classification for recovery strategy determination.
  */
-export interface ErrorCategory {
+export interface IErrorCategory {
 	type: 'transient' | 'permanent';
 	retryable: boolean;
 	strategy: 'retry' | 'fail' | 'backoff';
@@ -61,8 +61,8 @@ export interface ErrorCategory {
  * ```
  */
 @Injectable()
-export class ErrorCategorizerService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class ErrorCategorizerService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -74,11 +74,11 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	 * Get contextual logger for error categorizer
 	 */
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
+		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
+			this._ContextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
@@ -92,7 +92,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Categorize an error and determine recovery strategy
 	 */
-	public categorizeError(error: unknown): ErrorCategory {
+	public categorizeError(error: unknown): IErrorCategory {
 		const err = error as Record<string, any>;
 		const errorMessage = err?.message ?? String(error);
 		const errorCode = err?.code ?? err?.status;
@@ -345,7 +345,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	private isValidationError(error: unknown): boolean {
 		const err = error as Record<string, any>;
 		return /\bvalidation\b/i.test(err?.message) ||
-			err?.name === 'ValidationError';
+			err?.name === 'IValidationError';
 	}
 
 	private isAuthError(error: unknown): boolean {

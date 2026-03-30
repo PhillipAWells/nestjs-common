@@ -9,7 +9,7 @@ import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@pawells/nestjs-shared/common
  *
  * @example
  * ```typescript
- * throw new GraphqlError('User not found', {
+ * throw new GraphqlError('IUser not found', {
  *   code: 'NOT_FOUND',
  *   statusCode: 404,
  *   context: { userId: '123' }

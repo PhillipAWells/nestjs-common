@@ -688,11 +688,11 @@ describe('RequestProperty Decorator', () => {
 
 		it('should handle property access on arrays', () => {
 			const request = {
-				items: [{ id: 1, name: 'Item 1' }],
+				items: [{ id: 1, name: 'IItem 1' }],
 			};
 			const result = testDecorator('items', {}, request);
 			expect(Array.isArray(result)).toBe(true);
-			expect(result).toEqual([{ id: 1, name: 'Item 1' }]);
+			expect(result).toEqual([{ id: 1, name: 'IItem 1' }]);
 		});
 
 		it('should handle accessing properties after arrays in path', () => {

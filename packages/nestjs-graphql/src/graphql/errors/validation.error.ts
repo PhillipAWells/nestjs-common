@@ -8,12 +8,12 @@ import { GraphqlError } from './graphql-error.js';
  *
  * @example
  * ```typescript
- * throw new ValidationError('Invalid input data', {
+ * throw new IValidationError('Invalid input data', {
  *   fields: [{ field: 'email', message: 'Invalid email format' }]
  * });
  * ```
  */
-export class ValidationError extends GraphqlError {
+export class IValidationError extends GraphqlError {
 	/**
 	 * Creates a new Validation error
 	 *

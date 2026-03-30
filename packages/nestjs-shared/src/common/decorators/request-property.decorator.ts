@@ -13,7 +13,7 @@ let appLogger: AppLogger | undefined;
  * Options for the RequestProperty decorator
  */
 
-export interface RequestPropertyOptions {
+export interface IRequestPropertyOptions {
 	/**
     * Default value to return if the property is not found
     */
@@ -78,7 +78,7 @@ function logWarning(message: string): void {
  * @example
  * // Extract user from request
  * @Get()
- * getProfile(@RequestProperty('user') user: User) {}
+ * getProfile(@RequestProperty('user') user: IUser) {}
  *
  * @example
  * // Extract nested property with default
@@ -93,11 +93,11 @@ function logWarning(message: string): void {
  * @example
  * // Required property (throws if missing)
  * @Get()
- * getUser(@RequestProperty('user', { required: true }) user: User) {}
+ * getUser(@RequestProperty('user', { required: true }) user: IUser) {}
  */
 export function RequestProperty<T = any>(
 	path: string,
-	options: RequestPropertyOptions = {},
+	options: IRequestPropertyOptions = {},
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {

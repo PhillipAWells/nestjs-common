@@ -1,4 +1,4 @@
-import type { RealmRepresentation } from '../types/index.js';
+import type { IRealmRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -21,10 +21,10 @@ export class RealmService extends BaseService {
 	/**
 	 * List all realms
 	 */
-	public async list(): Promise<RealmRepresentation[]> {
+	public async list(): Promise<IRealmRepresentation[]> {
 		this.requireScope('realms:read');
 		try {
-			return (await this.withRetry(() => this.adminClient.realms.find())) as any;
+			return (await this.withRetry(() => this.AdminClient.realms.find())) as any;
 		} catch (error) {
 			return this.handleError(error);
 		}
@@ -33,11 +33,11 @@ export class RealmService extends BaseService {
 	/**
 	 * Get a realm by name
 	 */
-	public async get(realm: string): Promise<RealmRepresentation> {
+	public async get(realm: string): Promise<IRealmRepresentation> {
 		this.requireScope('realms:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.realms.findOne({ realm }),
+				this.AdminClient.realms.findOne({ realm }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -47,10 +47,10 @@ export class RealmService extends BaseService {
 	/**
 	 * Create a new realm
 	 */
-	public async create(realm: RealmRepresentation): Promise<void> {
+	public async create(realm: IRealmRepresentation): Promise<void> {
 		this.requireScope('realms:write');
 		try {
-			await this.withRetry(() => this.adminClient.realms.create(realm));
+			await this.withRetry(() => this.AdminClient.realms.create(realm));
 		} catch (error) {
 			this.handleError(error);
 		}
@@ -59,11 +59,11 @@ export class RealmService extends BaseService {
 	/**
 	 * Update a realm
 	 */
-	public async update(realmName: string, realm: RealmRepresentation): Promise<void> {
+	public async update(realmName: string, realm: IRealmRepresentation): Promise<void> {
 		this.requireScope('realms:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.realms.update({ realm: realmName }, realm),
+				this.AdminClient.realms.update({ realm: realmName }, realm),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -76,7 +76,7 @@ export class RealmService extends BaseService {
 	public async delete(realm: string): Promise<void> {
 		this.requireScope('realms:write');
 		try {
-			await this.withRetry(() => this.adminClient.realms.del({ realm }));
+			await this.withRetry(() => this.AdminClient.realms.del({ realm }));
 		} catch (error) {
 			this.handleError(error);
 		}

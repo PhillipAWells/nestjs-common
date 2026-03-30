@@ -14,7 +14,7 @@ export {
 	extractAuthTokenFromContext,
 } from './auth-decorators.js';
 
-export type { ContextOptions } from './auth-decorators.js';
+export type { IContextOptions } from './auth-decorators.js';
 
 export {
 	GraphQLPublic,

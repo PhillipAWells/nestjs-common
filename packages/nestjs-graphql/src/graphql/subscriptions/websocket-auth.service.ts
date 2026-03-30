@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
  * Connection parameters for WebSocket authentication
  */
-interface WebSocketConnectionParams {
+interface IWebSocketConnectionParams {
 	authorization?: string;
 	Authorization?: string;
 	token?: string;
@@ -21,7 +21,7 @@ const BEARER_PREFIX_LENGTH = 7; // 'Bearer '.length
  * Service for WebSocket connection authentication
  */
 @Injectable()
-export class WebSocketAuthService implements LazyModuleRefService {
+export class WebSocketAuthService implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
@@ -32,7 +32,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 		}
 	}
 
-	private get logger(): AppLogger | undefined {
+	private get Logger(): AppLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(WebSocketAuthService.name);
 		} catch {
@@ -57,13 +57,13 @@ export class WebSocketAuthService implements LazyModuleRefService {
    * @param connectionParams Connection parameters from client
    * @returns Authentication result
    */
-	public async authenticate(connectionParams: WebSocketConnectionParams): Promise<{
+	public async authenticate(connectionParams: IWebSocketConnectionParams): Promise<{
 		authenticated: boolean;
 		userId?: string;
 		error?: string;
 	}> {
 		try {
-			this.logger?.debug('Authenticating WebSocket connection');
+			this.Logger?.debug('Authenticating WebSocket connection');
 
 			// Extract token from connection parameters
 			const token = this.extractToken(connectionParams);
@@ -87,13 +87,13 @@ export class WebSocketAuthService implements LazyModuleRefService {
 
 			const USER_ID_MASK_LENGTH = 8;
 			const maskedUserId = userId && userId.length > USER_ID_MASK_LENGTH ? `${userId.substring(0, USER_ID_MASK_LENGTH)}...` : userId;
-			this.logger?.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
+			this.Logger?.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
 			return {
 				authenticated: true,
 				userId,
 			};
 		} catch (error: unknown) {
-			this.logger?.error(
+			this.Logger?.error(
 				`WebSocket authentication error: ${getErrorMessage(error)}`,
 				error instanceof Error ? error.stack : undefined,
 			);
@@ -107,14 +107,14 @@ export class WebSocketAuthService implements LazyModuleRefService {
 	/**
    * Validates JWT token with cryptographic signature verification and extracts user ID.
    * @param token JWT token
-   * @returns User ID or null if invalid
+   * @returns IUser ID or null if invalid
    */
 	private async validateToken(token: string): Promise<string | null> {
 		try {
 			const { jwtService } = this;
 			if (!jwtService) {
 				// JwtService is required for signature verification — fail closed per security policy
-				this.logger?.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
+				this.Logger?.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
 				return null;
 			}
 
@@ -130,7 +130,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
 
 			return payload.sub;
 		} catch (error: unknown) {
-			this.logger?.info(`Token validation error: ${getErrorMessage(error)}`);
+			this.Logger?.info(`Token validation error: ${getErrorMessage(error)}`);
 			return null;
 		}
 	}
@@ -140,7 +140,7 @@ export class WebSocketAuthService implements LazyModuleRefService {
    * @param connectionParams Connection parameters
    * @returns Token string or null
    */
-	private extractToken(connectionParams: WebSocketConnectionParams): string | null {
+	private extractToken(connectionParams: IWebSocketConnectionParams): string | null {
 		// Try different sources for the token
 		return (
 			connectionParams.authorization ??

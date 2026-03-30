@@ -57,7 +57,7 @@ describe('AuditLoggerService', () => {
 				calls.push(args);
 			};
 
-			service.logTokenRevocation('user-123', 'User logout');
+			service.logTokenRevocation('user-123', 'IUser logout');
 
 			expect(calls.length).toBeGreaterThan(0);
 			expect(calls[0][0]).toContain('Token REVOCATION');

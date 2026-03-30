@@ -1,5 +1,5 @@
 export { BaseApplicationError } from './base-application-error.js';
-export { createError, ERROR_CONFIGS, type ErrorConfig, type ErrorType } from './error-factory.js';
+export { createError, ERROR_CONFIGS, type IErrorConfig, type TErrorType } from './error-factory.js';
 
 import { createError, ERROR_CONFIGS } from './error-factory.js';
 

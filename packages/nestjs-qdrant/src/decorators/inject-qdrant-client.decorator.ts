@@ -22,7 +22,7 @@ import { getQdrantClientToken } from '../qdrant.constants.js';
  * @Injectable()
  * export class SearchService {
  *   constructor(
- *     @InjectQdrantClient() private readonly client: QdrantClient
+ *     @InjectQdrantClient() private readonly Client: QdrantClient
  *   ) {}
  * }
  *

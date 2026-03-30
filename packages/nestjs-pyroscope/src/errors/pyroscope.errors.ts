@@ -3,11 +3,11 @@
  * Used throughout the package for consistent error handling and context tracking.
  */
 export class PyroscopeError extends Error {
-	public readonly context?: string;
+	public readonly Context?: string;
 
 	constructor(message: string, context?: string) {
 		super(message);
 		this.name = this.constructor.name;
-		this.context = context;
+		this.Context = context;
 	}
 }

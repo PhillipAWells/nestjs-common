@@ -7,7 +7,7 @@
  *
  * @example
  * ```typescript
- * const config: WebSocketServerConfig = {
+ * const config: IWebSocketServerConfig = {
  *   path: '/graphql/subscriptions',
  *   maxPayloadSize: 102400,
  *   keepalive: 30000,
@@ -21,7 +21,7 @@
  * };
  * ```
  */
-export interface WebSocketServerConfig {
+export interface IWebSocketServerConfig {
 	/**
 	 * WebSocket path for subscriptions (e.g., '/graphql/subscriptions')
 	 * This path is appended to the server root

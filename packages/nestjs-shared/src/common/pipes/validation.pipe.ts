@@ -17,7 +17,7 @@ import { BaseValidationPipe } from './base-validation.pipe.js';
  * ```typescript
  * // Automatically applied globally; decorator is optional
  * @Post()
- * async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+ * async createUser(@Body() createUserDto: CreateUserDto): Promise<IUser> {
  *   // DTO will be validated automatically
  * }
  * ```
@@ -44,7 +44,7 @@ export class ValidationPipe extends BaseValidationPipe {
 
 			// If error has children, recurse
 			if (error.children && error.children.length > 0) {
-				error.children.forEach(childError =>
+				error.children.forEach((childError: ValidationError) =>
 					processError(childError, currentPath),
 				);
 			}

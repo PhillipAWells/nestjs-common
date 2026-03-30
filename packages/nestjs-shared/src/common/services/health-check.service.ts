@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from './logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Health status enumeration for standardized health check responses.
@@ -62,8 +62,8 @@ export interface IHealthCheck {
  * ```
  */
 @Injectable()
-export class HealthCheckService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class HealthCheckService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -72,11 +72,11 @@ export class HealthCheckService implements LazyModuleRefService {
 	}
 
 	private get Logger(): AppLogger {
-		if (!this._contextualLogger) {
+		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(HealthCheckService.name);
+			this._ContextualLogger = baseLogger.createContextualLogger(HealthCheckService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**

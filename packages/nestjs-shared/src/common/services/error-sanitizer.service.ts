@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
 import { ModuleRef } from '@nestjs/core';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Options for configuring the ErrorSanitizerService.
  */
-export interface ErrorSanitizerOptions {
+export interface IErrorSanitizerOptions {
 	/**
 	 * Additional regex patterns to apply for message sanitization.
 	 */
@@ -61,7 +61,7 @@ export const ERROR_SANITIZER_OPTIONS = 'ERROR_SANITIZER_OPTIONS';
  */
 
 @Injectable()
-export class ErrorSanitizerService implements LazyModuleRefService {
+export class ErrorSanitizerService implements ILazyModuleRefService {
 	/**
 	 * Maximum length for error messages before truncation.
 	 * Prevents ReDoS (Regular Expression Denial of Service) attacks by limiting
@@ -138,7 +138,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		this.Module = module;
 	}
 
-	private get Options(): ErrorSanitizerOptions | undefined {
+	private get Options(): IErrorSanitizerOptions | undefined {
 		try {
 			return this.Module.get(ERROR_SANITIZER_OPTIONS, { strict: false });
 		} catch {

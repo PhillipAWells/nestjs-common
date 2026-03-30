@@ -53,7 +53,7 @@ describe('GraphQLWebSocketServer', () => {
 				}),
 			} as any;
 			const brokenServer = new (server.constructor as any)(brokenModuleRef);
-			const brokenLoggerSpy = vi.spyOn(brokenServer['logger'], 'warn');
+			const brokenLoggerSpy = vi.spyOn(brokenServer['Logger'], 'warn');
 
 			await brokenServer.initialize(config);
 

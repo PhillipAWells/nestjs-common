@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionGuard } from '../permission.guard.js';
-import type { KeycloakUser } from '../../keycloak/keycloak.types.js';
+import type { IKeycloakUser } from '../../keycloak/keycloak.types.js';
 
 describe('PermissionGuard', () => {
 	let guard: PermissionGuard;
@@ -90,7 +90,7 @@ describe('PermissionGuard', () => {
 			it('should throw ForbiddenException when user has no matching roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['read:data', 'write:data']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -114,7 +114,7 @@ describe('PermissionGuard', () => {
 			it('should allow access when user has one of required permission roles in realm roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['read:data', 'write:data']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -136,7 +136,7 @@ describe('PermissionGuard', () => {
 			it('should allow access when user has one of required permission roles in client roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['read:data', 'write:data']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -158,7 +158,7 @@ describe('PermissionGuard', () => {
 			it('should check both realm and client roles for permission matching', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['admin', 'viewer']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',

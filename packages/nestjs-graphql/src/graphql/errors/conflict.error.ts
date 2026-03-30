@@ -8,7 +8,7 @@ import { GraphqlError } from './graphql-error.js';
  *
  * @example
  * ```typescript
- * throw new ConflictError('User already exists');
+ * throw new ConflictError('IUser already exists');
  * ```
  */
 export class ConflictError extends GraphqlError {

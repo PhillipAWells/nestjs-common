@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
@@ -46,14 +46,14 @@ const HIT_RATE_PERCENTAGE = 100;
  * ```
  */
 @Injectable()
-export class GraphQLCacheService implements LazyModuleRefService {
+export class GraphQLCacheService implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
-	private readonly cacheStats = {
+	private readonly CacheStats = {
 		hits: 0,
 		misses: 0,
 	};
 
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	public get CacheManager(): Cache {
 		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
@@ -65,7 +65,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 
 	constructor(moduleRef: ModuleRef) {
 		this.Module = moduleRef;
-		this.logger = this.AppLogger.createContextualLogger(GraphQLCacheService.name);
+		this.Logger = this.AppLogger.createContextualLogger(GraphQLCacheService.name);
 	}
 
 	/**
@@ -108,9 +108,9 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		try {
 			const cacheTtl = ttl ?? DEFAULT_CACHE_TTL;
 			await this.CacheManager.set(key, value, cacheTtl);
-			this.logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
+			this.Logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
 		} catch (error) {
-			this.logger.error(`Failed to cache value for key ${key}: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to cache value for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -125,15 +125,15 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		try {
 			const value = await this.CacheManager.get<T>(key);
 			if (value !== null && value !== undefined) {
-				this.cacheStats.hits++;
-				this.logger.debug(`Cache hit for key: ${key} (Hit rate: ${this.getHitRate().toFixed(2)}%)`);
+				this.CacheStats.hits++;
+				this.Logger.debug(`Cache hit for key: ${key} (Hit rate: ${this.getHitRate().toFixed(2)}%)`);
 				return value;
 			}
-			this.cacheStats.misses++;
-			this.logger.debug(`Cache miss for key: ${key}`);
+			this.CacheStats.misses++;
+			this.Logger.debug(`Cache miss for key: ${key}`);
 			return undefined;
 		} catch (error) {
-			this.logger.error(`Failed to get cached value for key ${key}: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to get cached value for key ${key}: ${getErrorMessage(error)}`);
 			return undefined;
 		}
 	}
@@ -158,7 +158,7 @@ export class GraphQLCacheService implements LazyModuleRefService {
 			await this.set(key, value, ttl);
 			return value;
 		} catch (error) {
-			this.logger.error(`Failed in getOrSet for key ${key}: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed in getOrSet for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -172,9 +172,9 @@ export class GraphQLCacheService implements LazyModuleRefService {
 	public async delete(key: string): Promise<void> {
 		try {
 			await this.CacheManager.del(key);
-			this.logger.debug(`Deleted cache entry for key: ${key}`);
+			this.Logger.debug(`Deleted cache entry for key: ${key}`);
 		} catch (error) {
-			this.logger.error(`Failed to delete cache entry for key ${key}: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to delete cache entry for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -188,15 +188,15 @@ export class GraphQLCacheService implements LazyModuleRefService {
 		try {
 			if (typeof (this.CacheManager as any).clear === 'function') {
 				await (this.CacheManager as any).clear();
-				this.logger.debug('Cache cleared successfully');
+				this.Logger.debug('Cache cleared successfully');
 			} else if (typeof (this.CacheManager as any).reset === 'function') {
 				await (this.CacheManager as any).reset();
-				this.logger.debug('Cache cleared successfully');
+				this.Logger.debug('Cache cleared successfully');
 			} else {
-				this.logger.warn('Cache clear not supported by current store, skipping');
+				this.Logger.warn('Cache clear not supported by current store, skipping');
 			}
 		} catch (error) {
-			this.logger.error(`Failed to clear cache: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to clear cache: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
@@ -226,19 +226,19 @@ export class GraphQLCacheService implements LazyModuleRefService {
 							totalDeleted += keys.length;
 						}
 					} while (cursor !== '0');
-					this.logger.debug(`Invalidated ${totalDeleted} cache entries matching pattern: ${pattern}`);
+					this.Logger.debug(`Invalidated ${totalDeleted} cache entries matching pattern: ${pattern}`);
 					return;
 				}
 			}
 			// Fallback: try store-specific methods
 			if (typeof (cacheManager as any).reset === 'function') {
 				await (cacheManager as any).reset();
-				this.logger.warn(`Pattern invalidation for '${pattern}' fell back to clearing entire cache`);
+				this.Logger.warn(`Pattern invalidation for '${pattern}' fell back to clearing entire cache`);
 				return;
 			}
-			this.logger.warn(`Pattern invalidation not supported for this cache store. Pattern: ${pattern}`);
+			this.Logger.warn(`Pattern invalidation not supported for this cache store. Pattern: ${pattern}`);
 		} catch (error) {
-			this.logger.error(`Failed to invalidate pattern ${pattern}: ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to invalidate pattern ${pattern}: ${getErrorMessage(error)}`);
 		}
 	}
 
@@ -246,9 +246,9 @@ export class GraphQLCacheService implements LazyModuleRefService {
 	 * Resets cache statistics (hits and misses)
 	 */
 	public resetStats(): void {
-		this.cacheStats.hits = 0;
-		this.cacheStats.misses = 0;
-		this.logger.debug('Cache statistics reset');
+		this.CacheStats.hits = 0;
+		this.CacheStats.misses = 0;
+		this.Logger.debug('Cache statistics reset');
 	}
 
 	/**
@@ -256,9 +256,9 @@ export class GraphQLCacheService implements LazyModuleRefService {
 	 * @returns Hit rate as percentage (0-100)
 	 */
 	private getHitRate(): number {
-		const total = this.cacheStats.hits + this.cacheStats.misses;
+		const total = this.CacheStats.hits + this.CacheStats.misses;
 		if (total === 0) return 0;
-		return (this.cacheStats.hits / total) * HIT_RATE_PERCENTAGE;
+		return (this.CacheStats.hits / total) * HIT_RATE_PERCENTAGE;
 	}
 
 	/**
@@ -268,8 +268,8 @@ export class GraphQLCacheService implements LazyModuleRefService {
 	 */
 	public getStats(): ICacheStats {
 		return {
-			hits: this.cacheStats.hits,
-			misses: this.cacheStats.misses,
+			hits: this.CacheStats.hits,
+			misses: this.CacheStats.misses,
 			hitRate: this.getHitRate(),
 			size: 0, // Redis would provide this
 			store: 'CacheManager',

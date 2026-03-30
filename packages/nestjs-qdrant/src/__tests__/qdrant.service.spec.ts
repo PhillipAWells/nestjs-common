@@ -56,15 +56,15 @@ describe('QdrantService', () => {
 		it('should return QdrantCollectionService for a collection name', () => {
 			const collectionService = service.collection('test-collection');
 			expect(collectionService).toBeInstanceOf(QdrantCollectionService);
-			expect(collectionService.collectionName).toBe('test-collection');
+			expect(collectionService.CollectionName).toBe('test-collection');
 		});
 
 		it('should return different instances for different collection names', () => {
 			const collection1 = service.collection('collection-1');
 			const collection2 = service.collection('collection-2');
 			expect(collection1).not.toBe(collection2);
-			expect(collection1.collectionName).toBe('collection-1');
-			expect(collection2.collectionName).toBe('collection-2');
+			expect(collection1.CollectionName).toBe('collection-1');
+			expect(collection2.CollectionName).toBe('collection-2');
 		});
 
 		it('should wrap the same client instance', () => {
@@ -93,7 +93,7 @@ describe('QdrantService', () => {
 		it('should accept valid single-character collection name', () => {
 			const collectionService = service.collection('a');
 			expect(collectionService).toBeInstanceOf(QdrantCollectionService);
-			expect(collectionService.collectionName).toBe('a');
+			expect(collectionService.CollectionName).toBe('a');
 		});
 
 		it('should accept collection names with alphanumeric, hyphens, and underscores', () => {
@@ -101,7 +101,7 @@ describe('QdrantService', () => {
 			for (const name of validNames) {
 				const collectionService = service.collection(name);
 				expect(collectionService).toBeInstanceOf(QdrantCollectionService);
-				expect(collectionService.collectionName).toBe(name);
+				expect(collectionService.CollectionName).toBe(name);
 			}
 		});
 	});

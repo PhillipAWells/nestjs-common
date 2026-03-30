@@ -58,5 +58,5 @@ export {
 	getQdrantClientToken,
 	getQdrantModuleOptionsToken,
 } from './qdrant.constants.js';
-export type { QdrantModuleOptions, QdrantModuleAsyncOptions, QdrantOptionsFactory } from './qdrant.interfaces.js';
+export type { TQdrantModuleOptions, IQdrantModuleAsyncOptions, IQdrantOptionsFactory } from './qdrant.interfaces.js';
 export { InjectQdrantClient } from './decorators/inject-qdrant-client.decorator.js';

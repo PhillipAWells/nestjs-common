@@ -1,4 +1,4 @@
-import { ComplexityConfig, DEFAULT_COMPLEXITY_CONFIG } from './query-complexity.js';
+import { IComplexityConfig, DEFAULT_COMPLEXITY_CONFIG } from './query-complexity.js';
 import { QUERY_COMPLEXITY_THRESHOLD, QUERY_DEPTH_LIMIT, QUERY_COMPLEXITY_SCALAR_WEIGHT, QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } from '../constants/complexity.constants.js';
 
 /** Custom scalar complexity is lighter than list items by this offset */
@@ -35,7 +35,7 @@ export const COMPLEXITY_WEIGHTS = {
 /**
  * Default complexity rules configuration
  */
-export const DEFAULT_COMPLEXITY_RULES: ComplexityConfig = {
+export const DEFAULT_COMPLEXITY_RULES: IComplexityConfig = {
 	...DEFAULT_COMPLEXITY_CONFIG,
 	multipliers: {
 		depth: QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER,
@@ -51,7 +51,7 @@ export const DEFAULT_COMPLEXITY_RULES: ComplexityConfig = {
  * Complexity rules for specific field patterns
  */
 export const FIELD_COMPLEXITY_RULES = {
-	// User-related fields
+	// IUser-related fields
 	user: {
 		profile: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 		friends: COMPLEXITY_WEIGHTS.LIST_ITEM,
@@ -59,28 +59,28 @@ export const FIELD_COMPLEXITY_RULES = {
 		comments: COMPLEXITY_WEIGHTS.LIST_ITEM,
 	},
 
-	// Product-related fields
+	// IProduct-related fields
 	product: {
 		details: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 		reviews: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		related: COMPLEXITY_WEIGHTS.LIST_ITEM,
 	},
 
-	// Order-related fields
+	// IOrder-related fields
 	order: {
 		items: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		history: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		customer: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 	},
 
-	// Comment-related fields
+	// IComment-related fields
 	comment: {
 		replies: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		author: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 		post: COMPLEXITY_WEIGHTS.OBJECT_FIELD,
 	},
 
-	// Tag-related fields
+	// ITag-related fields
 	tag: {
 		posts: COMPLEXITY_WEIGHTS.LIST_ITEM,
 		related: COMPLEXITY_WEIGHTS.LIST_ITEM,
@@ -113,7 +113,7 @@ export function getFieldComplexityWeight(
 export function calculateListComplexity(
 	baseComplexity: number,
 	estimatedItems: number = DEFAULT_ESTIMATED_ITEMS,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	const { list = COMPLEXITY_WEIGHTS.LIST_ITEM } = config.multipliers ?? {};
 	return baseComplexity + (estimatedItems * list);
@@ -129,7 +129,7 @@ export function calculateListComplexity(
 export function calculateNestedComplexity(
 	baseComplexity: number,
 	depth: number,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	const { depth: depthMultiplier = 2 } = config.multipliers ?? {};
 	return baseComplexity * Math.pow(depthMultiplier, depth);
@@ -145,7 +145,7 @@ export function calculateNestedComplexity(
 export function calculateConnectionComplexity(
 	baseComplexity: number,
 	first: number = DEFAULT_ESTIMATED_ITEMS,
-	config: ComplexityConfig = DEFAULT_COMPLEXITY_RULES,
+	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
 	return COMPLEXITY_WEIGHTS.CONNECTION + calculateListComplexity(baseComplexity, first, config);
 }
@@ -155,7 +155,7 @@ export function calculateConnectionComplexity(
  * @param config Complexity configuration to validate
  * @returns True if configuration is valid
  */
-export function validateComplexityConfig(config: ComplexityConfig): boolean {
+export function validateComplexityConfig(config: IComplexityConfig): boolean {
 	const { multipliers, limits } = config;
 
 	// Validate multipliers
@@ -179,8 +179,8 @@ export function validateComplexityConfig(config: ComplexityConfig): boolean {
  * @returns Merged complexity configuration
  */
 export function createComplexityConfig(
-	overrides: Partial<ComplexityConfig> = {},
-): ComplexityConfig {
+	overrides: Partial<IComplexityConfig> = {},
+): IComplexityConfig {
 	const config = {
 		...DEFAULT_COMPLEXITY_RULES,
 		...overrides,

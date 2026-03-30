@@ -15,8 +15,8 @@ export {
 	BaseApplicationError,
 	createError,
 	ERROR_CONFIGS as BaseErrorConfigs,
-	type ErrorConfig,
-	type ErrorType,
+	type IErrorConfig,
+	type TErrorType,
 	BadRequestError as BaseBadRequestError,
 	UnauthorizedError as BaseUnauthorizedError,
 	ForbiddenError as BaseForbiddenError,
@@ -30,7 +30,7 @@ export {
 } from '@pawells/nestjs-shared/common';
 
 // GraphQL-specific error factory
-export { createGraphQLError, GRAPHQL_ERROR_CONFIGS, type GraphQLErrorConfig, type GraphQLErrorType } from './graphql-error-factory.js';
+export { createGraphQLError, GRAPHQL_ERROR_CONFIGS, type IGraphQLErrorConfig, type TGraphQLErrorType } from './graphql-error-factory.js';
 
 // Legacy GraphqlError for backward compatibility
 export { GraphqlError } from './graphql-error.js';
@@ -47,11 +47,11 @@ export const InternalServerError = createGraphQLError(GRAPHQL_ERROR_CONFIGS.INTE
 export const RateLimitError = createGraphQLError(GRAPHQL_ERROR_CONFIGS.RATE_LIMIT_EXCEEDED);
 
 // Additional GraphQL-specific errors
-export const ValidationError = createGraphQLError(GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR);
+export const IValidationError = createGraphQLError(GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR);
 
 // Backward compatibility aliases (deprecated - use the factory-generated classes above)
 export { NotFoundError as LegacyNotFoundError } from './not-found.error.js';
-export { ValidationError as LegacyValidationError } from './validation.error.js';
+export { IValidationError as LegacyValidationError } from './validation.error.js';
 export { UnauthorizedError as LegacyUnauthorizedError } from './unauthorized.error.js';
 export { ForbiddenError as LegacyForbiddenError } from './forbidden.error.js';
 export { ConflictError as LegacyConflictError } from './conflict.error.js';

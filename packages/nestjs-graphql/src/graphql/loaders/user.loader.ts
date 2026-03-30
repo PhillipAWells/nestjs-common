@@ -1,14 +1,14 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorStack } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
- * Interface for User entity
+ * Interface for IUser entity
  */
-export interface User {
+export interface IUser {
 	id: string;
 	[key: string]: any;
 }
@@ -18,7 +18,7 @@ export interface User {
  * Prevents N+1 query problems when resolving user fields in GraphQL
  */
 @Injectable()
-export class UserLoader implements LazyModuleRefService {
+export class UserLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get DataLoaderRegistry(): DataLoaderRegistry {
@@ -29,7 +29,7 @@ export class UserLoader implements LazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(UserLoader.name);
 	}
 
@@ -43,8 +43,8 @@ export class UserLoader implements LazyModuleRefService {
    * @returns DataLoader for users
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(User | Error)[]>,
-	): DataLoader<string, User> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IUser | Error)[]>,
+	): DataLoader<string, IUser> {
 		return this.DataLoaderRegistry.createWithCache(
 			'user-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -60,8 +60,8 @@ export class UserLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		userIds: readonly string[],
-	): Promise<(User | Error)[]> {
-		this.logger.warn(
+	): Promise<(IUser | Error)[]> {
+		this.Logger.warn(
 			'Using default user batch loader. Override with actual implementation.',
 		);
 
@@ -77,15 +77,15 @@ export class UserLoader implements LazyModuleRefService {
 
 	/**
    * Loads a single user by ID
-   * @param userId User ID to load
+   * @param userId IUser ID to load
    * @returns Promise resolving to user or undefined
    */
-	public async load(userId: string): Promise<User | undefined> {
+	public async load(userId: string): Promise<IUser | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(userId);
 		} catch (error) {
-			this.logger.error(`Failed to load user ${userId}`, getErrorStack(error));
+			this.Logger.error(`Failed to load user ${userId}`, getErrorStack(error));
 			return undefined;
 		}
 	}
@@ -95,24 +95,24 @@ export class UserLoader implements LazyModuleRefService {
    * @param userIds Array of user IDs to load
    * @returns Promise resolving to array of users
    */
-	public async loadMany(userIds: string[]): Promise<(User | Error)[]> {
+	public async loadMany(userIds: string[]): Promise<(IUser | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(userIds);
 		} catch (error) {
-			this.logger.error(`Failed to load users ${userIds}`, getErrorStack(error));
+			this.Logger.error(`Failed to load users ${userIds}`, getErrorStack(error));
 			return userIds.map(() => error as Error);
 		}
 	}
 
 	/**
    * Clears the cache for a specific user
-   * @param userId User ID to clear from cache
+   * @param userId IUser ID to clear from cache
    */
 	public clear(userId: string): void {
 		const loader = this.getLoader();
 		loader.clear(userId);
-		this.logger.debug(`Cleared cache for user ${userId}`);
+		this.Logger.debug(`Cleared cache for user ${userId}`);
 	}
 
 	/**

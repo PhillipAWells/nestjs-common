@@ -372,7 +372,7 @@ describe('Redis Configuration Validation', () => {
 			delete process.env['REDIS_RETRY_DELAY'];
 		});
 
-		it('should return valid RedisConfig object', () => {
+		it('should return valid IRedisConfig object', () => {
 			const config = getRedisConfig();
 			expect(config).toHaveProperty('host', 'localhost');
 			expect(config).toHaveProperty('port', 6379);
@@ -431,7 +431,7 @@ describe('Redis Configuration Validation', () => {
 			delete process.env['REDIS_CACHE_TTL'];
 		});
 
-		it('should return valid RedisConnectionOptions object', () => {
+		it('should return valid IRedisConnectionOptions object', () => {
 			const options = getRedisConnectionOptions();
 			expect(options).toHaveProperty('host', 'localhost');
 			expect(options).toHaveProperty('port', 6379);

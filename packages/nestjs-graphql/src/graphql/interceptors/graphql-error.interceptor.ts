@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, catchError, throwError } from 'rxjs';
 import { GraphQLError } from 'graphql';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
@@ -15,21 +15,21 @@ import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STAT
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLErrorInterceptor)
- * @Query(() => User, { name: 'GetUser' })
- * async getUser(): Promise<User> {
+ * @Query(() => IUser, { name: 'GetUser' })
+ * async getUser(): Promise<IUser> {
  *   // Errors from this resolver will be properly formatted
  * }
  * ```
  */
 @Injectable()
-export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefService {
+export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(GraphQLErrorInterceptor.name);
 	}
 
@@ -57,7 +57,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefSe
 		return next.handle().pipe(
 			catchError((error) => {
 				// Log the error with context
-				this.logger?.error(
+				this.Logger?.error(
 					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${getErrorMessage(error)}`,
 				);
 
@@ -129,7 +129,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, LazyModuleRefSe
 		const HTTP_STATUS_CONFLICT = 409;
 
 		// Handle specific error types
-		if (error.name === 'ValidationError' || error.message?.includes('validation')) {
+		if (error.name === 'IValidationError' || error.message?.includes('validation')) {
 			return {
 				code: 'VALIDATION_ERROR',
 				message: 'Input validation failed',

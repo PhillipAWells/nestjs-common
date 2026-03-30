@@ -12,7 +12,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * Contains aggregated profiling metrics including CPU samples, memory allocations,
  * and HTTP request statistics.
  */
-export interface MetricsResponse {
+export interface IMetricsResponse {
 	timestamp: number;
 	cpu: {
 		samples: number;
@@ -46,37 +46,37 @@ export interface MetricsResponse {
  * @example
  * ```typescript
  * // Record individual metrics
- * this.metrics.recordCPUSample(125);
- * this.metrics.recordMemorySample(1024000);
- * this.metrics.recordRequest(200, 45);
+ * this.Metrics.recordCPUSample(125);
+ * this.Metrics.recordMemorySample(1024000);
+ * this.Metrics.recordRequest(200, 45);
  *
  * // Retrieve aggregated metrics
- * const stats = this.metrics.getMetrics();
- * const prometheus = this.metrics.getPrometheusMetrics();
+ * const stats = this.Metrics.getMetrics();
+ * const prometheus = this.Metrics.getPrometheusMetrics();
  * ```
  */
 @Injectable()
 export class MetricsService {
-	private readonly logger = new AppLogger(undefined, MetricsService.name);
+	private readonly Logger = new AppLogger(undefined, MetricsService.name);
 
 	// CPU metrics
-	private cpuSamples = 0;
+	private CpuSamples = 0;
 
-	private totalCpuDuration = 0;
+	private TotalCpuDuration = 0;
 
 	// Memory metrics
-	private memorySamples = 0;
+	private MemorySamples = 0;
 
-	private totalMemoryAllocations = 0;
+	private TotalMemoryAllocations = 0;
 
 	// Request metrics
-	private totalRequests = 0;
+	private TotalRequests = 0;
 
-	private successfulRequests = 0;
+	private SuccessfulRequests = 0;
 
-	private failedRequests = 0;
+	private FailedRequests = 0;
 
-	private totalResponseTime = 0;
+	private TotalResponseTime = 0;
 
 	constructor() {}
 
@@ -86,12 +86,12 @@ export class MetricsService {
 	 */
 	public recordCPUSample(duration: number): void {
 		if (duration < 0) {
-			this.logger.warn('Invalid CPU duration provided, ignoring sample');
+			this.Logger.warn('Invalid CPU duration provided, ignoring sample');
 			return;
 		}
 
-		this.cpuSamples++;
-		this.totalCpuDuration += duration;
+		this.CpuSamples++;
+		this.TotalCpuDuration += duration;
 	}
 
 	/**
@@ -100,12 +100,12 @@ export class MetricsService {
 	 */
 	public recordMemorySample(bytes: number): void {
 		if (bytes < 0) {
-			this.logger.warn('Invalid memory allocation provided, ignoring sample');
+			this.Logger.warn('Invalid memory allocation provided, ignoring sample');
 			return;
 		}
 
-		this.memorySamples++;
-		this.totalMemoryAllocations += bytes;
+		this.MemorySamples++;
+		this.TotalMemoryAllocations += bytes;
 	}
 
 	/**
@@ -115,17 +115,17 @@ export class MetricsService {
 	 */
 	public recordRequest(statusCode: number, duration: number): void {
 		if (duration < 0) {
-			this.logger.warn('Invalid request duration provided, ignoring sample');
+			this.Logger.warn('Invalid request duration provided, ignoring sample');
 			return;
 		}
 
-		this.totalRequests++;
-		this.totalResponseTime += duration;
+		this.TotalRequests++;
+		this.TotalResponseTime += duration;
 
 		if (statusCode >= METRICS_STATUS_OK && statusCode < METRICS_STATUS_CLIENT_ERROR_MIN) {
-			this.successfulRequests++;
+			this.SuccessfulRequests++;
 		} else {
-			this.failedRequests++;
+			this.FailedRequests++;
 		}
 	}
 
@@ -135,34 +135,34 @@ export class MetricsService {
 	 * Returns aggregated metrics from all recorded samples since service creation
 	 * or last reset.
 	 *
-	 * @returns MetricsResponse with current aggregated metrics
+	 * @returns IMetricsResponse with current aggregated metrics
 	 *
 	 * @example
 	 * ```typescript
-	 * const metrics = this.metricsService.getMetrics();
+	 * const metrics = this.MetricsService.getMetrics();
 	 * console.log(`Processed ${metrics.requests.total} requests`);
 	 * console.log(`CPU time: ${metrics.cpu.duration}ms across ${metrics.cpu.samples} samples`);
 	 * ```
 	 */
-	public getMetrics(): MetricsResponse {
-		const averageResponseTime = this.totalRequests > 0
-			? this.totalResponseTime / this.totalRequests
+	public getMetrics(): IMetricsResponse {
+		const averageResponseTime = this.TotalRequests > 0
+			? this.TotalResponseTime / this.TotalRequests
 			: 0;
 
 		return {
 			timestamp: Date.now(),
 			cpu: {
-				samples: this.cpuSamples,
-				duration: this.totalCpuDuration,
+				samples: this.CpuSamples,
+				duration: this.TotalCpuDuration,
 			},
 			memory: {
-				samples: this.memorySamples,
-				allocations: this.totalMemoryAllocations,
+				samples: this.MemorySamples,
+				allocations: this.TotalMemoryAllocations,
 			},
 			requests: {
-				total: this.totalRequests,
-				successful: this.successfulRequests,
-				failed: this.failedRequests,
+				total: this.TotalRequests,
+				successful: this.SuccessfulRequests,
+				failed: this.FailedRequests,
 
 				averageResponseTime: Math.round(averageResponseTime * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION, // Round to 2 decimal places
 			},
@@ -179,7 +179,7 @@ export class MetricsService {
 	 *
 	 * @example
 	 * ```typescript
-	 * const prometheusMetrics = this.metricsService.getPrometheusMetrics();
+	 * const prometheusMetrics = this.MetricsService.getPrometheusMetrics();
 	 * // Returns:
 	 * // # HELP profiling_cpu_samples_total Total number of CPU profiling samples collected
 	 * // # TYPE profiling_cpu_samples_total counter
@@ -231,20 +231,20 @@ profiling_requests_average_response_time_ms ${metrics.requests.averageResponseTi
 	 *
 	 * @example
 	 * ```typescript
-	 * this.metricsService.reset();
+	 * this.MetricsService.reset();
 	 * // All metrics are now zero
 	 * ```
 	 */
 	public reset(): void {
-		this.cpuSamples = 0;
-		this.totalCpuDuration = 0;
-		this.memorySamples = 0;
-		this.totalMemoryAllocations = 0;
-		this.totalRequests = 0;
-		this.successfulRequests = 0;
-		this.failedRequests = 0;
-		this.totalResponseTime = 0;
+		this.CpuSamples = 0;
+		this.TotalCpuDuration = 0;
+		this.MemorySamples = 0;
+		this.TotalMemoryAllocations = 0;
+		this.TotalRequests = 0;
+		this.SuccessfulRequests = 0;
+		this.FailedRequests = 0;
+		this.TotalResponseTime = 0;
 
-		this.logger.debug('All profiling metrics have been reset');
+		this.Logger.debug('All profiling metrics have been reset');
 	}
 }

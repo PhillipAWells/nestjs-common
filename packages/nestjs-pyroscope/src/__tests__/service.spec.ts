@@ -175,8 +175,8 @@ describe('PyroscopeService', () => {
 
 			// Manually set initialized state and mock client
 			const mockClient = createMockPyroscopeClient();
-			(serviceWithInit as any).pyroscopeClient = mockClient;
-			(serviceWithInit as any).isInitialized = true;
+			(serviceWithInit as any).PyroscopeClient = mockClient;
+			(serviceWithInit as any).IsInitialized = true;
 
 			await serviceWithInit.onModuleDestroy();
 
@@ -194,8 +194,8 @@ describe('PyroscopeService', () => {
 			const stopError = new Error('Stop failed');
 			mockClient.stop.mockRejectedValueOnce(stopError);
 
-			(serviceWithInit as any).pyroscopeClient = mockClient;
-			(serviceWithInit as any).isInitialized = true;
+			(serviceWithInit as any).PyroscopeClient = mockClient;
+			(serviceWithInit as any).IsInitialized = true;
 
 			await serviceWithInit.onModuleDestroy();
 		});
@@ -214,8 +214,8 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceWithoutClient as any).pyroscopeClient = null;
-			(serviceWithoutClient as any).isInitialized = true;
+			(serviceWithoutClient as any).PyroscopeClient = null;
+			(serviceWithoutClient as any).IsInitialized = true;
 
 			await serviceWithoutClient.onModuleDestroy();
 
@@ -250,7 +250,7 @@ describe('PyroscopeService', () => {
 			);
 
 			// Set initialized flag manually
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -280,7 +280,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -308,7 +308,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const customStartTime = 1234567890;
 			const context: IProfileContext = {
@@ -335,7 +335,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -375,7 +375,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const startTime = Date.now();
 			const context: IProfileContext = {
@@ -412,7 +412,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -447,7 +447,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -474,7 +474,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -500,7 +500,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -511,14 +511,14 @@ describe('PyroscopeService', () => {
 			const { profileId } = context;
 
 			// Verify it's in active profiles
-			const { activeProfiles } = (serviceEnabled as any);
-			expect(activeProfiles.has(profileId)).toBe(true);
+			const { ActiveProfiles } = (serviceEnabled as any);
+			expect(ActiveProfiles.has(profileId)).toBe(true);
 
 			// Stop profiling
 			serviceEnabled.stopProfiling(context);
 
 			// Should be removed
-			expect(activeProfiles.has(profileId)).toBe(false);
+			expect(ActiveProfiles.has(profileId)).toBe(false);
 		});
 
 		it('should add metrics to internal metrics array', () => {
@@ -535,7 +535,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc1',
@@ -626,9 +626,9 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 			const mockClient = createMockPyroscopeClient();
-			(serviceEnabled as any).pyroscopeClient = mockClient;
+			(serviceEnabled as any).PyroscopeClient = mockClient;
 
 			expect(() => serviceEnabled.addTags({ tag: 'value' })).not.toThrow();
 		});
@@ -647,9 +647,9 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 			const mockClient = createMockPyroscopeClient();
-			(serviceEnabled as any).pyroscopeClient = mockClient;
+			(serviceEnabled as any).PyroscopeClient = mockClient;
 
 			expect(() => serviceEnabled.removeTags(['tag'])).not.toThrow();
 		});
@@ -668,8 +668,8 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
-			(serviceEnabled as any).pyroscopeClient = null;
+			(serviceEnabled as any).IsInitialized = true;
+			(serviceEnabled as any).PyroscopeClient = null;
 
 			expect(() => serviceEnabled.addTags({ tag: 'value' })).not.toThrow();
 		});
@@ -696,7 +696,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -760,7 +760,7 @@ describe('PyroscopeService', () => {
 				undefined, // No MetricsService
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			// Add some profiles
 			const context1: IProfileContext = {
@@ -826,7 +826,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = false;
+			(serviceEnabled as any).IsInitialized = false;
 
 			const health = serviceEnabled.getHealth();
 
@@ -848,7 +848,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const health = serviceEnabled.getHealth();
 
@@ -874,7 +874,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -902,7 +902,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -941,7 +941,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			expect(serviceEnabled.isEnabled()).toBe(true);
 		});
@@ -962,7 +962,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context1: IProfileContext = {
 				functionName: 'testFunc',
@@ -994,7 +994,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'myTestFunction',
@@ -1027,12 +1027,12 @@ describe('PyroscopeService', () => {
 			expect(health.status).toBe('unhealthy');
 
 			// Becomes healthy when initialized
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 			health = serviceEnabled.getHealth();
 			expect(health.status).toBe('healthy');
 
 			// Can transition back to unhealthy
-			(serviceEnabled as any).isInitialized = false;
+			(serviceEnabled as any).IsInitialized = false;
 			health = serviceEnabled.getHealth();
 			expect(health.status).toBe('unhealthy');
 		});
@@ -1072,7 +1072,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -1098,7 +1098,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			for (let i = 0; i < 5; i++) {
 				const context: IProfileContext = {
@@ -1128,7 +1128,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const contexts: IProfileContext[] = [
 				{ functionName: 'func1', startTime: Date.now() },

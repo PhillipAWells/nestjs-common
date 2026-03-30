@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
  * Contains request/response objects, user information, and
  * other contextual data available to resolvers.
  */
-export interface GraphQLContext {
+export interface IGraphQLContext {
 	/**
 	 * HTTP request object
 	 */
@@ -44,7 +44,7 @@ export interface GraphQLContext {
  *
  * Extended context for WebSocket connections (subscriptions)
  */
-export interface WebSocketContext extends GraphQLContext {
+export interface IWebSocketContext extends IGraphQLContext {
 	/**
 	 * WebSocket connection information
 	 */
@@ -89,7 +89,7 @@ export interface WebSocketContext extends GraphQLContext {
 /**
  * Context Factory Options
  */
-export interface ContextFactoryOptions {
+export interface IContextFactoryOptions {
 	/**
 	 * Whether to include request tracing
 	 * @default true
@@ -99,7 +99,7 @@ export interface ContextFactoryOptions {
 	/**
 	 * Custom context enhancers
 	 */
-	contextEnhancers?: Array<(context: GraphQLContext) => Promise<void> | void>;
+	contextEnhancers?: Array<(context: IGraphQLContext) => Promise<void> | void>;
 
 	/**
 	 * Request ID generator function

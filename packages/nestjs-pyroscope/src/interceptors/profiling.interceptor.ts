@@ -4,14 +4,14 @@ import { Observable, tap, catchError } from 'rxjs';
 import { PyroscopeService } from '../service.js';
 import { IProfileContext } from '../interfaces/profiling.interface.js';
 
-interface HttpRequest {
+interface IHttpRequest {
 	method: string;
 	url: string;
 	route?: { path: string };
 	get: (header: string) => string | undefined;
 }
 
-interface HttpResponse {
+interface IHttpResponse {
 	statusCode?: number;
 }
 
@@ -25,7 +25,7 @@ interface HttpResponse {
  * Features:
  * - Automatic timing of HTTP request lifecycle
  * - Captures HTTP method, path, and status code
- * - Records User-Agent header
+ * - Records IUser-Agent header
  * - Distinguishes between successful and failed requests
  * - Properly handles both sync and async responses
  *
@@ -56,15 +56,15 @@ interface HttpResponse {
  */
 @Injectable()
 export class ProfilingInterceptor implements NestInterceptor {
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
 	constructor(moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
+		this.ModuleRef = moduleRef;
 	}
 
 	private get pyroscopeService(): PyroscopeService | null {
 		try {
-			return this.moduleRef.get(PyroscopeService, { strict: false });
+			return this.ModuleRef.get(PyroscopeService, { strict: false });
 		} catch {
 			return null;
 		}
@@ -76,8 +76,8 @@ export class ProfilingInterceptor implements NestInterceptor {
 			return next.handle();
 		}
 
-		const request = context.switchToHttp().getRequest<HttpRequest>();
-		const response = context.switchToHttp().getResponse<HttpResponse>();
+		const request = context.switchToHttp().getRequest<IHttpRequest>();
+		const response = context.switchToHttp().getResponse<IHttpResponse>();
 
 		const profileContext: IProfileContext = {
 			functionName: `HTTP ${request.method} ${request.route?.path ?? request.url}`,
@@ -85,7 +85,7 @@ export class ProfilingInterceptor implements NestInterceptor {
 			tags: {
 				method: request.method,
 				path: request.route?.path ?? request.url,
-				userAgent: request.get('User-Agent') ?? 'unknown',
+				userAgent: request.get('IUser-Agent') ?? 'unknown',
 			},
 		};
 

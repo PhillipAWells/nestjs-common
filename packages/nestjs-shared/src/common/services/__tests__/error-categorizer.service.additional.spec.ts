@@ -233,8 +233,8 @@ describe('ErrorCategorizerService - Additional Coverage', () => {
 			expect(result.retryable).toBe(false);
 		});
 
-		it('should categorize ValidationError by name as permanent', () => {
-			const error = { name: 'ValidationError', message: 'Fields invalid' };
+		it('should categorize IValidationError by name as permanent', () => {
+			const error = { name: 'IValidationError', message: 'Fields invalid' };
 			const result = service.categorizeError(error);
 
 			expect(result.type).toBe('permanent');

@@ -45,33 +45,33 @@
 // Cache Module Exports
 // ============================================================================
 export { CacheModule } from './cache/cache.module.js';
-export type { CacheModuleAsyncOptions } from './cache/cache.interfaces.js';
+export type { ICacheModuleAsyncOptions } from './cache/cache.interfaces.js';
 export { CacheService } from './cache/cache.service.js';
 export { CacheInterceptor } from './cache/cache.interceptor.js';
 
 // Base interceptor and strategies
 export { BaseCacheInterceptor } from './cache/interceptors/base-cache.interceptor.js';
 export type {
-	CacheKeyGenerator,
-	CacheMetadataExtractor,
-	CacheContextHandler,
+	ICacheKeyGenerator,
+	ICacheMetadataExtractor,
+	ICacheContextHandler,
 } from './cache/interceptors/base-cache.interceptor.js';
 
 // Configuration
 export { getRedisConfig, getRedisConnectionOptions, createRedisOptions } from './cache/redis.config.js';
-export type { RedisConfig, RedisConnectionOptions } from './cache/redis.config.js';
+export type { IRedisConfig, IRedisConnectionOptions } from './cache/redis.config.js';
 
 // Types
 export type {
-	CacheStats,
-	CacheConfig as CacheCacheConfig,
-	CacheKeyBuilder,
-	CacheMetrics,
-	CacheEntryMetadata,
-	CacheOperationResult,
-	CacheWarmingOptions,
-	CacheInvalidationOptions,
-	RedisConnectionInfo,
+	ICacheStats,
+	ICacheConfig as CacheCacheConfig,
+	TCacheKeyBuilder,
+	ICacheMetrics,
+	ICacheEntryMetadata,
+	ICacheOperationResult,
+	ICacheWarmingOptions,
+	ICacheInvalidationOptions,
+	IRedisConnectionInfo,
 } from './cache/cache.types.js';
 export { CacheInvalidationStrategy, RedisConnectionStatus } from './cache/cache.types.js';
 
@@ -81,9 +81,9 @@ export { CacheEvict } from './cache/decorators/cache-evict.decorator.js';
 export { CacheInvalidate } from './cache/decorators/cache-invalidate.decorator.js';
 
 // Base decorator metadata and interfaces
-export type { BaseCacheableOptions, BaseCacheInvalidateOptions } from './cache/decorators/cache-metadata.js';
+export type { IBaseCacheableOptions, IBaseCacheInvalidateOptions } from './cache/decorators/cache-metadata.js';
 export { CACHE_METADATA_KEYS } from './cache/decorators/cache-metadata.js';
-export type { CacheMetadataKey } from './cache/decorators/cache-metadata.js';
+export type { TCacheMetadataKey } from './cache/decorators/cache-metadata.js';
 
 // ============================================================================
 // GraphQL Module Exports
@@ -91,7 +91,7 @@ export type { CacheMetadataKey } from './cache/decorators/cache-metadata.js';
 
 // GraphQL Core
 export { GraphQLModule, GraphQLService } from './graphql/graphql/index.js';
-export type { GraphQLConfigOptions, GraphQLAsyncConfig } from './graphql/graphql/index.js';
+export type { IGraphQLConfigOptions, IGraphQLAsyncConfig } from './graphql/graphql/index.js';
 
 // Scalars
 export { ObjectIdScalar, DateTimeScalar, JSONScalar } from './graphql/graphql/index.js';
@@ -104,7 +104,7 @@ export { SortDirection } from './graphql/graphql/index.js';
 
 // Error Handling
 export { GraphQLErrorFormatter, GraphQLErrorCode } from './graphql/graphql/index.js';
-export type { GraphQLErrorExtensions, ValidationError } from './graphql/graphql/index.js';
+export type { IGraphQLErrorExtensions, IValidationError } from './graphql/graphql/index.js';
 
 // Subscriptions
 export {
@@ -114,12 +114,12 @@ export {
 	WebSocketAuthService,
 	ConnectionManagerService,
 	ResilienceService,
-	type SubscriptionConfig,
-	type WebSocketConfig,
-	type AuthConfig,
-	type ConnectionConfig,
-	type ResilienceConfig,
-	type WebSocketServerConfig,
+	type ISubscriptionConfig,
+	type IWebSocketConfig,
+	type IAuthConfig,
+	type IConnectionConfig,
+	type IResilienceConfig,
+	type IWebSocketServerConfig,
 } from './graphql/subscriptions/index.js';
 
 // Guards
@@ -154,11 +154,11 @@ export {
 	GraphQLCacheService,
 	GraphQLPerformanceService,
 	BsonSerializationService,
-	type RateLimitResult,
-	type RateLimitConfig,
-	type RateLimitStorage,
-	type PerformanceMetrics,
-	type PerformanceStats,
+	type IRateLimitResult,
+	type IRateLimitConfig,
+	type IRateLimitStorage,
+	type IPerformanceMetrics,
+	type IPerformanceStats,
 } from './graphql/services/index.js';
 
 // Decorators
@@ -181,15 +181,15 @@ export {
 	GraphQLAuthToken,
 	IS_PUBLIC_KEY,
 	ROLES_KEY,
-	type SubscriptionOptions,
+	type ISubscriptionOptions,
 } from './graphql/decorators/index.js';
 
 // Context
 export {
 	GraphQLContextFactory,
-	type GraphQLContext,
-	type WebSocketContext,
-	type ContextFactoryOptions,
+	type IGraphQLContext,
+	type IWebSocketContext,
+	type IContextFactoryOptions,
 } from './graphql/context/index.js';
 
 // Errors
@@ -206,17 +206,17 @@ export {
 	GRAPHQL_ERROR_CONFIGS,
 	GraphqlError,
 	RateLimitError,
-	ValidationError as ValidationErrorClass,
+	IValidationError as ValidationErrorClass,
 	LegacyNotFoundError,
 	LegacyValidationError,
 	LegacyUnauthorizedError,
 	LegacyForbiddenError,
 	LegacyConflictError,
 	LegacyRateLimitError,
-	type ErrorConfig,
-	type ErrorType,
-	type GraphQLErrorConfig,
-	type GraphQLErrorType,
+	type IErrorConfig,
+	type TErrorType,
+	type IGraphQLErrorConfig,
+	type TGraphQLErrorType,
 	BaseErrorConfigs,
 	BaseBadRequestError,
 	BaseUnauthorizedError,
@@ -234,19 +234,19 @@ export {
 export {
 	DataLoaderFactory,
 	DataLoaderRegistry,
-	Comment,
+	IComment,
 	CommentLoader,
 	CommentsByPostLoader,
 	CommentsByUserLoader,
-	Order,
+	IOrder,
 	OrderLoader,
 	OrdersByUserLoader,
-	Product,
+	IProduct,
 	ProductLoader,
-	Tag,
+	ITag,
 	TagLoader,
-	User,
+	IUser,
 	UserLoader,
-	type BatchLoadFn,
-	type DataLoaderOptions,
+	type IBatchLoadFn,
+	type IDataLoaderOptions,
 } from './graphql/loaders/index.js';

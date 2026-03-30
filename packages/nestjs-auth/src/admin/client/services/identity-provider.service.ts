@@ -1,4 +1,4 @@
-import type { IdentityProviderRepresentation } from '../types/index.js';
+import type { IIdentityProviderRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -27,11 +27,11 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * List all identity providers in a realm
 	 */
-	public async list(realm: string): Promise<IdentityProviderRepresentation[]> {
+	public async list(realm: string): Promise<IIdentityProviderRepresentation[]> {
 		this.requireScope('identity-providers:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.identityProviders.find({ realm }),
+				this.AdminClient.identityProviders.find({ realm }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -41,11 +41,11 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * Get an identity provider by alias
 	 */
-	public async get(realm: string, alias: string): Promise<IdentityProviderRepresentation> {
+	public async get(realm: string, alias: string): Promise<IIdentityProviderRepresentation> {
 		this.requireScope('identity-providers:read');
 		try {
 			return (await this.withRetry(() =>
-				this.adminClient.identityProviders.findOne({ realm, alias }),
+				this.AdminClient.identityProviders.findOne({ realm, alias }),
 			)) as any;
 		} catch (error) {
 			return this.handleError(error);
@@ -55,11 +55,11 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * Create a new identity provider
 	 */
-	public async create(realm: string, idp: IdentityProviderRepresentation): Promise<void> {
+	public async create(realm: string, idp: IIdentityProviderRepresentation): Promise<void> {
 		this.requireScope('identity-providers:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.identityProviders.create({ ...idp, realm }),
+				this.AdminClient.identityProviders.create({ ...idp, realm }),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -72,12 +72,12 @@ export class IdentityProviderService extends BaseService {
 	public async update(
 		realm: string,
 		alias: string,
-		idp: IdentityProviderRepresentation,
+		idp: IIdentityProviderRepresentation,
 	): Promise<void> {
 		this.requireScope('identity-providers:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.identityProviders.update({ realm, alias }, idp),
+				this.AdminClient.identityProviders.update({ realm, alias }, idp),
 			);
 		} catch (error) {
 			this.handleError(error);
@@ -91,7 +91,7 @@ export class IdentityProviderService extends BaseService {
 		this.requireScope('identity-providers:write');
 		try {
 			await this.withRetry(() =>
-				this.adminClient.identityProviders.del({ realm, alias }),
+				this.AdminClient.identityProviders.del({ realm, alias }),
 			);
 		} catch (error) {
 			this.handleError(error);

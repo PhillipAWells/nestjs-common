@@ -7,7 +7,7 @@ import {
 	MILLISECONDS_TO_SECONDS,
 } from '../constants/histogram-buckets.constants.js';
 import { AppLogger } from './logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { getErrorMessage } from '../utils/error.utils.js';
 
 const HTTP_STATUS_CODE_500 = 500;
@@ -43,60 +43,60 @@ const HTTP_STATUS_CODE_400 = 400;
  * ```
  */
 @Injectable()
-export class MetricsRegistryService implements OnModuleInit, LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
-	private readonly registry: Registry;
+	private readonly Registry: Registry;
 
-	private readonly enabled: boolean;
+	private readonly Enabled: boolean;
 
 	// HTTP Request Metrics
-	private readonly httpRequestDuration: Histogram<string> | null = null;
+	private readonly HttpRequestDuration: Histogram<string> | null = null;
 
-	private readonly httpRequestTotal: Counter<string> | null = null;
+	private readonly HttpRequestTotal: Counter<string> | null = null;
 
-	private readonly httpRequestSize: Histogram<string> | null = null;
+	private readonly HttpRequestSize: Histogram<string> | null = null;
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
 		this.Module = module;
-		this.registry = new Registry();
-		this.enabled = process.env['METRICS_ENABLED'] !== 'false';
+		this.Registry = new Registry();
+		this.Enabled = process.env['METRICS_ENABLED'] !== 'false';
 
-		if (this.enabled) {
+		if (this.Enabled) {
 			// Collect default Node.js metrics
-			collectDefaultMetrics({ register: this.registry });
+			collectDefaultMetrics({ register: this.Registry });
 
 			// HTTP Request Duration Histogram
-			this.httpRequestDuration = new Histogram({
+			this.HttpRequestDuration = new Histogram({
 				name: 'http_request_duration_seconds',
 				help: 'Duration of HTTP requests in seconds',
 				labelNames: ['method', 'route', 'status_code', 'status_class'],
 				buckets: HTTP_DURATION_BUCKETS,
-				registers: [this.registry],
+				registers: [this.Registry],
 			});
 
 			// HTTP Request Total Counter
-			this.httpRequestTotal = new Counter({
+			this.HttpRequestTotal = new Counter({
 				name: 'http_requests_total',
 				help: 'Total number of HTTP requests',
 				labelNames: ['method', 'route', 'status_code', 'status_class'],
-				registers: [this.registry],
+				registers: [this.Registry],
 			});
 
 			// HTTP Request Size Histogram
-			this.httpRequestSize = new Histogram({
+			this.HttpRequestSize = new Histogram({
 				name: 'http_request_size_bytes',
 				help: 'Size of HTTP requests in bytes',
 				labelNames: ['method', 'route'],
 				buckets: HTTP_REQUEST_SIZE_BUCKETS,
-				registers: [this.registry],
+				registers: [this.Registry],
 			});
 		}
 	}
 
 	public onModuleInit(): void {
-		if (!this.enabled) {
+		if (!this.Enabled) {
 			this.Logger.info('Prometheus metrics disabled');
 		} else {
 			this.Logger.info('MetricsRegistryService initialized with HTTP metrics');
@@ -108,31 +108,31 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 * Memoized for performance
 	 */
 	private get Logger(): AppLogger {
-		this._contextualLogger ??= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
-		return this._contextualLogger;
+		this._ContextualLogger ??= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
+		return this._ContextualLogger;
 	}
 
 	/**
 	 * Get the Prometheus registry
 	 */
 	public getRegistry(): Registry {
-		return this.registry;
+		return this.Registry;
 	}
 
 	/**
 	 * Record HTTP request metrics
 	 */
 	public recordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
-		if (!this.enabled || !this.httpRequestDuration || !this.httpRequestTotal) return;
+		if (!this.Enabled || !this.HttpRequestDuration || !this.HttpRequestTotal) return;
 
 		const statusClass = statusCode >= HTTP_STATUS_CODE_500 ? '5xx' : statusCode >= HTTP_STATUS_CODE_400 ? '4xx' : '2xx';
 		const labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
 
-		this.httpRequestDuration.observe(labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
-		this.httpRequestTotal.inc(labels);
+		this.HttpRequestDuration.observe(labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
+		this.HttpRequestTotal.inc(labels);
 
-		if (size !== undefined && this.httpRequestSize) {
-			this.httpRequestSize.observe({ method, route }, size);
+		if (size !== undefined && this.HttpRequestSize) {
+			this.HttpRequestSize.observe({ method, route }, size);
 		}
 	}
 
@@ -140,9 +140,9 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 * Record a counter metric
 	 */
 	public recordCounter(name: string, value: number = 1, labels: Record<string, string | number> = {}): void {
-		if (!this.enabled) return;
+		if (!this.Enabled) return;
 		try {
-			const counter = this.registry.getSingleMetric(name) as Counter<string> | undefined;
+			const counter = this.Registry.getSingleMetric(name) as Counter<string> | undefined;
 			if (counter) {
 				counter.inc(labels, value);
 			} else {
@@ -158,9 +158,9 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 * Record a gauge metric
 	 */
 	public recordGauge(name: string, value: number, labels: Record<string, string | number> = {}): void {
-		if (!this.enabled) return;
+		if (!this.Enabled) return;
 		try {
-			const gauge = this.registry.getSingleMetric(name) as Gauge<string> | undefined;
+			const gauge = this.Registry.getSingleMetric(name) as Gauge<string> | undefined;
 			if (gauge) {
 				gauge.set(labels, value);
 			} else {
@@ -175,9 +175,9 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 * Record a histogram observation
 	 */
 	public recordHistogram(name: string, value: number, labels: Record<string, string | number> = {}): void {
-		if (!this.enabled) return;
+		if (!this.Enabled) return;
 		try {
-			const histogram = this.registry.getSingleMetric(name) as Histogram<string> | undefined;
+			const histogram = this.Registry.getSingleMetric(name) as Histogram<string> | undefined;
 			if (histogram) {
 				histogram.observe(labels, value);
 			} else {
@@ -196,7 +196,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 			name,
 			help,
 			labelNames,
-			registers: [this.registry],
+			registers: [this.Registry],
 		});
 		this.Logger.info(`Created counter metric: ${name}`);
 		return counter;
@@ -210,7 +210,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 			name,
 			help,
 			labelNames,
-			registers: [this.registry],
+			registers: [this.Registry],
 		});
 		this.Logger.info(`Created gauge metric: ${name}`);
 		return gauge;
@@ -224,7 +224,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 			name,
 			help,
 			labelNames,
-			registers: [this.registry],
+			registers: [this.Registry],
 		};
 
 		if (buckets !== undefined) {
@@ -241,7 +241,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 */
 	public registerMetric<T>(metric: T): T {
 		if (metric && typeof metric === 'object' && 'register' in metric && typeof metric.register === 'function') {
-			metric.register(this.registry);
+			metric.register(this.Registry);
 		}
 		return metric;
 	}
@@ -251,7 +251,7 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 */
 	// eslint-disable-next-line require-await
 	public async getMetrics(): Promise<string> {
-		return this.registry.metrics();
+		return this.Registry.metrics();
 	}
 
 	/**
@@ -259,14 +259,14 @@ export class MetricsRegistryService implements OnModuleInit, LazyModuleRefServic
 	 */
 	// eslint-disable-next-line require-await
 	public async getMetricsAsJSON(): Promise<any> {
-		return this.registry.getMetricsAsJSON();
+		return this.Registry.getMetricsAsJSON();
 	}
 
 	/**
 	 * Clear all metrics (useful for testing)
 	 */
 	public clear(): void {
-		this.registry.clear();
+		this.Registry.clear();
 		this.Logger.warn('All metrics cleared');
 	}
 }

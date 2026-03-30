@@ -1,14 +1,14 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { LazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
 /**
- * Interface for Order entity
+ * Interface for IOrder entity
  */
-export interface Order {
+export interface IOrder {
 	id: string;
 	[key: string]: any;
 }
@@ -18,14 +18,14 @@ export interface Order {
  * Prevents N+1 query problems when resolving order fields in GraphQL
  */
 @Injectable()
-export class OrderLoader implements LazyModuleRefService {
+export class OrderLoader implements ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get logger(): AppLogger {
+	private get Logger(): AppLogger {
 		return this.AppLogger.createContextualLogger(OrderLoader.name);
 	}
 
@@ -43,8 +43,8 @@ export class OrderLoader implements LazyModuleRefService {
    * @returns DataLoader for orders
    */
 	public getLoader(
-		batchLoadFn?: (keys: readonly string[]) => Promise<(Order | Error)[]>,
-	): DataLoader<string, Order> {
+		batchLoadFn?: (keys: readonly string[]) => Promise<(IOrder | Error)[]>,
+	): DataLoader<string, IOrder> {
 		return this.DataLoaderRegistry.createWithCache(
 			'order-loader',
 			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
@@ -60,8 +60,8 @@ export class OrderLoader implements LazyModuleRefService {
 	// eslint-disable-next-line require-await
 	private async defaultBatchLoadFn(
 		orderIds: readonly string[],
-	): Promise<(Order | Error)[]> {
-		this.logger.warn(
+	): Promise<(IOrder | Error)[]> {
+		this.Logger.warn(
 			'Using default order batch loader. Override with actual implementation.',
 		);
 
@@ -75,15 +75,15 @@ export class OrderLoader implements LazyModuleRefService {
 
 	/**
    * Loads a single order by ID
-   * @param orderId Order ID to load
+   * @param orderId IOrder ID to load
    * @returns Promise resolving to order or undefined
    */
-	public async load(orderId: string): Promise<Order | undefined> {
+	public async load(orderId: string): Promise<IOrder | undefined> {
 		const loader = this.getLoader();
 		try {
 			return await loader.load(orderId);
 		} catch (error) {
-			this.logger.error(`Failed to load order ${orderId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load order ${orderId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
 		}
 	}
@@ -93,24 +93,24 @@ export class OrderLoader implements LazyModuleRefService {
    * @param orderIds Array of order IDs to load
    * @returns Promise resolving to array of orders
    */
-	public async loadMany(orderIds: string[]): Promise<(Order | Error)[]> {
+	public async loadMany(orderIds: string[]): Promise<(IOrder | Error)[]> {
 		const loader = this.getLoader();
 		try {
 			return await loader.loadMany(orderIds);
 		} catch (error) {
-			this.logger.error(`Failed to load orders ${orderIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
+			this.Logger.error(`Failed to load orders ${orderIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return orderIds.map(() => error as Error);
 		}
 	}
 
 	/**
    * Clears the cache for a specific order
-   * @param orderId Order ID to clear from cache
+   * @param orderId IOrder ID to clear from cache
    */
 	public clear(orderId: string): void {
 		const loader = this.getLoader();
 		loader.clear(orderId);
-		this.logger.debug(`Cleared cache for order ${orderId}`);
+		this.Logger.debug(`Cleared cache for order ${orderId}`);
 	}
 
 	/**

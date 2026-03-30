@@ -57,7 +57,7 @@ All configurable modules use `Module.forRoot(options)` dynamic module pattern wi
 Each package has a single barrel `index.ts` entry point. `nestjs-shared` additionally exposes conditional exports for `./common` and `./common/utils/lazy-getter.types`.
 
 ### Lazy Loading
-`LazyGetter<T>` / `OptionalLazyGetter<T>` type aliases and `CreateMemoizedLazyGetter` / `CreateOptionalLazyGetter` factory functions in `nestjs-shared` defer dependency resolution via `ModuleRef` to avoid circular dependencies. Classes implement the `LazyModuleRefService` interface to use this pattern. In `nestjs-auth`, guards (`JwtAuthGuard`, `RoleGuard`, `PermissionGuard`) use standard NestJS constructor injection; lazy loading is retained only in `KeycloakAdminService`.
+`TLazyGetter<T>` / `TOptionalLazyGetter<T>` type aliases and `CreateMemoizedLazyGetter` / `CreateOptionalLazyGetter` factory functions in `nestjs-shared` defer dependency resolution via `ModuleRef` to avoid circular dependencies. Classes implement the `ILazyModuleRefService` interface to use this pattern. In `nestjs-auth`, guards (`JwtAuthGuard`, `RoleGuard`, `PermissionGuard`) use standard NestJS constructor injection; lazy loading is retained only in `KeycloakAdminService`.
 
 ### Error Handling
 `BaseApplicationError` (in `nestjs-shared`) is the base for all custom errors. `ErrorCategorizerService` classifies errors; `ErrorSanitizerService` redacts sensitive data before logging. `GlobalExceptionFilter` maps errors to HTTP responses.
@@ -85,7 +85,7 @@ Enforced via ESLint v9 flat config (`eslint.config.mjs`):
 - **Trailing commas**: Always (multiline)
 - **Access modifiers**: Required on all class members except constructors
 - **Return types**: Explicit on all functions (warn level)
-- **Naming**: PascalCase for classes/interfaces/types/enums; camelCase for variables/functions; UPPER_CASE allowed for constants. Class properties and enum members also allow UPPER_CASE and PascalCase.
+- **Naming**: PascalCase for classes/interfaces/types/enums; camelCase for variables/functions; UPPER_CASE allowed for constants. Class properties and enum members must be PascalCase or UPPER_CASE (camelCase is not allowed).
 
 Test files have relaxed rules (no type annotations required, naming conventions disabled).
 

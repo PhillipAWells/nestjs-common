@@ -6,10 +6,10 @@ import {
 	CreateValidatingDecorator,
 	CreateTransformingDecorator,
 	GetRequestFromContext,
-	type BaseDecoratorOptions,
-	type ConditionalDecoratorOptions,
-	type ValidatingDecoratorOptions,
-	type TransformingDecoratorOptions,
+	type IBaseDecoratorOptions,
+	type IConditionalDecoratorOptions,
+	type IValidatingDecoratorOptions,
+	type ITransformingDecoratorOptions,
 } from '../decorator-factory.js';
 
 describe('Decorator Factories', () => {
@@ -75,7 +75,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should apply transformation if provided', () => {
-			const options: BaseDecoratorOptions = {
+			const options: IBaseDecoratorOptions = {
 				transform: (value) => (value as string).toUpperCase(),
 			};
 
@@ -87,7 +87,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should validate extracted value if provided', () => {
-			const options: BaseDecoratorOptions = {
+			const options: IBaseDecoratorOptions = {
 				validate: (value) => typeof value === 'string',
 			};
 
@@ -99,7 +99,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should throw validation error when validation fails', () => {
-			const options: BaseDecoratorOptions = {
+			const options: IBaseDecoratorOptions = {
 				validate: (_value) => false,
 			};
 
@@ -111,7 +111,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should apply both validation and transformation', () => {
-			const options: BaseDecoratorOptions = {
+			const options: IBaseDecoratorOptions = {
 				validate: (value) => typeof value === 'string',
 				transform: (value) => (value as string).toUpperCase(),
 			};
@@ -126,7 +126,7 @@ describe('Decorator Factories', () => {
 
 	describe('CreateConditionalDecorator', () => {
 		it('should create a method decorator', () => {
-			const options: ConditionalDecoratorOptions = {
+			const options: IConditionalDecoratorOptions = {
 				key: 'custom-meta',
 				value: 'custom-value',
 			};
@@ -136,7 +136,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should set metadata with provided key and value', () => {
-			const options: ConditionalDecoratorOptions = {
+			const options: IConditionalDecoratorOptions = {
 				key: 'test-key',
 				value: 'test-value',
 			};
@@ -166,7 +166,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should support transform and validate options', () => {
-			const options: ConditionalDecoratorOptions & BaseDecoratorOptions = {
+			const options: IConditionalDecoratorOptions & IBaseDecoratorOptions = {
 				key: 'test-key',
 				value: 'test-value',
 				transform: (value) => (value as string).toLowerCase(),
@@ -180,7 +180,7 @@ describe('Decorator Factories', () => {
 
 	describe('CreateValidatingDecorator', () => {
 		it('should create a parameter decorator with validation', () => {
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				validate: (value) => typeof value === 'string',
 			};
 
@@ -192,7 +192,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should throw error on validation failure when throwOnInvalid is true', () => {
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				validate: (_value) => false,
 				throwOnInvalid: true,
 				errorMessage: 'Custom validation failed',
@@ -206,7 +206,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should not throw error on validation failure when throwOnInvalid is false', () => {
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				validate: (_value) => false,
 				throwOnInvalid: false,
 			};
@@ -220,7 +220,7 @@ describe('Decorator Factories', () => {
 
 		it('should use custom error message', () => {
 			const customMessage = 'Value must be a string';
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				validate: (value) => typeof value === 'string',
 				throwOnInvalid: true,
 				errorMessage: customMessage,
@@ -234,7 +234,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should apply transformation after validation', () => {
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				validate: (value) => typeof value === 'string',
 				transform: (value) => (value as string).toUpperCase(),
 			};
@@ -247,7 +247,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should skip validation if not provided', () => {
-			const options: ValidatingDecoratorOptions = {
+			const options: IValidatingDecoratorOptions = {
 				transform: (value) => (value as string).toUpperCase(),
 			};
 
@@ -261,7 +261,7 @@ describe('Decorator Factories', () => {
 
 	describe('CreateTransformingDecorator', () => {
 		it('should create a parameter decorator with transformation', () => {
-			const options: TransformingDecoratorOptions = {
+			const options: ITransformingDecoratorOptions = {
 				transform: (value) => (value as string).toUpperCase(),
 			};
 
@@ -273,7 +273,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should not transform undefined values by default', () => {
-			const options: TransformingDecoratorOptions = {
+			const options: ITransformingDecoratorOptions = {
 				transform: (value) => (value as string).toUpperCase(),
 				transformUndefined: false,
 			};
@@ -286,7 +286,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should transform undefined values when transformUndefined is true', () => {
-			const options: TransformingDecoratorOptions = {
+			const options: ITransformingDecoratorOptions = {
 				transform: (_value) => 'DEFAULT_VALUE',
 				transformUndefined: true,
 			};
@@ -299,7 +299,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should apply transformation to null values when transformUndefined is true', () => {
-			const options: TransformingDecoratorOptions = {
+			const options: ITransformingDecoratorOptions = {
 				transform: (_value) => 'NULL_REPLACEMENT',
 				transformUndefined: true,
 			};
@@ -312,7 +312,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should handle complex transformation logic', () => {
-			const options: TransformingDecoratorOptions = {
+			const options: ITransformingDecoratorOptions = {
 				transform: (value) => {
 					if (typeof value === 'string') {
 						return value.split(',').map(v => v.trim());
@@ -329,7 +329,7 @@ describe('Decorator Factories', () => {
 		});
 
 		it('should skip transformation if not provided', () => {
-			const options: TransformingDecoratorOptions = {};
+			const options: ITransformingDecoratorOptions = {};
 
 			const decorator = CreateTransformingDecorator(
 				(req) => req.headers['x-custom'],

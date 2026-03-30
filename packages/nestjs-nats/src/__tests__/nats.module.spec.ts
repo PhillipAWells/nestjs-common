@@ -5,7 +5,7 @@ import { connect } from '@nats-io/transport-node';
 import { NatsModule } from '../nats.module.js';
 import { NatsService } from '../nats.service.js';
 import { NATS_MODULE_OPTIONS } from '../nats.constants.js';
-import type { NatsModuleAsyncOptions, NatsModuleOptions, NatsOptionsFactory } from '../nats.interfaces.js';
+import type { INatsModuleAsyncOptions, TNatsModuleOptions, INatsOptionsFactory } from '../nats.interfaces.js';
 
 vi.mock('@nats-io/transport-node');
 vi.mock('@nats-io/jetstream');
@@ -61,7 +61,7 @@ describe('NatsModule', () => {
 		});
 
 		it('should strip credentials from the public NATS_MODULE_OPTIONS token', async () => {
-			const sensitiveOptions: NatsModuleOptions = {
+			const sensitiveOptions: TNatsModuleOptions = {
 				servers: 'nats://localhost:4222',
 				user: 'alice',
 				pass: 'secret',
@@ -121,7 +121,7 @@ describe('NatsModule', () => {
 			const sensitiveModule = await Test.createTestingModule({
 				imports: [
 					NatsModule.forRootAsync({
-						useFactory: (): NatsModuleOptions => ({
+						useFactory: (): TNatsModuleOptions => ({
 							servers: 'nats://localhost:4222',
 							user: 'alice',
 							pass: 'secret',
@@ -142,8 +142,8 @@ describe('NatsModule', () => {
 	describe('forRootAsync with useClass', () => {
 		let module: TestingModule;
 
-		class TestNatsOptionsFactory implements NatsOptionsFactory {
-			public createNatsOptions(): NatsModuleOptions {
+		class TestNatsOptionsFactory implements INatsOptionsFactory {
+			public createNatsOptions(): TNatsModuleOptions {
 				return { servers: 'nats://localhost:4222' };
 			}
 		}
@@ -165,8 +165,8 @@ describe('NatsModule', () => {
 
 	describe('forRootAsync with useExisting', () => {
 		it('should provide NatsService using an existing provider', async () => {
-			class TestNatsOptionsFactory implements NatsOptionsFactory {
-				public createNatsOptions(): NatsModuleOptions {
+			class TestNatsOptionsFactory implements INatsOptionsFactory {
+				public createNatsOptions(): TNatsModuleOptions {
 					return { servers: 'nats://localhost:4222' };
 				}
 			}
@@ -211,7 +211,7 @@ describe('NatsModule', () => {
 	describe('error handling', () => {
 		it('should throw for invalid async options (no strategy provided)', () => {
 			expect(() => {
-				NatsModule.forRootAsync({} as NatsModuleAsyncOptions);
+				NatsModule.forRootAsync({} as INatsModuleAsyncOptions);
 			}).toThrow('Invalid async module options');
 		});
 	});

@@ -1,7 +1,7 @@
 
 import { vi } from 'vitest';
 import { AppLogger } from '@pawells/nestjs-shared/common';
-import { RateLimitService, RateLimitResult } from '../../services/rate-limit.service.js';
+import { RateLimitService, IRateLimitResult } from '../../services/rate-limit.service.js';
 
 function createService(): RateLimitService {
 	const mockAppLogger = {
@@ -39,7 +39,7 @@ describe('RateLimitService', () => {
 			const clientId = 'user123';
 
 			for (let i = 0; i < 5; i++) {
-				const result: RateLimitResult = await service.checkLimit(clientId);
+				const result: IRateLimitResult = await service.checkLimit(clientId);
 				expect(result.allowed).toBe(true);
 				expect(result.remaining).toBe(99 - i);
 				expect(result.limit).toBe(100);
@@ -56,7 +56,7 @@ describe('RateLimitService', () => {
 			}
 
 			// Next request should be blocked
-			const result: RateLimitResult = await service.checkLimit(clientId);
+			const result: IRateLimitResult = await service.checkLimit(clientId);
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);
 			expect(result.limit).toBe(100);

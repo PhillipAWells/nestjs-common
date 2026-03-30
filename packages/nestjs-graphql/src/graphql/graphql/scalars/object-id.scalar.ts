@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb';
  */
 @Scalar('ObjectId', () => ObjectId)
 export class ObjectIdScalar {
-	public description = 'MongoDB ObjectId custom scalar type';
+	public Description = 'MongoDB ObjectId custom scalar type';
 
 	/**
    * Parse value from client input
