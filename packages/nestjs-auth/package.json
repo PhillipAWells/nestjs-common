@@ -9,10 +9,12 @@
   "exports": {
     ".": {
       "types": "./build/index.d.ts",
+      "require": "./build/index.js",
       "import": "./build/index.js"
     },
     "./testing": {
       "types": "./build/testing/index.d.ts",
+      "require": "./build/testing/index.js",
       "import": "./build/testing/index.js"
     }
   },
