@@ -4572,7 +4572,7 @@ __metadata:
     "@nestjs/terminus": ">=10.0.0"
     "@nestjs/throttler": ">=5.0.0"
     "@opentelemetry/api": ">=1.0.0"
-    "@pawells/nestjs-auth": 1.1.0
+    "@pawells/nestjs-auth": 1.1.2
     cache-manager: ">=7.0.0"
     class-transformer: ">=0.5.0"
     class-validator: ">=0.14.0"

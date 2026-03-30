@@ -1,3 +1,13 @@
+## 1.1.2 (2026-03-30)
+
+### 🩹 Fixes
+
+- add "require" condition to all package exports for CJS consumers ([520c484](https://github.com/PhillipAWells/nestjs-common/commit/520c484))
+
+### ❤️ Thank You
+
+- Aaron Wells @PhillipAWells
+
 ## 1.1.1 (2026-03-27)
 
 ### 🚀 Features
