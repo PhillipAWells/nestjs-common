@@ -14,7 +14,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```typescript
  * @UseGuards(GraphQLRolesGuard)
  * @Roles('admin', 'moderator')
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUsers' })
  * async getUsers(): Promise<User[]> {
  *   // Only users with 'admin' or 'moderator' roles can access
  * }

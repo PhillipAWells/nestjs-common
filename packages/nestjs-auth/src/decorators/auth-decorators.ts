@@ -51,7 +51,7 @@ export const PERMISSIONS_KEY = 'permissions';
  * @example GraphQL
  * ```typescript
  * @Public()
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetHealth' })
  * async getHealth(): Promise<string> {
  *   return 'OK';
  * }
@@ -82,7 +82,7 @@ export const Public = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Auth()
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetCurrentUser' })
  * async getCurrentUser(@CurrentUser() user: User): Promise<User> {
  *   return user;
  * }
@@ -115,7 +115,7 @@ export const Auth = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Roles('admin')
- * @Mutation(() => User)
+ * @Mutation(() => User, { name: 'UpdateUser' })
  * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
  *   // Only admin users can update other users
  * }
@@ -149,7 +149,7 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * @example GraphQL
  * ```typescript
  * @Permissions('user.delete')
- * @Mutation(() => Boolean)
+ * @Mutation(() => Boolean, { name: 'DeleteUser' })
  * async deleteUser(@Args('id') id: string): Promise<boolean> {
  *   // Only users with 'user.delete' role can delete users
  * }
@@ -195,7 +195,7 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  *
  * @example GraphQL context (explicit)
  * ```typescript
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetCurrentUser' })
  * async getCurrentUser(@CurrentUser(undefined, { contextType: 'graphql' }) user: User): Promise<User> {
  *   return user;
  * }
@@ -246,7 +246,7 @@ export function CurrentUser(property?: string, options?: ContextOptions): Parame
  *
  * @example GraphQL context (explicit)
  * ```typescript
- * @Query(() => Boolean)
+ * @Query(() => Boolean, { name: 'ValidateToken' })
  * async validateToken(@AuthToken({ contextType: 'graphql' }) token: string): Promise<boolean> {
  *   return this.authService.validateToken(token);
  * }

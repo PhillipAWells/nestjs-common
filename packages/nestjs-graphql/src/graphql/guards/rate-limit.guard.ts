@@ -16,7 +16,7 @@ const MS_PER_SECOND = 1000;
  * @example
  * ```typescript
  * @UseGuards(GraphQLRateLimitGuard)
- * @Query(() => [Post])
+ * @Query(() => [Post], { name: 'GetPosts' })
  * async getPosts(): Promise<Post[]> {
  *   // Rate limited to configured limits
  * }

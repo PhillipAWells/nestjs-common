@@ -14,7 +14,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * ```typescript
  * @UseGuards(GraphQLPublicGuard)
  * @Public()
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetHealth' })
  * async getHealth(): Promise<string> {
  *   // This resolver is public and doesn't require authentication
  *   return 'OK';

@@ -12,7 +12,7 @@ import { AppLogger, BaseValidationPipe } from '@pawells/nestjs-shared/common';
  * @example
  * ```typescript
  * @UsePipes(GraphqlValidationPipe)
- * @Mutation(() => User)
+ * @Mutation(() => User, { name: 'CreateUser' })
  * async createUser(@Args('input') input: CreateUserInput): Promise<User> {
  *   // Input will be validated automatically
  * }

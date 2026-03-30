@@ -66,7 +66,7 @@ export interface CacheableOptions extends BaseCacheableOptions {
  * @example
  * ```typescript
  * @Cacheable({ ttl: 300000 }) // 5 minutes
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUser' })
  * async getUser(@Args('id') id: string): Promise<User> {
  *   return this.userService.findById(id);
  * }
@@ -75,7 +75,7 @@ export interface CacheableOptions extends BaseCacheableOptions {
  *   ttl: 60000, // 1 minute
  *   condition: (result) => result !== null // Don't cache null results
  * })
- * @Query(() => [Post])
+ * @Query(() => [Post], { name: 'GetPosts' })
  * async getPosts(@Args('userId') userId: string): Promise<Post[]> {
  *   return this.postService.findByUser(userId);
  * }

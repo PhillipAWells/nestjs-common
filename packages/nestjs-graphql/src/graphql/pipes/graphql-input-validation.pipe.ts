@@ -14,7 +14,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * @example
  * ```typescript
  * @UsePipes(GraphqlInputValidationPipe)
- * @Mutation(() => User)
+ * @Mutation(() => User, { name: 'UpdateUser' })
  * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
  *   // Nested input validation with detailed errors
  * }

@@ -24,7 +24,7 @@ import { Auth, Public, Roles, CurrentUser, AuthToken } from './auth-decorators.j
  * @example
  * ```typescript
  * @GraphQLPublic()
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetHealth' })
  * async getHealth(): Promise<string> {
  *   return 'OK';
  * }
@@ -43,7 +43,7 @@ export const GraphQLPublic = Public;
  * @example
  * ```typescript
  * @GraphQLAuth()
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetCurrentUser' })
  * async getCurrentUser(@GraphQLCurrentUser() user: User): Promise<User> {
  *   return user;
  * }
@@ -63,7 +63,7 @@ export const GraphQLAuth = Auth;
  * @example
  * ```typescript
  * @GraphQLRoles('admin', 'moderator')
- * @Query(() => [User])
+ * @Query(() => [User], { name: 'GetUsers' })
  * async getUsers(): Promise<User[]> {
  *   // Only users with 'admin' or 'moderator' roles can access
  * }
@@ -82,7 +82,7 @@ export const GraphQLRoles = Roles;
  *
  * @example
  * ```typescript
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetCurrentUser' })
  * async getCurrentUser(@GraphQLCurrentUser() user: User): Promise<User> {
  *   return user;
  * }
@@ -90,7 +90,7 @@ export const GraphQLRoles = Roles;
  *
  * @example With property access
  * ```typescript
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetUserId' })
  * async getUserId(@GraphQLCurrentUser('id') userId: string): Promise<string> {
  *   return userId;
  * }
@@ -110,7 +110,7 @@ export function GraphQLCurrentUser(property?: string): ParameterDecorator {
  *
  * @example
  * ```typescript
- * @Query(() => Boolean)
+ * @Query(() => Boolean, { name: 'ValidateToken' })
  * async validateToken(@GraphQLAuthToken() token: string): Promise<boolean> {
  *   return this.authService.validateToken(token);
  * }
@@ -128,7 +128,7 @@ export const GraphQLAuthToken = (): ParameterDecorator => AuthToken({ contextTyp
  *
  * @example
  * ```typescript
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetRequestId' })
  * async getRequestId(@GraphQLContextParam() context: any): Promise<string> {
  *   return context.req.headers['x-request-id'];
  * }
@@ -152,7 +152,7 @@ export const GraphQLContextParam = (): ParameterDecorator => createParamDecorato
  *
  * @example
  * ```typescript
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetCurrentUser' })
  * async getCurrentUser(@GraphQLUser() user: User): Promise<User> {
  *   return user;
  * }

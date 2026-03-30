@@ -18,7 +18,7 @@ import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '.
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLPerformanceMonitoringInterceptor)
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUser' })
  * async getUser(@Args('id') id: string): Promise<User> {
  *   return this.userService.findById(id);
  * }

@@ -14,7 +14,7 @@ import { AppLogger } from '@pawells/nestjs-shared/common';
  * @example
  * ```typescript
  * @UseGuards(GraphQLAuthGuard)
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUser' })
  * async getUser(): Promise<User> {
  *   // This resolver is protected
  * }

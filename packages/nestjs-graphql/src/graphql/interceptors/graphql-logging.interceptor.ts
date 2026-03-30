@@ -16,7 +16,7 @@ const RESULT_SUMMARY_MAX_KEYS = 3;
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLLoggingInterceptor)
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUser' })
  * async getUser(): Promise<User> {
  *   // This operation will be logged
  * }

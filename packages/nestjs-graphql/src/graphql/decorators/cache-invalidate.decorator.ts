@@ -60,7 +60,7 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
  *   patterns: ['graphql:user|id:*'], // Invalidate all user queries by ID
  *   when: 'after' // Invalidate after successful execution
  * })
- * @Mutation(() => User)
+ * @Mutation(() => User, { name: 'UpdateUser' })
  * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
  *   return this.userService.update(input.id, input);
  * }
@@ -69,7 +69,7 @@ export interface CacheInvalidateOptions extends BaseCacheInvalidateOptions {
  *   patterns: ['graphql:posts', 'graphql:userPosts|userId:*'],
  *   condition: (result) => result !== null // Only invalidate if successful
  * })
- * @Mutation(() => Boolean)
+ * @Mutation(() => Boolean, { name: 'DeletePost' })
  * async deletePost(@Args('id') id: string): Promise<boolean> {
  *   return this.postService.delete(id);
  * }

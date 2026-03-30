@@ -15,7 +15,7 @@ import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STAT
  * @example
  * ```typescript
  * @UseInterceptors(GraphQLErrorInterceptor)
- * @Query(() => User)
+ * @Query(() => User, { name: 'GetUser' })
  * async getUser(): Promise<User> {
  *   // Errors from this resolver will be properly formatted
  * }
