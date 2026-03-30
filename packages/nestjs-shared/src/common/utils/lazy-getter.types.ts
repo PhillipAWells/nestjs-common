@@ -8,6 +8,7 @@
  * @see {@link .claude/skills/lazy-module-ref-pattern.md} - Comprehensive pattern guide
  */
 
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
 /**
@@ -229,3 +230,40 @@ export const LazyGetterNamingConventions = {
 export const createMemoizedLazyGetter = CreateMemoizedLazyGetter;
 export const createOptionalLazyGetter = CreateOptionalLazyGetter;
 export const isLazyModuleRefService = IsLazyModuleRefService;
+
+/**
+ * Abstract base class for NestJS services using the lazy ModuleRef pattern.
+ *
+ * Extend this class instead of implementing `LazyModuleRefService` directly to avoid
+ * boilerplate. Declare lazy-loaded dependencies as protected getters in your subclass.
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class MediaService extends LazyModuleRefBase {
+ *     protected get Library(): MediaLibraryService {
+ *         return this.Module.get(MediaLibraryService) as MediaLibraryService;
+ *     }
+ *
+ *     public async processMedia(id: string): Promise<void> {
+ *         const library = this.Library;
+ *         // ... use library
+ *     }
+ * }
+ * ```
+ *
+ * Benefits:
+ * - Eliminates constructor boilerplate for `Module: ModuleRef` property
+ * - Enforces consistent implementation of `LazyModuleRefService`
+ * - Getter names follow PascalCase matching the service/type being resolved
+ *
+ * @implements {LazyModuleRefService}
+ */
+@Injectable()
+export abstract class LazyModuleRefBase implements LazyModuleRefService {
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
+}

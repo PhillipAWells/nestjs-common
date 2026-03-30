@@ -132,6 +132,7 @@ export {
 	OptionalLazyGetter,
 	TokenLazyGetter,
 	LazyModuleRefService,
+	LazyModuleRefBase,
 	LazyGetterDependencies,
 	OptionalGetterConfig,
 	CreateMemoizedLazyGetter as createMemoizedLazyGetter,
