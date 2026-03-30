@@ -35,11 +35,6 @@
     "git": {
       "tag": false,
       "commitMessage": "chore: bump version to {version}"
-    },
-    "version": {
-      "versionActionsOptions": {
-        "skipLockFileUpdate": true
-      }
     }
   },
   "targetDefaults": {
