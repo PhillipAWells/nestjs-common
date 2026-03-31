@@ -22,6 +22,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { QdrantModule, QdrantService } from '@pawells/nestjs-qdrant';
 import { ItemsModule } from '../items/items.module.js';
 import { ItemsService } from '../items/items.service.js';
+import { ItemsResolver } from '../items/items.resolver.js';
 
 /**
  * Build a mock ModuleRef from a compiled TestingModule.
@@ -29,6 +30,7 @@ import { ItemsService } from '../items/items.service.js';
  * NestJS cannot inject ModuleRef by reflection. This helper creates a mock
  * ModuleRef wrapping the compiled module so services can be directly instantiated.
  */
+
 function buildMockModuleRef(compiledModule: TestingModule): ModuleRef {
 	return {
 		get: (token: any, options?: any) => compiledModule.get(token, options),
@@ -53,7 +55,10 @@ describe('ItemsModule (integration)', () => {
 				}),
 				ItemsModule,
 			],
-		}).compile();
+		})
+			.overrideProvider(ItemsResolver)
+			.useValue({})
+			.compile();
 
 		qdrantService = module.get(QdrantService);
 

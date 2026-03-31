@@ -19,7 +19,11 @@ export class GraphQLContextFactory {
 	private ModuleRef?: ModuleRef;
 
 	private get AppLogger(): AppLogger | undefined {
-		return this.ModuleRef?.get(AppLogger, { strict: false });
+		try {
+			return this.ModuleRef?.get(AppLogger, { strict: false });
+		} catch {
+			return undefined;
+		}
 	}
 
 	private get Logger(): IContextualLogger | undefined {
