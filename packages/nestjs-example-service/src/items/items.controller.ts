@@ -30,7 +30,7 @@ export class ItemsController extends LazyModuleRefBase {
 		super(module);
 	}
 
-	protected get Items(): ItemsService {
+	protected get Qdrant(): ItemsService {
 		return this.Module.get(ItemsService) as ItemsService;
 	}
 
@@ -40,11 +40,11 @@ export class ItemsController extends LazyModuleRefBase {
 	 */
 	@Post()
 	@Auth()
-	public async upsertItem(
+	public async UpsertItem(
 		@Body() body: IStoredItem,
 		@CurrentUser() _user: IAppUser,
 	): Promise<void> {
-		await this.Items.upsertItem(body);
+		await this.Qdrant.UpsertItem(body);
 	}
 
 	/**
@@ -57,7 +57,7 @@ export class ItemsController extends LazyModuleRefBase {
 	@Get('similar')
 	@Public()
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public findSimilar(
+	public FindSimilar(
 		@Query('vector') vectorStr: string,
 		@Query('limit') limitStr?: string,
 	): Promise<IItem[]> {
@@ -65,14 +65,14 @@ export class ItemsController extends LazyModuleRefBase {
 			throw new BadRequestException('vector query param is required');
 		}
 
-		const vector = vectorStr.split(',').map(Number);
+		const Vector = vectorStr.split(',').map(Number);
 
-		if (vector.some(n => !isFinite(n))) {
+		if (Vector.some(n => !isFinite(n))) {
 			throw new BadRequestException('vector must be a comma-separated list of numbers');
 		}
 
-		const limit = limitStr !== undefined ? Number(limitStr) : DEFAULT_LIMIT;
-		return this.Items.findSimilar(vector, limit);
+		const Limit = limitStr !== undefined ? Number(limitStr) : DEFAULT_LIMIT;
+		return this.Qdrant.FindSimilar(Vector, Limit);
 	}
 
 	/**
@@ -81,10 +81,10 @@ export class ItemsController extends LazyModuleRefBase {
 	 */
 	@Delete(':id')
 	@Auth()
-	public async deleteItem(
+	public async DeleteItem(
 		@Param('id') id: string,
 		@CurrentUser() _user: IAppUser,
 	): Promise<void> {
-		await this.Items.deleteItem(id);
+		await this.Qdrant.DeleteItem(id);
 	}
 }

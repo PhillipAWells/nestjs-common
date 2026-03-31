@@ -54,7 +54,7 @@ export const ERROR_SANITIZER_OPTIONS = 'ERROR_SANITIZER_OPTIONS';
  *   message: 'Error at /home/user/app.ts, Bearer sk_live_abc123',
  *   context: { password: 'secret123', userId: '456' }
  * };
- * const sanitized = errorSanitizer.sanitizeErrorResponse(error, false);
+ * const Sanitized = errorSanitizer.sanitizeErrorResponse(error, false);
  * // message: 'Error at [FILE], Bearer [REDACTED]'
  * // context: { password: '***REDACTED***', userId: '456' }
  * ```
@@ -150,7 +150,7 @@ export class ErrorSanitizerService implements ILazyModuleRefService {
 	 * Sanitize error response for client
 	 * Removes sensitive information like stack traces, file paths, etc.
 	 */
-	public sanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
+	public SanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
 		const sanitized: Record<string, any> = {
 			message: this.sanitizeMessage(error.message),
 			statusCode: error.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -182,7 +182,7 @@ export class ErrorSanitizerService implements ILazyModuleRefService {
 	 * @example
 	 * ```typescript
 	 * const msg = 'Error at /home/user/app.ts, Bearer sk_live_abc123';
-	 * const sanitized = sanitizeMessage(msg);
+	 * const Sanitized = sanitizeMessage(msg);
 	 * // Returns: 'Error at [FILE], Bearer [REDACTED]'
 	 * ```
 	 */
@@ -247,20 +247,20 @@ export class ErrorSanitizerService implements ILazyModuleRefService {
 	 *
 	 * @example
 	 * ```typescript
-	 * const ctx = { user: 'john', password: 'secret123', nested: { apiKey: 'sk_live' } };
-	 * const sanitized = sanitizeContext(ctx);
+	 * const Ctx = { user: 'john', password: 'secret123', nested: { apiKey: 'sk_live' } };
+	 * const Sanitized = sanitizeContext(ctx);
 	 * // Returns: { user: 'john', password: '***REDACTED***', nested: { apiKey: '***REDACTED***' } }
 	 * ```
 	 */
 	private sanitizeContext(context: Record<string, any>): Record<string, any> {
 		const seen = new Set<object>();
-		const result = this.serializeWithDepthLimit(
+		const Result = this.serializeWithDepthLimit(
 			context,
 			ErrorSanitizerService.MAX_CONTEXT_DEPTH,
 			0,
 			seen,
 		);
-		return (result as Record<string, any>) ?? {};
+		return (Result as Record<string, any>) ?? {};
 	}
 
 	/**

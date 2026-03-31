@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector, ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -37,7 +37,7 @@ export class GraphQLPublicGuard implements CanActivate, ILazyModuleRefService {
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLPublicGuard.name);
 		} catch {
@@ -57,19 +57,19 @@ export class GraphQLPublicGuard implements CanActivate, ILazyModuleRefService {
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Check if resolver is marked as public
-		const isPublic = this.Reflector.getAllAndOverride<boolean>('isPublic', [
+		const IsPublic = this.Reflector.getAllAndOverride<boolean>('isPublic', [
 			context.getHandler(),
 			context.getClass(),
 		]);
 
-		if (isPublic) {
+		if (IsPublic) {
 			this.Logger?.debug('Public resolver accessed');
 			return true;
 		}
 
 		// If not public, check if user is authenticated
-		const gqlContext = GqlExecutionContext.create(context);
-		const { user } = gqlContext.getContext();
+		const GqlContext = GqlExecutionContext.create(context);
+		const { user } = GqlContext.getContext();
 
 		if (!user) {
 			this.Logger?.warn('Non-public resolver accessed without authentication');

@@ -12,28 +12,28 @@ describe('MockAppLogger', () => {
 		expect(logger).toBeInstanceOf(MockAppLogger);
 	});
 
-	it('debug() is a no-op', () => {
-		expect(() => logger.debug('msg')).not.toThrow();
-		expect(() => logger.debug('msg', 'context')).not.toThrow();
-		expect(() => logger.debug('msg', { key: 'value' })).not.toThrow();
-		expect(() => logger.debug(new Error('err'))).not.toThrow();
+	it('Debug()() is a no-op', () => {
+		expect(() => logger.Debug('msg')).not.toThrow();
+		expect(() => logger.Debug('msg', 'context')).not.toThrow();
+		expect(() => logger.Debug('msg', { key: 'value' })).not.toThrow();
+		expect(() => logger.Debug(new Error('err'))).not.toThrow();
 	});
 
-	it('info() is a no-op', () => {
-		expect(() => logger.info('msg')).not.toThrow();
-		expect(() => logger.info('msg', 'context')).not.toThrow();
+	it('Info() is a no-op', () => {
+		expect(() => logger.Info('msg')).not.toThrow();
+		expect(() => logger.Info('msg', 'context')).not.toThrow();
 	});
 
-	it('warn() is a no-op', () => {
-		expect(() => logger.warn('msg')).not.toThrow();
-		expect(() => logger.warn(new Error('err'))).not.toThrow();
+	it('Warn() is a no-op', () => {
+		expect(() => logger.Warn('msg')).not.toThrow();
+		expect(() => logger.Warn(new Error('err'))).not.toThrow();
 	});
 
-	it('error() is a no-op', () => {
-		expect(() => logger.error('msg')).not.toThrow();
-		expect(() => logger.error('msg', 'trace')).not.toThrow();
-		expect(() => logger.error('msg', 'trace', 'context')).not.toThrow();
-		expect(() => logger.error(new Error('err'))).not.toThrow();
+	it('Error() is a no-op', () => {
+		expect(() => logger.Error('msg')).not.toThrow();
+		expect(() => logger.Error('msg', 'trace')).not.toThrow();
+		expect(() => logger.Error('msg', 'trace', 'context')).not.toThrow();
+		expect(() => logger.Error(new Error('err'))).not.toThrow();
 	});
 
 	it('fatal() is a no-op', () => {
@@ -42,7 +42,7 @@ describe('MockAppLogger', () => {
 	});
 
 	it('createContextualLogger() returns itself', () => {
-		const contextual = logger.createContextualLogger('TestContext');
+		const contextual = logger.CreateContextualLogger('TestContext');
 		expect(contextual).toBe(logger);
 	});
 

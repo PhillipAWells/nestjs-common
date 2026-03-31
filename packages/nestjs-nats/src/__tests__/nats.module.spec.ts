@@ -42,7 +42,7 @@ describe('NatsModule', () => {
 
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [NatsModule.forRoot({ servers: 'nats://localhost:4222' })],
+				imports: [NatsModule.ForRoot({ servers: 'nats://localhost:4222' })],
 			}).compile();
 		});
 
@@ -68,7 +68,7 @@ describe('NatsModule', () => {
 				token: 'my-token',
 			};
 			const sensitiveModule = await Test.createTestingModule({
-				imports: [NatsModule.forRoot(sensitiveOptions)],
+				imports: [NatsModule.ForRoot(sensitiveOptions)],
 			}).compile();
 
 			const publicOptions = sensitiveModule.get(NATS_MODULE_OPTIONS);
@@ -81,12 +81,12 @@ describe('NatsModule', () => {
 		});
 
 		it('should not be global by default', () => {
-			const dynamicModule = NatsModule.forRoot({ servers: 'nats://localhost:4222' });
+			const dynamicModule = NatsModule.ForRoot({ servers: 'nats://localhost:4222' });
 			expect(dynamicModule.global).toBe(false);
 		});
 
 		it('should be global when isGlobal is true', () => {
-			const dynamicModule = NatsModule.forRoot({ servers: 'nats://localhost:4222' }, true);
+			const dynamicModule = NatsModule.ForRoot({ servers: 'nats://localhost:4222' }, true);
 			expect(dynamicModule.global).toBe(true);
 		});
 	});
@@ -97,7 +97,7 @@ describe('NatsModule', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
 				imports: [
-					NatsModule.forRootAsync({
+					NatsModule.ForRootAsync({
 						useFactory: () => ({ servers: 'nats://localhost:4222' }),
 					}),
 				],
@@ -120,7 +120,7 @@ describe('NatsModule', () => {
 		it('should strip credentials from options returned by the factory', async () => {
 			const sensitiveModule = await Test.createTestingModule({
 				imports: [
-					NatsModule.forRootAsync({
+					NatsModule.ForRootAsync({
 						useFactory: (): TNatsModuleOptions => ({
 							servers: 'nats://localhost:4222',
 							user: 'alice',
@@ -150,7 +150,7 @@ describe('NatsModule', () => {
 
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [NatsModule.forRootAsync({ useClass: TestNatsOptionsFactory })],
+				imports: [NatsModule.ForRootAsync({ useClass: TestNatsOptionsFactory })],
 			}).compile();
 		});
 
@@ -179,7 +179,7 @@ describe('NatsModule', () => {
 
 			const module = await Test.createTestingModule({
 				imports: [
-					NatsModule.forRootAsync({
+					NatsModule.ForRootAsync({
 						imports: [TestConfigModule],
 						useExisting: TestNatsOptionsFactory,
 					}),
@@ -193,14 +193,14 @@ describe('NatsModule', () => {
 
 	describe('forRootAsync isGlobal', () => {
 		it('should not be global by default', () => {
-			const dynamicModule = NatsModule.forRootAsync({
+			const dynamicModule = NatsModule.ForRootAsync({
 				useFactory: () => ({ servers: 'nats://localhost:4222' }),
 			});
 			expect(dynamicModule.global).toBe(false);
 		});
 
 		it('should be global when isGlobal is true', () => {
-			const dynamicModule = NatsModule.forRootAsync(
+			const dynamicModule = NatsModule.ForRootAsync(
 				{ useFactory: () => ({ servers: 'nats://localhost:4222' }) },
 				true,
 			);
@@ -211,7 +211,7 @@ describe('NatsModule', () => {
 	describe('error handling', () => {
 		it('should throw for invalid async options (no strategy provided)', () => {
 			expect(() => {
-				NatsModule.forRootAsync({} as INatsModuleAsyncOptions);
+				NatsModule.ForRootAsync({} as INatsModuleAsyncOptions);
 			}).toThrow('Invalid async module options');
 		});
 	});

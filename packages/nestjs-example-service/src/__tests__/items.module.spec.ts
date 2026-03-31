@@ -45,7 +45,7 @@ describe('ItemsModule (integration)', () => {
 			imports: [
 				// QdrantModule is registered as global — ItemsModule does not need
 				// to import it directly, mirroring production AppModule behaviour.
-				QdrantModule.forRoot({
+				QdrantModule.ForRoot({
 					url: 'http://localhost:6333',
 					// Disable the compatibility handshake so no network call is made
 					// during module initialisation.
@@ -86,9 +86,11 @@ describe('ItemsModule (integration)', () => {
 				{ id: 'item-2', score: 0.88, payload: { name: 'Beta' }, version: 1 },
 			];
 
-			vi.spyOn(qdrantService.getClient(), 'search').mockResolvedValue(fakeResults as any);
+			const mockCollectionService = qdrantService.Collection('items');
+			vi.spyOn(mockCollectionService, 'Search').mockResolvedValue(fakeResults as any);
+			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
 
-			const results = await itemsService.findSimilar([0.1, 0.2, 0.3], 2);
+			const results = await itemsService.FindSimilar([0.1, 0.2, 0.3], 2);
 
 			expect(results).toStrictEqual([
 				{ id: 'item-1', name: 'Alpha' },
@@ -99,14 +101,15 @@ describe('ItemsModule (integration)', () => {
 
 	describe('upsertItem', () => {
 		it('should call QdrantClient.upsert with the correct point payload', async () => {
+			const mockCollectionService = qdrantService.Collection('items');
 			const upsertSpy = vi
-				.spyOn(qdrantService.getClient(), 'upsert')
+				.spyOn(mockCollectionService, 'Upsert')
 				.mockResolvedValue({ status: 'ok', result: { operation_id: 1 } } as any);
+			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
 
-			await itemsService.upsertItem({ id: 'item-3', name: 'Gamma', vector: [0.4, 0.5] });
+			await itemsService.UpsertItem({ id: 'item-3', name: 'Gamma', vector: [0.4, 0.5] });
 
 			expect(upsertSpy).toHaveBeenCalledWith(
-				'items',
 				expect.objectContaining({
 					points: [expect.objectContaining({ id: 'item-3', vector: [0.4, 0.5] })],
 				}),
@@ -116,14 +119,15 @@ describe('ItemsModule (integration)', () => {
 
 	describe('deleteItem', () => {
 		it('should call QdrantClient.delete with the item id', async () => {
+			const mockCollectionService = qdrantService.Collection('items');
 			const deleteSpy = vi
-				.spyOn(qdrantService.getClient(), 'delete')
+				.spyOn(mockCollectionService, 'Delete')
 				.mockResolvedValue({ status: 'ok', result: { operation_id: 2 } } as any);
+			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
 
-			await itemsService.deleteItem('item-3');
+			await itemsService.DeleteItem('item-3');
 
 			expect(deleteSpy).toHaveBeenCalledWith(
-				'items',
 				expect.objectContaining({ points: ['item-3'] }),
 			);
 		});

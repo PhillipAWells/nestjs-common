@@ -4,51 +4,51 @@ import { SharedThrottlerModule, ISharedThrottlerConfig } from '../throttler.modu
 describe('SharedThrottlerModule', () => {
 	describe('forRoot', () => {
 		it('should return a DynamicModule', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result).toBeDefined();
-			expect(result.module).toBe(SharedThrottlerModule);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(SharedThrottlerModule);
 		});
 
 		it('should configure in-memory throttling with default config', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.imports).toBeDefined();
-			expect(result.providers).toBeDefined();
-			expect(result.exports).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.imports).toBeDefined();
+			expect(Result.providers).toBeDefined();
+			expect(Result.exports).toBeDefined();
 		});
 
 		it('should return a module that exports ThrottlerModule', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.exports).toBeDefined();
-			expect(result.exports?.length).toBeGreaterThan(0);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.exports).toBeDefined();
+			expect(Result.exports?.length).toBeGreaterThan(0);
 		});
 
 		it('should return a module that exports ThrottlerGuard', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.exports).toBeDefined();
-			expect(result.exports?.length).toBeGreaterThan(0);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.exports).toBeDefined();
+			expect(Result.exports?.length).toBeGreaterThan(0);
 		});
 
 		it('should provide ThrottlerGuard', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.providers).toBeDefined();
-			expect(result.providers?.length).toBeGreaterThan(0);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.providers).toBeDefined();
+			expect(Result.providers?.length).toBeGreaterThan(0);
 		});
 
 		it('should accept custom ttl configuration', () => {
 			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
-			expect(result.module).toBe(SharedThrottlerModule);
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(SharedThrottlerModule);
 		});
 
 		it('should accept custom limit configuration', () => {
 			const config: ISharedThrottlerConfig = {
 				limit: 50,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should accept both ttl and limit configuration', () => {
@@ -56,19 +56,19 @@ describe('SharedThrottlerModule', () => {
 				ttl: 30000,
 				limit: 50,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should use default ttl (15 minutes = 900000ms)', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result).toBeDefined();
 			// The module should be configured with default 15 minute window
 		});
 
 		it('should use default limit (100 requests)', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result).toBeDefined();
 			// The module should be configured with default 100 request limit
 		});
 
@@ -76,56 +76,56 @@ describe('SharedThrottlerModule', () => {
 			const config: ISharedThrottlerConfig = {
 				ttl: 0,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle zero limit', () => {
 			const config: ISharedThrottlerConfig = {
 				limit: 0,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle very large ttl values', () => {
 			const config: ISharedThrottlerConfig = {
 				ttl: 86400000, // 24 hours
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle very large limit values', () => {
 			const config: ISharedThrottlerConfig = {
 				limit: 10000,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should return module with correct structure', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.module).toBeDefined();
-			expect(result.imports).toBeInstanceOf(Array);
-			expect(result.providers).toBeInstanceOf(Array);
-			expect(result.exports).toBeInstanceOf(Array);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.module).toBeDefined();
+			expect(Result.imports).toBeInstanceOf(Array);
+			expect(Result.providers).toBeInstanceOf(Array);
+			expect(Result.exports).toBeInstanceOf(Array);
 		});
 
 		it('should include ThrottlerModule in imports', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result.imports).toHaveLength(1);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result.imports).toHaveLength(1);
 			// ThrottlerModule.forRoot() should be the first import
 		});
 	});
 
 	describe('forRootAsync', () => {
 		it('should return a DynamicModule', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect(result).toBeDefined();
-			expect(result.module).toBe(SharedThrottlerModule);
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(SharedThrottlerModule);
 		});
 
 		it('should configure async throttling with useFactory', () => {
@@ -133,20 +133,20 @@ describe('SharedThrottlerModule', () => {
 				ttl: 30000,
 				limit: 50,
 			};
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => config,
 			});
-			expect(result).toBeDefined();
-			expect(result.providers).toBeDefined();
+			expect(Result).toBeDefined();
+			expect(Result.providers).toBeDefined();
 		});
 
 		it('should support useFactory with inject array', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: (config: ISharedThrottlerConfig) => config,
 				inject: ['CONFIG_SERVICE'],
 			});
-			expect(result).toBeDefined();
-			expect(result.providers).toHaveLength(2); // Provider + ThrottlerGuard
+			expect(Result).toBeDefined();
+			expect(Result.providers).toHaveLength(2); // Provider + ThrottlerGuard
 		});
 
 		it('should support useClass configuration', () => {
@@ -156,19 +156,19 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: ThrottlerConfigService,
 			});
-			expect(result).toBeDefined();
-			expect(result.providers).toBeDefined();
+			expect(Result).toBeDefined();
+			expect(Result.providers).toBeDefined();
 		});
 
 		it('should provide SHARED_THROTTLER_CONFIG when using useFactory', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000 }),
 			});
-			expect(result.providers).toBeDefined();
-			expect(result.providers?.length).toBeGreaterThan(0);
+			expect(Result.providers).toBeDefined();
+			expect(Result.providers?.length).toBeGreaterThan(0);
 		});
 
 		it('should provide SHARED_THROTTLER_CONFIG when using useClass', () => {
@@ -178,57 +178,57 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: ConfigService,
 			});
-			expect(result.providers).toBeDefined();
-			expect(result.providers?.length).toBeGreaterThan(0);
+			expect(Result.providers).toBeDefined();
+			expect(Result.providers?.length).toBeGreaterThan(0);
 		});
 
 		it('should include ThrottlerGuard in exports', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect(result.exports).toBeDefined();
-			expect(result.exports?.length).toBeGreaterThan(0);
+			expect(Result.exports).toBeDefined();
+			expect(Result.exports?.length).toBeGreaterThan(0);
 		});
 
 		it('should include ThrottlerModule in exports', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect(result.exports).toBeDefined();
-			expect(result.exports?.length).toBeGreaterThan(0);
+			expect(Result.exports).toBeDefined();
+			expect(Result.exports?.length).toBeGreaterThan(0);
 		});
 
 		it('should support optional imports array', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 				imports: [],
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should include custom imports in the module', () => {
 			const customImport = { provide: 'CUSTOM', useValue: 'value' };
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 				imports: [customImport as any],
 			});
-			expect(result.imports?.length).toBeGreaterThan(1);
+			expect(Result.imports?.length).toBeGreaterThan(1);
 		});
 
 		it('should handle async factory function', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => {
 					return { ttl: 30000, limit: 50 };
 				},
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support Redis configuration in config', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					redis: {
 						host: 'localhost',
@@ -236,11 +236,11 @@ describe('SharedThrottlerModule', () => {
 					},
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support advanced Redis configuration', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					limit: 50,
@@ -253,11 +253,11 @@ describe('SharedThrottlerModule', () => {
 					},
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support Redis with custom properties', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					redis: {
 						host: 'localhost',
@@ -266,24 +266,24 @@ describe('SharedThrottlerModule', () => {
 					},
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle config without Redis', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					limit: 50,
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support empty configuration', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support useClass with inject', () => {
@@ -293,52 +293,52 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: ConfigService,
 				inject: [],
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should return module with correct structure', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect(result.module).toBeDefined();
-			expect(result.imports).toBeInstanceOf(Array);
-			expect(result.providers).toBeInstanceOf(Array);
-			expect(result.exports).toBeInstanceOf(Array);
+			expect(Result.module).toBeDefined();
+			expect(Result.imports).toBeInstanceOf(Array);
+			expect(Result.providers).toBeInstanceOf(Array);
+			expect(Result.exports).toBeInstanceOf(Array);
 		});
 
 		it('should handle factory with multiple dependencies', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: (_a: any, _b: any) => ({ ttl: 30000 }),
 				inject: ['DEP1', 'DEP2'],
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support factory returning Promise', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: async () => {
 					await new Promise(resolve => setTimeout(resolve, 100));
 					return { ttl: 30000, limit: 50 };
 				},
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 	});
 
 	describe('Default values', () => {
 		it('should have default window of 15 minutes', () => {
 			// 15 * 60 * 1000 = 900000
-			const result = SharedThrottlerModule.forRoot();
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result).toBeDefined();
 		});
 
 		it('should have default max requests of 100', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(Result).toBeDefined();
 		});
 	});
 
@@ -347,16 +347,16 @@ describe('SharedThrottlerModule', () => {
 			const config: ISharedThrottlerConfig = {
 				ttl: -1000,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle negative limit', () => {
 			const config: ISharedThrottlerConfig = {
 				limit: -1,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle config with undefined values', () => {
@@ -364,38 +364,38 @@ describe('SharedThrottlerModule', () => {
 				ttl: undefined,
 				limit: undefined,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle partial config in forRoot', () => {
 			const config: ISharedThrottlerConfig = {
 				ttl: 30000,
 			};
-			const result = SharedThrottlerModule.forRoot(config);
-			expect(result).toBeDefined();
+			const Result = SharedThrottlerModule.ForRoot(config);
+			expect(Result).toBeDefined();
 		});
 
 		it('should support Redis config with only host', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					redis: {
 						host: 'localhost',
 					},
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should support Redis config with only port', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					redis: {
 						port: 6379,
 					},
 				}),
 			});
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 	});
 
@@ -407,13 +407,13 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: CustomConfigService,
 			});
 
 			// Should have at least 2 providers: CustomConfigService and ThrottlerGuard
-			expect(result.providers).toBeDefined();
-			expect(result.providers?.length).toBeGreaterThan(1);
+			expect(Result.providers).toBeDefined();
+			expect(Result.providers?.length).toBeGreaterThan(1);
 		});
 
 		it('should wire useClass with dependency injection', () => {
@@ -425,13 +425,13 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: ConfigService,
 				imports: [],
 			});
 
-			expect(result.providers).toBeDefined();
-			expect(result.providers?.length).toBeGreaterThan(0);
+			expect(Result.providers).toBeDefined();
+			expect(Result.providers?.length).toBeGreaterThan(0);
 		});
 
 		it('should support useClass returning Promise', () => {
@@ -441,11 +441,11 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: ConfigService,
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 	});
 
@@ -453,7 +453,7 @@ describe('SharedThrottlerModule', () => {
 		it('should invoke useFactory when creating config', () => {
 			const mockFactory = vi.fn().mockReturnValue({ ttl: 30000, limit: 50 });
 
-			SharedThrottlerModule.forRootAsync({
+			SharedThrottlerModule.ForRootAsync({
 				useFactory: mockFactory,
 			});
 
@@ -467,16 +467,16 @@ describe('SharedThrottlerModule', () => {
 				limit: configService.getLimit(),
 			});
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: mockFactory,
 				inject: ['CONFIG_SERVICE'],
 			});
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 		});
 
 		it('should handle Redis configuration in factory', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					limit: 50,
@@ -487,73 +487,73 @@ describe('SharedThrottlerModule', () => {
 				}),
 			});
 
-			expect(result).toBeDefined();
-			expect(result.imports).toBeDefined();
+			expect(Result).toBeDefined();
+			expect(Result.imports).toBeDefined();
 		});
 
 		it('should use default ttl when config ttl is undefined', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					limit: 50,
 					// ttl is undefined
 				}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should use default limit when config limit is undefined', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					// limit is undefined
 				}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle undefined config object', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => undefined as any,
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle null config object', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => null as any,
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 	});
 
 	describe('forRootAsync provider creation', () => {
 		it('should create SHARED_THROTTLER_CONFIG provider from useFactory', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000, limit: 50 }),
 			});
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 			// Should have at least 2 providers: SHARED_THROTTLER_CONFIG + ThrottlerGuard
-			expect(result.providers!.length).toBeGreaterThanOrEqual(2);
+			expect(Result.providers!.length).toBeGreaterThanOrEqual(2);
 
 			// Check that SHARED_THROTTLER_CONFIG is provided
-			const configProvider = result.providers!.find(
+			const configProvider = Result.providers!.find(
 				(p: any) => typeof p === 'object' && p.provide === 'SHARED_THROTTLER_CONFIG',
 			);
 			expect(configProvider).toBeDefined();
 		});
 
 		it('should set inject array to empty when not provided', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000 }),
 			});
 
-			expect(result.providers).toBeDefined();
-			const configProvider = result.providers!.find(
+			expect(Result.providers).toBeDefined();
+			const configProvider = Result.providers!.find(
 				(p: any) => typeof p === 'object' && p.provide === 'SHARED_THROTTLER_CONFIG',
 			);
 
@@ -563,12 +563,12 @@ describe('SharedThrottlerModule', () => {
 
 		it('should preserve inject array in provider', () => {
 			const injectTokens = ['SERVICE_A', 'SERVICE_B'];
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: (_a: any, _b: any) => ({ ttl: 30000 }),
 				inject: injectTokens,
 			});
 
-			const configProvider = result.providers!.find(
+			const configProvider = Result.providers!.find(
 				(p: any) => typeof p === 'object' && p.provide === 'SHARED_THROTTLER_CONFIG',
 			);
 
@@ -577,30 +577,30 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should create providers array when using useFactory', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
 
-			expect(Array.isArray(result.providers)).toBe(true);
-			expect(result.providers!.length).toBeGreaterThan(0);
+			expect(Array.isArray(Result.providers)).toBe(true);
+			expect(Result.providers!.length).toBeGreaterThan(0);
 		});
 
 		it('should not duplicate providers when both useFactory and useClass are undefined', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: undefined as any,
 				useClass: undefined as any,
 			});
 
 			// Should still include ThrottlerGuard
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 		});
 
 		it('should include only SHARED_THROTTLER_CONFIG from useFactory not from useClass', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000 }),
 			});
 
-			const configProviders = result.providers!.filter(
+			const configProviders = Result.providers!.filter(
 				(p: any) => typeof p === 'object' && p.provide === 'SHARED_THROTTLER_CONFIG',
 			);
 
@@ -612,50 +612,50 @@ describe('SharedThrottlerModule', () => {
 	describe('forRootAsync imports configuration', () => {
 		it('should include custom imports in module imports', () => {
 			const customModule = { provide: 'CUSTOM_TOKEN', useValue: 'custom-value' };
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 				imports: [customModule as any],
 			});
 
 			// Should have ThrottlerModule async import + custom imports
-			expect(result.imports!.length).toBeGreaterThanOrEqual(2);
+			expect(Result.imports!.length).toBeGreaterThanOrEqual(2);
 		});
 
 		it('should spread optional imports array into imports', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 				imports: [],
 			});
 
 			// Should have at least ThrottlerModule async import
-			expect(result.imports).toBeDefined();
-			expect(result.imports!.length).toBeGreaterThanOrEqual(1);
+			expect(Result.imports).toBeDefined();
+			expect(Result.imports!.length).toBeGreaterThanOrEqual(1);
 		});
 	});
 
 	describe('forRootAsync ThrottlerModule.forRootAsync integration', () => {
 		it('should pass SHARED_THROTTLER_CONFIG as inject token to ThrottlerModule.forRootAsync', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000, limit: 50 }),
 			});
 
 			// The ThrottlerModule.forRootAsync should be in imports
-			expect(result.imports).toBeDefined();
-			const [throttlerImport] = result.imports ?? [];
+			expect(Result.imports).toBeDefined();
+			const [throttlerImport] = Result.imports ?? [];
 			expect(throttlerImport).toBeDefined();
 		});
 
 		it('should apply default values in ThrottlerModule.forRootAsync factory', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}), // Empty config
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 			// The ThrottlerModule.forRootAsync should handle empty config gracefully
 		});
 
 		it('should handle Redis config passed to ThrottlerModule.forRootAsync', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 20000,
 					limit: 40,
@@ -667,7 +667,7 @@ describe('SharedThrottlerModule', () => {
 				}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 			// Redis config should be passed through to ThrottlerModule
 		});
 	});
@@ -677,7 +677,7 @@ describe('SharedThrottlerModule', () => {
 			const logSpy = vi.spyOn(console, 'log');
 
 			try {
-				SharedThrottlerModule.forRootAsync({
+				SharedThrottlerModule.ForRootAsync({
 					useFactory: () => ({
 						redis: {
 							host: 'localhost',
@@ -697,7 +697,7 @@ describe('SharedThrottlerModule', () => {
 			const logSpy = vi.spyOn(console, 'log');
 
 			try {
-				SharedThrottlerModule.forRootAsync({
+				SharedThrottlerModule.ForRootAsync({
 					useFactory: () => ({
 						ttl: 30000,
 						limit: 50,
@@ -713,75 +713,75 @@ describe('SharedThrottlerModule', () => {
 
 	describe('Module type structure', () => {
 		it('forRoot should return object with module property', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect(typeof result).toBe('object');
-			expect('module' in result).toBe(true);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect(typeof Result).toBe('object');
+			expect('module' in Result).toBe(true);
 		});
 
 		it('forRoot should return object with imports property', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect('imports' in result).toBe(true);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect('imports' in Result).toBe(true);
 		});
 
 		it('forRoot should return object with providers property', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect('providers' in result).toBe(true);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect('providers' in Result).toBe(true);
 		});
 
 		it('forRoot should return object with exports property', () => {
-			const result = SharedThrottlerModule.forRoot();
-			expect('exports' in result).toBe(true);
+			const Result = SharedThrottlerModule.ForRoot();
+			expect('exports' in Result).toBe(true);
 		});
 
 		it('forRootAsync should return object with all required properties', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
-			expect('module' in result).toBe(true);
-			expect('imports' in result).toBe(true);
-			expect('providers' in result).toBe(true);
-			expect('exports' in result).toBe(true);
+			expect('module' in Result).toBe(true);
+			expect('imports' in Result).toBe(true);
+			expect('providers' in Result).toBe(true);
+			expect('exports' in Result).toBe(true);
 		});
 	});
 
 	describe('forRoot vs forRootAsync configuration paths', () => {
 		it('forRoot should create synchronous module configuration', () => {
-			const result = SharedThrottlerModule.forRoot({
+			const Result = SharedThrottlerModule.ForRoot({
 				ttl: 10000,
 				limit: 20,
 			});
 
-			expect(result.module).toBe(SharedThrottlerModule);
+			expect(Result.module).toBe(SharedThrottlerModule);
 			// Verify structure for sync config
-			expect(Array.isArray(result.imports)).toBe(true);
-			expect(Array.isArray(result.providers)).toBe(true);
-			expect(Array.isArray(result.exports)).toBe(true);
+			expect(Array.isArray(Result.imports)).toBe(true);
+			expect(Array.isArray(Result.providers)).toBe(true);
+			expect(Array.isArray(Result.exports)).toBe(true);
 		});
 
 		it('forRoot should include ThrottlerGuard provider', () => {
-			const result = SharedThrottlerModule.forRoot();
+			const Result = SharedThrottlerModule.ForRoot();
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 			// Should have at least ThrottlerGuard
-			expect(result.providers!.length).toBeGreaterThan(0);
+			expect(Result.providers!.length).toBeGreaterThan(0);
 		});
 
 		it('forRoot should export both ThrottlerModule and ThrottlerGuard', () => {
-			const result = SharedThrottlerModule.forRoot();
+			const Result = SharedThrottlerModule.ForRoot();
 
-			expect(result.exports).toBeDefined();
-			expect(Array.isArray(result.exports)).toBe(true);
-			expect(result.exports!.length).toBeGreaterThanOrEqual(2);
+			expect(Result.exports).toBeDefined();
+			expect(Array.isArray(Result.exports)).toBe(true);
+			expect(Result.exports!.length).toBeGreaterThanOrEqual(2);
 		});
 	});
 
 	describe('forRootAsync with useFactory vs useClass branches', () => {
 		it('should only create SHARED_THROTTLER_CONFIG from useFactory not useClass', () => {
-			const resultFactory = SharedThrottlerModule.forRootAsync({
+			const resultFactory = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({ ttl: 30000 }),
 			});
 
-			const resultClass = SharedThrottlerModule.forRootAsync({
+			const resultClass = SharedThrottlerModule.ForRootAsync({
 				useClass: class Config {
 					createThrottlerConfig() {
 						return { ttl: 30000 }; 
@@ -804,13 +804,13 @@ describe('SharedThrottlerModule', () => {
 				}
 			}
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useClass: MyConfigService,
 			});
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 			// Should include MyConfigService as provider
-			const hasClassProvider = result.providers!.some(
+			const hasClassProvider = Result.providers!.some(
 				(p: any) => typeof p === 'function' || (typeof p === 'object' && p.useClass),
 			);
 			expect(hasClassProvider).toBe(true);
@@ -819,13 +819,13 @@ describe('SharedThrottlerModule', () => {
 		it('should only handle useFactory branch when useFactory exists', () => {
 			const mockFactory = vi.fn().mockReturnValue({ ttl: 30000 });
 
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: mockFactory,
 			});
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 			// Should have factory provider
-			const configProvider = result.providers!.find(
+			const configProvider = Result.providers!.find(
 				(p: any) => typeof p === 'object' && p.provide === 'SHARED_THROTTLER_CONFIG',
 			);
 			expect(configProvider).toBeDefined();
@@ -833,22 +833,22 @@ describe('SharedThrottlerModule', () => {
 		});
 
 		it('should handle neither useFactory nor useClass gracefully', () => {
-			const result = SharedThrottlerModule.forRootAsync({});
+			const Result = SharedThrottlerModule.ForRootAsync({});
 
-			expect(result.providers).toBeDefined();
+			expect(Result.providers).toBeDefined();
 			// Should still include ThrottlerGuard at minimum
-			expect(result.providers!.length).toBeGreaterThan(0);
+			expect(Result.providers!.length).toBeGreaterThan(0);
 		});
 
 		it('should spread optional imports when provided', () => {
 			const customImport = { provide: 'CUSTOM', useValue: 'test' };
 
-			const resultWithImports = SharedThrottlerModule.forRootAsync({
+			const resultWithImports = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 				imports: [customImport as any],
 			});
 
-			const resultWithoutImports = SharedThrottlerModule.forRootAsync({
+			const resultWithoutImports = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
 
@@ -861,38 +861,38 @@ describe('SharedThrottlerModule', () => {
 
 	describe('ThrottlerModule.forRootAsync config factory branches', () => {
 		it('should use fallback values when ttl not in config', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					limit: 50,
 					// ttl is undefined - should use default
 				}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should use fallback values when limit not in config', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					// limit is undefined - should use default
 				}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 		});
 
 		it('should handle both ttl and limit missing', () => {
-			const result = SharedThrottlerModule.forRootAsync({
+			const Result = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({}),
 			});
 
-			expect(result).toBeDefined();
+			expect(Result).toBeDefined();
 			// Both should use defaults
 		});
 
 		it('should handle Redis config conditional logging', () => {
-			const resultWithRedis = SharedThrottlerModule.forRootAsync({
+			const resultWithRedis = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					limit: 100,
@@ -903,7 +903,7 @@ describe('SharedThrottlerModule', () => {
 				}),
 			});
 
-			const resultWithoutRedis = SharedThrottlerModule.forRootAsync({
+			const resultWithoutRedis = SharedThrottlerModule.ForRootAsync({
 				useFactory: () => ({
 					ttl: 30000,
 					limit: 100,

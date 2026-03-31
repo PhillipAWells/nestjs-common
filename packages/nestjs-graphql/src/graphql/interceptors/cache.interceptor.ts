@@ -20,17 +20,17 @@ export class GraphQLCacheKeyGenerator implements ICacheKeyGenerator {
 		this.CacheService = cacheService;
 	}
 
-	public generate(_context: ExecutionContext, options?: ICacheableOptions): string {
-		const gqlContext = GqlExecutionContext.create(_context);
-		const args = gqlContext.getArgs();
-		const info = gqlContext.getInfo();
+	public Generate(_context: ExecutionContext, options?: ICacheableOptions): string {
+		const GqlContext = GqlExecutionContext.create(_context);
+		const Args = GqlContext.getArgs();
+		const Info = GqlContext.getInfo();
 
 		if (options?.keyGenerator) {
-			return options.keyGenerator(Object.values(args), gqlContext.getContext());
+			return options.keyGenerator(Object.values(Args), GqlContext.getContext());
 		}
 
-		return this.CacheService.generateKey(info.fieldName, args, {
-			userId: gqlContext.getContext().user?.id ?? gqlContext.getContext().user?.sub,
+		return this.CacheService.GenerateKey(Info.fieldName, Args, {
+			userId: GqlContext.getContext().user?.id ?? GqlContext.getContext().user?.sub,
 		});
 	}
 }
@@ -46,18 +46,18 @@ export class GraphQLCacheMetadataExtractor implements ICacheMetadataExtractor {
 		this.Reflector = reflector;
 	}
 
-	public getCacheDisabled(_context: ExecutionContext): boolean {
+	public GetCacheDisabled(_context: ExecutionContext): boolean {
 		// GraphQL doesn't have a direct equivalent to "cache-disabled"
 		// Could be implemented via custom directive or metadata
 		return false;
 	}
 
-	public getCacheTtl(_context: ExecutionContext): number | undefined {
-		const cacheableOptions = this.Reflector.getAllAndOverride<ICacheableOptions>(
+	public GetCacheTtl(_context: ExecutionContext): number | undefined {
+		const CacheableOptions = this.Reflector.getAllAndOverride<ICacheableOptions>(
 			CACHEABLE_METADATA,
 			[_context.getHandler(), _context.getClass()],
 		);
-		return cacheableOptions?.ttl;
+		return CacheableOptions?.ttl;
 	}
 }
 
@@ -66,12 +66,12 @@ export class GraphQLCacheMetadataExtractor implements ICacheMetadataExtractor {
  */
 @Injectable()
 export class GraphQLCacheContextHandler implements ICacheContextHandler {
-	public setCacheHeaders(_context: ExecutionContext, _hit: boolean, _ttl?: number): void {
+	public SetCacheHeaders(_context: ExecutionContext, _hit: boolean, _ttl?: number): void {
 		// GraphQL doesn't use HTTP headers for caching
 		// Could potentially add to extensions if needed
 	}
 
-	public shouldCacheRequest(_context: ExecutionContext): boolean {
+	public ShouldCacheRequest(_context: ExecutionContext): boolean {
 		// GraphQL requests are typically POST, but we can cache resolvers
 		return true;
 	}
@@ -95,15 +95,15 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 		super(moduleRef);
 	}
 
-	protected getCacheKeyGenerator(): ICacheKeyGenerator {
+	protected GetCacheKeyGenerator(): ICacheKeyGenerator {
 		return new GraphQLCacheKeyGenerator(this.GraphQLCacheService);
 	}
 
-	protected getCacheMetadataExtractor(): ICacheMetadataExtractor {
+	protected GetCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return new GraphQLCacheMetadataExtractor(this.Reflector);
 	}
 
-	protected getCacheContextHandler(): ICacheContextHandler {
+	protected GetCacheContextHandler(): ICacheContextHandler {
 		return new GraphQLCacheContextHandler();
 	}
 
@@ -111,22 +111,22 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 	 * Override intercept to add GraphQL-specific cache invalidation
 	 */
 	public override intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-		const gqlContext = GqlExecutionContext.create(context);
-		const args = gqlContext.getArgs();
-		const gqlContextData = gqlContext.getContext();
+		const GqlContext = GqlExecutionContext.create(context);
+		const Args = GqlContext.getArgs();
+		const GqlContextData = GqlContext.getContext();
 
 		// Use base class caching logic, but first handle pre-execution invalidation
 		// Note: pre-execution invalidation is intentionally non-blocking (fire-and-forget)
 		// to avoid delaying the response; errors are logged internally.
-		void this.handleCacheInvalidation(context, args, gqlContextData, null, 'before');
+		void this.HandleCacheInvalidation(context, Args, GqlContextData, null, 'before');
 
 		// Use base class caching logic
-		const result = super.intercept(context, next);
+		const Result = super.intercept(context, next);
 
 		// Handle cache invalidation (after execution)
-		return result.pipe(
+		return Result.pipe(
 			tap(async (data) => {
-				await this.handleCacheInvalidation(context, args, gqlContextData, data, 'after');
+				await this.HandleCacheInvalidation(context, Args, GqlContextData, data, 'after');
 			}),
 		);
 	}
@@ -134,45 +134,45 @@ export class GraphQLCacheInterceptor extends BaseCacheInterceptor {
 	/**
 	 * Handle GraphQL-specific cache invalidation
 	 */
-	private async handleCacheInvalidation(
+	private async HandleCacheInvalidation(
 		context: ExecutionContext,
 		args: Record<string, any>,
 		gqlContext: any,
 		result: any,
 		when: 'before' | 'after',
 	): Promise<void> {
-		const invalidateOptions = this.Reflector.getAllAndOverride<ICacheInvalidateOptions>(
+		const InvalidateOptions = this.Reflector.getAllAndOverride<ICacheInvalidateOptions>(
 			CACHE_INVALIDATE_METADATA,
 			[context.getHandler(), context.getClass()],
 		);
 
-		if (invalidateOptions?.when !== when) {
+		if (InvalidateOptions?.when !== when) {
 			return;
 		}
 
 		// Check condition
-		if (invalidateOptions.condition && !invalidateOptions.condition(result, Object.values(args), gqlContext)) {
+		if (InvalidateOptions.condition && !InvalidateOptions.condition(result, Object.values(args), gqlContext)) {
 			return;
 		}
 
 		// Generate invalidation keys
-		const { patterns: initialPatterns, keyGenerator } = invalidateOptions;
-		let patterns: string[] | undefined = initialPatterns;
+		const { patterns: InitialPatterns, keyGenerator } = InvalidateOptions;
+		let Patterns: string[] | undefined = InitialPatterns;
 		if (keyGenerator) {
-			patterns = keyGenerator(Object.values(args), gqlContext, result);
+			Patterns = keyGenerator(Object.values(args), gqlContext, result);
 		}
 
 		// Invalidate each pattern
-		if (!patterns) {
+		if (!Patterns) {
 			return;
 		}
 
-		for (const pattern of patterns) {
+		for (const Pattern of Patterns) {
 			try {
-				await this.GraphQLCacheService?.invalidatePattern(pattern);
-				this.Logger?.debug(`Invalidated GraphQL cache pattern: ${pattern}`);
+				await this.GraphQLCacheService?.InvalidatePattern(Pattern);
+				this.Logger?.debug(`Invalidated GraphQL cache pattern: ${Pattern}`);
 			} catch (error) {
-				this.Logger?.error(`Failed to invalidate GraphQL cache pattern ${pattern}: ${getErrorMessage(error)}`);
+				this.Logger?.error(`Failed to invalidate GraphQL cache pattern ${Pattern}: ${getErrorMessage(error)}`);
 			}
 		}
 	}

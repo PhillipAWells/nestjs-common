@@ -39,23 +39,23 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 		const { metatype } = metadata;
 
 		// Skip validation for primitive types
-		if (!metatype || !this.shouldValidate(metatype)) {
+		if (!metatype || !this.ShouldValidate(metatype)) {
 			return value;
 		}
 
 		// Transform plain object to class instance
-		const object = plainToClass(metatype, value, this.getTransformOptions());
+		const Object = plainToClass(metatype, value, this.GetTransformOptions());
 
 		// Validate the object
-		const errors = await validate(object, this.getValidationOptions());
+		const Errors = await validate(Object, this.GetValidationOptions());
 
-		if (errors.length > 0) {
-			this.handleValidationErrors(errors);
+		if (Errors.length > 0) {
+			this.HandleValidationErrors(Errors);
 			// If handleValidationErrors doesn't throw, format and throw
-			throw new BadRequestException(this.formatValidationErrors(errors));
+			throw new BadRequestException(this.FormatValidationErrors(Errors));
 		}
 
-		return object;
+		return Object;
 	}
 
 	/**
@@ -64,9 +64,9 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 	 * @param metatype - The type to check
 	 * @returns boolean - True if validation should be performed
 	 */
-	protected shouldValidate(metatype: any): boolean {
-		const types = [String, Boolean, Number, Array, Object];
-		return !types.includes(metatype);
+	protected ShouldValidate(metatype: any): boolean {
+		const Types = [String, Boolean, Number, Array, Object];
+		return !Types.includes(metatype);
 	}
 
 	/**
@@ -74,7 +74,7 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 	 *
 	 * @returns Validation options
 	 */
-	protected getValidationOptions(): any {
+	protected GetValidationOptions(): any {
 		return {};
 	}
 
@@ -83,7 +83,7 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 	 *
 	 * @returns Transformation options
 	 */
-	protected getTransformOptions(): ClassTransformOptions {
+	protected GetTransformOptions(): ClassTransformOptions {
 		return {};
 	}
 
@@ -94,7 +94,7 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 	 *
 	 * @param _errors - The validation errors (unused in base implementation)
 	 */
-	protected handleValidationErrors(_errors: ValidationError[]): void {
+	protected HandleValidationErrors(_errors: ValidationError[]): void {
 		// Default: no-op, subclasses can add logging/metrics
 	}
 
@@ -104,5 +104,5 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
 	 * @param errors - The validation errors
 	 * @returns Formatted error response
 	 */
-	protected abstract formatValidationErrors(errors: ValidationError[]): any;
+	protected abstract FormatValidationErrors(errors: ValidationError[]): any;
 }

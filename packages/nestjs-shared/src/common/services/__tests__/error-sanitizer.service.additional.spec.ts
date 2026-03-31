@@ -110,7 +110,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			// The message should have custom patterns applied
 			expect(sanitized.message).toBeDefined();
 		});
@@ -129,7 +129,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBeDefined();
 		});
 
@@ -144,7 +144,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('Regular error message');
 		});
 	});
@@ -156,7 +156,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 401,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('Bearer eyJ');
 			expect(sanitized.message).toContain('Bearer [REDACTED]');
 		});
@@ -167,7 +167,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('postgresql://');
 			expect(sanitized.message).toContain('[REDACTED]');
 		});
@@ -178,7 +178,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 404,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('admin@example.com');
 			expect(sanitized.message).toContain('[EMAIL]');
 		});
@@ -189,7 +189,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 403,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('192.168.1.100');
 			expect(sanitized.message).toContain('[IP]');
 		});
@@ -200,7 +200,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('/home/user');
 			expect(sanitized.message).not.toContain('sk_live_');
 			expect(sanitized.message).not.toContain('user@example.com');
@@ -215,7 +215,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -225,7 +225,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -235,7 +235,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -245,7 +245,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(typeof sanitized.message).toBe('string');
 		});
 
@@ -254,7 +254,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				message: 'Error occurred',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.statusCode).toBe(500); // Default
 		});
 
@@ -264,7 +264,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 400,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.timestamp).toBeDefined();
 			expect(sanitized.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 		});
@@ -332,7 +332,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				},
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.context).toBeDefined();
 			expect(sanitized.context.userId).toBe('123');
 			expect(sanitized.context.password).toBe('***REDACTED***');
@@ -348,7 +348,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				context,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.context.id).toBe('123');
 			expect(sanitized.context.self).toBe('[CIRCULAR_REF]');
 		});
@@ -363,7 +363,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				],
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			// Array contexts are preserved as arrays
 			expect(Array.isArray(sanitized.context)).toBe(true);
 		});
@@ -377,7 +377,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'Error: test\n  at line 1\n  at line 2',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, true);
+			const sanitized = service.SanitizeErrorResponse(error, true);
 			expect(sanitized.stack).toBeDefined();
 			expect(sanitized.stack).toContain('Error: test');
 		});
@@ -389,7 +389,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'Error: test\n  at line 1\n  at line 2',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, false);
+			const sanitized = service.SanitizeErrorResponse(error, false);
 			expect(sanitized.stack).toBeUndefined();
 		});
 
@@ -400,8 +400,8 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'stack trace here',
 			};
 
-			const devSanitized = service.sanitizeErrorResponse(error, true);
-			const prodSanitized = service.sanitizeErrorResponse(error, false);
+			const devSanitized = service.SanitizeErrorResponse(error, true);
+			const prodSanitized = service.SanitizeErrorResponse(error, false);
 
 			expect(devSanitized.message).not.toContain('/home/app.ts');
 			expect(devSanitized.message).not.toContain('sk_live_');

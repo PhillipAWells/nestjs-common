@@ -10,8 +10,8 @@ import { tap, catchError } from 'rxjs/operators';
 import { Request } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
-import { escapeNewlines } from '../utils/sanitization.utils.js';
-import { getErrorMessage } from '../utils/error.utils.js';
+import { EscapeNewlines } from '../utils/sanitization.utils.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Logging Interceptor.
@@ -42,34 +42,34 @@ export class LoggingInterceptor implements NestInterceptor, ILazyModuleRefServic
 			return next.handle();
 		}
 
-		const request = context.switchToHttp().getRequest<Request>();
-		const { method, url, ip } = request;
-		const startTime = Date.now();
+		const Request = context.switchToHttp().getRequest<Request>();
+		const { method, url, ip } = Request;
+		const StartTime = Date.now();
 
 		// Use DEBUG level for health checks and metrics endpoints to reduce noise
-		const isHealthOrMetrics = url.includes('/health') || url.includes('/metrics');
+		const IsHealthOrMetrics = url.includes('/health') || url.includes('/metrics');
 
 		// Note: Dynamic profiling tags are not supported by @pyroscope/nodejs
 		// Use static tags in config during initialization instead
 
-		const logFn = isHealthOrMetrics ? this.Logger.debug.bind(this.Logger) : this.Logger.info.bind(this.Logger);
-		logFn(`Incoming request: ${escapeNewlines(method)} ${escapeNewlines(url)} from ${escapeNewlines(ip ?? 'unknown')}`, 'LoggingInterceptor');
+		const LogFn = IsHealthOrMetrics ? this.Logger.Debug.bind(this.Logger) : this.Logger.info.bind(this.Logger);
+		LogFn(`Incoming request: ${EscapeNewlines(method)} ${EscapeNewlines(url)} from ${EscapeNewlines(ip ?? 'unknown')}`, 'LoggingInterceptor');
 
 		return next.handle().pipe(
 			tap(() => {
-				const duration = Date.now() - startTime;
-				const response = context.switchToHttp().getResponse<{ statusCode?: number }>();
-				const { statusCode } = response;
+				const Duration = Date.now() - StartTime;
+				const Response = context.switchToHttp().getResponse<{ statusCode?: number }>();
+				const { statusCode } = Response;
 
-				logFn(
-					`Request completed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${statusCode} - ${duration}ms`,
+				LogFn(
+					`Request completed: ${EscapeNewlines(method)} ${EscapeNewlines(url)} - ${statusCode} - ${Duration}ms`,
 					'LoggingInterceptor',
 				);
 			}),
 			catchError((error: unknown) => {
-				const duration = Date.now() - startTime;
+				const Duration = Date.now() - StartTime;
 				this.Logger.error(
-					`Request failed: ${escapeNewlines(method)} ${escapeNewlines(url)} - ${duration}ms - ${getErrorMessage(error)}`,
+					`Request failed: ${EscapeNewlines(method)} ${EscapeNewlines(url)} - ${Duration}ms - ${GetErrorMessage(error)}`,
 					'LoggingInterceptor',
 				);
 				return throwError(() => error);

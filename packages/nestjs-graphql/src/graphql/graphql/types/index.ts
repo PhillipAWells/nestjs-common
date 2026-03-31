@@ -21,8 +21,8 @@ export {
 	BASE_GRAPHQL_TYPES,
 	EXTENDED_GRAPHQL_TYPES,
 	ALL_GRAPHQL_TYPES,
-	validateTypeRegistrationOrder,
-	getTypeNames,
+	ValidateTypeRegistrationOrder as validateTypeRegistrationOrder,
+	GetTypeNames as getTypeNames,
 } from './type-registry.js';
 
 // Pagination types

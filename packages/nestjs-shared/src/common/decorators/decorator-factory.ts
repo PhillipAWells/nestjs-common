@@ -86,20 +86,20 @@ export function CreateRequestPropertyDecorator<T = any>(
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply validation if provided
-			if (options.validate && !options.validate(value)) {
+			if (options.validate && !options.validate(Value)) {
 				throw new Error('Validation failed for extracted value');
 			}
 
 			// Apply transformation if provided
 			if (options.transform) {
-				value = options.transform(value);
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }
@@ -133,23 +133,23 @@ export function CreateValidatingDecorator<T = any>(
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply validation if provided
 			if (options.validate) {
-				const isValid = options.validate(value);
-				if (!isValid && options.throwOnInvalid) {
+				const IsValid = options.validate(Value);
+				if (!IsValid && options.throwOnInvalid) {
 					throw new Error(options.errorMessage ?? 'Validation failed for extracted value');
 				}
 			}
 
 			// Apply transformation if provided
 			if (options.transform) {
-				value = options.transform(value);
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }
@@ -174,15 +174,15 @@ export function CreateTransformingDecorator<T = any>(
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply transformation if provided
-			if (options.transform && (value !== undefined || options.transformUndefined)) {
-				value = options.transform(value);
+			if (options.transform && (Value !== undefined || options.transformUndefined)) {
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }

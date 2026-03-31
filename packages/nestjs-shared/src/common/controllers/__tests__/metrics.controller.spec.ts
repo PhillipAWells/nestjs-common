@@ -10,6 +10,7 @@ describe('MetricsController', () => {
 	beforeEach(() => {
 		mockMetricsService = {
 			getMetrics: vi.fn(),
+			GetMetrics: vi.fn(),
 		};
 
 		mockLogger = {
@@ -30,7 +31,7 @@ describe('MetricsController', () => {
 
 	describe('getMetrics', () => {
 		it('should be defined', () => {
-			expect(controller.getMetrics).toBeDefined();
+			expect(controller.GetMetrics).toBeDefined();
 		});
 
 		it('should return metrics in Prometheus text format', async () => {
@@ -39,11 +40,11 @@ describe('MetricsController', () => {
 http_requests_total{method="GET",status="200"} 1234
 `;
 
-			mockMetricsService.getMetrics.mockResolvedValue(mockMetricsData);
+			mockMetricsService.GetMetrics.mockResolvedValue(mockMetricsData);
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
-			expect(mockMetricsService.getMetrics).toHaveBeenCalled();
+			expect(mockMetricsService.GetMetrics).toHaveBeenCalled();
 			expect(mockResponse.send).toHaveBeenCalledWith(mockMetricsData);
 		});
 
@@ -53,27 +54,27 @@ http_requests_total{method="GET",status="200"} 1234
 test_metric 42
 `;
 
-			mockMetricsService.getMetrics.mockResolvedValue(metricsData);
+			mockMetricsService.GetMetrics.mockResolvedValue(metricsData);
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.status).not.toHaveBeenCalled();
 			expect(mockResponse.send).toHaveBeenCalledWith(metricsData);
 		});
 
 		it('should return empty string when no metrics available', async () => {
-			mockMetricsService.getMetrics.mockResolvedValue('');
+			mockMetricsService.GetMetrics.mockResolvedValue('');
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledWith('');
 		});
 
 		it('should handle metrics service errors', async () => {
 			const error = new Error('Failed to collect metrics');
-			mockMetricsService.getMetrics.mockRejectedValue(error);
+			mockMetricsService.GetMetrics.mockRejectedValue(error);
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Failed to collect metrics',
@@ -85,9 +86,9 @@ test_metric 42
 
 		it('should log error message when metrics collection fails', async () => {
 			const errorMessage = 'Service unavailable';
-			mockMetricsService.getMetrics.mockRejectedValue(new Error(errorMessage));
+			mockMetricsService.GetMetrics.mockRejectedValue(new Error(errorMessage));
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Failed to collect metrics',
@@ -96,9 +97,9 @@ test_metric 42
 		});
 
 		it('should handle non-Error exceptions', async () => {
-			mockMetricsService.getMetrics.mockRejectedValue('Unknown error');
+			mockMetricsService.GetMetrics.mockRejectedValue('Unknown error');
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
 				'Failed to collect metrics',
@@ -108,17 +109,17 @@ test_metric 42
 		});
 
 		it('should return 500 status code on error', async () => {
-			mockMetricsService.getMetrics.mockRejectedValue(new Error('Error'));
+			mockMetricsService.GetMetrics.mockRejectedValue(new Error('Error'));
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.status).toHaveBeenCalledWith(500);
 		});
 
 		it('should return error placeholder text to avoid breaking scrapers', async () => {
-			mockMetricsService.getMetrics.mockRejectedValue(new Error('Service error'));
+			mockMetricsService.GetMetrics.mockRejectedValue(new Error('Service error'));
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledWith('# Error collecting metrics\n');
 		});
@@ -138,25 +139,25 @@ http_request_duration_seconds_sum 123.45
 http_request_duration_seconds_count 250
 `;
 
-			mockMetricsService.getMetrics.mockResolvedValue(complexMetrics);
+			mockMetricsService.GetMetrics.mockResolvedValue(complexMetrics);
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledWith(complexMetrics);
 		});
 
 		it('should not call send twice on success', async () => {
-			mockMetricsService.getMetrics.mockResolvedValue('metrics');
+			mockMetricsService.GetMetrics.mockResolvedValue('metrics');
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledTimes(1);
 		});
 
 		it('should not call send twice on error', async () => {
-			mockMetricsService.getMetrics.mockRejectedValue(new Error('Error'));
+			mockMetricsService.GetMetrics.mockRejectedValue(new Error('Error'));
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledTimes(1);
 		});
@@ -166,9 +167,9 @@ http_request_duration_seconds_count 250
 				`metric_${i} ${Math.random() * 1000}`,
 			).join('\n');
 
-			mockMetricsService.getMetrics.mockResolvedValue(largeMetrics);
+			mockMetricsService.GetMetrics.mockResolvedValue(largeMetrics);
 
-			await controller.getMetrics(mockResponse);
+			await controller.GetMetrics(mockResponse);
 
 			expect(mockResponse.send).toHaveBeenCalledWith(largeMetrics);
 		});

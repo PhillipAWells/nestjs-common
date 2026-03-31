@@ -52,10 +52,10 @@ export class KeycloakTokenValidationService {
 		this.Options = options;
 		this.JwtService = jwtService;
 		this.JwksCacheService = jwksCacheService;
-		this.initializeLogger();
+		this.InitializeLogger();
 	}
 
-	private initializeLogger(): void {
+	private InitializeLogger(): void {
 		try {
 			this.Logger = new AppLogger(undefined, KeycloakTokenValidationService.name);
 		} catch {
@@ -85,128 +85,128 @@ export class KeycloakTokenValidationService {
 	 * }
 	 * ```
 	 */
-	public async validateToken(token: string): Promise<ITokenValidationResult> {
+	public async ValidateToken(token: string): Promise<ITokenValidationResult> {
 		try {
-			const isOfflineMode = this.Options.validationMode === 'offline';
+			const IsOfflineMode = this.Options.validationMode === 'offline';
 
-			if (isOfflineMode) {
-				return await this.validateTokenOffline(token);
+			if (IsOfflineMode) {
+				return await this.ValidateTokenOffline(token);
 			}
-			return await this.validateTokenOnline(token);
+			return await this.ValidateTokenOnline(token);
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Token validation failed unexpectedly: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Token validation failed unexpectedly: ${ErrorMessage}`);
 			return { valid: false, error: 'validation_error' };
 		}
 	}
 
-	private async validateTokenOnline(token: string): Promise<ITokenValidationResult> {
+	private async ValidateTokenOnline(token: string): Promise<ITokenValidationResult> {
 		try {
-			const introspectionUrl = `${this.Options.authServerUrl}/realms/${this.Options.realm}/protocol/openid-connect/token/introspect`;
+			const IntrospectionUrl = `${this.Options.authServerUrl}/realms/${this.Options.realm}/protocol/openid-connect/token/introspect`;
 
-			const body = new URLSearchParams({
+			const Body = new URLSearchParams({
 				token,
 				token_type_hint: 'access_token',
 				client_id: this.Options.clientId,
 				client_secret: this.Options.clientSecret ?? '',
 			});
 
-			const response = await fetch(introspectionUrl, {
+			const Response = await fetch(IntrospectionUrl, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded',
 				},
-				body: body.toString(),
+				body: Body.toString(),
 			});
 
-			if (!response.ok) {
-				this.log('warn', `Introspection request failed with status ${response.status}`);
+			if (!Response.ok) {
+				this.Log('warn', `Introspection request failed with status ${Response.status}`);
 				return { valid: false, error: 'introspection_failed' };
 			}
 
-			const introspectionResult = await response.json();
+			const IntrospectionResult = await Response.json();
 
-			if (introspectionResult.active !== true) {
+			if (IntrospectionResult.active !== true) {
 				return { valid: false, error: 'token_inactive' };
 			}
 
 			// Validate audience claim — must match our clientId
-			const audiences = Array.isArray(introspectionResult.aud)
-				? introspectionResult.aud
-				: [introspectionResult.aud].filter(Boolean);
-			if (!audiences.includes(this.Options.clientId)) {
+			const Audiences = Array.isArray(IntrospectionResult.aud)
+				? IntrospectionResult.aud
+				: [IntrospectionResult.aud].filter(Boolean);
+			if (!Audiences.includes(this.Options.clientId)) {
 				return { valid: false, error: 'invalid_audience' };
 			}
 
-			return { valid: true, claims: introspectionResult as IKeycloakTokenClaims };
+			return { valid: true, claims: IntrospectionResult as IKeycloakTokenClaims };
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Introspection error: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Introspection error: ${ErrorMessage}`);
 			return { valid: false, error: 'introspection_failed' };
 		}
 	}
 
-	private async validateTokenOffline(token: string): Promise<ITokenValidationResult> {
+	private async ValidateTokenOffline(token: string): Promise<ITokenValidationResult> {
 		try {
 			if (!this.JwksCacheService) {
 				return { valid: false, error: 'offline_mode_not_available' };
 			}
 
 			// Decode header to get kid
-			const decoded = this.JwtService.decode(token, { complete: true }) as {
+			const Decoded = this.JwtService.decode(token, { complete: true }) as {
 				header: { kid?: string };
 				payload: unknown;
 			} | null;
 
-			if (!decoded?.header?.kid) {
+			if (!Decoded?.header?.kid) {
 				return { valid: false, error: 'missing_kid' };
 			}
 
 			// Get public key from cache
-			let publicKey: string;
+			let PublicKey: string;
 			try {
-				publicKey = await this.JwksCacheService.getKey(decoded.header.kid);
+				PublicKey = await this.JwksCacheService.GetKey(Decoded.header.kid);
 			} catch (error) {
-				const errorMessage = getErrorMessage(error);
-				this.log('warn', `Failed to get signing key: ${errorMessage}`);
+				const ErrorMessage = getErrorMessage(error);
+				this.Log('warn', `Failed to get signing key: ${ErrorMessage}`);
 				return { valid: false, error: 'unknown_signing_key' };
 			}
 
 			// Verify JWT
-			let claims: IKeycloakTokenClaims;
+			let Claims: IKeycloakTokenClaims;
 			try {
-				claims = this.JwtService.verify(token, {
-					publicKey,
+				Claims = this.JwtService.verify(token, {
+					publicKey: PublicKey,
 					algorithms: ['RS256'],
 				}) as IKeycloakTokenClaims;
 			} catch (error) {
-				const errorMessage = getErrorMessage(error);
-				this.log('warn', `JWT verification failed: ${errorMessage}`);
+				const ErrorMessage = getErrorMessage(error);
+				this.Log('warn', `JWT verification failed: ${ErrorMessage}`);
 				return { valid: false, error: 'jwt_verification_failed' };
 			}
 
 			// Validate claims
-			const now = Math.floor(Date.now() / MS_PER_SECOND);
-			if (claims.exp <= now) {
+			const Now = Math.floor(Date.now() / MS_PER_SECOND);
+			if (Claims.exp <= Now) {
 				return { valid: false, error: 'token_expired' };
 			}
 
-			const expectedIssuer = this.Options.issuer ?? this.Options.authServerUrl;
-			if (claims.iss !== expectedIssuer) {
-				this.log('warn', `Issuer mismatch: expected ${escapeNewlines(expectedIssuer)}, got ${escapeNewlines(claims.iss)}`);
+			const ExpectedIssuer = this.Options.issuer ?? this.Options.authServerUrl;
+			if (Claims.iss !== ExpectedIssuer) {
+				this.Log('warn', `Issuer mismatch: expected ${escapeNewlines(ExpectedIssuer)}, got ${escapeNewlines(Claims.iss)}`);
 				return { valid: false, error: 'invalid_issuer' };
 			}
 
-			const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-			if (!audience.includes(this.Options.clientId)) {
-				this.log('warn', `Audience mismatch: clientId ${this.Options.clientId} not in ${escapeNewlines(audience.join(','))}`);
+			const Audience = Array.isArray(Claims.aud) ? Claims.aud : [Claims.aud];
+			if (!Audience.includes(this.Options.clientId)) {
+				this.Log('warn', `Audience mismatch: clientId ${this.Options.clientId} not in ${escapeNewlines(Audience.join(','))}`);
 				return { valid: false, error: 'invalid_audience' };
 			}
 
-			return { valid: true, claims };
+			return { valid: true, claims: Claims };
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Offline validation error: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Offline validation error: ${ErrorMessage}`);
 			return { valid: false, error: 'validation_failed' };
 		}
 	}
@@ -234,7 +234,7 @@ export class KeycloakTokenValidationService {
 	 * // }
 	 * ```
 	 */
-	public extractUser(claims: IKeycloakTokenClaims): IKeycloakUser {
+	public ExtractUser(claims: IKeycloakTokenClaims): IKeycloakUser {
 		return {
 			id: claims.sub,
 			email: claims.email,
@@ -245,7 +245,7 @@ export class KeycloakTokenValidationService {
 		};
 	}
 
-	private log(level: 'warn' | 'info', message: string): void {
+	private Log(level: 'warn' | 'info', message: string): void {
 		if (this.Logger) {
 			if (level === 'warn') {
 				this.Logger.warn(message);

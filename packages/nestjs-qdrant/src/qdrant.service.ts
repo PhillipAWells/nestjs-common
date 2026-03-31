@@ -44,13 +44,13 @@ export class QdrantService implements OnModuleDestroy {
 		this.Logger.debug('Qdrant service initialized');
 	}
 
-	private get client(): QdrantClient {
-		const clientInstance = this.ModuleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
-		if (!clientInstance) {
+	private get Client(): QdrantClient {
+		const ClientInstance = this.ModuleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
+		if (!ClientInstance) {
 			this.Logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 			throw new InternalServerError('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}
-		return clientInstance;
+		return ClientInstance;
 	}
 
 	/**
@@ -68,8 +68,8 @@ export class QdrantService implements OnModuleDestroy {
 	 * });
 	 * ```
 	 */
-	public getClient(): QdrantClient {
-		return this.client;
+	public GetClient(): QdrantClient {
+		return this.Client;
 	}
 
 	/**
@@ -94,17 +94,17 @@ export class QdrantService implements OnModuleDestroy {
 	 * });
 	 * ```
 	 */
-	public collection(collectionName: string): QdrantCollectionService {
-		const isValidCollectionName =
+	public Collection(collectionName: string): QdrantCollectionService {
+		const IsValidCollectionName =
 			collectionName &&
 		collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
 		/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
 
-		if (!isValidCollectionName) {
+		if (!IsValidCollectionName) {
 			throw new BadRequestError(`Invalid collection name: "${collectionName}"`);
 		}
 
-		return new QdrantCollectionService(this.client, collectionName);
+		return new QdrantCollectionService(this.Client, collectionName);
 	}
 
 	/**

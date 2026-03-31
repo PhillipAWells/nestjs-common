@@ -19,13 +19,13 @@ export class ForbiddenError extends GraphqlError {
 	 * @param context - Additional context information
 	 */
 	constructor(message = 'Access denied', context?: Record<string, any>) {
-		const options: any = {
+		const Options: any = {
 			code: 'AUTHORIZATION_FAILED',
 			statusCode: 403,
 		};
 		if (context !== undefined) {
-			options.context = context;
+			Options.context = context;
 		}
-		super(message, options);
+		super(message, Options);
 	}
 }

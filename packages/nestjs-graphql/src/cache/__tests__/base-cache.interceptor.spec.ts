@@ -10,31 +10,31 @@ import {
 
 // Mock implementations for testing
 class MockCacheKeyGenerator implements ICacheKeyGenerator {
-	public generate = vi.fn<(context: any, options?: any) => string>().mockReturnValue('test-key');
+	public Generate = vi.fn<(context: any, options?: any) => string>().mockReturnValue('test-key');
 }
 
 class MockCacheMetadataExtractor implements ICacheMetadataExtractor {
-	public getCacheDisabled = vi.fn<(context: any) => boolean>().mockReturnValue(false);
+	public GetCacheDisabled = vi.fn<(context: any) => boolean>().mockReturnValue(false);
 
-	public getCacheTtl = vi.fn<(context: any) => number | undefined>().mockReturnValue(300);
+	public GetCacheTtl = vi.fn<(context: any) => number | undefined>().mockReturnValue(300);
 }
 
 class MockCacheContextHandler implements ICacheContextHandler {
-	public setCacheHeaders = vi.fn<(context: any, hit: boolean, ttl?: number) => void>();
+	public SetCacheHeaders = vi.fn<(context: any, hit: boolean, ttl?: number) => void>();
 
-	public shouldCacheRequest = vi.fn<(context: any) => boolean>().mockReturnValue(true);
+	public ShouldCacheRequest = vi.fn<(context: any) => boolean>().mockReturnValue(true);
 }
 
 class TestBaseCacheInterceptor extends BaseCacheInterceptor {
-	public getCacheKeyGenerator(): ICacheKeyGenerator {
+	public GetCacheKeyGenerator(): ICacheKeyGenerator {
 		return this.keyGenerator;
 	}
 
-	public getCacheMetadataExtractor(): ICacheMetadataExtractor {
+	public GetCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return this.metadataExtractor;
 	}
 
-	public getCacheContextHandler(): ICacheContextHandler {
+	public GetCacheContextHandler(): ICacheContextHandler {
 		return this.contextHandler;
 	}
 
@@ -109,7 +109,7 @@ describe('BaseCacheInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
 					expect(result).toBe('cached-data');
-					expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
+					expect(mockContextHandler.SetCacheHeaders).toHaveBeenCalledWith(
 						mockExecutionContext,
 						true,
 						300,
@@ -131,7 +131,7 @@ describe('BaseCacheInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((result) => {
 					expect(result).toBe('test-data');
-					expect(mockContextHandler.setCacheHeaders).toHaveBeenCalledWith(
+					expect(mockContextHandler.SetCacheHeaders).toHaveBeenCalledWith(
 						mockExecutionContext,
 						false,
 					);
@@ -145,7 +145,7 @@ describe('BaseCacheInterceptor', () => {
 
 	describe('intercept - caching disabled', () => {
 		beforeEach(() => {
-			mockMetadataExtractor.getCacheDisabled.mockReturnValue(true);
+			mockMetadataExtractor.GetCacheDisabled.mockReturnValue(true);
 		});
 
 		it('should skip caching and execute handler directly', () => {
@@ -162,7 +162,7 @@ describe('BaseCacheInterceptor', () => {
 
 	describe('intercept - request not cacheable', () => {
 		beforeEach(() => {
-			mockContextHandler.shouldCacheRequest.mockReturnValue(false);
+			mockContextHandler.ShouldCacheRequest.mockReturnValue(false);
 		});
 
 		it('should skip caching and execute handler directly', () => {
@@ -180,8 +180,8 @@ describe('BaseCacheInterceptor', () => {
 	describe('generateETag', () => {
 		it('should generate consistent ETags', () => {
 			const data = { test: 'data' };
-			const etag1 = (interceptor as any).generateETag(data);
-			const etag2 = (interceptor as any).generateETag(data);
+			const etag1 = (interceptor as any).GenerateETag(data);
+			const etag2 = (interceptor as any).GenerateETag(data);
 
 			expect(etag1).toMatch(/^".*"$/);
 			expect(etag2).toMatch(/^".*"$/);
@@ -192,7 +192,7 @@ describe('BaseCacheInterceptor', () => {
 	describe('sortObject', () => {
 		it('should sort object keys recursively', () => {
 			const input = { z: 1, a: { c: 3, b: 2 } };
-			const result = (interceptor as any).sortObject(input);
+			const result = (interceptor as any).SortObject(input);
 
 			expect(Object.keys(result)).toEqual(['a', 'z']);
 			expect(Object.keys(result.a)).toEqual(['b', 'c']);
@@ -200,15 +200,15 @@ describe('BaseCacheInterceptor', () => {
 
 		it('should handle arrays', () => {
 			const input = [{ z: 1, a: 2 }];
-			const result = (interceptor as any).sortObject(input);
+			const result = (interceptor as any).SortObject(input);
 
 			expect(Object.keys(result[0])).toEqual(['a', 'z']);
 		});
 
 		it('should return non-objects unchanged', () => {
-			expect((interceptor as any).sortObject('string')).toBe('string');
-			expect((interceptor as any).sortObject(123)).toBe(123);
-			expect((interceptor as any).sortObject(null)).toBe(null);
+			expect((interceptor as any).SortObject('string')).toBe('string');
+			expect((interceptor as any).SortObject(123)).toBe(123);
+			expect((interceptor as any).SortObject(null)).toBe(null);
 		});
 	});
 });

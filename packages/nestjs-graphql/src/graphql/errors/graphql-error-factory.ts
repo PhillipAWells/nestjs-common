@@ -63,7 +63,7 @@ export type TGeneratedGraphQLErrorConstructor = new (
  * });
  * ```
  */
-export function createGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraphQLErrorConstructor {
+export function CreateGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraphQLErrorConstructor {
 	const { code, statusCode, defaultMessage, name = `${code}Error`, graphqlCode } = config;
 
 	/**
@@ -86,23 +86,23 @@ export function createGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraph
 		 * @param context - Additional context information (optional)
 		 */
 		constructor(message = defaultMessage, context?: Record<string, unknown>) {
-			const mergedContext = { ...context };
+			const MergedContext = { ...context };
 
 			// Create extensions with error details
-			const extensions = {
+			const Extensions = {
 				code: graphqlCode,
 				statusCode,
-				context: mergedContext,
+				context: MergedContext,
 				timestamp: new Date().toISOString(),
 			};
 
 			super(message, {
-				extensions,
+				extensions: Extensions,
 			});
 
 			this.StatusCode = statusCode;
 			this.Code = code;
-			this.Context = mergedContext;
+			this.Context = MergedContext;
 			this.Timestamp = new Date();
 
 			// Set the name for better debugging
@@ -133,10 +133,10 @@ export function createGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraph
 		 * @returns A new error instance with the merged context
 		 */
 		public withContext(additionalContext: Record<string, unknown>): this {
-			const mergedContext = { ...this.Context, ...additionalContext };
+			const MergedContext = { ...this.Context, ...additionalContext };
 			const Constructor = this.constructor as new (message?: string, context?: Record<string, unknown>) => this;
 
-			return new Constructor(this.message, mergedContext);
+			return new Constructor(this.message, MergedContext);
 		}
 
 		/**

@@ -7,37 +7,37 @@ describe('MetricsModule', () => {
 		});
 
 		it('should have forRoot static method', () => {
-			expect(typeof MetricsModule.forRoot).toBe('function');
+			expect(typeof MetricsModule.ForRoot).toBe('function');
 		});
 
 		it('should have forRootAsync static method', () => {
-			expect(typeof MetricsModule.forRootAsync).toBe('function');
+			expect(typeof MetricsModule.ForRootAsync).toBe('function');
 		});
 	});
 
 	describe('forRoot configuration', () => {
 		it('should return DynamicModule from forRoot', () => {
-			const result = MetricsModule.forRoot();
+			const Result = MetricsModule.ForRoot();
 
-			expect(result).toBeDefined();
-			expect(result.module).toBe(MetricsModule);
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(MetricsModule);
 		});
 	});
 
 	describe('forRootAsync configuration', () => {
 		it('should return DynamicModule from forRootAsync', () => {
-			const result = MetricsModule.forRootAsync({});
+			const Result = MetricsModule.ForRootAsync({});
 
-			expect(result).toBeDefined();
-			expect(result.module).toBe(MetricsModule);
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(MetricsModule);
 		});
 
 		it('should handle custom options with useFactory', () => {
 			const customOption = { useFactory: () => ({}), imports: [] };
-			const result = MetricsModule.forRootAsync(customOption);
+			const Result = MetricsModule.ForRootAsync(customOption);
 
-			expect(result).toBeDefined();
-			expect(result.module).toBe(MetricsModule);
+			expect(Result).toBeDefined();
+			expect(Result.module).toBe(MetricsModule);
 		});
 	});
 
@@ -47,14 +47,14 @@ describe('MetricsModule', () => {
 		});
 
 		it('should return valid DynamicModule from forRoot', () => {
-			const result = MetricsModule.forRoot();
+			const Result = MetricsModule.ForRoot();
 
-			expect(result.module).toBe(MetricsModule);
+			expect(Result.module).toBe(MetricsModule);
 		});
 
 		it('should have static methods', () => {
-			expect(typeof MetricsModule.forRoot).toBe('function');
-			expect(typeof MetricsModule.forRootAsync).toBe('function');
+			expect(typeof MetricsModule.ForRoot).toBe('function');
+			expect(typeof MetricsModule.ForRootAsync).toBe('function');
 		});
 	});
 });

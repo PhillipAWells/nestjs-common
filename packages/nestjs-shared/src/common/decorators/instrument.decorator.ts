@@ -13,7 +13,7 @@ import type { InstrumentationRegistry } from '../registry/instrumentation-regist
  *   timing: 'user_service_find_by_id_seconds',
  *   counters: ['user_service_find_by_id_success'],
  *   errorCounters: ['user_service_find_by_id_error'],
- *   labels: (userId: string) => ({ userId }),
+ *   Labels: (userId: string) => ({ userId }),
  * })
  * async findById(userId: string): Promise<IUser> {
  *   // Implementation
@@ -46,21 +46,21 @@ export interface IInstrumentOptions {
 	errorCounters?: string[];
 
 	/**
-	 * Static labels to attach to all recorded metrics, or a function that extracts labels
+	 * Static Labels to attach to all recorded metrics, or a function that extracts Labels
 	 * from method arguments.
 	 *
 	 * If a function, it receives the argument array and returns a Record of label values.
-	 * Static labels (object) are always used. Function labels are computed per invocation.
+	 * Static Labels (object) are always used. Function Labels are computed per invocation.
 	 *
 	 * @optional
 	 */
-	labels?: Record<string, string | number> | ((...args: unknown[]) => Record<string, string | number>);
+	Labels?: Record<string, string | number> | ((...args: unknown[]) => Record<string, string | number>);
 }
 
 /**
  * Module-level singleton holder for InstrumentationRegistry.
  *
- * The @Instrument() decorator uses this holder to access the registry
+ * The @Instrument() decorator uses this holder to access the Registry
  * without requiring direct DI into every decorated method.
  *
  * Set during application bootstrap by CommonModule.onModuleInit().
@@ -82,9 +82,9 @@ export class InstrumentationRegistryHolder {
 	 * Set the singleton instance.
 	 * Called during application bootstrap.
 	 *
-	 * @param registry - The InstrumentationRegistry instance
+	 * @param Registry - The InstrumentationRegistry instance
 	 */
-	public static setInstance(registry: InstrumentationRegistry): void {
+	public static SetInstance(registry: InstrumentationRegistry): void {
 		InstrumentationRegistryHolder.Instance = registry;
 	}
 
@@ -93,7 +93,7 @@ export class InstrumentationRegistryHolder {
 	 *
 	 * @returns The InstrumentationRegistry instance, or null if not yet set
 	 */
-	public static getInstance(): InstrumentationRegistry | null {
+	public static GetInstance(): InstrumentationRegistry | null {
 		return InstrumentationRegistryHolder.Instance;
 	}
 }
@@ -106,10 +106,10 @@ export class InstrumentationRegistryHolder {
  *
  * Supports both synchronous and asynchronous (Promise-returning) methods.
  *
- * @param options - Instrumentation configuration (timing, counters, errorCounters, labels)
+ * @param options - Instrumentation configuration (timing, counters, errorCounters, Labels)
  * @returns MethodDecorator
  *
- * @throws Error if a metric name is not registered (only if registry is available)
+ * @throws Error if a metric name is not registered (only if Registry is available)
  * @throws The original error if the decorated method throws/rejects
  *
  * @example
@@ -119,7 +119,7 @@ export class InstrumentationRegistryHolder {
  *     timing: 'user_service_create_duration_seconds',
  *     counters: ['user_service_create_total'],
  *     errorCounters: ['user_service_create_errors'],
- *     labels: { service: 'user' },
+ *     Labels: { service: 'user' },
  *   })
  *   async create(userData: CreateUserDto): Promise<IUser> {
  *     return this.repository.save(userData);
@@ -129,7 +129,7 @@ export class InstrumentationRegistryHolder {
  *     timing: 'user_service_find_by_id_duration_seconds',
  *     counters: ['user_service_find_by_id_total'],
  *     errorCounters: ['user_service_find_by_id_errors'],
- *     labels: (id: string) => ({ userId: id }),
+ *     Labels: (id: string) => ({ userId: id }),
  *   })
  *   async findById(id: string): Promise<IUser | null> {
  *     return this.repository.findOne(id);
@@ -139,69 +139,69 @@ export class InstrumentationRegistryHolder {
  */
 export function Instrument(options: IInstrumentOptions): MethodDecorator {
 	return (target: any, propertyKey: string | symbol | undefined, descriptor: PropertyDescriptor): PropertyDescriptor => {
-		const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
+		const OriginalMethod = descriptor.value as (...args: unknown[]) => unknown;
 
-		descriptor.value = function instrumentMethod(this: any, ...args: unknown[]): unknown {
-			// Resolve labels: static object or computed from arguments
-			const labels =
-				typeof options.labels === 'function'
-					? options.labels(...args)
-					: options.labels ?? {};
+		descriptor.value = function InstrumentMethod(this: any, ...args: unknown[]): unknown {
+			// Resolve Labels: static object or computed from arguments
+			const Labels =
+				typeof options.Labels === 'function'
+					? options.Labels(...args)
+					: options.Labels ?? {};
 
-			// Get registry from singleton holder
-			const registry = InstrumentationRegistryHolder.getInstance();
+			// Get Registry from singleton holder
+			const Registry = InstrumentationRegistryHolder.GetInstance();
 
-			// If registry not available (e.g., during early bootstrap), just call original
-			if (!registry) {
-				return originalMethod.apply(this, args);
+			// If Registry not available (e.g., during early bootstrap), just call original
+			if (!Registry) {
+				return OriginalMethod.apply(this, args);
 			}
 
 			// Auto-register metric descriptors on first invocation
 			if (options.timing) {
-				registry.registerDescriptor({
+				Registry.RegisterDescriptor({
 					name: options.timing,
 					type: 'histogram',
 					help: `Duration of ${String(propertyKey)}`,
-					labelNames: Object.keys(labels),
+					labelNames: Object.keys(Labels),
 					unit: 'seconds',
 				});
 			}
 
-			for (const counterName of options.counters ?? []) {
-				registry.registerDescriptor({
-					name: counterName,
+			for (const CounterName of options.counters ?? []) {
+				Registry.RegisterDescriptor({
+					name: CounterName,
 					type: 'counter',
 					help: `${String(propertyKey)} invocation count`,
-					labelNames: Object.keys(labels),
+					labelNames: Object.keys(Labels),
 				});
 			}
 
-			for (const errorCounterName of options.errorCounters ?? []) {
-				registry.registerDescriptor({
-					name: errorCounterName,
+			for (const ErrorCounterName of options.errorCounters ?? []) {
+				Registry.RegisterDescriptor({
+					name: ErrorCounterName,
 					type: 'counter',
 					help: `${String(propertyKey)} error count`,
-					labelNames: Object.keys(labels),
+					labelNames: Object.keys(Labels),
 				});
 			}
 
 			// Record start time
-			const startTime = performance.now();
+			const StartTime = performance.now();
 
 			/**
 			 * Handle successful completion.
 			 * Records timing and success counters.
 			 */
-			const handleSuccess = (): void => {
+			const HandleSuccess = (): void => {
 				// eslint-disable-next-line no-magic-numbers
-				const durationSeconds = (performance.now() - startTime) / 1000; // Convert to seconds
+				const DurationSeconds = (performance.now() - StartTime) / 1000; // Convert to seconds
 
 				if (options.timing) {
-					registry.recordMetric(options.timing, durationSeconds, labels);
+					Registry.RecordMetric(options.timing, DurationSeconds, Labels);
 				}
 
-				for (const counterName of options.counters ?? []) {
-					registry.recordMetric(counterName, 1, labels);
+				for (const CounterName of options.counters ?? []) {
+					Registry.RecordMetric(CounterName, 1, Labels);
 				}
 			};
 
@@ -209,33 +209,33 @@ export function Instrument(options: IInstrumentOptions): MethodDecorator {
 			 * Handle error.
 			 * Records error counters and rethrows the error.
 			 */
-			const handleError = (err: unknown): never => {
-				for (const errorCounterName of options.errorCounters ?? []) {
-					registry.recordMetric(errorCounterName, 1, labels);
+			const HandleError = (err: unknown): never => {
+				for (const ErrorCounterName of options.errorCounters ?? []) {
+					Registry.RecordMetric(ErrorCounterName, 1, Labels);
 				}
 
 				throw err; // Always rethrow original error
 			};
 
 			try {
-				const result = originalMethod.apply(this, args);
+				const Result = OriginalMethod.apply(this, args);
 
-				// Check if result is a Promise (async method)
-				if (result instanceof Promise) {
-					return result.then(
+				// Check if Result is a Promise (async method)
+				if (Result instanceof Promise) {
+					return Result.then(
 						(value) => {
-							handleSuccess();
+							HandleSuccess();
 							return value;
 						},
-						(err) => handleError(err),
+						(err) => HandleError(err),
 					);
 				}
 
 				// Synchronous method
-				handleSuccess();
-				return result;
+				HandleSuccess();
+				return Result;
 			} catch (err) {
-				return handleError(err);
+				return HandleError(err);
 			}
 		};
 

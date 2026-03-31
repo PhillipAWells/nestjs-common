@@ -28,7 +28,7 @@ export class NestLoggerAdapter implements LoggerService {
 	}
 
 	/** Maps NestJS `log()` (INFO level) to {@link AppLogger.info}. */
-	public log(message: any, ...optionalParams: any[]): void {
+	public Log(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
 		this.Logger.info(this.formatMessage(message), context);
 	}
@@ -39,7 +39,7 @@ export class NestLoggerAdapter implements LoggerService {
 	 * NestJS calls this as `error(message, stack?, context?)`.
 	 * When a stack trace is present it is forwarded as `metadata.stack`.
 	 */
-	public error(message: any, ...optionalParams: any[]): void {
+	public Error(message: any, ...optionalParams: any[]): void {
 		const { context, stack } = this.extractErrorParams(optionalParams);
 		const msg = this.formatMessage(message);
 		if (stack !== undefined) {
@@ -50,13 +50,13 @@ export class NestLoggerAdapter implements LoggerService {
 	}
 
 	/** Maps NestJS `warn()` to {@link AppLogger.warn}. */
-	public warn(message: any, ...optionalParams: any[]): void {
+	public Warn(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
 		this.Logger.warn(this.formatMessage(message), context);
 	}
 
 	/** Maps NestJS `debug()` to {@link AppLogger.debug}. */
-	public debug(message: any, ...optionalParams: any[]): void {
+	public Debug(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
 		this.Logger.debug(this.formatMessage(message), context);
 	}
@@ -65,13 +65,13 @@ export class NestLoggerAdapter implements LoggerService {
 	 * Maps NestJS `verbose()` to {@link AppLogger.debug}.
 	 * `AppLogger` has no `verbose` level; `debug` is the nearest equivalent.
 	 */
-	public verbose(message: any, ...optionalParams: any[]): void {
+	public Verbose(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
 		this.Logger.debug(this.formatMessage(message), context);
 	}
 
 	/** Maps NestJS `fatal()` to {@link AppLogger.fatal}. */
-	public fatal(message: any, ...optionalParams: any[]): void {
+	public Fatal(message: any, ...optionalParams: any[]): void {
 		const context = this.extractContext(optionalParams);
 		this.Logger.fatal(this.formatMessage(message), context);
 	}

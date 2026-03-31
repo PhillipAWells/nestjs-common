@@ -52,7 +52,7 @@ describe('CacheService', () => {
 		vi.resetAllMocks();
 		// Restore default mock implementations after reset
 		mockAppLogger.createContextualLogger.mockReturnValue(mockContextualLogger);
-		service.resetStats();
+		service.ResetStats();
 	});
 
 	describe('get', () => {
@@ -61,24 +61,24 @@ describe('CacheService', () => {
 			const expectedValue = { data: 'test' };
 			mockCacheManager.get.mockResolvedValue(expectedValue);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBe(expectedValue);
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
-			expect(service.getStats().hits).toBe(1);
-			expect(service.getStats().misses).toBe(0);
+			expect(service.GetStats().hits).toBe(1);
+			expect(service.GetStats().misses).toBe(0);
 		});
 
 		it('should return undefined when key does not exist', async () => {
 			const key = 'non-existent-key';
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBeUndefined();
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
-			expect(service.getStats().hits).toBe(0);
-			expect(service.getStats().misses).toBe(1);
+			expect(service.GetStats().hits).toBe(0);
+			expect(service.GetStats().misses).toBe(1);
 		});
 
 		it('should handle cache errors gracefully', async () => {
@@ -86,11 +86,11 @@ describe('CacheService', () => {
 			const error = new Error('Cache connection failed');
 			mockCacheManager.get.mockRejectedValue(error);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBeUndefined();
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
-			expect(service.getStats().errors).toBe(1);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
@@ -99,10 +99,10 @@ describe('CacheService', () => {
 			const key = 'test-key';
 			const value = { data: 'test' };
 
-			await service.set(key, value);
+			await service.Set(key, value);
 
 			expect(mockCacheManager.set).toHaveBeenCalledWith(key, value, undefined);
-			expect(service.getStats().sets).toBe(1);
+			expect(service.GetStats().sets).toBe(1);
 		});
 
 		it('should set value with TTL', async () => {
@@ -110,10 +110,10 @@ describe('CacheService', () => {
 			const value = { data: 'test' };
 			const ttl = 300;
 
-			await service.set(key, value, ttl);
+			await service.Set(key, value, ttl);
 
 			expect(mockCacheManager.set).toHaveBeenCalledWith(key, value, ttl);
-			expect(service.getStats().sets).toBe(1);
+			expect(service.GetStats().sets).toBe(1);
 		});
 
 		it('should handle set errors', async () => {
@@ -122,8 +122,8 @@ describe('CacheService', () => {
 			const error = new Error('Cache set failed');
 			mockCacheManager.set.mockRejectedValue(error);
 
-			await expect(service.set(key, value)).rejects.toThrow(error);
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Set(key, value)).rejects.toThrow(error);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
@@ -132,23 +132,23 @@ describe('CacheService', () => {
 			const key = 'test-key';
 			mockCacheManager.del.mockResolvedValue(undefined);
 
-			await service.del(key);
+			await service.Del(key);
 
 			expect(mockCacheManager.del).toHaveBeenCalledWith(key);
-			expect(service.getStats().deletes).toBe(1);
+			expect(service.GetStats().deletes).toBe(1);
 		});
 
 		it('should delete multiple keys', async () => {
 			const keys = ['key1', 'key2', 'key3'];
 			mockCacheManager.del.mockResolvedValue(undefined);
 
-			await service.del(keys);
+			await service.Del(keys);
 
 			expect(mockCacheManager.del).toHaveBeenCalledTimes(3);
 			keys.forEach(key => {
 				expect(mockCacheManager.del).toHaveBeenCalledWith(key);
 			});
-			expect(service.getStats().deletes).toBe(1);
+			expect(service.GetStats().deletes).toBe(1);
 		});
 
 		it('should handle delete errors', async () => {
@@ -156,8 +156,8 @@ describe('CacheService', () => {
 			const error = new Error('Cache delete failed');
 			mockCacheManager.del.mockRejectedValue(error);
 
-			await expect(service.del(key)).rejects.toThrow(error);
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Del(key)).rejects.toThrow(error);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
@@ -165,18 +165,18 @@ describe('CacheService', () => {
 		it('should clear all cache entries', async () => {
 			mockCacheManager.clear.mockResolvedValue(undefined);
 
-			await service.clear();
+			await service.Clear();
 
 			expect(mockCacheManager.clear).toHaveBeenCalled();
-			expect(service.getStats().clears).toBe(1);
+			expect(service.GetStats().clears).toBe(1);
 		});
 
 		it('should handle clear errors', async () => {
 			const error = new Error('Cache clear failed');
 			mockCacheManager.clear.mockRejectedValue(error);
 
-			await expect(service.clear()).rejects.toThrow(error);
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Clear()).rejects.toThrow(error);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
@@ -186,7 +186,7 @@ describe('CacheService', () => {
 			const value = { data: 'test' };
 			mockCacheManager.get.mockResolvedValue(value);
 
-			const result = await service.exists(key);
+			const result = await service.Exists(key);
 
 			expect(result).toBe(true);
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
@@ -196,7 +196,7 @@ describe('CacheService', () => {
 			const key = 'non-existent-key';
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.exists(key);
+			const result = await service.Exists(key);
 
 			expect(result).toBe(false);
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
@@ -207,10 +207,10 @@ describe('CacheService', () => {
 			const error = new Error('Cache exists failed');
 			mockCacheManager.get.mockRejectedValue(error);
 
-			const result = await service.exists(key);
+			const result = await service.Exists(key);
 
 			expect(result).toBe(false);
-			expect(service.getStats().errors).toBe(1);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
@@ -222,7 +222,7 @@ describe('CacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(cachedValue);
 
-			const result = await service.getOrSet(key, factory);
+			const result = await service.GetOrSet(key, factory);
 
 			expect(result).toBe(cachedValue);
 			expect(factory).not.toHaveBeenCalled();
@@ -236,7 +236,7 @@ describe('CacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.getOrSet(key, factory);
+			const result = await service.GetOrSet(key, factory);
 
 			expect(result).toBe(factoryValue);
 			expect(factory).toHaveBeenCalled();
@@ -251,7 +251,7 @@ describe('CacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.getOrSet(key, factory, ttl);
+			const result = await service.GetOrSet(key, factory, ttl);
 
 			expect(result).toBe(factoryValue);
 			expect(factory).toHaveBeenCalled();
@@ -265,7 +265,7 @@ describe('CacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			await expect(service.getOrSet(key, factory)).rejects.toThrow(error);
+			await expect(service.GetOrSet(key, factory)).rejects.toThrow(error);
 			expect(factory).toHaveBeenCalled();
 			expect(mockCacheManager.set).not.toHaveBeenCalled();
 		});
@@ -278,7 +278,7 @@ describe('CacheService', () => {
 			mockCacheManager.store.keys.mockResolvedValue(matchingKeys);
 			mockCacheManager.del.mockResolvedValue(undefined);
 
-			const result = await service.invalidatePattern(pattern);
+			const result = await service.InvalidatePattern(pattern);
 
 			expect(mockCacheManager.store.keys).toHaveBeenCalledWith(pattern);
 			expect(mockCacheManager.del).toHaveBeenCalledTimes(3);
@@ -292,7 +292,7 @@ describe('CacheService', () => {
 			const pattern = 'empty:*';
 			mockCacheManager.store.keys.mockResolvedValue([]);
 
-			const result = await service.invalidatePattern(pattern);
+			const result = await service.InvalidatePattern(pattern);
 
 			expect(mockCacheManager.store.keys).toHaveBeenCalledWith(pattern);
 			expect(mockCacheManager.del).not.toHaveBeenCalled();
@@ -325,7 +325,7 @@ describe('CacheService', () => {
 
 			const serviceWithoutStore = new CacheService(localMockModuleRef);
 
-			const result = await serviceWithoutStore.invalidatePattern(pattern);
+			const result = await serviceWithoutStore.InvalidatePattern(pattern);
 
 			expect(result).toBe(0);
 		});
@@ -335,16 +335,16 @@ describe('CacheService', () => {
 			const error = new Error('Pattern invalidation failed');
 			mockCacheManager.store.keys.mockRejectedValue(error);
 
-			const result = await service.invalidatePattern(pattern);
+			const result = await service.InvalidatePattern(pattern);
 
 			expect(result).toBe(0);
-			expect(service.getStats().errors).toBe(1);
+			expect(service.GetStats().errors).toBe(1);
 		});
 	});
 
 	describe('getStats', () => {
 		it('should return current statistics', () => {
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			expect(stats).toMatchObject({
 				hits: 0,
@@ -363,11 +363,11 @@ describe('CacheService', () => {
 			mockCacheManager.get.mockResolvedValueOnce(null);
 			mockCacheManager.get.mockResolvedValueOnce({ data: 'hit2' });
 
-			await service.get('key1'); // hit
-			await service.get('key2'); // miss
-			await service.get('key3'); // hit
+			await service.Get('key1'); // hit
+			await service.Get('key2'); // miss
+			await service.Get('key3'); // hit
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.hits).toBe(2);
 			expect(stats.misses).toBe(1);
 			expect(stats.hitRate).toBe(2 / 3); // 2 hits out of 3 total requests
@@ -378,15 +378,15 @@ describe('CacheService', () => {
 		it('should reset all statistics to zero', async () => {
 			// Generate some stats
 			mockCacheManager.get.mockResolvedValue({ data: 'test' });
-			await service.get('key');
-			await service.set('key', 'value');
+			await service.Get('key');
+			await service.Set('key', 'value');
 
-			expect(service.getStats().hits).toBe(1);
-			expect(service.getStats().sets).toBe(1);
+			expect(service.GetStats().hits).toBe(1);
+			expect(service.GetStats().sets).toBe(1);
 
-			service.resetStats();
+			service.ResetStats();
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.hits).toBe(0);
 			expect(stats.misses).toBe(0);
 			expect(stats.sets).toBe(0);
@@ -434,29 +434,29 @@ describe('CacheService', () => {
 		it('should handle get operation failures', async () => {
 			mockCacheManager.get.mockRejectedValue(new Error('Redis error'));
 
-			await expect(service.get('key')).resolves.toBeUndefined();
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Get('key')).resolves.toBeUndefined();
+			expect(service.GetStats().errors).toBe(1);
 		});
 
 		it('should handle set operation failures', async () => {
 			mockCacheManager.set.mockRejectedValue(new Error('Redis error'));
 
-			await expect(service.set('key', 'value')).rejects.toThrow();
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Set('key', 'value')).rejects.toThrow();
+			expect(service.GetStats().errors).toBe(1);
 		});
 
 		it('should handle delete operation failures', async () => {
 			mockCacheManager.del.mockRejectedValue(new Error('Redis error'));
 
-			await expect(service.del('key')).rejects.toThrow();
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Del('key')).rejects.toThrow();
+			expect(service.GetStats().errors).toBe(1);
 		});
 
 		it('should handle clear operation failures', async () => {
 			mockCacheManager.clear.mockRejectedValue(new Error('Redis error'));
 
-			await expect(service.clear()).rejects.toThrow();
-			expect(service.getStats().errors).toBe(1);
+			await expect(service.Clear()).rejects.toThrow();
+			expect(service.GetStats().errors).toBe(1);
 		});
 
 		it('should log error stack trace on get failure', async () => {
@@ -470,7 +470,7 @@ describe('CacheService', () => {
 			}
 			const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
-			await service.get('key');
+			await service.Get('key');
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				expect.stringContaining('Cache get error'),
@@ -488,7 +488,7 @@ describe('CacheService', () => {
 			}
 			const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
 
-			await expect(service.set('key', 'value')).rejects.toThrow();
+			await expect(service.Set('key', 'value')).rejects.toThrow();
 
 			expect(errorSpy).toHaveBeenCalledWith(
 				expect.stringContaining('Cache set error'),
@@ -499,19 +499,19 @@ describe('CacheService', () => {
 		it('should track error count on multiple failures', async () => {
 			mockCacheManager.get.mockRejectedValue(new Error('Redis error'));
 
-			await service.get('key1');
-			await service.get('key2');
-			await service.get('key3');
+			await service.Get('key1');
+			await service.Get('key2');
+			await service.Get('key3');
 
-			expect(service.getStats().errors).toBe(3);
+			expect(service.GetStats().errors).toBe(3);
 		});
 
 		it('should maintain operation timing even on errors', async () => {
 			mockCacheManager.get.mockRejectedValue(new Error('Redis error'));
 
-			await service.get('key');
+			await service.Get('key');
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.operationTimings.get.length).toBeGreaterThan(0);
 		});
 	});
@@ -519,161 +519,161 @@ describe('CacheService', () => {
 	describe('Cache Key Validation', () => {
 		describe('set - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
-				await expect(service.set('', 'value')).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.Set('', 'value')).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
-				await expect(service.set(null as any, 'value')).rejects.toThrow('Cache key must be a string');
+				await expect(service.Set(null as any, 'value')).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for undefined cache key', async () => {
-				await expect(service.set(undefined as any, 'value')).rejects.toThrow('Cache key must be a string');
+				await expect(service.Set(undefined as any, 'value')).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with null bytes', async () => {
-				await expect(service.set('key\0invalid', 'value')).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.Set('key\0invalid', 'value')).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should throw error for cache key with control characters', async () => {
-				await expect(service.set('key\x01invalid', 'value')).rejects.toThrow('Cache key contains invalid control characters');
+				await expect(service.Set('key\x01invalid', 'value')).rejects.toThrow('Cache key contains invalid control characters');
 			});
 
 			it('should throw error for cache key exceeding max length', async () => {
 				const longKey = 'a'.repeat(513);
-				await expect(service.set(longKey, 'value')).rejects.toThrow('Cache key exceeds maximum length');
+				await expect(service.Set(longKey, 'value')).rejects.toThrow('Cache key exceeds maximum length');
 			});
 
 			it('should allow valid cache keys', async () => {
 				const validKeys = ['valid:key:123', 'user-profile', 'cache_v1', 'key.with.dots'];
 				for (const key of validKeys) {
 					mockCacheManager.set.mockResolvedValue(undefined);
-					await expect(service.set(key, 'value')).resolves.not.toThrow();
+					await expect(service.Set(key, 'value')).resolves.not.toThrow();
 				}
 			});
 
 			it('should allow cache keys at maximum length', async () => {
 				const maxLengthKey = 'a'.repeat(512);
 				mockCacheManager.set.mockResolvedValue(undefined);
-				await expect(service.set(maxLengthKey, 'value')).resolves.not.toThrow();
+				await expect(service.Set(maxLengthKey, 'value')).resolves.not.toThrow();
 			});
 		});
 
 		describe('get - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
-				await expect(service.get('')).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.Get('')).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
-				await expect(service.get(null as any)).rejects.toThrow('Cache key must be a string');
+				await expect(service.Get(null as any)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for undefined cache key', async () => {
-				await expect(service.get(undefined as any)).rejects.toThrow('Cache key must be a string');
+				await expect(service.Get(undefined as any)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with invalid characters', async () => {
-				await expect(service.get('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.Get('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should throw error for cache key exceeding max length', async () => {
 				const longKey = 'a'.repeat(513);
-				await expect(service.get(longKey)).rejects.toThrow('Cache key exceeds maximum length');
+				await expect(service.Get(longKey)).rejects.toThrow('Cache key exceeds maximum length');
 			});
 
 			it('should allow valid cache key', async () => {
 				mockCacheManager.get.mockResolvedValue('value');
-				await expect(service.get('valid:key')).resolves.not.toThrow();
+				await expect(service.Get('valid:key')).resolves.not.toThrow();
 			});
 		});
 
 		describe('delete - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
-				await expect(service.del('')).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.Del('')).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
-				await expect(service.del(null as any)).rejects.toThrow('Cache key must be a string');
+				await expect(service.Del(null as any)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with invalid characters', async () => {
-				await expect(service.del('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.Del('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should throw error for cache key exceeding max length', async () => {
 				const longKey = 'a'.repeat(513);
-				await expect(service.del(longKey)).rejects.toThrow('Cache key exceeds maximum length');
+				await expect(service.Del(longKey)).rejects.toThrow('Cache key exceeds maximum length');
 			});
 
 			it('should throw error when one key in array is invalid', async () => {
-				await expect(service.del(['valid:key', '', 'another:key'])).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.Del(['valid:key', '', 'another:key'])).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should allow valid cache keys', async () => {
 				mockCacheManager.del.mockResolvedValue(undefined);
-				await expect(service.del('valid:key')).resolves.not.toThrow();
-				await expect(service.del(['key1', 'key2'])).resolves.not.toThrow();
+				await expect(service.Del('valid:key')).resolves.not.toThrow();
+				await expect(service.Del(['key1', 'key2'])).resolves.not.toThrow();
 			});
 		});
 
 		describe('exists - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
-				await expect(service.exists('')).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.Exists('')).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
-				await expect(service.exists(null as any)).rejects.toThrow('Cache key must be a string');
+				await expect(service.Exists(null as any)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with invalid characters', async () => {
-				await expect(service.exists('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.Exists('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should allow valid cache key', async () => {
 				mockCacheManager.get.mockResolvedValue('value');
-				await expect(service.exists('valid:key')).resolves.not.toThrow();
+				await expect(service.Exists('valid:key')).resolves.not.toThrow();
 			});
 		});
 
 		describe('getOrSet - cache key validation', () => {
 			it('should throw error for empty cache key', async () => {
 				const factory = vi.fn();
-				await expect(service.getOrSet('', factory)).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.GetOrSet('', factory)).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null cache key', async () => {
 				const factory = vi.fn();
-				await expect(service.getOrSet(null as any, factory)).rejects.toThrow('Cache key must be a string');
+				await expect(service.GetOrSet(null as any, factory)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for cache key with invalid characters', async () => {
 				const factory = vi.fn();
-				await expect(service.getOrSet('key\0invalid', factory)).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.GetOrSet('key\0invalid', factory)).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should allow valid cache key', async () => {
 				const factory = vi.fn().mockResolvedValue('value');
 				mockCacheManager.get.mockResolvedValue(null);
 				mockCacheManager.set.mockResolvedValue(undefined);
-				await expect(service.getOrSet('valid:key', factory)).resolves.not.toThrow();
+				await expect(service.GetOrSet('valid:key', factory)).resolves.not.toThrow();
 			});
 		});
 
 		describe('invalidatePattern - cache key validation', () => {
 			it('should throw error for empty pattern', async () => {
-				await expect(service.invalidatePattern('')).rejects.toThrow('Cache key cannot be empty');
+				await expect(service.InvalidatePattern('')).rejects.toThrow('Cache key cannot be empty');
 			});
 
 			it('should throw error for null pattern', async () => {
-				await expect(service.invalidatePattern(null as any)).rejects.toThrow('Cache key must be a string');
+				await expect(service.InvalidatePattern(null as any)).rejects.toThrow('Cache key must be a string');
 			});
 
 			it('should throw error for pattern with invalid characters', async () => {
-				await expect(service.invalidatePattern('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
+				await expect(service.InvalidatePattern('key\0invalid')).rejects.toThrow('Cache key contains invalid characters');
 			});
 
 			it('should allow valid pattern', async () => {
 				mockCacheManager.store.keys.mockResolvedValue([]);
-				await expect(service.invalidatePattern('user:*')).resolves.not.toThrow();
+				await expect(service.InvalidatePattern('user:*')).resolves.not.toThrow();
 			});
 		});
 	});
@@ -686,7 +686,7 @@ describe('CacheService', () => {
 
 			// Perform many operations
 			for (let i = 0; i < 15000; i++) {
-				await service.set(`key_${i}`, `value_${i}`);
+				await service.Set(`key_${i}`, `value_${i}`);
 			}
 
 			// OperationTimings should not exceed maxSize
@@ -722,11 +722,11 @@ describe('CacheService', () => {
 			mockCacheManager.get.mockResolvedValue(null);
 
 			for (let i = 0; i < 1000; i++) {
-				await service.set(`key_${i}`, 'value');
+				await service.Set(`key_${i}`, 'value');
 			}
 
 			// Stats should track operations
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.sets).toBe(1000);
 
 			// But OperationTimings arrays should not grow unbounded
@@ -740,7 +740,7 @@ describe('CacheService', () => {
 		});
 
 		it('should provide memory usage estimation', async () => {
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			// Stats should include memoryUsage field
 			expect(stats).toHaveProperty('memoryUsage');
@@ -750,18 +750,18 @@ describe('CacheService', () => {
 			mockCacheManager.set.mockResolvedValue(undefined);
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const initialStats = service.getStats();
+			const initialStats = service.GetStats();
 			const initialMemory = initialStats.memoryUsage ?? 0;
 
 			// Perform 1000 operations
 			for (let i = 0; i < 1000; i++) {
-				await service.set(`key_${i}`, `value_${i}`);
+				await service.Set(`key_${i}`, `value_${i}`);
 				if (i % 100 === 0) {
-					await service.get(`key_${Math.floor(Math.random() * i)}`);
+					await service.Get(`key_${Math.floor(Math.random() * i)}`);
 				}
 			}
 
-			const finalStats = service.getStats();
+			const finalStats = service.GetStats();
 			const finalMemory = finalStats.memoryUsage ?? 0;
 
 			// Memory growth should be reasonable
@@ -778,11 +778,11 @@ describe('CacheService', () => {
 
 			// Perform some operations
 			for (let i = 0; i < 100; i++) {
-				await service.set(`key_${i}`, `value_${i}`);
+				await service.Set(`key_${i}`, `value_${i}`);
 			}
 
 			// Reset stats
-			service.resetStats();
+			service.ResetStats();
 
 			// Verify cleanup
 			const OperationTimingsMap = (service as any).OperationTimings;
@@ -800,14 +800,14 @@ describe('CacheService', () => {
 
 			// Perform some operations
 			for (let i = 0; i < 100; i++) {
-				await service.set(`key_${i}`, `value_${i}`);
+				await service.Set(`key_${i}`, `value_${i}`);
 			}
 
 			// Call onModuleDestroy
 			await service.onModuleDestroy();
 
 			// Should not throw and should log final stats
-			expect(service.getStats()).toBeDefined();
+			expect(service.GetStats()).toBeDefined();
 		});
 	});
 });

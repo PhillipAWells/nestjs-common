@@ -33,7 +33,7 @@ describe('IdentityProviderService', () => {
 	describe('list', () => {
 		it('throws KeycloakAdminScopeError when identity-providers:read scope is not granted', async () => {
 			service = new IdentityProviderService(mockAdminClient, noScopes);
-			await expect(service.list('realm')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.List('realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.identityProviders.find).not.toHaveBeenCalled();
 		});
 
@@ -42,7 +42,7 @@ describe('IdentityProviderService', () => {
 				{ alias: 'github', displayName: 'GitHub' },
 			]);
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('realm');
+			const result = await service.List('realm');
 			expect(result).toEqual([{ alias: 'github', displayName: 'GitHub' }]);
 			expect(mockAdminClient.identityProviders.find).toHaveBeenCalledWith({ realm: 'realm' });
 		});
@@ -50,7 +50,7 @@ describe('IdentityProviderService', () => {
 		it('returns empty array when no identity providers found', async () => {
 			mockAdminClient.identityProviders.find.mockResolvedValue([]);
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('realm');
+			const result = await service.List('realm');
 			expect(result).toEqual([]);
 		});
 	});
@@ -58,7 +58,7 @@ describe('IdentityProviderService', () => {
 	describe('get', () => {
 		it('throws KeycloakAdminScopeError when identity-providers:read scope is not granted', async () => {
 			service = new IdentityProviderService(mockAdminClient, noScopes);
-			await expect(service.get('realm', 'github')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.Get('realm', 'github')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.identityProviders.findOne).not.toHaveBeenCalled();
 		});
 
@@ -68,7 +68,7 @@ describe('IdentityProviderService', () => {
 				displayName: 'GitHub',
 			});
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
-			const result = await service.get('realm', 'github');
+			const result = await service.Get('realm', 'github');
 			expect(result).toEqual({ alias: 'github', displayName: 'GitHub' });
 			expect(mockAdminClient.identityProviders.findOne).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -81,7 +81,7 @@ describe('IdentityProviderService', () => {
 		it('throws KeycloakAdminScopeError when identity-providers:write scope is not granted', async () => {
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.create('realm', { alias: 'github', displayName: 'GitHub' }),
+				service.Create('realm', { alias: 'github', displayName: 'GitHub' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.identityProviders.create).not.toHaveBeenCalled();
 		});
@@ -90,7 +90,7 @@ describe('IdentityProviderService', () => {
 			mockAdminClient.identityProviders.create.mockResolvedValue(undefined);
 			service = new IdentityProviderService(mockAdminClient, allScopes);
 			const idp = { alias: 'github', displayName: 'GitHub' };
-			await service.create('realm', idp);
+			await service.Create('realm', idp);
 			expect(mockAdminClient.identityProviders.create).toHaveBeenCalledWith({
 				realm: 'realm',
 				alias: 'github',
@@ -103,7 +103,7 @@ describe('IdentityProviderService', () => {
 		it('throws KeycloakAdminScopeError when identity-providers:write scope is not granted', async () => {
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.update('realm', 'github', { displayName: 'GitHub Updated' }),
+				service.Update('realm', 'github', { displayName: 'GitHub Updated' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.identityProviders.update).not.toHaveBeenCalled();
 		});
@@ -112,7 +112,7 @@ describe('IdentityProviderService', () => {
 			mockAdminClient.identityProviders.update.mockResolvedValue(undefined);
 			service = new IdentityProviderService(mockAdminClient, allScopes);
 			const idp = { displayName: 'GitHub Updated' };
-			await service.update('realm', 'github', idp);
+			await service.Update('realm', 'github', idp);
 			expect(mockAdminClient.identityProviders.update).toHaveBeenCalledWith(
 				{ realm: 'realm', alias: 'github' },
 				idp,
@@ -123,14 +123,14 @@ describe('IdentityProviderService', () => {
 	describe('delete', () => {
 		it('throws KeycloakAdminScopeError when identity-providers:write scope is not granted', async () => {
 			service = new IdentityProviderService(mockAdminClient, readOnlyScopes);
-			await expect(service.delete('realm', 'github')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.Delete('realm', 'github')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.identityProviders.del).not.toHaveBeenCalled();
 		});
 
 		it('calls adminClient.identityProviders.del when identity-providers:write scope is granted', async () => {
 			mockAdminClient.identityProviders.del.mockResolvedValue(undefined);
 			service = new IdentityProviderService(mockAdminClient, allScopes);
-			await service.delete('realm', 'github');
+			await service.Delete('realm', 'github');
 			expect(mockAdminClient.identityProviders.del).toHaveBeenCalledWith({
 				realm: 'realm',
 				alias: 'github',

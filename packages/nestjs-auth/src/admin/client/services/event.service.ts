@@ -54,16 +54,16 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAdminEvents(realm: string, query?: IAdminEventQuery): Promise<IKeycloakAdminEvent[]> {
-		this.requireScope('events:read');
+	public async GetAdminEvents(realm: string, query?: IAdminEventQuery): Promise<IKeycloakAdminEvent[]> {
+		this.RequireScope('events:read');
 		try {
-			const params = this.buildAdminEventQuery(query);
+			const Params = this.BuildAdminEventQuery(query);
 
-			return (await this.withRetry(() =>
-				this.AdminClient.realms.findAdminEvents({ realm, ...params }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.realms.findAdminEvents({ realm, ...Params }),
 			)) as IKeycloakAdminEvent[];
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
@@ -89,102 +89,102 @@ export class EventService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async getAccessEvents(realm: string, query?: IAccessEventQuery): Promise<IKeycloakAccessEvent[]> {
-		this.requireScope('events:read');
+	public async GetAccessEvents(realm: string, query?: IAccessEventQuery): Promise<IKeycloakAccessEvent[]> {
+		this.RequireScope('events:read');
 		try {
-			const params = this.buildAccessEventQuery(query);
+			const Params = this.BuildAccessEventQuery(query);
 
-			return (await this.withRetry(() =>
-				this.AdminClient.realms.findEvents({ realm, ...params }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.realms.findEvents({ realm, ...Params }),
 			)) as IKeycloakAccessEvent[];
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Build query parameters for admin events
 	 */
-	private buildAdminEventQuery(
+	private BuildAdminEventQuery(
 		query?: IAdminEventQuery,
 	): Record<string, string | number | string[] | undefined> {
-		const params: Record<string, string | number | string[] | undefined> = {};
+		const Params: Record<string, string | number | string[] | undefined> = {};
 
 		if (!query) {
-			return params;
+			return Params;
 		}
 
 		if (query.operationTypes && query.operationTypes.length > 0) {
-			params.operationTypes = query.operationTypes;
+			Params.operationTypes = query.operationTypes;
 		}
 
 		if (query.resourceTypes && query.resourceTypes.length > 0) {
-			params.resourceTypes = query.resourceTypes;
+			Params.resourceTypes = query.resourceTypes;
 		}
 
 		if (query.resourcePath) {
-			params.resourcePath = query.resourcePath;
+			Params.resourcePath = query.resourcePath;
 		}
 
 		if (query.dateFrom) {
-			params.dateFrom = query.dateFrom.toISOString();
+			Params.dateFrom = query.dateFrom.toISOString();
 		}
 
 		if (query.dateTo) {
-			params.dateTo = query.dateTo.toISOString();
+			Params.dateTo = query.dateTo.toISOString();
 		}
 
 		if (query.first !== undefined) {
-			params.first = query.first;
+			Params.first = query.first;
 		}
 
 		if (query.max !== undefined) {
-			params.max = query.max;
+			Params.max = query.max;
 		}
 
-		return params;
+		return Params;
 	}
 
 	/**
 	 * Build query parameters for access events
 	 */
-	private buildAccessEventQuery(
+	private BuildAccessEventQuery(
 		query?: IAccessEventQuery,
 	): Record<string, string | number | string[] | undefined> {
-		const params: Record<string, string | number | string[] | undefined> = {};
+		const Params: Record<string, string | number | string[] | undefined> = {};
 
 		if (!query) {
-			return params;
+			return Params;
 		}
 
 		if (query.type && query.type.length > 0) {
-			params.type = query.type;
+			Params.type = query.type;
 		}
 
 		if (query.client) {
-			params.client = query.client;
+			Params.client = query.client;
 		}
 
 		if (query.user) {
-			params.user = query.user;
+			Params.user = query.user;
 		}
 
 		if (query.dateFrom) {
-			params.dateFrom = query.dateFrom.toISOString();
+			Params.dateFrom = query.dateFrom.toISOString();
 		}
 
 		if (query.dateTo) {
-			params.dateTo = query.dateTo.toISOString();
+			Params.dateTo = query.dateTo.toISOString();
 		}
 
 		if (query.first !== undefined) {
-			params.first = query.first;
+			Params.first = query.first;
 		}
 
 		if (query.max !== undefined) {
-			params.max = query.max;
+			Params.max = query.max;
 		}
 
-		return params;
+		return Params;
 	}
 }

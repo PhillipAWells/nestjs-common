@@ -51,8 +51,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 	 * @param options Configuration options
 	 * @throws Error if validation fails
 	 */
-	private static validateGraphQLConfig(options: IGraphQLConfigOptions): void {
-		const schema = Joi.object({
+	private static ValidateGraphQLConfig(options: IGraphQLConfigOptions): void {
+		const Schema = Joi.object({
 			autoSchemaFile: Joi.alternatives().try(Joi.string(), Joi.boolean()).optional().description('Path to auto-generated schema file or boolean'),
 			sortSchema: Joi.boolean().strict().optional().description('Whether to sort schema'),
 			playground: Joi.boolean().strict().optional().description('Enable GraphQL playground'),
@@ -62,7 +62,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			cache: Joi.boolean().optional().description('Enable caching'),
 		}).options({ allowUnknown: true });
 
-		const { error } = schema.validate(options);
+		const { error } = Schema.validate(options);
 		if (error) {
 			throw new Error(`GraphQL configuration validation failed: ${error.details.map(d => d.message).join(', ')}`);
 		}
@@ -73,14 +73,14 @@ export class GraphQLModule implements NestModule, OnModuleInit {
     * @param options Configuration options for Apollo Server
     * @returns Dynamic module configuration
     */
-	public static forRoot(options: IGraphQLConfigOptions = {}): DynamicModule {
+	public static ForRoot(options: IGraphQLConfigOptions = {}): DynamicModule {
 		// Validate configuration
-		this.validateGraphQLConfig(options);
+		this.ValidateGraphQLConfig(options);
 
 		// Store bson config for middleware registration
 		this.BsonConfig = options.bson;
 
-		const defaultOptions: ApolloDriverConfig = {
+		const DefaultOptions: ApolloDriverConfig = {
 			driver: ApolloDriver,
 			autoSchemaFile: options.autoSchemaFile ?? './schema.gql',
 			sortSchema: options.sortSchema ?? true,
@@ -92,7 +92,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 			...options,
 		};
 
-		const providers: Provider[] = [
+		const Providers: Provider[] = [
 			GraphQLService,
 			RateLimitService,
 			GraphQLCacheService,
@@ -113,16 +113,16 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 
 		// Add BSON service if enabled
 		if (options.bson?.enabled) {
-			providers.push(BsonSerializationService);
-			providers.push(BsonResponseInterceptor);
+			Providers.push(BsonSerializationService);
+			Providers.push(BsonResponseInterceptor);
 		}
 
 		return {
 			module: GraphQLModule,
 			imports: [
-				NestGraphQLModule.forRoot(defaultOptions),
+				NestGraphQLModule.forRoot(DefaultOptions),
 			],
-			providers,
+			providers: Providers,
 			exports: [
 				GraphQLService,
 				RateLimitService,
@@ -151,8 +151,8 @@ export class GraphQLModule implements NestModule, OnModuleInit {
    * @param options Asynchronous configuration options
    * @returns Dynamic module configuration
    */
-	public static forRootAsync(options: IGraphQLAsyncConfig): DynamicModule {
-		const providers: Provider[] = [
+	public static ForRootAsync(options: IGraphQLAsyncConfig): DynamicModule {
+		const Providers: Provider[] = [
 			GraphQLService,
 			RateLimitService,
 			GraphQLCacheService,
@@ -182,7 +182,7 @@ export class GraphQLModule implements NestModule, OnModuleInit {
 					...(options.inject ? { inject: options.inject } : {}),
 				}),
 			],
-			providers: [...providers, BsonResponseInterceptor],
+			providers: [...Providers, BsonResponseInterceptor],
 			exports: [
 				GraphQLService,
 				RateLimitService,

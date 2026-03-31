@@ -50,12 +50,12 @@ export function Subscription(topic: string, options: ISubscriptionOptions = {}) 
  */
 export function SubscriptionFilter(filterFunction: (payload: any, variables: any, context: any) => boolean) {
 	return (target: any, propertyKey: string, parameterIndex: number) => {
-		const existingFilters = Reflect.getMetadata('subscription:filters', target, propertyKey) ?? [];
-		existingFilters.push({
+		const ExistingFilters = Reflect.getMetadata('subscription:filters', target, propertyKey) ?? [];
+		ExistingFilters.push({
 			parameterIndex,
 			filterFunction,
 		});
-		Reflect.defineMetadata('subscription:filters', existingFilters, target, propertyKey);
+		Reflect.defineMetadata('subscription:filters', ExistingFilters, target, propertyKey);
 		return undefined;
 	};
 }

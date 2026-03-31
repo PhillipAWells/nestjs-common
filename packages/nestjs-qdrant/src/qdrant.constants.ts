@@ -43,7 +43,7 @@ export const DEFAULT_QDRANT_CLIENT_NAME = 'default';
  * const namedToken = getQdrantClientToken('archive'); // 'QDRANT_CLIENT:archive'
  * ```
  */
-export function getQdrantClientToken(name?: string): string {
+export function GetQdrantClientToken(name?: string): string {
 	return (!name || name === DEFAULT_QDRANT_CLIENT_NAME) ? QDRANT_CLIENT_TOKEN : `QDRANT_CLIENT:${name}`;
 }
 
@@ -70,7 +70,7 @@ export function getQdrantClientToken(name?: string): string {
  * const namedToken = getQdrantModuleOptionsToken('archive'); // 'QDRANT_MODULE_OPTIONS:archive'
  * ```
  */
-export function getQdrantModuleOptionsToken(name?: string): string {
+export function GetQdrantModuleOptionsToken(name?: string): string {
 	return (!name || name === DEFAULT_QDRANT_CLIENT_NAME) ? QDRANT_MODULE_OPTIONS : `QDRANT_MODULE_OPTIONS:${name}`;
 }
 

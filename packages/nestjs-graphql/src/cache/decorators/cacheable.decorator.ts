@@ -59,48 +59,48 @@ export interface ICacheableOptions {
  * - Async-safe; works with async/await methods
  */
 export function Cacheable(options: ICacheableOptions = {}) {
-	const logger = new AppLogger(undefined, 'CacheableDecorator');
+	const Logger = new AppLogger(undefined, 'CacheableDecorator');
 
 	return function(
 		target: any,
 		propertyKey: string,
 		descriptor: PropertyDescriptor,
 	) {
-		const originalMethod = descriptor.value;
-		const cacheKeyFn = typeof options.key === 'function' ? options.key : () => options.key ?? `${target.constructor.name}:${propertyKey}`;
+		const OriginalMethod = descriptor.value;
+		const CacheKeyFn = typeof options.key === 'function' ? options.key : () => options.key ?? `${target.constructor.name}:${propertyKey}`;
 
 		descriptor.value = async function(...args: any[]) {
 			// Check condition if provided
 			if (options.condition && !options.condition(...args)) {
-				return originalMethod.apply(this, args);
+				return OriginalMethod.apply(this, args);
 			}
 
-			const cacheManager = (this as any)[CACHE_MANAGER] ?? (this as any).cacheManager;
-			if (!cacheManager) {
-				logger.warn(`Cache manager not found for ${propertyKey}, executing without cache`);
-				return originalMethod.apply(this, args);
+			const CacheManager = (this as any)[CACHE_MANAGER] ?? (this as any).cacheManager;
+			if (!CacheManager) {
+				Logger.warn(`Cache manager not found for ${propertyKey}, executing without cache`);
+				return OriginalMethod.apply(this, args);
 			}
 
-			const cacheKey = cacheKeyFn(...args);
+			const CacheKey = CacheKeyFn(...args);
 
 			try {
 				// Try to get from cache
-				const cached = await cacheManager.get(cacheKey);
-				if (cached !== null && cached !== undefined) {
-					logger.debug(`Cache hit for ${cacheKey}`);
-					return cached;
+				const Cached = await CacheManager.get(CacheKey);
+				if (Cached !== null && Cached !== undefined) {
+					Logger.debug(`Cache hit for ${CacheKey}`);
+					return Cached;
 				}
 
 				// Execute method and cache result
-				const result = await originalMethod.apply(this, args);
-				await cacheManager.set(cacheKey, result, options.ttl);
-				logger.debug(`Cache miss for ${cacheKey}, stored result`);
+				const Result = await OriginalMethod.apply(this, args);
+				await CacheManager.set(CacheKey, Result, options.ttl);
+				Logger.debug(`Cache miss for ${CacheKey}, stored result`);
 
-				return result;
+				return Result;
 			} catch (error) {
-				logger.error(`Cache error for ${cacheKey}:`, getErrorStack(error));
+				Logger.error(`Cache error for ${CacheKey}:`, getErrorStack(error));
 				// Fallback to original method
-				return originalMethod.apply(this, args);
+				return OriginalMethod.apply(this, args);
 			}
 		};
 

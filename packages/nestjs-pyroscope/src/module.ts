@@ -51,48 +51,48 @@ export class PyroscopeModule {
 	 * })
 	 * ```
 	 */
-	public static forRoot(options: IPyroscopeModuleOptions): DynamicModule {
-		const config = typeof options.config === 'function' ? options.config() : options.config;
+	public static ForRoot(options: IPyroscopeModuleOptions): DynamicModule {
+		const Config = typeof options.config === 'function' ? options.config() : options.config;
 
-		const configProvider: Provider = {
+		const ConfigProvider: Provider = {
 			provide: PYROSCOPE_CONFIG_TOKEN,
-			useValue: config,
+			useValue: Config,
 		};
 
-		const metricsServiceProvider: Provider = {
+		const MetricsServiceProvider: Provider = {
 			provide: MetricsService,
 			useFactory: () => new MetricsService(),
 			inject: [],
 		};
 
-		const serviceProvider: Provider = {
+		const ServiceProvider: Provider = {
 			provide: PyroscopeService,
 			useFactory: (moduleRef: ModuleRef) => new PyroscopeService(moduleRef),
 			inject: [ModuleRef],
 		};
 
-		const healthIndicatorProvider: Provider = {
+		const HealthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
 			useFactory: (moduleRef: ModuleRef) => new ProfilingHealthIndicator(moduleRef),
 			inject: [ModuleRef],
 		};
 
-		const providers: Provider[] = [
-			configProvider,
-			metricsServiceProvider,
-			serviceProvider,
-			healthIndicatorProvider,
+		const Providers: Provider[] = [
+			ConfigProvider,
+			MetricsServiceProvider,
+			ServiceProvider,
+			HealthIndicatorProvider,
 		];
 
-		const controllers = config.enableHealthChecks !== false ? [HealthController] : [];
-		const exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
+		const Controllers = Config.enableHealthChecks !== false ? [HealthController] : [];
+		const Exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
 
 		return {
 			module: PyroscopeModule,
 			global: options.isGlobal ?? true,
-			controllers,
-			providers,
-			exports,
+			controllers: Controllers,
+			providers: Providers,
+			exports: Exports,
 		};
 	}
 
@@ -119,50 +119,50 @@ export class PyroscopeModule {
 	 * })
 	 * ```
 	 */
-	public static forRootAsync(options: IPyroscopeModuleAsyncOptions): DynamicModule {
-		const configProvider: Provider = {
+	public static ForRootAsync(options: IPyroscopeModuleAsyncOptions): DynamicModule {
+		const ConfigProvider: Provider = {
 			provide: PYROSCOPE_CONFIG_TOKEN,
 			useFactory: options.useFactory,
 			inject: options.inject ?? [],
 		};
 
-		const metricsServiceProvider: Provider = {
+		const MetricsServiceProvider: Provider = {
 			provide: MetricsService,
 			useFactory: () => new MetricsService(),
 			inject: [],
 		};
 
-		const serviceProvider: Provider = {
+		const ServiceProvider: Provider = {
 			provide: PyroscopeService,
 			useFactory: (moduleRef: ModuleRef) => new PyroscopeService(moduleRef),
 			inject: [ModuleRef],
 		};
 
-		const healthIndicatorProvider: Provider = {
+		const HealthIndicatorProvider: Provider = {
 			provide: ProfilingHealthIndicator,
 			useFactory: (moduleRef: ModuleRef) => new ProfilingHealthIndicator(moduleRef),
 			inject: [ModuleRef],
 		};
 
-		const providers: Provider[] = [
-			configProvider,
-			metricsServiceProvider,
-			serviceProvider,
-			healthIndicatorProvider,
+		const Providers: Provider[] = [
+			ConfigProvider,
+			MetricsServiceProvider,
+			ServiceProvider,
+			HealthIndicatorProvider,
 		];
 
-		const exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
-		const controllers = options.enableHealthChecks !== false ? [HealthController] : [];
+		const Exports = [PyroscopeService, MetricsService, ProfilingHealthIndicator];
+		const Controllers = options.enableHealthChecks !== false ? [HealthController] : [];
 
-		const dynamicModule: DynamicModule = {
+		const DynamicModule: DynamicModule = {
 			module: PyroscopeModule,
 			global: options.isGlobal ?? true,
 			imports: options.imports ?? [],
-			controllers,
-			providers,
-			exports,
+			controllers: Controllers,
+			providers: Providers,
+			exports: Exports,
 		};
 
-		return dynamicModule;
+		return DynamicModule;
 	}
 }

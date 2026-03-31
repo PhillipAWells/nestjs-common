@@ -9,11 +9,19 @@ describe('MetricsRegistryService', () => {
 		register.clear();
 
 		mockAppLogger = {
+			Info: () => {},
+			Warn: () => {},
+			Error: () => {},
+			Debug: () => {},
 			info: () => {},
 			warn: () => {},
 			error: () => {},
 			debug: () => {},
-			createContextualLogger: () => ({
+			CreateContextualLogger: () => ({
+				Info: () => {},
+				Warn: () => {},
+				Error: () => {},
+				Debug: () => {},
 				info: () => {},
 				warn: () => {},
 				error: () => {},
@@ -34,14 +42,14 @@ describe('MetricsRegistryService', () => {
 	});
 
 	it('should record HTTP request metrics', () => {
-		service.recordHttpRequest('GET', '/test', 200, 100, 1024);
+		service.RecordHttpRequest('GET', '/test', 200, 100, 1024);
 
-		const metrics = service.getRegistry();
+		const metrics = service.GetRegistry();
 		expect(metrics).toBeDefined();
 	});
 
 	it('should get metrics in Prometheus format', async () => {
-		const metrics = await service.getMetrics();
+		const metrics = await service.GetMetrics();
 		expect(typeof metrics).toBe('string');
 		expect(metrics).toContain('# HELP');
 		expect(metrics).toContain('# TYPE');
@@ -56,13 +64,13 @@ describe('MetricsRegistryService', () => {
 			},
 		};
 
-		const result = service.registerMetric(mockMetric);
-		expect(result).toBe(mockMetric);
+		const Result = service.RegisterMetric(mockMetric);
+		expect(Result).toBe(mockMetric);
 		expect(registerCalled).toBe(true);
 	});
 
 	it('should clear metrics', () => {
-		service.clear();
+		service.Clear();
 		// Should not throw
 		expect(service).toBeDefined();
 	});

@@ -55,7 +55,7 @@ export type TKeycloakCredentials =
 /**
  * Check if credentials are username/password
  */
-export function isPasswordCredentials(
+export function IsPasswordCredentials(
 	credentials: TKeycloakCredentials,
 ): credentials is { username: string; password: string } {
 	return 'username' in credentials && 'password' in credentials;
@@ -64,7 +64,7 @@ export function isPasswordCredentials(
 /**
  * Check if credentials are client credentials
  */
-export function isClientCredentials(
+export function IsClientCredentials(
 	credentials: TKeycloakCredentials,
 ): credentials is { clientId: string; clientSecret: string } {
 	return 'clientId' in credentials && 'clientSecret' in credentials;

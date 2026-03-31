@@ -23,20 +23,20 @@ beforeEach(() => {
 	vi.spyOn(console, 'debug').mockImplementation(() => {});
 
 	// Suppress NestJS Logger instance methods (writes [Nest] ... lines to stdout)
-	vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
-	vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
-	vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
-	vi.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
-	vi.spyOn(Logger.prototype, 'verbose').mockImplementation(() => {});
-	vi.spyOn(Logger.prototype, 'fatal').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'log').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'warn').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'error').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'debug').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'verbose').mockImplementation(() => {});
+	vi.spyOn(Logger.prototype as any, 'fatal').mockImplementation(() => {});
 
 	// Suppress NestJS Logger static methods
-	vi.spyOn(Logger, 'log').mockImplementation(() => {});
-	vi.spyOn(Logger, 'warn').mockImplementation(() => {});
-	vi.spyOn(Logger, 'error').mockImplementation(() => {});
-	vi.spyOn(Logger, 'debug').mockImplementation(() => {});
-	vi.spyOn(Logger, 'verbose').mockImplementation(() => {});
-	vi.spyOn(Logger, 'fatal').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'log').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'warn').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'error').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'debug').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'verbose').mockImplementation(() => {});
+	vi.spyOn(Logger as any, 'fatal').mockImplementation(() => {});
 });
 
 afterEach(() => {

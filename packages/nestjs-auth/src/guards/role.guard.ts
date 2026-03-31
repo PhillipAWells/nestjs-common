@@ -38,25 +38,25 @@ export class RoleGuard implements CanActivate {
 	}
 
 	public canActivate(context: ExecutionContext): boolean {
-		const requiredRoles = this.Reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
+		const RequiredRoles = this.Reflector.getAllAndOverride<string[]>(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
-		if (!requiredRoles || requiredRoles.length === 0) {
+		if (!RequiredRoles || RequiredRoles.length === 0) {
 			// No roles required, allow access
 			return true;
 		}
 
-		const request = ExtractRequestFromContext(context);
-		const user = request.user as IKeycloakUser | undefined;
+		const Request = ExtractRequestFromContext(context);
+		const User = Request.user as IKeycloakUser | undefined;
 
-		if (!user) {
+		if (!User) {
 			throw new UnauthorizedException('IUser not authenticated');
 		}
 
 		// Check if user has any of the required roles in realmRoles or clientRoles
-		const userRoles = [...user.realmRoles, ...user.clientRoles];
-		const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
+		const UserRoles = [...User.realmRoles, ...User.clientRoles];
+		const HasRequiredRole = RequiredRoles.some(role => UserRoles.includes(role));
 
-		if (!hasRequiredRole) {
+		if (!HasRequiredRole) {
 			throw new ForbiddenException('Insufficient permissions');
 		}
 

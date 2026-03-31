@@ -105,7 +105,7 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			await expect(service.publish('topic', { data: 'test' })).rejects.toThrow('Publish failed');
+			await expect(service.Publish('topic', { data: 'test' })).rejects.toThrow('Publish failed');
 			expect(contextualLogger.error).toHaveBeenCalled();
 		});
 
@@ -118,7 +118,7 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			expect(() => service.subscribe('topic')).toThrow('Subscribe failed');
+			expect(() => service.Subscribe('topic')).toThrow('Subscribe failed');
 			expect(contextualLogger.error).toHaveBeenCalled();
 		});
 	});
@@ -132,7 +132,7 @@ describe('SubscriptionService', () => {
 			deps.pubSub = mockPubSub;
 
 			const data = { userId: 'user123', message: 'test message' };
-			await service.publish('authenticated-topic', data);
+			await service.Publish('authenticated-topic', data);
 
 			expect(mockPubSub.publish).toHaveBeenCalledWith('authenticated-topic', data);
 		});
@@ -146,7 +146,7 @@ describe('SubscriptionService', () => {
 
 			// Without userId, should still allow (auth check is at subscription layer)
 			const data = { message: 'test' };
-			await service.publish('topic', data);
+			await service.Publish('topic', data);
 
 			expect(mockPubSub.publish).toHaveBeenCalled();
 		});
@@ -160,7 +160,7 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			const iterator = service.subscribe('user-specific-topic');
+			const iterator = service.Subscribe('user-specific-topic');
 			expect(iterator).toBeDefined();
 		});
 	});
@@ -174,7 +174,7 @@ describe('SubscriptionService', () => {
 			deps.pubSub = mockPubSub;
 
 			const message = { data: 'broadcast' };
-			await service.publish('broadcast-topic', message);
+			await service.Publish('broadcast-topic', message);
 
 			expect(mockPubSub.publish).toHaveBeenCalledWith('broadcast-topic', message);
 		});
@@ -188,8 +188,8 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			const user1Iterator = service.subscribe('user:user1:updates');
-			const user2Iterator = service.subscribe('user:user2:updates');
+			const user1Iterator = service.Subscribe('user:user1:updates');
+			const user2Iterator = service.Subscribe('user:user2:updates');
 
 			expect(user1Iterator).toBeDefined();
 			expect(user2Iterator).toBeDefined();
@@ -202,7 +202,7 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			await service.publish('logged-topic', { data: 'test' });
+			await service.Publish('logged-topic', { data: 'test' });
 
 			expect(contextualLogger.debug).toHaveBeenCalledWith('Publishing to topic: logged-topic');
 		});
@@ -218,7 +218,7 @@ describe('SubscriptionService', () => {
 
 			deps.pubSub = mockPubSub;
 
-			expect(() => service.subscribe('cleanup-topic')).toThrow('Connection lost');
+			expect(() => service.Subscribe('cleanup-topic')).toThrow('Connection lost');
 		});
 
 		it('should handle graceful cleanup on module destroy', async () => {
@@ -250,7 +250,7 @@ describe('SubscriptionService', () => {
 			// Subscribe to many topics
 			const subscriptions = [];
 			for (let i = 0; i < 100; i++) {
-				subscriptions.push(service.subscribe(`topic-${i}`));
+				subscriptions.push(service.Subscribe(`topic-${i}`));
 			}
 
 			expect(subscriptions.length).toBe(100);
@@ -266,7 +266,7 @@ describe('SubscriptionService', () => {
 
 			const publishPromises = [];
 			for (let i = 0; i < 50; i++) {
-				publishPromises.push(service.publish('performance-topic', { id: i }));
+				publishPromises.push(service.Publish('performance-topic', { id: i }));
 			}
 
 			await Promise.all(publishPromises);
@@ -286,7 +286,7 @@ describe('SubscriptionService', () => {
 
 			// Create and cleanup subscriptions
 			for (let i = 0; i < 10; i++) {
-				const iterator = service.subscribe(`memory-test-${i}`);
+				const iterator = service.Subscribe(`memory-test-${i}`);
 				expect(iterator).toBeDefined();
 			}
 

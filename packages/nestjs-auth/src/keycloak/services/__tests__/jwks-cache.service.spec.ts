@@ -102,7 +102,7 @@ describe('JwksCacheService', () => {
 		it('should return cached key without making new network request', async () => {
 			global.fetch = vi.fn(); // Reset fetch mock
 
-			const key = await service.getKey('key-1');
+			const key = await service.GetKey('key-1');
 
 			expect(key).toBeDefined();
 			expect(key).toContain('BEGIN PUBLIC KEY');
@@ -115,7 +115,7 @@ describe('JwksCacheService', () => {
 				json: vi.fn().mockResolvedValue(mockJwksResponse),
 			});
 
-			await expect(service.getKey('unknown-key')).rejects.toThrow(UnauthorizedException);
+			await expect(service.GetKey('unknown-key')).rejects.toThrow(UnauthorizedException);
 		});
 
 		it('should fetch JWKS when cache expires', async () => {
@@ -128,7 +128,7 @@ describe('JwksCacheService', () => {
 				json: vi.fn().mockResolvedValue(mockJwksResponse),
 			});
 
-			const key = await service.getKey('key-1');
+			const key = await service.GetKey('key-1');
 
 			expect(key).toBeDefined();
 			expect(global.fetch).toHaveBeenCalled();
@@ -153,7 +153,7 @@ describe('JwksCacheService', () => {
 			global.fetch = fetchMock;
 
 			// Make concurrent calls before cache is populated
-			const promises = [service.getKey('key-1'), service.getKey('key-2'), service.getKey('key-1')];
+			const promises = [service.GetKey('key-1'), service.GetKey('key-2'), service.GetKey('key-1')];
 
 			await Promise.all(promises);
 
@@ -169,8 +169,8 @@ describe('JwksCacheService', () => {
 
 			// Start concurrent requests
 			const [key1, key2] = await Promise.all([
-				service.getKey('key-1'),
-				service.getKey('key-2'),
+				service.GetKey('key-1'),
+				service.GetKey('key-2'),
 			]);
 
 			expect(key1).toBeDefined();

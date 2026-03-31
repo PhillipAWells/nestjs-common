@@ -1,9 +1,9 @@
-import { createGraphQLError, GRAPHQL_ERROR_CONFIGS, type TGraphQLErrorType } from '../graphql-error-factory.js';
+import { CreateGraphQLError, GRAPHQL_ERROR_CONFIGS, type TGraphQLErrorType } from '../graphql-error-factory.js';
 
 describe('createGraphQLError', () => {
 	describe('factory function', () => {
 		it('should create GraphQL error class with correct properties', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -20,7 +20,7 @@ describe('createGraphQLError', () => {
 		});
 
 		it('should create error class with custom message', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -33,7 +33,7 @@ describe('createGraphQLError', () => {
 		});
 
 		it('should create error class with context', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -47,7 +47,7 @@ describe('createGraphQLError', () => {
 		});
 
 		it('should set correct class name', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -58,7 +58,7 @@ describe('createGraphQLError', () => {
 		});
 
 		it('should extend GraphQLError', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -74,7 +74,7 @@ describe('createGraphQLError', () => {
 		});
 
 		it('should include GraphQL extensions', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -94,7 +94,7 @@ describe('createGraphQLError', () => {
 
 	describe('toPlainObject', () => {
 		it('should serialize error to plain object', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -118,7 +118,7 @@ describe('createGraphQLError', () => {
 
 	describe('withContext', () => {
 		it('should create new error with merged context', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',
@@ -136,7 +136,7 @@ describe('createGraphQLError', () => {
 
 	describe('withMessage', () => {
 		it('should create new error with different message', () => {
-			const TestError = createGraphQLError({
+			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test GraphQL error occurred',

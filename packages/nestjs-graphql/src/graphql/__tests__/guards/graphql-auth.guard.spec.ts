@@ -78,7 +78,7 @@ describe('GraphQLAuthGuard', () => {
 		it('should extract token from Bearer authorization header', () => {
 			mockRequest.headers.authorization = 'Bearer test-token-123';
 
-			const token = (guard as any).extractTokenFromHeader(mockRequest);
+			const token = (guard as any).ExtractTokenFromHeader(mockRequest);
 
 			expect(token).toBe('test-token-123');
 		});
@@ -88,7 +88,7 @@ describe('GraphQLAuthGuard', () => {
 			// a capitalized key set directly on the object is never seen in real requests.
 			mockRequest.headers.Authorization = 'Bearer another-token';
 
-			const token = (guard as any).extractTokenFromHeader(mockRequest);
+			const token = (guard as any).ExtractTokenFromHeader(mockRequest);
 
 			expect(token).toBeNull();
 		});
@@ -96,7 +96,7 @@ describe('GraphQLAuthGuard', () => {
 		it('should return null for missing authorization header', () => {
 			mockRequest.headers = {};
 
-			const token = (guard as any).extractTokenFromHeader(mockRequest);
+			const token = (guard as any).ExtractTokenFromHeader(mockRequest);
 
 			expect(token).toBeNull();
 		});
@@ -104,7 +104,7 @@ describe('GraphQLAuthGuard', () => {
 		it('should return null for non-Bearer authorization header', () => {
 			mockRequest.headers.authorization = 'Basic dXNlcjpwYXNz';
 
-			const token = (guard as any).extractTokenFromHeader(mockRequest);
+			const token = (guard as any).ExtractTokenFromHeader(mockRequest);
 
 			expect(token).toBeNull();
 		});
@@ -112,7 +112,7 @@ describe('GraphQLAuthGuard', () => {
 		it('should return null for malformed Bearer header', () => {
 			mockRequest.headers.authorization = 'Bearer';
 
-			const token = (guard as any).extractTokenFromHeader(mockRequest);
+			const token = (guard as any).ExtractTokenFromHeader(mockRequest);
 
 			expect(token).toBeNull();
 		});

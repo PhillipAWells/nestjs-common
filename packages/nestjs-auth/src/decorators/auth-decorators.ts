@@ -162,7 +162,7 @@ export const Permissions = (...permissions: string[]): MethodDecorator => create
 
 // Re-export context utilities for convenience
 export type { IContextOptions } from './context-utils.js';
-export { detectContextType, extractRequestFromContext, extractUserFromContext, extractAuthTokenFromContext } from './context-utils.js';
+export { DetectContextType, ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext } from './context-utils.js';
 
 /**
  * Parameter decorator to extract the current authenticated user
@@ -212,14 +212,14 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
 export function CurrentUser(property?: string, options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
-			const request = ExtractRequestFromContext(ctx, options);
-			const user = request?.user;
+			const Request = ExtractRequestFromContext(ctx, options);
+			const User = Request?.user;
 
-			if (property !== undefined && user) {
-				return user[property];
+			if (property !== undefined && User) {
+				return User[property];
 			}
 
-			return user;
+			return User;
 		},
 	)();
 }
@@ -255,16 +255,16 @@ export function CurrentUser(property?: string, options?: IContextOptions): Param
 export function AuthToken(options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
-			const request = ExtractRequestFromContext(ctx, options);
+			const Request = ExtractRequestFromContext(ctx, options);
 
-			if (!request?.headers) {
+			if (!Request?.headers) {
 				return undefined;
 			}
 
-			const authHeader = request.headers.authorization ?? request.headers.Authorization;
+			const AuthHeader = Request.headers.authorization ?? Request.headers.Authorization;
 
-			if (typeof authHeader === 'string') {
-				return authHeader.replace(/^Bearer\s+/i, '');
+			if (typeof AuthHeader === 'string') {
+				return AuthHeader.replace(/^Bearer\s+/i, '');
 			}
 
 			return undefined;

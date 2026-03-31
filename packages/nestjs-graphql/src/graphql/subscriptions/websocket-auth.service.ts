@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
@@ -32,7 +32,7 @@ export class WebSocketAuthService implements ILazyModuleRefService {
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(WebSocketAuthService.name);
 		} catch {
@@ -40,7 +40,7 @@ export class WebSocketAuthService implements ILazyModuleRefService {
 		}
 	}
 
-	private get jwtService(): JwtService | undefined {
+	private get JwtService(): JwtService | undefined {
 		try {
 			return this.Module.get(JwtService, { strict: false });
 		} catch {
@@ -57,7 +57,7 @@ export class WebSocketAuthService implements ILazyModuleRefService {
    * @param connectionParams Connection parameters from client
    * @returns Authentication result
    */
-	public async authenticate(connectionParams: IWebSocketConnectionParams): Promise<{
+	public async Authenticate(connectionParams: IWebSocketConnectionParams): Promise<{
 		authenticated: boolean;
 		userId?: string;
 		error?: string;
@@ -66,9 +66,9 @@ export class WebSocketAuthService implements ILazyModuleRefService {
 			this.Logger?.debug('Authenticating WebSocket connection');
 
 			// Extract token from connection parameters
-			const token = this.extractToken(connectionParams);
+			const Token = this.ExtractToken(connectionParams);
 
-			if (!token) {
+			if (!Token) {
 				return {
 					authenticated: false,
 					error: 'No authentication token provided',
@@ -76,9 +76,9 @@ export class WebSocketAuthService implements ILazyModuleRefService {
 			}
 
 			// Validate JWT token
-			const userId = await this.validateToken(token);
+			const UserId = await this.ValidateToken(Token);
 
-			if (!userId) {
+			if (!UserId) {
 				return {
 					authenticated: false,
 					error: 'Invalid authentication token',
@@ -86,11 +86,11 @@ export class WebSocketAuthService implements ILazyModuleRefService {
 			}
 
 			const USER_ID_MASK_LENGTH = 8;
-			const maskedUserId = userId && userId.length > USER_ID_MASK_LENGTH ? `${userId.substring(0, USER_ID_MASK_LENGTH)}...` : userId;
-			this.Logger?.debug(`WebSocket connection authenticated for user: ${maskedUserId}`);
+			const MaskedUserId = UserId && UserId.length > USER_ID_MASK_LENGTH ? `${UserId.substring(0, USER_ID_MASK_LENGTH)}...` : UserId;
+			this.Logger?.debug(`WebSocket connection authenticated for user: ${MaskedUserId}`);
 			return {
 				authenticated: true,
-				userId,
+				userId: UserId,
 			};
 		} catch (error: unknown) {
 			this.Logger?.error(
@@ -109,26 +109,26 @@ export class WebSocketAuthService implements ILazyModuleRefService {
    * @param token JWT token
    * @returns IUser ID or null if invalid
    */
-	private async validateToken(token: string): Promise<string | null> {
+	private async ValidateToken(token: string): Promise<string | null> {
 		try {
-			const { jwtService } = this;
-			if (!jwtService) {
+			const { JwtService } = this;
+			if (!JwtService) {
 				// JwtService is required for signature verification — fail closed per security policy
 				this.Logger?.error('JwtService unavailable — WebSocket authentication denied (signature verification required)');
 				return null;
 			}
 
 			// Strip Bearer prefix if present
-			const bearerToken = token.startsWith('Bearer ') ? token.slice(BEARER_PREFIX_LENGTH) : token;
+			const BearerToken = token.startsWith('Bearer ') ? token.slice(BEARER_PREFIX_LENGTH) : token;
 
 			// Verify token with cryptographic signature validation
-			const payload = await jwtService.verifyAsync(bearerToken);
+			const Payload = await JwtService.verifyAsync(BearerToken);
 
-			if (!payload?.sub) {
+			if (!Payload?.sub) {
 				return null;
 			}
 
-			return payload.sub;
+			return Payload.sub;
 		} catch (error: unknown) {
 			this.Logger?.info(`Token validation error: ${getErrorMessage(error)}`);
 			return null;
@@ -140,7 +140,7 @@ export class WebSocketAuthService implements ILazyModuleRefService {
    * @param connectionParams Connection parameters
    * @returns Token string or null
    */
-	private extractToken(connectionParams: IWebSocketConnectionParams): string | null {
+	private ExtractToken(connectionParams: IWebSocketConnectionParams): string | null {
 		// Try different sources for the token
 		return (
 			connectionParams.authorization ??

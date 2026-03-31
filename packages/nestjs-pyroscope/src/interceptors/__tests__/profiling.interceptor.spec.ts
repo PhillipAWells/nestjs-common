@@ -11,9 +11,9 @@ describe('ProfilingInterceptor', () => {
 
 	beforeEach(async () => {
 		mockPyroscopeService = {
-			isEnabled: vi.fn().mockReturnValue(true),
-			startProfiling: vi.fn(),
-			stopProfiling: vi.fn().mockReturnValue({
+			IsEnabled: vi.fn().mockReturnValue(true),
+			StartProfiling: vi.fn(),
+			StopProfiling: vi.fn().mockReturnValue({
 				cpuTime: 0,
 				memoryUsage: 0,
 				duration: 10,
@@ -86,7 +86,7 @@ describe('ProfilingInterceptor', () => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: (data) => {
 						expect(data).toBe('response data');
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								functionName: 'HTTP GET /api/users',
 								tags: expect.objectContaining({
@@ -96,7 +96,7 @@ describe('ProfilingInterceptor', () => {
 								}),
 							}),
 						);
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									method: 'GET',
@@ -113,15 +113,15 @@ describe('ProfilingInterceptor', () => {
 		});
 
 		it('should not profile when disabled', () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
 			mockCallHandler.handle.mockReturnValue(of('response data'));
 
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: (data) => {
 						expect(data).toBe('response data');
-						expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
-						expect(mockPyroscopeService.stopProfiling).not.toHaveBeenCalled();
+						expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
+						expect(mockPyroscopeService.StopProfiling).not.toHaveBeenCalled();
 						resolve();
 					},
 				});
@@ -146,7 +146,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: () => {
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								functionName: 'HTTP POST /dynamic/path',
 								tags: expect.objectContaining({
@@ -178,7 +178,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: () => {
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									userAgent: 'unknown',
@@ -209,7 +209,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: () => {
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								functionName: 'HTTP POST /api/users',
 								tags: expect.objectContaining({
@@ -233,8 +233,8 @@ describe('ProfilingInterceptor', () => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					error: (err) => {
 						expect(err).toBe(error);
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalled();
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								error,
 								tags: expect.objectContaining({
@@ -259,7 +259,7 @@ describe('ProfilingInterceptor', () => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					error: (err) => {
 						expect(err).toBe(error);
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									statusCode: '500',
@@ -281,7 +281,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					error: () => {
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									error: 'unknown',
@@ -315,7 +315,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: () => {
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									statusCode: '404',
@@ -348,7 +348,7 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					next: () => {
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 							expect.objectContaining({
 								tags: expect.objectContaining({
 									statusCode: 'unknown',
@@ -386,8 +386,8 @@ describe('ProfilingInterceptor', () => {
 			return new Promise<void>((resolve) => {
 				interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
 					complete: () => {
-						expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-						expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+						expect(mockPyroscopeService.StartProfiling).toHaveBeenCalled();
+						expect(mockPyroscopeService.StopProfiling).toHaveBeenCalled();
 						resolve();
 					},
 				});

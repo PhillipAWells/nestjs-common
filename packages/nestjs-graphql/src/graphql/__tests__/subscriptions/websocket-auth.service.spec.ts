@@ -42,7 +42,7 @@ describe('WebSocketAuthService', () => {
 
 			const connectionParams = { authorization: token };
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('user123');
@@ -52,7 +52,7 @@ describe('WebSocketAuthService', () => {
 		it('should reject missing token', async () => {
 			const connectionParams = {};
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('No authentication token provided');
@@ -69,7 +69,7 @@ describe('WebSocketAuthService', () => {
 
 			const connectionParams = { token };
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -78,7 +78,7 @@ describe('WebSocketAuthService', () => {
 		it('should reject malformed token', async () => {
 			const connectionParams = { authorization: 'malformed-token' };
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -88,7 +88,7 @@ describe('WebSocketAuthService', () => {
 			// Mock a token that causes JSON parsing to fail
 			const connectionParams = { token: 'header.invalid-json.signature' };
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -98,31 +98,31 @@ describe('WebSocketAuthService', () => {
 	describe('extractToken', () => {
 		it('should extract token from authorization field', () => {
 			const connectionParams = { authorization: 'Bearer token123' };
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBe('Bearer token123');
 		});
 
 		it('should extract token from Authorization field', () => {
 			const connectionParams = { Authorization: 'Bearer token123' };
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBe('Bearer token123');
 		});
 
 		it('should extract token from token field', () => {
 			const connectionParams = { token: 'token123' };
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBe('token123');
 		});
 
 		it('should extract token from authToken field', () => {
 			const connectionParams = { authToken: 'token123' };
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBe('token123');
 		});
 
 		it('should return null when no token fields present', () => {
 			const connectionParams = { otherField: 'value' };
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBeNull();
 		});
 
@@ -131,7 +131,7 @@ describe('WebSocketAuthService', () => {
 				authorization: 'auth-token',
 				token: 'token-field',
 			};
-			const token = (service as any).extractToken(connectionParams);
+			const token = (service as any).ExtractToken(connectionParams);
 			expect(token).toBe('auth-token');
 		});
 	});
@@ -141,7 +141,7 @@ describe('WebSocketAuthService', () => {
 			const payload = { sub: 'user123', exp: Math.floor(Date.now() / 1000) + 3600 };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const userId = await (service as any).validateToken(token);
+			const userId = await (service as any).ValidateToken(token);
 			expect(userId).toBe('user123');
 		});
 
@@ -149,7 +149,7 @@ describe('WebSocketAuthService', () => {
 			const payload = { exp: Math.floor(Date.now() / 1000) + 3600 };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const userId = await (service as any).validateToken(token);
+			const userId = await (service as any).ValidateToken(token);
 			expect(userId).toBeNull();
 		});
 
@@ -157,12 +157,12 @@ describe('WebSocketAuthService', () => {
 			const payload = { sub: 'user123', exp: Math.floor(Date.now() / 1000) - 3600 };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const userId = await (service as any).validateToken(token);
+			const userId = await (service as any).ValidateToken(token);
 			expect(userId).toBeNull();
 		});
 
 		it('should handle decode errors', async () => {
-			const userId = await (service as any).validateToken('invalid-token');
+			const userId = await (service as any).ValidateToken('invalid-token');
 			expect(userId).toBeNull();
 		});
 
@@ -171,7 +171,7 @@ describe('WebSocketAuthService', () => {
 				get: () => undefined,
 			} as any);
 
-			const userId = await (serviceWithoutJwt as any).validateToken('some-token');
+			const userId = await (serviceWithoutJwt as any).ValidateToken('some-token');
 			expect(userId).toBeNull();
 		});
 	});
@@ -181,7 +181,7 @@ describe('WebSocketAuthService', () => {
 			const payload = { sub: '', exp: Math.floor(Date.now() / 1000) + 3600 };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(false);
 		});
@@ -191,7 +191,7 @@ describe('WebSocketAuthService', () => {
 			const payload = { sub: 'user123', exp: null };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			// Token without exp should be treated as valid (no expiration check fails)
 			expect(result.authenticated).toBe(true);
@@ -203,7 +203,7 @@ describe('WebSocketAuthService', () => {
 			const payload = { sub: 'user123', exp: now };
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -215,7 +215,7 @@ describe('WebSocketAuthService', () => {
 			const token = `header.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.signature`;
 
 			// Should still authenticate if it's technically valid
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 		});
@@ -231,7 +231,7 @@ describe('WebSocketAuthService', () => {
 			const signature = 'sig';
 			const token = `${header}.${payload}.${signature}`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('extracted-user');
@@ -246,7 +246,7 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `header.${payload}.signature`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('user-with-claims');
@@ -262,7 +262,7 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `${header}.${payload}.sig`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('context-user');
@@ -283,7 +283,7 @@ describe('WebSocketAuthService', () => {
 				ipAddress: '127.0.0.1',
 			};
 
-			const result = await service.authenticate(connectionParams);
+			const result = await service.Authenticate(connectionParams);
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('metadata-user');
@@ -297,8 +297,8 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `${header}.${payload}.sig`;
 
-			const result1 = await service.authenticate({ authorization: token });
-			const result2 = await service.authenticate({ authorization: token });
+			const result1 = await service.Authenticate({ authorization: token });
+			const result2 = await service.Authenticate({ authorization: token });
 
 			expect(result1.authenticated).toBe(true);
 			expect(result2.authenticated).toBe(true);
@@ -308,14 +308,14 @@ describe('WebSocketAuthService', () => {
 
 	describe('error handling and logging', () => {
 		it('should throw UnauthorizedException equivalent on invalid token format', async () => {
-			const result = await service.authenticate({ authorization: 'not-a-jwt' });
+			const result = await service.Authenticate({ authorization: 'not-a-jwt' });
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
 		});
 
 		it('should handle malformed base64 in token', async () => {
-			const result = await service.authenticate({ authorization: 'header.!@#$%.signature' });
+			const result = await service.Authenticate({ authorization: 'header.!@#$%.signature' });
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -324,7 +324,7 @@ describe('WebSocketAuthService', () => {
 		it('should handle empty payload in token', async () => {
 			const token = 'header..signature';
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBe('Invalid authentication token');
@@ -332,7 +332,7 @@ describe('WebSocketAuthService', () => {
 
 		it('should log authentication failures', async () => {
 			// This is implicit in the service - just verify no uncaught errors
-			const result = await service.authenticate({ authorization: 'invalid' });
+			const result = await service.Authenticate({ authorization: 'invalid' });
 
 			expect(result.authenticated).toBe(false);
 			expect(result.error).toBeDefined();
@@ -343,7 +343,7 @@ describe('WebSocketAuthService', () => {
 			const invalidPayload = Buffer.from('not json').toString('base64url');
 			const token = `${header}.${invalidPayload}.sig`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(false);
 		});
@@ -356,7 +356,7 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe('minimal-user');
@@ -369,7 +369,7 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe(12345);
@@ -383,7 +383,7 @@ describe('WebSocketAuthService', () => {
 			})).toString('base64url');
 			const token = `header.${payload}.sig`;
 
-			const result = await service.authenticate({ authorization: token });
+			const result = await service.Authenticate({ authorization: token });
 
 			expect(result.authenticated).toBe(true);
 			expect(result.userId).toBe(uuid);

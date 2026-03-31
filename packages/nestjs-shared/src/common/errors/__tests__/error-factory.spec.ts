@@ -74,9 +74,9 @@ describe('createError', () => {
 			const error = new TestError('Test error occurred');
 
 			expect(error).toBeInstanceOf(TestError);
-			expect(error.toJSON).toBeDefined();
-			expect(error.withContext).toBeDefined();
-			expect(error.withMessage).toBeDefined();
+			expect(error.ToJSON).toBeDefined();
+			expect(error.WithContext).toBeDefined();
+			expect(error.WithMessage).toBeDefined();
 		});
 	});
 

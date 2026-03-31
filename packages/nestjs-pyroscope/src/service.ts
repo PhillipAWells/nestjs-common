@@ -97,15 +97,15 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 		this.ModuleRef = moduleRef;
 	}
 
-	private get config(): IPyroscopeConfig {
-		const cfg = this.ModuleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
-		if (!cfg) {
+	private get Config(): IPyroscopeConfig {
+		const Cfg = this.ModuleRef.get<IPyroscopeConfig>(PYROSCOPE_CONFIG_TOKEN, { strict: false });
+		if (!Cfg) {
 			throw new PyroscopeError('PyroscopeService: PYROSCOPE_CONFIG_TOKEN is not available in the module context');
 		}
-		return cfg;
+		return Cfg;
 	}
 
-	private get metricsService(): MetricsService | undefined {
+	private get MetricsService(): MetricsService | undefined {
 		try {
 			return this.ModuleRef.get(MetricsService, { strict: false });
 		} catch {
@@ -118,51 +118,51 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * Returns immediately without blocking, initialization happens in background
 	 */
 	public onModuleInit(): void {
-		if (!this.config.enabled) {
+		if (!this.Config.enabled) {
 			this.Logger.debug('Pyroscope profiling is disabled');
 			return;
 		}
 
 		// Fire-and-forget: defer initialization to next event loop iteration
-		setImmediate(() => void this.initializePyroscope());
+		setImmediate(() => void this.InitializePyroscope());
 	}
 
 	/**
 	 * Initialize Pyroscope client asynchronously
 	 * @private
 	 */
-	private async initializePyroscope(): Promise<void> {
+	private async InitializePyroscope(): Promise<void> {
 		try {
 			// Dynamic import to avoid issues if package is not installed
 			const Pyroscope = await import('@pyroscope/nodejs');
 
 			// Configure Pyroscope client using the typed PyroscopeConfig interface
-			const pyroscopeConfig: PyroscopeConfig = {
-				serverAddress: this.config.serverAddress,
-				appName: this.config.applicationName,
-				tags: this.config.tags ?? {},
+			const PyroscopeConfig: PyroscopeConfig = {
+				serverAddress: this.Config.serverAddress,
+				appName: this.Config.applicationName,
+				tags: this.Config.tags ?? {},
 			};
 
 			// Add optional configuration
-			if (this.config.basicAuthUser && this.config.basicAuthPassword) {
-				pyroscopeConfig.basicAuthUser = this.config.basicAuthUser;
-				pyroscopeConfig.basicAuthPassword = this.config.basicAuthPassword;
+			if (this.Config.basicAuthUser && this.Config.basicAuthPassword) {
+				PyroscopeConfig.basicAuthUser = this.Config.basicAuthUser;
+				PyroscopeConfig.basicAuthPassword = this.Config.basicAuthPassword;
 			}
 
 			// Initialize and start profiling
-			Pyroscope.init(pyroscopeConfig);
+			Pyroscope.init(PyroscopeConfig);
 			Pyroscope.start();
 
 			this.PyroscopeClient = Pyroscope;
 			this.IsInitialized = true;
 
-			this.Logger.debug(`Pyroscope profiling initialized for ${this.config.applicationName}`);
+			this.Logger.debug(`Pyroscope profiling initialized for ${this.Config.applicationName}`);
 			this.Logger.debug('Profiling configuration:', {
-				degradedActiveProfilesThreshold: this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
-				retryBaseDelayMs: this.config.retryBaseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS,
-				retryMaxDelayMs: this.config.retryMaxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS,
-				retryJitterMs: this.config.retryJitterMs ?? PROFILING_RETRY_JITTER_MS,
-				tagMaxLength: this.config.tagMaxLength ?? PROFILING_TAG_MAX_LENGTH,
+				degradedActiveProfilesThreshold: this.Config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD,
+				retryBaseDelayMs: this.Config.retryBaseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS,
+				retryMaxDelayMs: this.Config.retryMaxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS,
+				retryJitterMs: this.Config.retryJitterMs ?? PROFILING_RETRY_JITTER_MS,
+				tagMaxLength: this.Config.tagMaxLength ?? PROFILING_TAG_MAX_LENGTH,
 			});
 		} catch (error) {
 			this.Logger.error('Failed to initialize Pyroscope profiling', (error as Error).stack ?? String(error));
@@ -211,22 +211,22 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * this.pyroscope.startProfiling(context);
 	 * ```
 	 */
-	public startProfiling(context: IProfileContext): void {
-		if (!this.isEnabled()) return;
+	public StartProfiling(context: IProfileContext): void {
+		if (!this.IsEnabled()) return;
 
 		// Set start time if not already set (must happen before generateProfileId)
 		// Use nullish coalescing to handle startTime: 0 edge case
 		context.startTime ??= Date.now();
 
 		// Generate and store profile ID in context for later retrieval
-		const profileId = this.generateProfileId(context);
-		context.profileId = profileId;
+		const ProfileId = this.GenerateProfileId(context);
+		context.profileId = ProfileId;
 
-		this.ActiveProfiles.set(profileId, context);
+		this.ActiveProfiles.set(ProfileId, context);
 
 		// Evict stale profiles to prevent memory leaks from profiles that are started but never stopped
 		if (this.ActiveProfiles.size > this.MAX_ACTIVE_PROFILES) {
-			this.evictStaleProfiles();
+			this.EvictStaleProfiles();
 		}
 
 		// Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs
@@ -260,41 +260,41 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * }
 	 * ```
 	 */
-	public stopProfiling(context: IProfileContext): IProfileMetrics {
-		if (!this.isEnabled()) {
-			return this.createEmptyMetrics(context);
+	public StopProfiling(context: IProfileContext): IProfileMetrics {
+		if (!this.IsEnabled()) {
+			return this.CreateEmptyMetrics(context);
 		}
 
 		// Use stored profile ID from context
 		if (!context.profileId) {
 			this.Logger.warn(`No profile ID found in context for: ${context.functionName} - profiling session was not started properly`);
-			return this.createEmptyMetrics(context);
+			return this.CreateEmptyMetrics(context);
 		}
 
-		const { profileId } = context;
-		const startContext = this.ActiveProfiles.get(profileId);
+		const { profileId: ProfileId } = context;
+		const StartContext = this.ActiveProfiles.get(ProfileId);
 
-		if (!startContext) {
+		if (!StartContext) {
 			this.Logger.warn(`No active profiling session found for: ${context.functionName}`);
-			return this.createEmptyMetrics(context);
+			return this.CreateEmptyMetrics(context);
 		}
 
 		context.endTime = Date.now();
-		context.duration = context.endTime - (startContext.startTime ?? context.endTime);
+		context.duration = context.endTime - (StartContext.startTime ?? context.endTime);
 
 		// Note: Dynamic tag manipulation is not supported by @pyroscope/nodejs
 
-		this.ActiveProfiles.delete(profileId);
+		this.ActiveProfiles.delete(ProfileId);
 
-		const metrics: IProfileMetrics = {
+		const Metrics: IProfileMetrics = {
 			cpuTime: 0, // Would need to integrate with actual profiling data
 			memoryUsage: 0, // Would need to integrate with actual profiling data
 			duration: context.duration,
 			timestamp: context.endTime,
-			tags: { ...startContext.tags, ...context.tags },
+			tags: { ...StartContext.tags, ...context.tags },
 		};
 
-		this.Metrics.push(metrics);
+		this.Metrics.push(Metrics);
 
 		// Keep metrics array bounded to prevent memory leak
 		if (this.Metrics.length > this.MAX_METRICS_HISTORY) {
@@ -303,7 +303,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 
 		this.Logger.debug(`Stopped profiling: ${context.functionName} (${context.duration}ms)`, context.tags);
 
-		return metrics;
+		return Metrics;
 	}
 
 	/**
@@ -325,8 +325,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * })
 	 * ```
 	 */
-	public addTags(tags: Record<string, string>): void {
-		if (!this.isEnabled() || !this.PyroscopeClient) return;
+	public AddTags(tags: Record<string, string>): void {
+		if (!this.IsEnabled() || !this.PyroscopeClient) return;
 
 		this.Logger.debug('Dynamic tag addition is not supported by @pyroscope/nodejs. Tags must be set during initialization.', tags);
 	}
@@ -338,8 +338,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * @deprecated Dynamic tag manipulation is not supported by @pyroscope/nodejs.
 	 * This method logs a debug message and does nothing.
 	 */
-	public removeTags(keys: string[]): void {
-		if (!this.isEnabled() || !this.PyroscopeClient) return;
+	public RemoveTags(keys: string[]): void {
+		if (!this.IsEnabled() || !this.PyroscopeClient) return;
 
 		this.Logger.debug('Dynamic tag removal is not supported by @pyroscope/nodejs. Tags must be set during initialization.', keys);
 	}
@@ -363,26 +363,26 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * }, { queryType: 'select' });
 	 * ```
 	 */
-	public async trackFunction<T>(
+	public async TrackFunction<T>(
 		name: string,
 		fn: () => T | Promise<T>,
 		tags?: Record<string, string>,
 	): Promise<T> {
-		const context: IProfileContext = {
+		const Context: IProfileContext = {
 			functionName: name,
 			startTime: Date.now(),
 			...(tags && { tags }),
 		};
 
-		this.startProfiling(context);
+		this.StartProfiling(Context);
 
 		try {
-			const result = await fn();
-			this.stopProfiling(context);
-			return result;
+			const Result = await fn();
+			this.StopProfiling(Context);
+			return Result;
 		} catch (error) {
-			context.error = error as Error;
-			this.stopProfiling(context);
+			Context.error = error as Error;
+			this.StopProfiling(Context);
 			throw error;
 		}
 	}
@@ -400,7 +400,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * const avgDuration = allMetrics.reduce((sum, m) => sum + m.duration, 0) / allMetrics.length;
 	 * ```
 	 */
-	public getProfileMetrics(): IProfileMetrics[] {
+	public GetProfileMetrics(): IProfileMetrics[] {
 		return [...this.Metrics];
 	}
 
@@ -418,34 +418,34 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * console.log(`Processed ${metrics.requests.total} requests with ${metrics.requests.successful} successes`);
 	 * ```
 	 */
-	public getMetrics(): IMetricsResponse {
-		if (this.metricsService) {
-			return this.metricsService.getMetrics();
+	public GetMetrics(): IMetricsResponse {
+		if (this.MetricsService) {
+			return this.MetricsService.GetMetrics();
 		}
 
 		// Fallback to basic aggregated data from existing metrics
-		const totalMetrics = this.Metrics.length;
-		const totalCpuTime = this.Metrics.reduce((sum, m) => sum + m.cpuTime, 0);
-		const totalMemory = this.Metrics.reduce((sum, m) => sum + m.memoryUsage, 0);
-		const averageDuration = totalMetrics > 0
-			? this.Metrics.reduce((sum, m) => sum + m.duration, 0) / totalMetrics
+		const TotalMetrics = this.Metrics.length;
+		const TotalCpuTime = this.Metrics.reduce((sum, m) => sum + m.cpuTime, 0);
+		const TotalMemory = this.Metrics.reduce((sum, m) => sum + m.memoryUsage, 0);
+		const AverageDuration = TotalMetrics > 0
+			? this.Metrics.reduce((sum, m) => sum + m.duration, 0) / TotalMetrics
 			: 0;
 
 		return {
 			timestamp: Date.now(),
 			cpu: {
-				samples: totalMetrics,
-				duration: totalCpuTime,
+				samples: TotalMetrics,
+				duration: TotalCpuTime,
 			},
 			memory: {
-				samples: totalMetrics,
-				allocations: totalMemory,
+				samples: TotalMetrics,
+				allocations: TotalMemory,
 			},
 			requests: {
-				total: totalMetrics,
-				successful: totalMetrics, // Assume all are successful for now
+				total: TotalMetrics,
+				successful: TotalMetrics, // Assume all are successful for now
 				failed: 0,
-				averageResponseTime: Math.round(averageDuration * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION,
+				averageResponseTime: Math.round(AverageDuration * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION,
 			},
 		};
 	}
@@ -466,7 +466,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 * }
 	 * ```
 	 */
-	public getHealth(): {
+	public GetHealth(): {
 		status: 'healthy' | 'unhealthy';
 		details: {
 			enabled?: boolean;
@@ -477,7 +477,7 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 			applicationName?: string;
 		};
 	} {
-		if (!this.config.enabled) {
+		if (!this.Config.enabled) {
 			return { status: 'healthy', details: { enabled: false } };
 		}
 
@@ -491,8 +491,8 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 				initialized: true,
 				activeProfiles: this.ActiveProfiles.size,
 				totalMetrics: this.Metrics.length,
-				serverAddress: this.config.serverAddress,
-				applicationName: this.config.applicationName,
+				serverAddress: this.Config.serverAddress,
+				applicationName: this.Config.applicationName,
 			},
 		};
 	}
@@ -502,43 +502,43 @@ export class PyroscopeService implements OnModuleInit, OnModuleDestroy {
 	 *
 	 * @returns true only if profiling is configured as enabled AND Pyroscope client initialization succeeded
 	 */
-	public isEnabled(): boolean {
-		return this.config.enabled && this.IsInitialized;
+	public IsEnabled(): boolean {
+		return this.Config.enabled && this.IsInitialized;
 	}
 
 	/**
 	 * Evict stale profiles that have exceeded the timeout threshold.
 	 * Prevents unbounded memory growth from profiles that are started but never stopped.
 	 */
-	private evictStaleProfiles(): void {
-		const now = Date.now();
-		let evictedCount = 0;
+	private EvictStaleProfiles(): void {
+		const Now = Date.now();
+		let EvictedCount = 0;
 
-		for (const [profileId, profileContext] of this.ActiveProfiles.entries()) {
-			const age = now - (profileContext.startTime ?? now);
-			if (age > this.STALE_PROFILE_TIMEOUT_MS) {
-				this.ActiveProfiles.delete(profileId);
-				evictedCount++;
+		for (const [ProfileId, ProfileContext] of this.ActiveProfiles.entries()) {
+			const Age = Now - (ProfileContext.startTime ?? Now);
+			if (Age > this.STALE_PROFILE_TIMEOUT_MS) {
+				this.ActiveProfiles.delete(ProfileId);
+				EvictedCount++;
 			}
 		}
 
-		if (evictedCount > 0) {
-			this.Logger.warn(`Evicted ${evictedCount} stale active profiles (exceeded ${this.STALE_PROFILE_TIMEOUT_MS}ms timeout)`);
+		if (EvictedCount > 0) {
+			this.Logger.warn(`Evicted ${EvictedCount} stale active profiles (exceeded ${this.STALE_PROFILE_TIMEOUT_MS}ms timeout)`);
 		}
 	}
 
 	/**
 	 * Generate unique profile ID for tracking
 	 */
-	private generateProfileId(context: IProfileContext): string {
-		const uniquePart = crypto.randomUUID().replace(/-/g, '').substring(0, PROFILING_ID_UUID_LENGTH);
-		return `${context.functionName}_${context.startTime}_${uniquePart}`;
+	private GenerateProfileId(context: IProfileContext): string {
+		const UniquePart = crypto.randomUUID().replace(/-/g, '').substring(0, PROFILING_ID_UUID_LENGTH);
+		return `${context.functionName}_${context.startTime}_${UniquePart}`;
 	}
 
 	/**
 	 * Create empty metrics for disabled profiling
 	 */
-	private createEmptyMetrics(context: IProfileContext): IProfileMetrics {
+	private CreateEmptyMetrics(context: IProfileContext): IProfileMetrics {
 		return {
 			cpuTime: 0,
 			memoryUsage: 0,

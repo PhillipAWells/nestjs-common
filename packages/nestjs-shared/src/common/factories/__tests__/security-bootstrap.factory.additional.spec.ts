@@ -1,17 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ApplySecurityMiddleware } from '../security-bootstrap.factory.js';
-import { Logger } from '@nestjs/common';
 
 describe('ApplySecurityMiddleware - Additional Coverage', () => {
 	let mockApp: any;
-	let mockLogger: any;
 
 	beforeEach(() => {
-		mockLogger = {
-			log: vi.fn(),
-			error: vi.fn(),
-		};
-
 		mockApp = {
 			use: vi.fn(),
 			useGlobalPipes: vi.fn(),
@@ -27,7 +20,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				xssEnabled: false,
-				logger: mockLogger,
 			});
 
 			// First middleware call should be compression
@@ -43,7 +35,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				xssEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Should only call use for validation pipe and other non-compression middleware
@@ -58,7 +49,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				xssEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Verify compression middleware is applied
@@ -76,7 +66,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Should have called use() for the middleware
@@ -92,7 +81,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Should not add additional middleware
@@ -108,7 +96,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Get the middleware function
@@ -125,7 +112,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				mongoDbInjectionPreventionEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -138,7 +124,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				mongoDbInjectionPreventionEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Should not have XSS middleware applied
@@ -152,7 +137,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				mongoDbInjectionPreventionEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -167,7 +151,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -180,7 +163,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Should apply validation pipe but not helmet
@@ -196,7 +178,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -209,7 +190,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -224,7 +204,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).toHaveBeenCalled();
@@ -237,7 +216,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).not.toHaveBeenCalled();
@@ -254,7 +232,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).toHaveBeenCalled();
@@ -270,7 +247,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).toHaveBeenCalled();
@@ -292,7 +268,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Test origin callback
@@ -316,7 +291,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -340,7 +314,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const ports = ['3000', '5173', '8000', '9000'];
@@ -368,7 +341,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -395,7 +367,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -421,7 +392,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -445,7 +415,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -472,7 +441,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -495,7 +463,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			const callback = vi.fn();
@@ -522,7 +489,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).toHaveBeenCalled();
@@ -546,7 +512,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.enableCors).toHaveBeenCalled();
@@ -571,7 +536,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
-				logger: mockLogger,
 			});
 
 			// Verify production rules are applied
@@ -593,7 +557,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.useGlobalPipes).toHaveBeenCalled();
@@ -606,7 +569,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				helmetEnabled: false,
 				mongoDbInjectionPreventionEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.useGlobalPipes).toHaveBeenCalled();
@@ -625,7 +587,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				corsEnabled: true,
 				corsOrigins: ['https://example.com'],
 				environment: 'production',
-				logger: mockLogger,
 			});
 
 			expect(mockApp.use).toHaveBeenCalled();
@@ -642,7 +603,6 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 				xssEnabled: false,
 				helmetEnabled: false,
 				corsEnabled: false,
-				logger: mockLogger,
 			});
 
 			expect(mockApp.useGlobalPipes).toHaveBeenCalled();
@@ -661,99 +621,11 @@ describe('ApplySecurityMiddleware - Additional Coverage', () => {
 		it('should default to enabling all features', () => {
 			ApplySecurityMiddleware(mockApp, {
 				corsOrigins: [],
-				logger: new Logger('test'),
 			});
 
 			// Should apply compression, helmet, cors, etc.
 			expect(mockApp.use).toHaveBeenCalled();
 			expect(mockApp.useGlobalPipes).toHaveBeenCalled();
-		});
-	});
-
-	describe('logging', () => {
-		it('should log when compression enabled', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: true,
-				corsEnabled: false,
-				helmetEnabled: false,
-				mongoDbInjectionPreventionEnabled: false,
-				xssEnabled: false,
-				logger: mockLogger,
-			});
-
-			expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Compression'));
-		});
-
-		it('should log when MongoDB injection prevention enabled', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: false,
-				mongoDbInjectionPreventionEnabled: true,
-				corsEnabled: false,
-				helmetEnabled: false,
-				xssEnabled: false,
-				logger: mockLogger,
-			});
-
-			expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('MongoDB'));
-		});
-
-		it('should log when XSS protection enabled', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: false,
-				mongoDbInjectionPreventionEnabled: false,
-				xssEnabled: true,
-				corsEnabled: false,
-				helmetEnabled: false,
-				logger: mockLogger,
-			});
-
-			expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('XSS'));
-		});
-
-		it('should log when Helmet enabled', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: false,
-				mongoDbInjectionPreventionEnabled: false,
-				xssEnabled: false,
-				helmetEnabled: true,
-				corsEnabled: false,
-				logger: mockLogger,
-			});
-
-			expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Helmet'));
-		});
-
-		it('should log when CORS enabled', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: false,
-				mongoDbInjectionPreventionEnabled: false,
-				xssEnabled: false,
-				helmetEnabled: false,
-				corsEnabled: true,
-				corsOrigins: [],
-				logger: mockLogger,
-			});
-
-			// Check that log was called with CORS-related message
-			const { calls } = mockLogger.log.mock;
-			const corsCall = calls.find((c: any[]) => {
-				const msg = c[0] ?? '';
-				return msg.includes('CORS');
-			});
-			expect(corsCall).toBeDefined();
-		});
-
-		it('should always log validation pipe', () => {
-			ApplySecurityMiddleware(mockApp, {
-				compressionEnabled: false,
-				mongoDbInjectionPreventionEnabled: false,
-				xssEnabled: false,
-				helmetEnabled: false,
-				corsEnabled: false,
-				logger: mockLogger,
-			});
-
-			expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('ValidationPipe'));
 		});
 	});
 });

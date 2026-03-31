@@ -20,21 +20,43 @@ describe('ConfigService', () => {
 				return (configObject as any)[key] ?? defaultValue;
 			},
 			getOrThrow: (key: string) => {
-				const value = (configObject as any)[key];
-				if (value === undefined) {
+				const Value = (configObject as any)[key];
+				if (Value === undefined) {
 					throw new Error(`Configuration key not found: ${key}`);
 				}
-				return value;
+				return Value;
 			},
 		} as any;
 
 		const mockAppLogger = {
-			createContextualLogger: () => ({
+			CreateContextualLogger: () => ({
+				Debug: () => {},
 				debug: () => {},
+				Warn: () => {},
 				warn: () => {},
+				Info: () => {},
 				info: () => {},
+				Error: () => {},
 				error: () => {},
 			}),
+			createContextualLogger: () => ({
+				Debug: () => {},
+				debug: () => {},
+				Warn: () => {},
+				warn: () => {},
+				Info: () => {},
+				info: () => {},
+				Error: () => {},
+				error: () => {},
+			}),
+			Debug: () => {},
+			debug: () => {},
+			Warn: () => {},
+			warn: () => {},
+			Info: () => {},
+			info: () => {},
+			Error: () => {},
+			error: () => {},
 		} as any;
 
 		mockModuleRef = {
@@ -54,35 +76,35 @@ describe('ConfigService', () => {
 
 	describe('getString', () => {
 		it('should return string value when key exists', () => {
-			const result = service.getString('test-key');
+			const Result = service.GetString('test-key');
 
-			expect(result).toBe('test-value');
+			expect(Result).toBe('test-value');
 		});
 
 		it('should return default value when key does not exist', () => {
-			const result = service.getString('non-existent', 'default-value');
+			const Result = service.GetString('non-existent', 'default-value');
 
-			expect(result).toBe('default-value');
+			expect(Result).toBe('default-value');
 		});
 	});
 
 	describe('getNumber', () => {
 		it('should return number value when key exists', () => {
-			const result = service.getNumber('port');
+			const Result = service.GetNumber('port');
 
-			expect(result).toBe(3000);
+			expect(Result).toBe(3000);
 		});
 
 		it('should return default when key does not exist', () => {
-			const result = service.getNumber('unknown-port', 5000);
+			const Result = service.GetNumber('unknown-port', 5000);
 
-			expect(result).toBe(5000);
+			expect(Result).toBe(5000);
 		});
 
 		it('should return undefined for invalid number conversion', () => {
-			const result = service.getNumber('test-key'); // 'test-value' is not a number
+			const Result = service.GetNumber('test-key'); // 'test-value' is not a number
 
-			expect(result).toBeUndefined();
+			expect(Result).toBeUndefined();
 		});
 
 		it('should handle zero as valid number', () => {
@@ -90,9 +112,9 @@ describe('ConfigService', () => {
 			const zeroModuleRef = { get: (token: any) => (token === NestConfigService ? zeroNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(zeroModuleRef as any);
 
-			const result = configService.getNumber('zero-value');
+			const Result = configService.GetNumber('zero-value');
 
-			expect(result).toBe(0);
+			expect(Result).toBe(0);
 		});
 
 		it('should handle negative numbers', () => {
@@ -100,42 +122,42 @@ describe('ConfigService', () => {
 			const negativeModuleRef = { get: (token: any) => (token === NestConfigService ? negativeNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(negativeModuleRef as any);
 
-			const result = configService.getNumber('negative-value');
+			const Result = configService.GetNumber('negative-value');
 
-			expect(result).toBe(-123);
+			expect(Result).toBe(-123);
 		});
 	});
 
 	describe('get', () => {
 		it('should return value when key exists', () => {
-			const result = service.get('test-key');
+			const Result = service.get('test-key');
 
-			expect(result).toBe('test-value');
+			expect(Result).toBe('test-value');
 		});
 
 		it('should return default when key does not exist', () => {
-			const result = service.get('non-existent', 'default');
+			const Result = service.get('non-existent', 'default');
 
-			expect(result).toBe('default');
+			expect(Result).toBe('default');
 		});
 
 		it('should return undefined when key does not exist and no default provided', () => {
-			const result = service.get('non-existent');
+			const Result = service.get('non-existent');
 
-			expect(result).toBeUndefined();
+			expect(Result).toBeUndefined();
 		});
 	});
 
 	describe('getOrThrow', () => {
 		it('should return value when key exists', () => {
-			const result = service.getOrThrow('test-key');
+			const Result = service.GetOrThrow('test-key');
 
-			expect(result).toBe('test-value');
+			expect(Result).toBe('test-value');
 		});
 
-		it('should throw error when key does not exist', () => {
+		it('should throw Error() when key does not exist', () => {
 			expect(() => {
-				service.getOrThrow('non-existent');
+				service.GetOrThrow('non-existent');
 			}).toThrow('Configuration key not found: non-existent');
 		});
 	});
@@ -148,18 +170,18 @@ describe('ConfigService', () => {
 			};
 
 			expect(() => {
-				service.validate(schema);
+				service.Validate(schema);
 			}).not.toThrow();
 		});
 
-		it('should throw error when required field is missing', () => {
+		it('should throw Error() when required field is missing', () => {
 			const schemaWithMissing = {
 				'test-key': { required: true },
 				'missing-field': { required: true },
 			};
 
 			expect(() => {
-				service.validate(schemaWithMissing);
+				service.Validate(schemaWithMissing);
 			}).toThrow('Missing required configuration fields');
 		});
 
@@ -170,7 +192,7 @@ describe('ConfigService', () => {
 			};
 
 			expect(() => {
-				service.validate(schema);
+				service.Validate(schema);
 			}).not.toThrow();
 		});
 
@@ -181,7 +203,7 @@ describe('ConfigService', () => {
 			};
 
 			expect(() => {
-				service.validate(schema);
+				service.Validate(schema);
 			}).not.toThrow();
 		});
 
@@ -189,7 +211,7 @@ describe('ConfigService', () => {
 			const schema = {};
 
 			expect(() => {
-				service.validate(schema);
+				service.Validate(schema);
 			}).not.toThrow();
 		});
 	});
@@ -198,9 +220,12 @@ describe('ConfigService', () => {
 		it('should provide contextual logger on first access', () => {
 			// Create a fresh service instance to test lazy logger initialization
 			const mockAppLogger = {
-				createContextualLogger: () => ({
+				CreateContextualLogger: () => ({
+					Debug: () => {},
 					debug: () => {},
+					Info: () => {},
 					info: () => {},
+					Error: () => {},
 					error: () => {},
 				}),
 			} as any;
@@ -221,12 +246,12 @@ describe('ConfigService', () => {
 
 			const freshService = new ConfigService(freshMockModuleRef);
 
-			const logger = freshService.Logger;
+			const Logger = freshService.Logger;
 
-			expect(logger).toBeDefined();
-			expect(typeof logger.debug).toBe('function');
-			expect(typeof logger.info).toBe('function');
-			expect(typeof logger.error).toBe('function');
+			expect(Logger).toBeDefined();
+			expect(typeof Logger.Debug).toBe('function');
+			expect(typeof Logger.debug).toBe('function');
+			expect(typeof Logger.error).toBe('function');
 		});
 
 		it('should memoize logger on subsequent accesses', () => {
@@ -239,9 +264,9 @@ describe('ConfigService', () => {
 
 	describe('getString edge cases', () => {
 		it('should return undefined when value is undefined', () => {
-			const result = service.getString('non-existent');
+			const Result = service.GetString('non-existent');
 
-			expect(result).toBeUndefined();
+			expect(Result).toBeUndefined();
 		});
 
 		it('should convert numeric value to string', () => {
@@ -249,9 +274,9 @@ describe('ConfigService', () => {
 			const numericModuleRef = { get: (token: any) => (token === NestConfigService ? numericNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(numericModuleRef as any);
 
-			const result = configService.getString('number-value');
+			const Result = configService.GetString('number-value');
 
-			expect(result).toBe('42');
+			expect(Result).toBe('42');
 		});
 
 		it('should convert boolean to string', () => {
@@ -259,9 +284,9 @@ describe('ConfigService', () => {
 			const boolModuleRef = { get: (token: any) => (token === NestConfigService ? boolNestConfig : mockModuleRef.get(token)) };
 			const configService = new ConfigService(boolModuleRef as any);
 
-			const result = configService.getString('boolean-value');
+			const Result = configService.GetString('boolean-value');
 
-			expect(result).toBe('true');
+			expect(Result).toBe('true');
 		});
 	});
 });

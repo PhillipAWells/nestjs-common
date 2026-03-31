@@ -68,11 +68,11 @@ export class AppLogger implements IContextualLogger {
 		this.ConfigService = configService;
 		this.Context = context;
 		this.ServiceName = this.ConfigService?.get<string>('SERVICE_NAME') ?? process.env['SERVICE_NAME'] ?? 'unknown-service';
-		this.MinLevel = this.parseLogLevel();
+		this.MinLevel = this.ParseLogLevel();
 
 		// Create instance of @pawells/logger
-		const pawellsLogLevel = this.mapNestjsLogLevelToPawells(this.MinLevel);
-		const logFormat = this.parseLogFormat();
+		const pawellsLogLevel = this.MapNestjsLogLevelToPawells(this.MinLevel);
+		const logFormat = this.ParseLogFormat();
 		this.PawellsLogger = new PawellsLogger({
 			service: this.ServiceName,
 			level: pawellsLogLevel,
@@ -84,7 +84,7 @@ export class AppLogger implements IContextualLogger {
 	 * Parse LOG_LEVEL environment variable
 	 * @returns LogLevel enum value (numeric)
 	 */
-	private parseLogLevel(): number {
+	private ParseLogLevel(): number {
 		const level = (this.ConfigService?.get<string>('LOG_LEVEL') ?? process.env['LOG_LEVEL'] ?? 'info').toLowerCase();
 		const parsedLevel = LOG_LEVEL_FROM_STRING[level];
 
@@ -107,7 +107,7 @@ export class AppLogger implements IContextualLogger {
 	 * Parse LOG_FORMAT environment variable
 	 * @returns Format type ('json' | 'text'), defaults to 'json'
 	 */
-	private parseLogFormat(): 'json' | 'text' {
+	private ParseLogFormat(): 'json' | 'text' {
 		const format = (this.ConfigService?.get<string>('LOG_FORMAT') ?? process.env['LOG_FORMAT'] ?? 'json').toLowerCase();
 
 		// Validate format is either 'json' or 'text'
@@ -129,7 +129,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param level - Numeric LogLevel from nestjs-shared
 	 * @returns String LogLevel for @pawells/logger
 	 */
-	private mapNestjsLogLevelToPawells(level: number): PawellsLogLevel {
+	private MapNestjsLogLevelToPawells(level: number): PawellsLogLevel {
 		const mapping: Record<number, PawellsLogLevel> = {
 			[LogLevel.DEBUG]: PawellsLogLevel.DEBUG,
 			[LogLevel.INFO]: PawellsLogLevel.INFO,
@@ -146,7 +146,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param level - Level to check
 	 * @returns true if level should be logged
 	 */
-	private shouldLog(level: number): boolean {
+	private ShouldLog(level: number): boolean {
 		return level >= this.MinLevel;
 	}
 
@@ -155,7 +155,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param metadata - Metadata to sanitize
 	 * @returns Sanitized metadata with circular references replaced by '[CIRCULAR_REF]'
 	 */
-	private sanitizeMetadata(metadata?: ILogMetadata): ILogMetadata | undefined {
+	private SanitizeMetadata(metadata?: ILogMetadata): ILogMetadata | undefined {
 		if (!metadata) return undefined;
 
 		const sanitized: Record<string, any> = { ...metadata };
@@ -213,7 +213,7 @@ export class AppLogger implements IContextualLogger {
 	 * Extract OpenTelemetry trace context
 	 * @returns Object with traceId and spanId if available
 	 */
-	private extractTraceContext(): { traceId?: string; spanId?: string } {
+	private ExtractTraceContext(): { traceId?: string; spanId?: string } {
 		try {
 			const span = trace.getSpan(context.active());
 			if (span) {
@@ -235,16 +235,16 @@ export class AppLogger implements IContextualLogger {
 	 * @param metadata - IUser-provided metadata
 	 * @returns Combined metadata
 	 */
-	private buildMetadata(logContext: string, metadata?: ILogMetadata): Record<string, unknown> {
-		const { traceId, spanId } = this.extractTraceContext();
-		const sanitized = this.sanitizeMetadata(metadata);
+	private BuildMetadata(logContext: string, metadata?: ILogMetadata): Record<string, unknown> {
+		const { traceId, spanId } = this.ExtractTraceContext();
+		const Sanitized = this.SanitizeMetadata(metadata);
 
 		const result: Record<string, unknown> = {
 			context: logContext,
 		};
 
-		if (sanitized) {
-			result.metadata = sanitized;
+		if (Sanitized) {
+			result.metadata = Sanitized;
 		}
 		if (traceId) {
 			result.traceId = traceId;
@@ -261,22 +261,22 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
-	public debug(message: string | Error, options: ILogOptions): void;
+	public Debug(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log debug message
 	 * @param message - Log message
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	public Debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log debug message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
-	public debug(message: string | Error, metadata?: ILogMetadata): void;
-	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
-		if (this.shouldLog(LogLevel.DEBUG)) {
+	public Debug(message: string | Error, metadata?: ILogMetadata): void;
+	public Debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.DEBUG)) {
 			let ctx = this.Context;
 			let meta = metadata;
 
@@ -292,7 +292,7 @@ export class AppLogger implements IContextualLogger {
 			}
 
 			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const builtMetadata = this.BuildMetadata(ctx, meta);
 
 			void this.PawellsLogger.debug(msg, builtMetadata).catch((err: unknown) => {
 				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
@@ -303,6 +303,17 @@ export class AppLogger implements IContextualLogger {
 				}
 			});
 		}
+	}
+
+	/**
+	 * Log debug message (implements IContextualLogger interface)
+	 * Delegates to Debug method for PascalCase consistency
+	 */
+	public debug(message: string | Error, options: ILogOptions): void;
+	public debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	public debug(message: string | Error, metadata?: ILogMetadata): void;
+	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		return this.Debug(message, contextOrMetadata as any, metadata);
 	}
 
 	/**
@@ -325,7 +336,7 @@ export class AppLogger implements IContextualLogger {
 	 */
 	public info(message: string | Error, metadata?: ILogMetadata): void;
 	public info(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
-		if (this.shouldLog(LogLevel.INFO)) {
+		if (this.ShouldLog(LogLevel.INFO)) {
 			let ctx = this.Context;
 			let meta = metadata;
 
@@ -341,7 +352,7 @@ export class AppLogger implements IContextualLogger {
 			}
 
 			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const builtMetadata = this.BuildMetadata(ctx, meta);
 
 			void this.PawellsLogger.info(msg, builtMetadata).catch((err: unknown) => {
 				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
@@ -374,7 +385,7 @@ export class AppLogger implements IContextualLogger {
 	 */
 	public warn(message: string | Error, metadata?: ILogMetadata): void;
 	public warn(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
-		if (this.shouldLog(LogLevel.WARN)) {
+		if (this.ShouldLog(LogLevel.WARN)) {
 			let ctx = this.Context;
 			let meta = metadata;
 
@@ -390,7 +401,7 @@ export class AppLogger implements IContextualLogger {
 			}
 
 			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const builtMetadata = this.BuildMetadata(ctx, meta);
 
 			void this.PawellsLogger.warn(msg, builtMetadata).catch((err: unknown) => {
 				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
@@ -425,7 +436,7 @@ export class AppLogger implements IContextualLogger {
 	 */
 	public error(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	public error(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
-		if (this.shouldLog(LogLevel.ERROR)) {
+		if (this.ShouldLog(LogLevel.ERROR)) {
 			let ctx = this.Context;
 			let meta = metadata;
 			let trace: string | undefined;
@@ -454,7 +465,7 @@ export class AppLogger implements IContextualLogger {
 
 			const msg = message instanceof Error ? message.message : message;
 			const metaWithTrace = trace ? { ...meta, stack: trace } : meta;
-			const builtMetadata = this.buildMetadata(ctx, metaWithTrace);
+			const builtMetadata = this.BuildMetadata(ctx, metaWithTrace);
 
 			void this.PawellsLogger.error(msg, builtMetadata).catch((err: unknown) => {
 				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
@@ -489,7 +500,7 @@ export class AppLogger implements IContextualLogger {
 	 */
 	public fatal(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	public fatal(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
-		if (this.shouldLog(LogLevel.FATAL)) {
+		if (this.ShouldLog(LogLevel.FATAL)) {
 			let ctx = this.Context;
 			let meta = metadata;
 			let trace: string | undefined;
@@ -514,7 +525,7 @@ export class AppLogger implements IContextualLogger {
 
 			const msg = message instanceof Error ? message.message : message;
 			const metaWithTrace = trace ? { ...meta, stack: trace } : meta;
-			const builtMetadata = this.buildMetadata(ctx, metaWithTrace);
+			const builtMetadata = this.BuildMetadata(ctx, metaWithTrace);
 
 			void this.PawellsLogger.fatal(msg, builtMetadata).catch((err: unknown) => {
 				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
@@ -532,7 +543,16 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Context string
 	 * @returns New AppLogger instance with context
 	 */
-	public createContextualLogger(context: string): AppLogger {
+	public CreateContextualLogger(context: string): AppLogger {
 		return new AppLogger(this.ConfigService, context);
+	}
+
+	/**
+	 * Create a contextual logger instance (implements IContextualLogger interface)
+	 * @param context - Context string
+	 * @returns New AppLogger instance with context
+	 */
+	public createContextualLogger(context: string): IContextualLogger {
+		return this.CreateContextualLogger(context);
 	}
 }

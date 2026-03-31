@@ -91,7 +91,7 @@ export interface IApplicationModuleConfig {
 export function CreateGlobalModule(config: IGlobalModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], imports = [], isGlobal = true } = config;
 
-	const moduleConfig: any = {
+	const ModuleConfig: any = {
 		providers: [
 			...providers,
 			{
@@ -107,7 +107,7 @@ export function CreateGlobalModule(config: IGlobalModuleConfig): DynamicModule {
 	};
 
 	if (isGlobal) {
-		moduleConfig.providers.push({
+		ModuleConfig.providers.push({
 			provide: 'MODULE_TYPE',
 			useValue: 'global',
 		});
@@ -115,7 +115,7 @@ export function CreateGlobalModule(config: IGlobalModuleConfig): DynamicModule {
 
 	return {
 		module: class {},
-		...moduleConfig,
+		...ModuleConfig,
 		global: isGlobal,
 	};
 }
@@ -216,7 +216,7 @@ export function CreateServiceModule(config: IServiceModuleConfig): DynamicModule
 export function CreateApplicationModule(config: IApplicationModuleConfig): DynamicModule {
 	const { name, filters = [], interceptors = [], pipes = [], guards = [], imports = [] } = config;
 
-	const providers: any[] = [
+	const Providers: any[] = [
 		{
 			provide: Logger,
 			useValue: new Logger(name),
@@ -225,7 +225,7 @@ export function CreateApplicationModule(config: IApplicationModuleConfig): Dynam
 
 	// Add global filters
 	filters.forEach((filter) => {
-		providers.push({
+		Providers.push({
 			provide: APP_FILTER,
 			useClass: filter,
 		});
@@ -233,7 +233,7 @@ export function CreateApplicationModule(config: IApplicationModuleConfig): Dynam
 
 	// Add global interceptors
 	interceptors.forEach((interceptor) => {
-		providers.push({
+		Providers.push({
 			provide: APP_INTERCEPTOR,
 			useClass: interceptor,
 		});
@@ -241,7 +241,7 @@ export function CreateApplicationModule(config: IApplicationModuleConfig): Dynam
 
 	// Add global pipes
 	pipes.forEach((pipe) => {
-		providers.push({
+		Providers.push({
 			provide: APP_PIPE,
 			useClass: pipe,
 		});
@@ -249,7 +249,7 @@ export function CreateApplicationModule(config: IApplicationModuleConfig): Dynam
 
 	// Add global guards
 	guards.forEach((guard) => {
-		providers.push({
+		Providers.push({
 			provide: APP_GUARD,
 			useClass: guard,
 		});
@@ -257,7 +257,7 @@ export function CreateApplicationModule(config: IApplicationModuleConfig): Dynam
 
 	return {
 		module: class {},
-		providers,
+		providers: Providers,
 		exports: [Logger],
 		imports,
 	};
@@ -298,15 +298,15 @@ export function CreateConditionalModule(
 ): DynamicModule {
 	const { name = 'ConditionalModule', providers = [], exports = [], imports = [] } = baseConfig;
 
-	const conditionalProviders: any[] = [];
-	const conditionalExports: any[] = [];
-	const conditionalImports: any[] = [];
+	const ConditionalProviders: any[] = [];
+	const ConditionalExports: any[] = [];
+	const ConditionalImports: any[] = [];
 
 	conditions.forEach(({ condition, providers: condProviders = [], exports: condExports = [], imports: condImports = [], config }) => {
 		if (condition(config)) {
-			conditionalProviders.push(...condProviders);
-			conditionalExports.push(...condExports);
-			conditionalImports.push(...condImports);
+			ConditionalProviders.push(...condProviders);
+			ConditionalExports.push(...condExports);
+			ConditionalImports.push(...condImports);
 		}
 	});
 
@@ -314,7 +314,7 @@ export function CreateConditionalModule(
 		module: class {},
 		providers: [
 			...providers,
-			...conditionalProviders,
+			...ConditionalProviders,
 			{
 				provide: Logger,
 				useValue: new Logger(name),
@@ -322,12 +322,12 @@ export function CreateConditionalModule(
 		],
 		exports: [
 			...exports,
-			...conditionalExports,
+			...ConditionalExports,
 			Logger,
 		],
 		imports: [
 			...imports,
-			...conditionalImports,
+			...ConditionalImports,
 		],
 	};
 }
@@ -335,8 +335,13 @@ export function CreateConditionalModule(
 /**
  * Backwards compatibility aliases - exported functions use PascalCase per project conventions
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createApplicationModule = CreateApplicationModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createConditionalModule = CreateConditionalModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createFeatureModule = CreateFeatureModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createGlobalModule = CreateGlobalModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createServiceModule = CreateServiceModule;

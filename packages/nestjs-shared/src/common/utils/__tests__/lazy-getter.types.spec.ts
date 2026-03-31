@@ -126,8 +126,8 @@ describe('TLazyGetter Utilities', () => {
 
 			// The function checks if Module is instanceof ModuleRef
 			// Since our mock is not a real ModuleRef, this should return falsy
-			const result = IsLazyModuleRefService(validService);
-			expect(typeof result === 'boolean' || result === undefined).toBe(true);
+			const Result = IsLazyModuleRefService(validService);
+			expect(typeof Result === 'boolean' || Result === undefined).toBe(true);
 		});
 
 		it('should return falsy for null', () => {
@@ -157,14 +157,14 @@ describe('TLazyGetter Utilities', () => {
 	describe('Type Definitions', () => {
 		it('should support TLazyGetter type', () => {
 			const getter: TLazyGetter<string> = () => 'value';
-			const result = getter();
-			expect(typeof result).toBe('string');
+			const Result = getter();
+			expect(typeof Result).toBe('string');
 		});
 
 		it('should support TOptionalLazyGetter type', () => {
 			const getter: TOptionalLazyGetter<string> = () => 'value';
-			const result = getter();
-			expect(typeof result === 'string' || result === undefined).toBe(true);
+			const Result = getter();
+			expect(typeof Result === 'string' || Result === undefined).toBe(true);
 		});
 
 		it('should support TTokenLazyGetter type', () => {
@@ -173,8 +173,8 @@ describe('TLazyGetter Utilities', () => {
 			} as any;
 
 			const getter: TTokenLazyGetter<any> = (token: string) => mockModule.get(token);
-			const result = getter('test-token');
-			expect(result).toEqual({ token: 'test-token' });
+			const Result = getter('test-token');
+			expect(Result).toEqual({ token: 'test-token' });
 		});
 
 		it('should support ILazyModuleRefService interface', () => {

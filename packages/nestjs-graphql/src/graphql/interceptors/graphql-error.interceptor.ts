@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, catchError, throwError } from 'rxjs';
 import { GraphQLError } from 'graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP_STATUS_INTERNAL_SERVER_ERROR, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
@@ -29,7 +29,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(GraphQLErrorInterceptor.name);
 	}
 
@@ -46,26 +46,26 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 	 */
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		// Extract GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const info = gqlContext.getInfo();
+		const GqlContext = GqlExecutionContext.create(context);
+		const Info = GqlContext.getInfo();
 
 		// Extract operation details for error context
-		const operationName = info?.operation?.name?.value ?? 'Anonymous';
-		const operationType = info?.operation?.operation ?? 'unknown';
-		const fieldName = info?.fieldName ?? 'unknown';
+		const OperationName = Info?.operation?.name?.value ?? 'Anonymous';
+		const OperationType = Info?.operation?.operation ?? 'unknown';
+		const FieldName = Info?.fieldName ?? 'unknown';
 
 		return next.handle().pipe(
 			catchError((error) => {
 				// Log the error with context
 				this.Logger?.error(
-					`GraphQL ${operationType} error in ${operationName}.${fieldName}: ${getErrorMessage(error)}`,
+					`GraphQL ${OperationType} error in ${OperationName}.${FieldName}: ${getErrorMessage(error)}`,
 				);
 
 				// Format the error for GraphQL response
-				const formattedError = this.formatError(error, operationType, operationName, fieldName);
+				const FormattedError = this.FormatError(error, OperationType, OperationName, FieldName);
 
 				// Re-throw as GraphQLError
-				return throwError(() => formattedError);
+				return throwError(() => FormattedError);
 			}),
 		);
 	}
@@ -79,7 +79,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 	 * @param fieldName - The field name
 	 * @returns GraphQLError - The formatted GraphQL error
 	 */
-	private formatError(
+	private FormatError(
 		error: any,
 		operationType: string,
 		operationName: string,
@@ -91,10 +91,10 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 		}
 
 		// Determine error code and message
-		const { code, message, statusCode } = this.categorizeError(error);
+		const { code, message, statusCode } = this.CategorizeError(error);
 
 		// Create extensions with additional context
-		const extensions = {
+		const Extensions = {
 			code,
 			statusCode,
 			operation: {
@@ -111,7 +111,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 
 		// Create new GraphQLError with formatted message
 		return new GraphQLError(message, {
-			extensions,
+			extensions: Extensions,
 			originalError: error,
 		});
 	}
@@ -122,7 +122,7 @@ export class GraphQLErrorInterceptor implements NestInterceptor, ILazyModuleRefS
 	 * @param error - The original error
 	 * @returns object - Error categorization result
 	 */
-	private categorizeError(error: any): { code: string; message: string; statusCode: number } {
+	private CategorizeError(error: any): { code: string; message: string; statusCode: number } {
 		// MongoDB duplicate key error code
 		const MONGODB_DUPLICATE_KEY_ERROR = 11_000;
 		// HTTP status for conflict

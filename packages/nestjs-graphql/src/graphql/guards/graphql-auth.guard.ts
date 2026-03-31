@@ -1,7 +1,7 @@
 import { Injectable, ExecutionContext, UnauthorizedException, CanActivate } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -32,7 +32,7 @@ export class GraphQLAuthGuard implements CanActivate, ILazyModuleRefService {
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLAuthGuard.name);
 		} catch {
@@ -52,26 +52,26 @@ export class GraphQLAuthGuard implements CanActivate, ILazyModuleRefService {
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Extract GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const request = gqlContext.getContext().req;
+		const GqlContext = GqlExecutionContext.create(context);
+		const Request = GqlContext.getContext().req;
 
 		// Extract token from Authorization header
-		const token = this.extractTokenFromHeader(request);
+		const Token = this.ExtractTokenFromHeader(Request);
 
-		if (!token) {
+		if (!Token) {
 			this.Logger?.warn('No authentication token provided');
 			throw new UnauthorizedException('Authentication required');
 		}
 
 		// Verify request.user is populated (set by a Passport strategy upstream)
-		const { user } = request;
+		const { user } = Request;
 		if (!user) {
 			this.Logger?.warn('Authentication token invalid: user not found on request');
 			throw new UnauthorizedException('Invalid authentication token');
 		}
 
 		// Propagate user into GraphQL context for resolvers
-		gqlContext.getContext().user = user;
+		GqlContext.getContext().user = user;
 
 		return true;
 	}
@@ -82,15 +82,15 @@ export class GraphQLAuthGuard implements CanActivate, ILazyModuleRefService {
 	 * @param request - The HTTP request object
 	 * @returns string | null - The extracted token or null
 	 */
-	protected extractTokenFromHeader(
+	protected ExtractTokenFromHeader(
 		request: { headers?: { authorization?: string } },
 	): string | null {
-		const authHeader: unknown = request.headers?.authorization;
+		const AuthHeader: unknown = request.headers?.authorization;
 
-		if (authHeader && typeof authHeader === 'string') {
-			const parts = authHeader.split(/\s+/);
-			if (parts[0]?.toLowerCase() === 'bearer' && parts[1]) {
-				return parts[1];
+		if (AuthHeader && typeof AuthHeader === 'string') {
+			const Parts = AuthHeader.split(/\s+/);
+			if (Parts[0]?.toLowerCase() === 'bearer' && Parts[1]) {
+				return Parts[1];
 			}
 		}
 

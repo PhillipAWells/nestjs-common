@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import {
@@ -17,7 +17,7 @@ import {
  * Performance metrics interface
  */
 export interface IPerformanceMetrics {
-	operation: string;
+	Operation: string;
 	duration: number;
 	startTime: Date;
 	endTime: Date;
@@ -35,13 +35,13 @@ export interface IPerformanceStats {
 	minDuration: number;
 	maxDuration: number;
 	errorRate: number;
-	operationsPerSecond: number;
+	OperationsPerSecond: number;
 }
 
 /**
  * GraphQL Performance Service
  *
- * Tracks and monitors performance metrics for GraphQL operations.
+ * Tracks and monitors performance metrics for GraphQL Operations.
  * Provides statistics and alerting capabilities for performance issues.
  *
  * @example
@@ -61,7 +61,7 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceService.name);
 	}
 
@@ -74,57 +74,57 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	private readonly MaxMetricsHistory = MAX_METRICS_HISTORY;
 
 	/**
-	 * Measures execution time of an operation
+	 * Measures execution time of an Operation
 	 *
-	 * @param operation - Operation name
+	 * @param Operation - Operation name
 	 * @param fn - Function to measure
 	 * @param metadata - Additional metadata
 	 * @returns Promise<T> - Function result
 	 */
 	@Traced({ name: 'graphql.performance.measure' })
-	public async measure<T>(
+	public async Measure<T>(
 		operation: string,
 		fn: () => Promise<T> | T,
 		metadata?: Record<string, any>,
 	): Promise<T> {
-		const startTime = new Date();
+		const StartTime = new Date();
 
 		try {
-			const result = await fn();
-			const endTime = new Date();
-			const duration = endTime.getTime() - startTime.getTime();
+			const Result = await fn();
+			const EndTime = new Date();
+			const Duration = EndTime.getTime() - StartTime.getTime();
 
-			this.recordMetrics({
-				operation,
-				duration,
-				startTime,
-				endTime,
+			this.RecordMetrics({
+				Operation: operation,
+				duration: Duration,
+				startTime: StartTime,
+				endTime: EndTime,
 				success: true,
 				error: undefined,
 				metadata,
 			});
 
-			// Log slow operations
-			if (duration > SLOW_OPERATION_THRESHOLD_MS) {
-				this.Logger.warn(`Slow operation: ${operation} took ${duration}ms`);
+			// Log slow Operations
+			if (Duration > SLOW_OPERATION_THRESHOLD_MS) {
+				this.Logger.warn(`Slow operation: ${operation} took ${Duration}ms`);
 			}
 
-			return result;
+			return Result;
 		} catch (error) {
-			const endTime = new Date();
-			const duration = endTime.getTime() - startTime.getTime();
+			const EndTime = new Date();
+			const Duration = EndTime.getTime() - StartTime.getTime();
 
-			this.recordMetrics({
-				operation,
-				duration,
-				startTime,
-				endTime,
+			this.RecordMetrics({
+				Operation: operation,
+				duration: Duration,
+				startTime: StartTime,
+				endTime: EndTime,
 				success: false,
 				error: getErrorMessage(error),
 				metadata,
 			});
 
-			this.Logger.error(`Operation failed: ${operation} took ${duration}ms`, getErrorStack(error));
+			this.Logger.error(`Operation failed: ${operation} took ${Duration}ms`, getErrorStack(error));
 			throw error;
 		}
 	}
@@ -132,7 +132,7 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	/**
 	 * Records performance metrics
 	 */
-	private recordMetrics(metrics: IPerformanceMetrics): void {
+	private RecordMetrics(metrics: IPerformanceMetrics): void {
 		this.Metrics.push(metrics);
 
 		// Maintain history limit
@@ -144,43 +144,43 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	/**
 	 * Gets performance statistics
 	 *
-	 * @param operation - Optional operation filter
+	 * @param Operation - Optional Operation filter
 	 * @param timeRange - Time range in milliseconds (default: 1 hour)
 	 * @returns IPerformanceStats - Statistics for the period
 	 */
-	public getStats(operation?: string, timeRange: number = DEFAULT_STATS_TIME_RANGE_MS): IPerformanceStats {
-		const now = Date.now();
-		const cutoff = now - timeRange;
+	public GetStats(operation?: string, timeRange: number = DEFAULT_STATS_TIME_RANGE_MS): IPerformanceStats {
+		const Now = Date.now();
+		const Cutoff = Now - timeRange;
 
-		const relevantMetrics = this.Metrics.filter(m =>
-			m.startTime.getTime() >= cutoff &&
-			(!operation || m.operation === operation),
+		const RelevantMetrics = this.Metrics.filter(m =>
+			m.startTime.getTime() >= Cutoff &&
+			(!operation || m.Operation === operation),
 		);
 
-		if (relevantMetrics.length === 0) {
+		if (RelevantMetrics.length === 0) {
 			return {
 				totalOperations: 0,
 				averageDuration: 0,
 				minDuration: 0,
 				maxDuration: 0,
 				errorRate: 0,
-				operationsPerSecond: 0,
+				OperationsPerSecond: 0,
 			};
 		}
 
-		const durations = relevantMetrics.map(m => m.duration);
-		const errors = relevantMetrics.filter(m => !m.success).length;
+		const Durations = RelevantMetrics.map(m => m.duration);
+		const Errors = RelevantMetrics.filter(m => !m.success).length;
 
-		const totalDuration = durations.reduce((sum, d) => sum + d, 0);
-		const timeSpanSeconds = timeRange / MILLISECONDS_TO_SECONDS;
+		const TotalDuration = Durations.reduce((sum, d) => sum + d, 0);
+		const TimeSpanSeconds = timeRange / MILLISECONDS_TO_SECONDS;
 
 		return {
-			totalOperations: relevantMetrics.length,
-			averageDuration: totalDuration / relevantMetrics.length,
-			minDuration: Math.min(...durations),
-			maxDuration: Math.max(...durations),
-			errorRate: errors / relevantMetrics.length,
-			operationsPerSecond: relevantMetrics.length / timeSpanSeconds,
+			totalOperations: RelevantMetrics.length,
+			averageDuration: TotalDuration / RelevantMetrics.length,
+			minDuration: Math.min(...Durations),
+			maxDuration: Math.max(...Durations),
+			errorRate: Errors / RelevantMetrics.length,
+			OperationsPerSecond: RelevantMetrics.length / TimeSpanSeconds,
 		};
 	}
 
@@ -191,21 +191,21 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	 * @param operation - Optional operation filter
 	 * @returns IPerformanceMetrics[] - Recent metrics
 	 */
-	public getRecentMetrics(limit: number = DEFAULT_RECENT_METRICS_LIMIT, operation?: string): IPerformanceMetrics[] {
+	public GetRecentMetrics(limit: number = DEFAULT_RECENT_METRICS_LIMIT, operation?: string): IPerformanceMetrics[] {
 		return this.Metrics
-			.filter(m => !operation || m.operation === operation)
+			.filter(m => !operation || m.Operation === operation)
 			.slice(-limit)
 			.reverse(); // Most recent first
 	}
 
 	/**
-	 * Gets slow operations
+	 * Gets slow Operations
 	 *
 	 * @param threshold - Duration threshold in milliseconds
 	 * @param limit - Maximum number to return
-	 * @returns IPerformanceMetrics[] - Slow operations
+	 * @returns IPerformanceMetrics[] - Slow Operations
 	 */
-	public getSlowOperations(threshold: number = SLOW_OPERATION_THRESHOLD_MS, limit: number = DEFAULT_SLOW_OPERATIONS_LIMIT): IPerformanceMetrics[] {
+	public GetSlowOperations(threshold: number = SLOW_OPERATION_THRESHOLD_MS, limit: number = DEFAULT_SLOW_OPERATIONS_LIMIT): IPerformanceMetrics[] {
 		return this.Metrics
 			.filter(m => m.duration >= threshold)
 			.sort((a, b) => b.duration - a.duration)
@@ -216,9 +216,9 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	 * Gets error metrics
 	 *
 	 * @param limit - Maximum number to return
-	 * @returns IPerformanceMetrics[] - Failed operations
+	 * @returns IPerformanceMetrics[] - Failed Operations
 	 */
-	public getErrors(limit: number = DEFAULT_ERRORS_LIMIT): IPerformanceMetrics[] {
+	public GetErrors(limit: number = DEFAULT_ERRORS_LIMIT): IPerformanceMetrics[] {
 		return this.Metrics
 			.filter(m => !m.success)
 			.slice(-limit)
@@ -228,40 +228,40 @@ export class GraphQLPerformanceService implements ILazyModuleRefService {
 	/**
 	 * Clears all metrics
 	 */
-	public clearMetrics(): void {
+	public ClearMetrics(): void {
 		this.Metrics.length = 0;
 		this.Logger.info('Performance metrics cleared');
 	}
 
 	/**
-	 * Gets operations summary
+	 * Gets Operations summary
 	 *
-	 * @returns Object with operation counts
+	 * @returns Object with Operation counts
 	 */
-	public getOperationsSummary(): Record<string, { count: number; avgDuration: number; errorRate: number }> {
-		const summary: Record<string, { durations: number[]; errors: number; count: number }> = {};
+	public GetOperationsSummary(): Record<string, { count: number; avgDuration: number; errorRate: number }> {
+		const Summary: Record<string, { durations: number[]; errors: number; count: number }> = {};
 
-		for (const metric of this.Metrics) {
-			const opSummary = summary[metric.operation] ?? (summary[metric.operation] = { durations: [], errors: 0, count: 0 });
+		for (const Metric of this.Metrics) {
+			const OpSummary = Summary[Metric.Operation] ?? (Summary[Metric.Operation] = { durations: [], errors: 0, count: 0 });
 
-			opSummary.durations.push(metric.duration);
-			opSummary.count++;
-			if (!metric.success) {
-				opSummary.errors++;
+			OpSummary.durations.push(Metric.duration);
+			OpSummary.count++;
+			if (!Metric.success) {
+				OpSummary.errors++;
 			}
 		}
 
-		const result: Record<string, { count: number; avgDuration: number; errorRate: number }> = {};
+		const Result: Record<string, { count: number; avgDuration: number; errorRate: number }> = {};
 
-		for (const [operation, data] of Object.entries(summary)) {
-			const avgDuration = data.durations.length > 0 ? data.durations.reduce((sum, d) => sum + d, 0) / data.durations.length : 0;
-			result[operation] = {
-				count: data.count,
-				avgDuration,
-				errorRate: data.count > 0 ? data.errors / data.count : 0,
+		for (const [Operation, Data] of Object.entries(Summary)) {
+			const AvgDuration = Data.durations.length > 0 ? Data.durations.reduce((sum, d) => sum + d, 0) / Data.durations.length : 0;
+			Result[Operation] = {
+				count: Data.count,
+				avgDuration: AvgDuration,
+				errorRate: Data.count > 0 ? Data.errors / Data.count : 0,
 			};
 		}
 
-		return result;
+		return Result;
 	}
 }

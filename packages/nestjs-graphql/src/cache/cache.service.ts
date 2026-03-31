@@ -27,10 +27,10 @@ export class CacheService extends BaseCacheService {
 	constructor(moduleRef: ModuleRef) {
 		super(moduleRef);
 		// Initialize contextual logger after lazy dependencies are ready
-		this.initializeContextualLogger();
+		this.InitializeContextualLogger();
 	}
 
-	protected generateCacheKey(args: any): string {
+	protected GenerateCacheKey(args: any): string {
 		// HTTP-specific key generation - simple string conversion
 		if (typeof args === 'string') {
 			return args;

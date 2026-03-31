@@ -8,10 +8,10 @@ export {
 	IS_PUBLIC_KEY,
 	ROLES_KEY,
 	PERMISSIONS_KEY,
-	detectContextType,
-	extractRequestFromContext,
-	extractUserFromContext,
-	extractAuthTokenFromContext,
+	DetectContextType,
+	ExtractRequestFromContext,
+	ExtractUserFromContext,
+	ExtractAuthTokenFromContext,
 } from './auth-decorators.js';
 
 export type { IContextOptions } from './auth-decorators.js';
@@ -25,5 +25,3 @@ export {
 	GraphQLContextParam,
 	GraphQLUser,
 } from './graphql-auth-decorators.js';
-
-export { ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext, DetectContextType } from './context-utils.js';

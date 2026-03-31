@@ -11,8 +11,8 @@ import {
 	IS_PUBLIC_KEY,
 	ROLES_KEY,
 	PERMISSIONS_KEY,
-	extractRequestFromContext,
-	extractAuthTokenFromContext,
+	ExtractRequestFromContext,
+	ExtractAuthTokenFromContext,
 } from '../auth-decorators.js';
 
 // NestJS internal constant — not re-exported from public API in NestJS 11+
@@ -164,7 +164,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = undefined;
 
@@ -184,7 +184,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = 'id';
 
@@ -203,7 +203,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = undefined;
 
@@ -222,7 +222,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = 'id';
 
@@ -242,7 +242,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = 'email';
 
@@ -262,7 +262,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx);
+			const request = ExtractRequestFromContext(ctx);
 			const user = request?.user;
 			const property = 'nonexistent';
 
@@ -282,7 +282,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeGraphQLCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx, { contextType: 'graphql' });
+			const request = ExtractRequestFromContext(ctx, { contextType: 'graphql' });
 			const user = request?.user;
 			const property = undefined;
 
@@ -302,7 +302,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeGraphQLCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const request = extractRequestFromContext(ctx, { contextType: 'graphql' });
+			const request = ExtractRequestFromContext(ctx, { contextType: 'graphql' });
 			const user = request?.user;
 			const property = 'name';
 
@@ -335,7 +335,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('mytoken123');
 		});
@@ -347,7 +347,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('mytoken123');
 		});
@@ -359,7 +359,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('mytoken123');
 		});
@@ -371,7 +371,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('mytoken456');
 		});
@@ -381,7 +381,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBeUndefined();
 		});
@@ -391,7 +391,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBeUndefined();
 		});
@@ -400,7 +400,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(null);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBeUndefined();
 		});
@@ -412,7 +412,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeGraphQLCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx, { contextType: 'graphql' });
+			const result = ExtractAuthTokenFromContext(ctx, { contextType: 'graphql' });
 
 			expect(result).toBe('graphql-token');
 		});
@@ -424,7 +424,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('token-with-spaces');
 		});
@@ -436,7 +436,7 @@ describe('Auth Decorators', () => {
 			const ctx = makeHttpCtx(mockRequest);
 
 			// Simulate what the decorator handler does
-			const result = extractAuthTokenFromContext(ctx);
+			const result = ExtractAuthTokenFromContext(ctx);
 
 			expect(result).toBe('Basic dXNlcjpwYXNz');
 		});

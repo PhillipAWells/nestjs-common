@@ -5,7 +5,7 @@ describe('Connection Types', () => {
 	describe('CursorUtils', () => {
 		describe('encodeCursor', () => {
 			it('should encode cursor data to base64', () => {
-				const cursor = CursorUtils.encodeCursor('123', 1234567890);
+				const cursor = CursorUtils.EncodeCursor('123', 1234567890);
 
 				expect(cursor).toBeDefined();
 				expect(typeof cursor).toBe('string');
@@ -22,27 +22,27 @@ describe('Connection Types', () => {
 				const original = { id: '123', timestamp: 1234567890 };
 				const encoded = Buffer.from(JSON.stringify(original)).toString('base64');
 
-				const decoded = CursorUtils.decodeCursor(encoded);
+				const decoded = CursorUtils.DecodeCursor(encoded);
 
 				expect(decoded).toEqual(original);
 			});
 
 			it('should throw error for invalid base64', () => {
-				expect(() => CursorUtils.decodeCursor('invalid')).toThrow('Invalid cursor format');
+				expect(() => CursorUtils.DecodeCursor('invalid')).toThrow('Invalid cursor format');
 			});
 
 			it('should throw error for invalid JSON', () => {
 				const invalidJson = Buffer.from('not json').toString('base64');
-				expect(() => CursorUtils.decodeCursor(invalidJson)).toThrow('Invalid cursor format');
+				expect(() => CursorUtils.DecodeCursor(invalidJson)).toThrow('Invalid cursor format');
 			});
 		});
 
 		describe('createCursor', () => {
 			it('should create cursor from entity with createdAt', () => {
 				const entity = { id: '123', createdAt: new Date('2023-01-01') };
-				const cursor = CursorUtils.createCursor(entity);
+				const cursor = CursorUtils.CreateCursor(entity);
 
-				const decoded = CursorUtils.decodeCursor(cursor);
+				const decoded = CursorUtils.DecodeCursor(cursor);
 
 				expect(decoded.id).toBe('123');
 				expect(decoded.timestamp).toBe(entity.createdAt.getTime());
@@ -50,9 +50,9 @@ describe('Connection Types', () => {
 
 			it('should create cursor from entity without createdAt', () => {
 				const entity = { id: '123' };
-				const cursor = CursorUtils.createCursor(entity);
+				const cursor = CursorUtils.CreateCursor(entity);
 
-				const decoded = CursorUtils.decodeCursor(cursor);
+				const decoded = CursorUtils.DecodeCursor(cursor);
 
 				expect(decoded.id).toBe('123');
 				expect(decoded.timestamp).toBeDefined();

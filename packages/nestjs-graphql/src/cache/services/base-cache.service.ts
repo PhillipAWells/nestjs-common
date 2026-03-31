@@ -9,7 +9,7 @@ import { Injectable, OnModuleDestroy, BadRequestException } from '@nestjs/common
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ModuleRef } from '@nestjs/core';
 import type { Cache } from 'cache-manager';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { PyroscopeService, ProfileMethod } from '@pawells/nestjs-pyroscope';
@@ -63,7 +63,7 @@ export interface ICacheStats {
  */
 @Injectable()
 export abstract class BaseCacheService implements ILazyModuleRefService, OnModuleDestroy {
-	protected Logger: AppLogger | undefined;
+	protected Logger: IContextualLogger | undefined;
 
 	protected Stats: ICacheStats = {
 		hits: 0,
@@ -110,9 +110,6 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	// Cache manager - memoized for frequent access
 	private _CacheManager: Cache | undefined;
 
-	// Base logger - memoized and contextualized
-	private _AppLogger: AppLogger | undefined;
-
 	public readonly Module: ModuleRef;
 
 	constructor(moduleRef: ModuleRef) {
@@ -121,24 +118,17 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 
 	public get CacheManager(): Cache {
 		if (!this._CacheManager) {
-			const cacheManager = this.Module.get<Cache>(CACHE_MANAGER);
-			if (!cacheManager) {
+			const CacheManagerInstance = this.Module.get<Cache>(CACHE_MANAGER);
+			if (!CacheManagerInstance) {
 				throw new Error('CacheManager not found in module');
 			}
-			this._CacheManager = cacheManager;
+			this._CacheManager = CacheManagerInstance;
 		}
 		return this._CacheManager;
 	}
 
 	public get AppLogger(): AppLogger {
-		if (!this._AppLogger) {
-			const logger = this.Module.get<AppLogger>(AppLogger);
-			if (!logger) {
-				throw new Error('AppLogger not found in module');
-			}
-			this._AppLogger = logger;
-		}
-		return this._AppLogger;
+		return this.Module.get(AppLogger, { strict: false });
 	}
 
 	public get Pyroscope(): PyroscopeService {
@@ -146,17 +136,17 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	}
 
 	// Initialize contextual logger after getting AppLogger
-	protected initializeContextualLogger(): void {
+	protected InitializeContextualLogger(): void {
 		this.Logger = this.AppLogger.createContextualLogger(BaseCacheService.name);
-		this.startPeriodicCleanup();
+		this.StartPeriodicCleanup();
 	}
 
 	/**
 	 * Start periodic cleanup of operation timings to prevent memory leaks
 	 */
-	private startPeriodicCleanup(): void {
+	private StartPeriodicCleanup(): void {
 		this.CleanupIntervalRef ??= setInterval(
-			() => this.cleanupTimings(),
+			() => this.CleanupTimings(),
 			BaseCacheService.CLEANUP_INTERVAL_MS,
 		);
 	}
@@ -164,41 +154,41 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Clean up old timing entries to prevent unbounded map growth
 	 */
-	private cleanupTimings(): void {
+	private CleanupTimings(): void {
 		if (this.OperationTimings.size > BaseCacheService.MAX_OPERATION_TIMINGS) {
-			const now = Date.now();
-			let removedCount = 0;
+			const Now = Date.now();
+			let RemovedCount = 0;
 
 			// First, try to remove expired entries (older than 1 hour)
-			for (const [key, timings] of this.OperationTimings.entries()) {
-				const oldestTiming = Math.min(...timings);
-				if (now - oldestTiming > BaseCacheService.OPERATION_TIMING_MAX_AGE_MS) {
-					this.OperationTimings.delete(key);
-					removedCount++;
+			for (const [Key, Timings] of this.OperationTimings.entries()) {
+				const OldestTiming = Math.min(...Timings);
+				if (Now - OldestTiming > BaseCacheService.OPERATION_TIMING_MAX_AGE_MS) {
+					this.OperationTimings.delete(Key);
+					RemovedCount++;
 				}
 			}
 
 			// If still too large, remove oldest entries using FIFO strategy
 			if (this.OperationTimings.size > BaseCacheService.MAX_OPERATION_TIMINGS) {
-				const toRemove = this.OperationTimings.size - BaseCacheService.MAX_OPERATION_TIMINGS;
-				const entries = Array.from(this.OperationTimings.entries());
+				const ToRemove = this.OperationTimings.size - BaseCacheService.MAX_OPERATION_TIMINGS;
+				const Entries = Array.from(this.OperationTimings.entries());
 
 				// Sort by oldest first timing
-				entries.sort((a, b) => {
-					const minA = Math.min(...a[1]);
-					const minB = Math.min(...b[1]);
-					return minA - minB;
+				Entries.sort((a, b) => {
+					const MinA = Math.min(...a[1]);
+					const MinB = Math.min(...b[1]);
+					return MinA - MinB;
 				});
 
 				// Remove oldest entries
-				for (let i = 0; i < toRemove && i < entries.length; i++) {
-					this.OperationTimings.delete(entries[i]?.[0] ?? '');
-					removedCount++;
+				for (let I = 0; I < ToRemove && I < Entries.length; I++) {
+					this.OperationTimings.delete(Entries[I]?.[0] ?? '');
+					RemovedCount++;
 				}
 			}
 
-			if (removedCount > 0) {
-				this.Logger?.debug(`Operation timings cleanup: removed ${removedCount} entries`, JSON.stringify({
+			if (RemovedCount > 0) {
+				this.Logger?.debug(`Operation timings cleanup: removed ${RemovedCount} entries`, JSON.stringify({
 					remainingSize: this.OperationTimings.size,
 					maxSize: BaseCacheService.MAX_OPERATION_TIMINGS,
 				}));
@@ -211,14 +201,14 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	 * @param args - Arguments for key generation
 	 * @returns string - Generated cache key
 	 */
-	protected abstract generateCacheKey(args: any): string;
+	protected abstract GenerateCacheKey(args: any): string;
 
 	/**
 	 * Validate cache key before operations
 	 * @param key Cache key to validate
 	 * @throws BadRequestException if key is invalid
 	 */
-	private validateCacheKey(key: string): void {
+	private ValidateCacheKey(key: string): void {
 		if (typeof key !== 'string') {
 			throw new BadRequestException('Cache key must be a string');
 		}
@@ -253,48 +243,48 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.get',
 		tags: { operation: 'cache_get', cacheType: 'redis' },
 	})
-	public async get<T>(key: string): Promise<T | undefined> {
-		this.validateCacheKey(key);
-		const startTime = Date.now();
+	public async Get<T>(key: string): Promise<T | undefined> {
+		this.ValidateCacheKey(key);
+		const StartTime = Date.now();
 		this.Logger?.debug('Cache get operation', JSON.stringify({ key }));
 
 		try {
-			const value = await this.CacheManager.get<T>(key);
-			const duration = Date.now() - startTime;
+			const Value = await this.CacheManager.get<T>(key);
+			const Duration = Date.now() - StartTime;
 
 			// Track operation timing
-			this.trackOperationTiming('get', duration);
+			this.TrackOperationTiming('get', Duration);
 
-			if (value !== null && value !== undefined) {
+			if (Value !== null && Value !== undefined) {
 				this.Stats.hits++;
-				this.updateHitRate();
+				this.UpdateHitRate();
 				this.Logger?.debug('Cache hit', JSON.stringify({
 					key,
-					durationMs: duration,
-					size: JSON.stringify(value).length,
+					durationMs: Duration,
+					size: JSON.stringify(Value).length,
 				}));
 				// Log enhanced stats periodically
-				this.logEnhancedStats();
-				return value;
+				this.LogEnhancedStats();
+				return Value;
 			} else {
 				this.Stats.misses++;
-				this.updateHitRate();
+				this.UpdateHitRate();
 				this.Logger?.debug('Cache miss', JSON.stringify({
 					key,
-					durationMs: duration,
+					durationMs: Duration,
 				}));
 				// Log enhanced stats periodically
-				this.logEnhancedStats();
+				this.LogEnhancedStats();
 				return undefined;
 			}
 		} catch (error) {
 			this.Stats.errors++;
-			const duration = Date.now() - startTime;
-			this.trackOperationTiming('get', duration);
+			const Duration = Date.now() - StartTime;
+			this.TrackOperationTiming('get', Duration);
 			this.Logger?.error('Cache get error', JSON.stringify({
 				key,
 				error: (error as Error).message,
-				durationMs: duration,
+				durationMs: Duration,
 			}));
 			return undefined;
 		}
@@ -311,34 +301,34 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.set',
 		tags: { operation: 'cache_set', cacheType: 'redis' },
 	})
-	public async set<T>(key: string, value: T, ttl?: number): Promise<void> {
-		this.validateCacheKey(key);
-		const startTime = Date.now();
-		const size = JSON.stringify(value).length;
+	public async Set<T>(key: string, value: T, ttl?: number): Promise<void> {
+		this.ValidateCacheKey(key);
+		const StartTime = Date.now();
+		const Size = JSON.stringify(value).length;
 		this.Logger?.debug('Cache set operation', JSON.stringify({
 			key,
 			ttl,
-			size,
+			Size,
 		}));
 
 		try {
 			await this.CacheManager.set(key, value, ttl);
 			this.Stats.sets++;
-			const duration = Date.now() - startTime;
-			this.trackOperationTiming('set', duration);
+			const Duration = Date.now() - StartTime;
+			this.TrackOperationTiming('set', Duration);
 			this.Logger?.debug('Cache set successful', JSON.stringify({
 				key,
-				durationMs: duration,
-				size,
+				durationMs: Duration,
+				Size,
 			}));
 		} catch (error) {
 			this.Stats.errors++;
-			const duration = Date.now() - startTime;
-			this.trackOperationTiming('set', duration);
+			const Duration = Date.now() - StartTime;
+			this.TrackOperationTiming('set', Duration);
 			this.Logger?.error('Cache set error', JSON.stringify({
 				key,
 				error: (error as Error).message,
-				durationMs: duration,
+				durationMs: Duration,
 			}));
 			throw error;
 		}
@@ -353,32 +343,32 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.del',
 		tags: { operation: 'cache_del', cacheType: 'redis' },
 	})
-	public async del(key: string | string[]): Promise<void> {
-		const keys = Array.isArray(key) ? key : [key];
+	public async Del(key: string | string[]): Promise<void> {
+		const Keys = Array.isArray(key) ? key : [key];
 		// Validate all keys before deletion
-		for (const k of keys) {
-			this.validateCacheKey(k);
+		for (const K of Keys) {
+			this.ValidateCacheKey(K);
 		}
-		const startTime = Date.now();
-		this.Logger?.debug(`Cache delete: ${keys.join(', ')}`);
+		const StartTime = Date.now();
+		this.Logger?.debug(`Cache delete: ${Keys.join(', ')}`);
 		try {
-			for (const k of keys) {
-				await this.CacheManager.del(k);
+			for (const K of Keys) {
+				await this.CacheManager.del(K);
 			}
 			this.Stats.deletes++;
-			const duration = Date.now() - startTime;
-			this.trackOperationTiming('del', duration);
-			this.Logger?.debug(`Cache deleted: ${keys.length} key(s)`, JSON.stringify({
-				durationMs: duration,
-				keysCount: keys.length,
+			const Duration = Date.now() - StartTime;
+			this.TrackOperationTiming('del', Duration);
+			this.Logger?.debug(`Cache deleted: ${Keys.length} key(s)`, JSON.stringify({
+				durationMs: Duration,
+				keysCount: Keys.length,
 			}));
 		} catch (error) {
 			this.Stats.errors++;
-			const duration = Date.now() - startTime;
-			this.trackOperationTiming('del', duration);
+			const Duration2 = Date.now() - StartTime;
+			this.TrackOperationTiming('del', Duration2);
 			this.Logger?.error(`Cache delete error for keys ${key}:`, JSON.stringify({
 				error: (error as Error).message,
-				durationMs: duration,
+				durationMs: Duration2,
 			}));
 			throw error;
 		}
@@ -392,7 +382,7 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.clear',
 		tags: { operation: 'cache_clear', cacheType: 'redis' },
 	})
-	public async clear(): Promise<void> {
+	public async Clear(): Promise<void> {
 		this.Logger?.info('Clearing all cache entries');
 		try {
 			// cache-manager v7 uses clear() method exclusively
@@ -412,11 +402,11 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	 * @returns True if key exists
 	 */
 	@Traced({ name: 'cache.exists' })
-	public async exists(key: string): Promise<boolean> {
-		this.validateCacheKey(key);
+	public async Exists(key: string): Promise<boolean> {
+		this.ValidateCacheKey(key);
 		try {
-			const value = await this.CacheManager.get(key);
-			return value !== null && value !== undefined;
+			const Value = await this.CacheManager.get(key);
+			return Value !== null && Value !== undefined;
 		} catch (error) {
 			this.Stats.errors++;
 			this.Logger?.error(`Cache exists error for key ${key}`, getErrorMessage(error));
@@ -436,24 +426,24 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.getOrSet',
 		tags: { operation: 'cache_getOrSet', cacheType: 'redis' },
 	})
-	public async getOrSet<T>(
+	public async GetOrSet<T>(
 		key: string,
 		factory: () => Promise<T>,
 		ttl?: number,
 	): Promise<T> {
-		this.validateCacheKey(key);
+		this.ValidateCacheKey(key);
 		this.Logger?.debug(`Cache getOrSet: ${key}`);
-		const cached = await this.get<T>(key);
-		if (cached !== undefined) {
-			return cached;
+		const Cached = await this.Get<T>(key);
+		if (Cached !== undefined) {
+			return Cached;
 		}
 
 		this.Logger?.debug(`Executing factory function for key: ${key}`);
 		try {
-			const value = await factory();
-			await this.set(key, value, ttl);
+			const Value = await factory();
+			await this.Set(key, Value, ttl);
 			this.Logger?.debug(`Factory result cached for key: ${key}`);
-			return value;
+			return Value;
 		} catch (error) {
 			this.Logger?.error(`Factory function error for key ${key}`, getErrorMessage(error));
 			throw error;
@@ -469,24 +459,24 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		name: 'BaseCacheService.invalidatePattern',
 		tags: { operation: 'cache_invalidatePattern', cacheType: 'redis' },
 	})
-	public async invalidatePattern(pattern: string): Promise<number> {
-		this.validateCacheKey(pattern);
+	public async InvalidatePattern(pattern: string): Promise<number> {
+		this.ValidateCacheKey(pattern);
 		this.Logger?.info(`Invalidating cache pattern: ${pattern}`);
 		try {
 			// For Redis store, we need to access the underlying client
 			const { store } = (this.CacheManager as any);
 			if (store && typeof store.keys === 'function') {
-				const keys = await store.keys(pattern);
-				if (keys && keys.length > 0) {
-					await this.del(keys);
+				const Keys = await store.keys(pattern);
+				if (Keys && Keys.length > 0) {
+					await this.Del(Keys);
 					// Track invalidation pattern
-					this.Stats.invalidationPatterns[pattern] = (this.Stats.invalidationPatterns[pattern] ?? 0) + keys.length;
-					this.Logger?.info(`Invalidated ${keys.length} cache keys matching pattern: ${pattern}`, JSON.stringify({
+					this.Stats.invalidationPatterns[pattern] = (this.Stats.invalidationPatterns[pattern] ?? 0) + Keys.length;
+					this.Logger?.info(`Invalidated ${Keys.length} cache keys matching pattern: ${pattern}`, JSON.stringify({
 						pattern,
-						keysRemoved: keys.length,
+						keysRemoved: Keys.length,
 						totalForPattern: this.Stats.invalidationPatterns[pattern],
 					}));
-					return keys.length;
+					return Keys.length;
 				} else {
 					this.Logger?.debug(`No cache keys found matching pattern: ${pattern}`);
 				}
@@ -508,14 +498,14 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	 * Get cache statistics
 	 * @returns ICacheStats object
 	 */
-	public getStats(): ICacheStats {
+	public GetStats(): ICacheStats {
 		return { ...this.Stats };
 	}
 
 	/**
 	 * Reset cache statistics
 	 */
-	public resetStats(): void {
+	public ResetStats(): void {
 		this.Stats = {
 			hits: 0,
 			misses: 0,
@@ -541,125 +531,125 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 		this.LastStatsLog = new Date();
 
 		// Restart periodic cleanup
-		this.startPeriodicCleanup();
+		this.StartPeriodicCleanup();
 	}
 
 	/**
 	 * Update hit rate calculation
 	 */
-	private updateHitRate(): void {
-		const total = this.Stats.hits + this.Stats.misses;
-		this.Stats.hitRate = total > 0 ? this.Stats.hits / total : 0;
+	private UpdateHitRate(): void {
+		const Total = this.Stats.hits + this.Stats.misses;
+		this.Stats.hitRate = Total > 0 ? this.Stats.hits / Total : 0;
 	}
 
 	/**
 	 * Track operation timing for percentiles calculation
 	 */
-	private trackOperationTiming(operation: string, duration: number): void {
+	private TrackOperationTiming(operation: string, duration: number): void {
 		if (!this.OperationTimings.has(operation)) {
 			this.OperationTimings.set(operation, []);
 		}
 
-		const timings = this.OperationTimings.get(operation);
-		if (!timings) return;
-		timings.push(duration);
+		const Timings = this.OperationTimings.get(operation);
+		if (!Timings) return;
+		Timings.push(duration);
 
 		// Keep only last CACHE_MAX_TIMINGS_PER_OPERATION timings to prevent memory growth per operation type
-		if (timings.length > CACHE_MAX_TIMINGS_PER_OPERATION) {
-			timings.shift();
+		if (Timings.length > CACHE_MAX_TIMINGS_PER_OPERATION) {
+			Timings.shift();
 		}
 
 		// Update stats operation timings
-		this.Stats.operationTimings[operation as keyof typeof this.Stats.operationTimings] = [...timings];
+		this.Stats.operationTimings[operation as keyof typeof this.Stats.operationTimings] = [...Timings];
 
 		// Trigger cleanup if approaching size limit (every CACHE_TIMING_CLEANUP_TRIGGER_SIZE operations)
 		if (this.OperationTimings.size % CACHE_TIMING_CLEANUP_TRIGGER_SIZE === 0 && this.OperationTimings.size > 0) {
-			this.cleanupTimings();
+			this.CleanupTimings();
 		}
 	}
 
 	/**
 	 * Calculate percentile from timing array
 	 */
-	private calculatePercentile(timings: number[], percentile: number): number {
+	private CalculatePercentile(timings: number[], percentile: number): number {
 		if (timings.length === 0) return 0;
-		const sorted = [...timings].sort((a, b) => a - b);
-		const index = Math.ceil((percentile / PERCENTAGE_FACTOR) * sorted.length) - 1;
-		return sorted[Math.min(sorted.length - 1, Math.max(0, index))] ?? 0;
+		const Sorted = [...timings].sort((a, b) => a - b);
+		const Index = Math.ceil((percentile / PERCENTAGE_FACTOR) * Sorted.length) - 1;
+		return Sorted[Math.min(Sorted.length - 1, Math.max(0, Index))] ?? 0;
 	}
 
 	/**
 	 * Log enhanced cache statistics periodically
 	 */
-	private logEnhancedStats(): void {
-		const now = new Date();
-		if (now.getTime() - this.LastStatsLog.getTime() < this.STATS_LOG_INTERVAL) {
+	private LogEnhancedStats(): void {
+		const Now = new Date();
+		if (Now.getTime() - this.LastStatsLog.getTime() < this.STATS_LOG_INTERVAL) {
 			return;
 		}
-		this.LastStatsLog = now;
+		this.LastStatsLog = Now;
 
-		const stats = this.getStats();
-		const totalOps = stats.hits + stats.misses + stats.sets + stats.deletes + stats.clears;
+		const Stats = this.GetStats();
+		const TotalOps = Stats.hits + Stats.misses + Stats.sets + Stats.deletes + Stats.clears;
 
 		// Calculate percentiles
 
-		const getP50 = this.calculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P50);
+		const GetP50 = this.CalculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P50);
 
-		const getP95 = this.calculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P95);
+		const GetP95 = this.CalculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P95);
 
-		const getP99 = this.calculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P99);
+		const GetP99 = this.CalculatePercentile(this.Stats.operationTimings.get, CACHE_PERCENTILE_P99);
 
-		const setP50 = this.calculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P50);
+		const SetP50 = this.CalculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P50);
 
-		const setP95 = this.calculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P95);
+		const SetP95 = this.CalculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P95);
 
-		const setP99 = this.calculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P99);
+		const SetP99 = this.CalculatePercentile(this.Stats.operationTimings.set, CACHE_PERCENTILE_P99);
 
 		// Log comprehensive statistics
 
 		this.Logger?.info('Cache statistics', JSON.stringify({
-			totalKeys: stats.totalKeys ?? 0,
+			totalKeys: Stats.totalKeys ?? 0,
 
-			memoryUsage: stats.memoryUsage ? `${(stats.memoryUsage / BYTES_PER_MEGABYTE).toFixed(2)}MB` : 'unknown',
+			memoryUsage: Stats.memoryUsage ? `${(Stats.memoryUsage / BYTES_PER_MEGABYTE).toFixed(2)}MB` : 'unknown',
 
-			hitRate: `${(stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
+			hitRate: `${(Stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
 
-			missRate: `${((stats.misses / (stats.hits + stats.misses || 1)) * PERCENTAGE_FACTOR).toFixed(1)}%`,
-			totalOperations: totalOps,
-			evictions: stats.evictions,
-			errors: stats.errors,
+			missRate: `${((Stats.misses / (Stats.hits + Stats.misses || 1)) * PERCENTAGE_FACTOR).toFixed(1)}%`,
+			totalOperations: TotalOps,
+			evictions: Stats.evictions,
+			errors: Stats.errors,
 		}));
 
 		// Log operation timing percentiles
 		this.Logger?.info('Cache operation timing percentiles', JSON.stringify({
 			get: {
-				p50: `${getP50}ms`,
-				p95: `${getP95}ms`,
-				p99: `${getP99}ms`,
+				p50: `${GetP50}ms`,
+				p95: `${GetP95}ms`,
+				p99: `${GetP99}ms`,
 				count: this.Stats.operationTimings.get.length,
 			},
 			set: {
-				p50: `${setP50}ms`,
-				p95: `${setP95}ms`,
-				p99: `${setP99}ms`,
+				p50: `${SetP50}ms`,
+				p95: `${SetP95}ms`,
+				p99: `${SetP99}ms`,
 				count: this.Stats.operationTimings.set.length,
 			},
 		}));
 
 		// Log eviction reasons if any
-		if (stats.evictions > 0) {
+		if (Stats.evictions > 0) {
 			this.Logger?.info('Cache eviction summary', JSON.stringify({
-				totalEvictions: stats.evictions,
-				reasons: stats.evictionReasons,
+				totalEvictions: Stats.evictions,
+				reasons: Stats.evictionReasons,
 			}));
 		}
 
 		// Log invalidation patterns if any
-		const patternCount = Object.keys(stats.invalidationPatterns).length;
-		if (patternCount > 0) {
+		const PatternCount = Object.keys(Stats.invalidationPatterns).length;
+		if (PatternCount > 0) {
 			this.Logger?.info('Cache invalidation patterns', JSON.stringify({
-				patterns: stats.invalidationPatterns,
-				totalPatterns: patternCount,
+				patterns: Stats.invalidationPatterns,
+				totalPatterns: PatternCount,
 			}));
 		}
 	}
@@ -667,7 +657,7 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Record cache eviction event
 	 */
-	protected recordEviction(reason: 'TTL' | 'LRU' | 'manual' | 'memory_limit', keysRemoved: number, memoryFreed?: number): void {
+	protected RecordEviction(reason: 'TTL' | 'LRU' | 'manual' | 'memory_limit', keysRemoved: number, memoryFreed?: number): void {
 		this.Stats.evictions += keysRemoved;
 		this.Stats.evictionReasons[reason] = (this.Stats.evictionReasons[reason] ?? 0) + keysRemoved;
 
@@ -682,7 +672,7 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Record cache warming event
 	 */
-	protected recordCacheWarming(keysLoaded: number, durationMs: number): void {
+	protected RecordCacheWarming(keysLoaded: number, durationMs: number): void {
 		this.Logger?.info('Cache warming completed', JSON.stringify({
 			keysLoaded,
 			duration: `${(durationMs / MS_PER_SECOND).toFixed(2)}s`,
@@ -693,7 +683,7 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Record cache synchronization event
 	 */
-	protected recordCacheSync(source: string, keysSynced: number, durationMs: number): void {
+	protected RecordCacheSync(source: string, keysSynced: number, durationMs: number): void {
 		this.Logger?.info('Cache synchronization completed', JSON.stringify({
 			source,
 			keysSynced,
@@ -705,7 +695,7 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Update memory usage tracking
 	 */
-	protected updateMemoryUsage(usage: number): void {
+	protected UpdateMemoryUsage(usage: number): void {
 		this.Stats.memoryUsage = usage;
 		this.MemorySnapshots.push({
 			timestamp: new Date(),
@@ -721,31 +711,31 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 	/**
 	 * Get memory usage trend
 	 */
-	protected getMemoryTrend(): { trend: 'increasing' | 'decreasing' | 'stable'; rate: number } {
+	protected GetMemoryTrend(): { trend: 'increasing' | 'decreasing' | 'stable'; rate: number } {
 		if (this.MemorySnapshots.length < 2) {
 			return { trend: 'stable', rate: 0 };
 		}
 
-		const recent = this.MemorySnapshots.slice(-CACHE_MEMORY_TREND_WINDOW);
-		const [first] = recent;
-		const last = recent[recent.length - 1];
+		const Recent = this.MemorySnapshots.slice(-CACHE_MEMORY_TREND_WINDOW);
+		const [First] = Recent;
+		const Last = Recent[Recent.length - 1];
 
-		if (!first || !last) {
+		if (!First || !Last) {
 			return { trend: 'stable', rate: 0 };
 		}
 
-		const timeDiff = last.timestamp.getTime() - first.timestamp.getTime();
+		const TimeDiff = Last.timestamp.getTime() - First.timestamp.getTime();
 
-		const rate = (last.usage - first.usage) / (timeDiff / MS_PER_SECOND); // bytes per second
+		const Rate = (Last.usage - First.usage) / (TimeDiff / MS_PER_SECOND); // bytes per second
 
-		let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
-		if (rate > CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s increase
-			trend = 'increasing';
-		} else if (rate < -CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s decrease
-			trend = 'decreasing';
+		let Trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
+		if (Rate > CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s increase
+			Trend = 'increasing';
+		} else if (Rate < -CACHE_MEMORY_TREND_THRESHOLD_BYTES_PER_SEC) { // > 1KB/s decrease
+			Trend = 'decreasing';
 		}
 
-		return { trend, rate };
+		return { trend: Trend, rate: Rate };
 	}
 
 	/**
@@ -760,29 +750,29 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 			}
 
 			// Log final statistics unconditionally on destroy
-			const stats = this.getStats();
+			const Stats = this.GetStats();
 			this.Logger?.info('Cache statistics', JSON.stringify({
-				hitRate: `${(stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
-				hits: stats.hits,
-				misses: stats.misses,
-				sets: stats.sets,
-				deletes: stats.deletes,
-				clears: stats.clears,
-				errors: stats.errors,
+				hitRate: `${(Stats.hitRate * PERCENTAGE_FACTOR).toFixed(1)}%`,
+				hits: Stats.hits,
+				misses: Stats.misses,
+				sets: Stats.sets,
+				deletes: Stats.deletes,
+				clears: Stats.clears,
+				errors: Stats.errors,
 			}));
 			this.Logger?.info('Cache service shutdown', JSON.stringify({
-				finalStats: stats,
-				totalOperations: stats.hits + stats.misses + stats.sets + stats.deletes + stats.clears,
-				hitRatePercent: (stats.hitRate * PERCENTAGE_FACTOR).toFixed(2),
+				finalStats: Stats,
+				totalOperations: Stats.hits + Stats.misses + Stats.sets + Stats.deletes + Stats.clears,
+				hitRatePercent: (Stats.hitRate * PERCENTAGE_FACTOR).toFixed(2),
 				operationTimingsSize: this.OperationTimings.size,
 			}));
 
 			// Log memory trend
-			const memoryTrend = this.getMemoryTrend();
-			if (memoryTrend.trend !== 'stable') {
+			const MemoryTrend = this.GetMemoryTrend();
+			if (MemoryTrend.trend !== 'stable') {
 				this.Logger?.info('Final memory trend', JSON.stringify({
-					trend: memoryTrend.trend,
-					rate: `${(memoryTrend.rate / BYTES_PER_KILOBYTE).toFixed(2)} KB/s`,
+					trend: MemoryTrend.trend,
+					rate: `${(MemoryTrend.rate / BYTES_PER_KILOBYTE).toFixed(2)} KB/s`,
 				}));
 			}
 
@@ -790,10 +780,10 @@ export abstract class BaseCacheService implements ILazyModuleRefService, OnModul
 			try {
 				const { store } = (this.CacheManager as any);
 				if (store && typeof store.client?.dbsize === 'function') {
-					const dbSize = await store.client.dbsize();
-					this.Stats.totalKeys = dbSize;
+					const DbSize = await store.client.dbsize();
+					this.Stats.totalKeys = DbSize;
 					this.Logger?.info('Redis database size', JSON.stringify({
-						keys: dbSize,
+						keys: DbSize,
 					}));
 				}
 			} catch (error) {

@@ -68,14 +68,14 @@ export class QdrantCollectionService {
 	 * });
 	 * ```
 	 */
-	public async search(params: Parameters<QdrantClient['search']>[1]): ReturnType<QdrantClient['search']> {
+	public async Search(params: Parameters<QdrantClient['search']>[1]): ReturnType<QdrantClient['search']> {
 		try {
 			this.Logger.debug(`Searching collection "${this.CollectionName}"`);
 			return await this.Client.search(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
-			this.Logger.error(errorMessage);
-			throw new InternalServerError(errorMessage);
+			const ErrorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(ErrorMessage);
+			throw new InternalServerError(ErrorMessage);
 		}
 	}
 
@@ -104,14 +104,14 @@ export class QdrantCollectionService {
 	 * });
 	 * ```
 	 */
-	public async upsert(params: Parameters<QdrantClient['upsert']>[1]): ReturnType<QdrantClient['upsert']> {
+	public async Upsert(params: Parameters<QdrantClient['upsert']>[1]): ReturnType<QdrantClient['upsert']> {
 		try {
 			this.Logger.debug(`Upserting points to collection "${this.CollectionName}"`);
 			return await this.Client.upsert(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
-			this.Logger.error(errorMessage);
-			throw new InternalServerError(errorMessage);
+			const ErrorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(ErrorMessage);
+			throw new InternalServerError(ErrorMessage);
 		}
 	}
 
@@ -138,14 +138,14 @@ export class QdrantCollectionService {
 	 * });
 	 * ```
 	 */
-	public async delete(params: Parameters<QdrantClient['delete']>[1]): ReturnType<QdrantClient['delete']> {
+	public async Delete(params: Parameters<QdrantClient['delete']>[1]): ReturnType<QdrantClient['delete']> {
 		try {
 			this.Logger.debug(`Deleting points from collection "${this.CollectionName}"`);
 			return await this.Client.delete(this.CollectionName, params);
 		} catch (error) {
-			const errorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
-			this.Logger.error(errorMessage);
-			throw new InternalServerError(errorMessage);
+			const ErrorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(ErrorMessage);
+			throw new InternalServerError(ErrorMessage);
 		}
 	}
 
@@ -163,14 +163,14 @@ export class QdrantCollectionService {
 	 * console.log(`Collection has ${info.points_count} points`);
 	 * ```
 	 */
-	public async getInfo(): ReturnType<QdrantClient['getCollection']> {
+	public async GetInfo(): ReturnType<QdrantClient['getCollection']> {
 		try {
 			this.Logger.debug(`Retrieving info for collection "${this.CollectionName}"`);
 			return await this.Client.getCollection(this.CollectionName);
 		} catch (error) {
-			const errorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
-			this.Logger.error(errorMessage);
-			throw new InternalServerError(errorMessage);
+			const ErrorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			this.Logger.error(ErrorMessage);
+			throw new InternalServerError(ErrorMessage);
 		}
 	}
 }

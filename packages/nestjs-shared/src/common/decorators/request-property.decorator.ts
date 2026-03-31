@@ -1,13 +1,13 @@
 import { createParamDecorator, ExecutionContext, Logger } from '@nestjs/common';
 import type { AppLogger } from '../services/logger.service.js';
 import { ObjectGetPropertyByPath } from '@pawells/typescript-common';
-import { getErrorMessage } from '../utils/error.utils.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 // Logger instance for decorator warnings
 // Note: We can't use AppLogger directly here since decorators don't have DI context
 // Instead, we use a Logger instance from @nestjs/common
-const logger = new Logger('RequestPropertyDecorator');
-let appLogger: AppLogger | undefined;
+const LoggerInstance = new Logger('RequestPropertyDecorator');
+let AppLoggerInstance: AppLogger | undefined;
 
 /**
  * Options for the RequestProperty decorator
@@ -47,7 +47,7 @@ export interface IRequestPropertyOptions {
  * @internal
  */
 export function SetRequestPropertyDecoratorLogger(logger: AppLogger): void {
-	appLogger = logger;
+	AppLoggerInstance = logger;
 }
 
 /**
@@ -55,13 +55,13 @@ export function SetRequestPropertyDecoratorLogger(logger: AppLogger): void {
  * This ensures observability capture when AppLogger is initialized
  * @param message - The message to log
  */
-function logWarning(message: string): void {
+function LogWarning(message: string): void {
 	// Try to use AppLogger if available, otherwise use NestJS Logger
-	if (appLogger) {
-		appLogger.warn(message);
+	if (AppLoggerInstance) {
+		AppLoggerInstance.warn(message);
 	} else {
 		// Fallback to NestJS Logger when AppLogger is not yet initialized
-		logger.warn(message);
+		Logger.warn(message);
 	}
 }
 
@@ -101,18 +101,18 @@ export function RequestProperty<T = any>(
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = ctx.switchToHttp().getRequest();
+			const Request = ctx.switchToHttp().getRequest();
 
 			// Try primary path first
-			let value = ObjectGetPropertyByPath(request, path);
+			let Value = ObjectGetPropertyByPath(Request, path);
 
 			// Try fallback paths if primary path didn't work
-			if (value === undefined && options.fallbackPaths) {
-				for (const fallbackPath of options.fallbackPaths) {
-					value = ObjectGetPropertyByPath(request, fallbackPath);
-					if (value !== undefined) {
+			if (Value === undefined && options.fallbackPaths) {
+				for (const FallbackPath of options.fallbackPaths) {
+					Value = ObjectGetPropertyByPath(Request, FallbackPath);
+					if (Value !== undefined) {
 						if (options.logMissing) {
-							logWarning(`RequestProperty: Primary path '${path}' not found, using fallback '${fallbackPath}'`);
+							LogWarning(`RequestProperty: Primary path '${path}' not found, using fallback '${FallbackPath}'`);
 						}
 						break;
 					}
@@ -120,29 +120,29 @@ export function RequestProperty<T = any>(
 			}
 
 			// Handle missing values
-			if (value === undefined) {
+			if (Value === undefined) {
 				if (options.required) {
 					throw new Error(`Required property '${path}' not found in HTTP request`);
 				}
 				if (options.logMissing) {
-					logWarning(`RequestProperty: Property '${path}' not found, using default value`);
+					LogWarning(`RequestProperty: Property '${path}' not found, using default value`);
 				}
-				value = options.defaultValue;
+				Value = options.defaultValue;
 			}
 
 			// Apply transformation if provided
-			if (options.transform && value !== undefined) {
+			if (options.transform && Value !== undefined) {
 				try {
-					value = options.transform(value);
+					Value = options.transform(Value);
 				} catch (error) {
 					throw new Error(
-						`RequestProperty transform failed for path '${path}': ${getErrorMessage(error)}`,
+						`RequestProperty transform failed for path '${path}': ${GetErrorMessage(error)}`,
 						{ cause: error },
 					);
 				}
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }

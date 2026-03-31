@@ -2,7 +2,7 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const RESULT_SUMMARY_MAX_KEYS = 3;
@@ -30,7 +30,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRe
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(GraphQLLoggingInterceptor.name);
 	}
 
@@ -46,51 +46,51 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRe
 	 * @returns Observable - The intercepted operation
 	 */
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-		const startTime = Date.now();
+		const StartTime = Date.now();
 
 		// Extract GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const info = gqlContext.getInfo();
-		const args = gqlContext.getArgs();
+		const GqlContext = GqlExecutionContext.create(context);
+		const Info = GqlContext.getInfo();
+		const Args = GqlContext.getArgs();
 
 		// Extract operation details
-		const operationName = info?.operation?.name?.value ?? 'Anonymous';
-		const operationType = info?.operation?.operation ?? 'unknown';
-		const fieldName = info?.fieldName ?? 'unknown';
+		const OperationName = Info?.operation?.name?.value ?? 'Anonymous';
+		const OperationType = Info?.operation?.operation ?? 'unknown';
+		const FieldName = Info?.fieldName ?? 'unknown';
 
 		// Extract user information
-		const { user } = gqlContext.getContext();
-		const userId = user?.id ?? user?.sub ?? 'anonymous';
+		const { user } = GqlContext.getContext();
+		const UserId = user?.id ?? user?.sub ?? 'anonymous';
 
 		// Log operation start
 		this.Logger?.info(
-			`GraphQL ${operationType} started: ${operationName}.${fieldName} by user ${userId}`,
+			`GraphQL ${OperationType} started: ${OperationName}.${FieldName} by user ${UserId}`,
 		);
 
 		// Log variables in debug mode (avoid logging sensitive data in production)
-		if (process.env['NODE_ENV'] !== 'production' && args) {
-			const safeArgs = this.sanitizeArgs(args);
-			this.Logger?.debug(`Operation variables: ${JSON.stringify(safeArgs)}`);
+		if (process.env['NODE_ENV'] !== 'production' && Args) {
+			const SafeArgs = this.SanitizeArgs(Args);
+			this.Logger?.debug(`Operation variables: ${JSON.stringify(SafeArgs)}`);
 		}
 
 		return next.handle().pipe(
 			tap({
 				next: (result) => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 					this.Logger?.info(
-						`GraphQL ${operationType} completed: ${operationName}.${fieldName} in ${duration}ms`,
+						`GraphQL ${OperationType} completed: ${OperationName}.${FieldName} in ${Duration}ms`,
 					);
 
 					// Log result summary in debug mode
 					if (process.env['NODE_ENV'] !== 'production') {
-						const resultSummary = this.summarizeResult(result);
-						this.Logger?.debug(`Operation result: ${resultSummary}`);
+						const ResultSummary = this.SummarizeResult(result);
+						this.Logger?.debug(`Operation result: ${ResultSummary}`);
 					}
 				},
 				error: (error) => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 					this.Logger?.error(
-						`GraphQL ${operationType} failed: ${operationName}.${fieldName} after ${duration}ms - ${getErrorMessage(error)}`,
+						`GraphQL ${OperationType} failed: ${OperationName}.${FieldName} after ${Duration}ms - ${getErrorMessage(error)}`,
 					);
 				},
 			}),
@@ -103,22 +103,22 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRe
 	 * @param args - The operation arguments
 	 * @returns any - Sanitized arguments
 	 */
-	private sanitizeArgs(args: any): any {
+	private SanitizeArgs(args: any): any {
 		if (!args || typeof args !== 'object') {
 			return args;
 		}
 
-		const sanitized = { ...args };
+		const Sanitized = { ...args };
 
 		// Remove sensitive fields
-		const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
-		for (const field of sensitiveFields) {
-			if (sanitized[field]) {
-				sanitized[field] = '[REDACTED]';
+		const SensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
+		for (const Field of SensitiveFields) {
+			if (Sanitized[Field]) {
+				Sanitized[Field] = '[REDACTED]';
 			}
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRe
 	 * @param result - The operation result
 	 * @returns string - Result summary
 	 */
-	private summarizeResult(result: any): string {
+	private SummarizeResult(result: any): string {
 		if (!result) {
 			return 'null';
 		}
@@ -137,8 +137,8 @@ export class GraphQLLoggingInterceptor implements NestInterceptor, ILazyModuleRe
 		}
 
 		if (typeof result === 'object') {
-			const keys = Object.keys(result);
-			return `Object{${keys.slice(0, RESULT_SUMMARY_MAX_KEYS).join(', ')}${keys.length > RESULT_SUMMARY_MAX_KEYS ? '...' : ''}}`;
+			const Keys = Object.keys(result);
+			return `Object{${Keys.slice(0, RESULT_SUMMARY_MAX_KEYS).join(', ')}${Keys.length > RESULT_SUMMARY_MAX_KEYS ? '...' : ''}}`;
 		}
 
 		return String(result);

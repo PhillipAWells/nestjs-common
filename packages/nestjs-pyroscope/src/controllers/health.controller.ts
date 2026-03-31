@@ -56,15 +56,15 @@ export class HealthController {
 		this.ModuleRef = moduleRef;
 	}
 
-	private get pyroscopeService(): PyroscopeService {
+	private get PyroscopeService(): PyroscopeService {
 		return this.ModuleRef.get(PyroscopeService, { strict: false });
 	}
 
-	private get metricsService(): MetricsService {
+	private get MetricsService(): MetricsService {
 		return this.ModuleRef.get(MetricsService, { strict: false });
 	}
 
-	private get config(): IPyroscopeConfig {
+	private get Config(): IPyroscopeConfig {
 		return this.ModuleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 	}
 
@@ -103,34 +103,34 @@ export class HealthController {
 	 */
 	@Get('health')
 	@Header('Cache-Control', 'no-store')
-	public getHealth(): IHealthResponse {
-		const pyroscopeHealth = this.pyroscopeService.getHealth();
-		const metrics = this.metricsService.getMetrics();
+	public GetHealth(): IHealthResponse {
+		const PyroscopeHealth = this.PyroscopeService.GetHealth();
+		const Metrics = this.MetricsService.GetMetrics();
 
 		// Determine overall health status
-		let status: 'healthy' | 'unhealthy' | 'degraded' = 'healthy';
+		let Status: 'healthy' | 'unhealthy' | 'degraded' = 'healthy';
 
-		if (!pyroscopeHealth.details.initialized && this.pyroscopeService.isEnabled()) {
-			status = 'unhealthy';
-		} else if ((pyroscopeHealth.details.activeProfiles ?? 0) > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
+		if (!PyroscopeHealth.details.initialized && this.PyroscopeService.IsEnabled()) {
+			Status = 'unhealthy';
+		} else if ((PyroscopeHealth.details.activeProfiles ?? 0) > (this.Config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
 			// Consider degraded if too many active profiles
-			status = 'degraded';
+			Status = 'degraded';
 		}
 
 		return {
-			status,
+			status: Status,
 			timestamp: Date.now(),
 			uptime: process.uptime(),
 			pyroscope: {
-				connected: pyroscopeHealth.details.initialized ?? false,
-				serverAddress: pyroscopeHealth.details.serverAddress ?? '',
-				applicationName: pyroscopeHealth.details.applicationName ?? '',
-				lastUpdate: metrics.timestamp,
+				connected: PyroscopeHealth.details.initialized ?? false,
+				serverAddress: PyroscopeHealth.details.serverAddress ?? '',
+				applicationName: PyroscopeHealth.details.applicationName ?? '',
+				lastUpdate: Metrics.timestamp,
 			},
 			profiling: {
-				enabled: this.pyroscopeService.isEnabled(),
-				activeProfiles: pyroscopeHealth.details.activeProfiles ?? 0,
-				totalProfiles: pyroscopeHealth.details.totalMetrics ?? 0,
+				enabled: this.PyroscopeService.IsEnabled(),
+				activeProfiles: PyroscopeHealth.details.activeProfiles ?? 0,
+				totalProfiles: PyroscopeHealth.details.totalMetrics ?? 0,
 			},
 		};
 	}
@@ -171,8 +171,8 @@ export class HealthController {
 	 */
 	@Get('metrics')
 	@Header('Cache-Control', 'no-store')
-	public getMetrics(): IMetricsResponse {
-		return this.metricsService.getMetrics();
+	public GetMetrics(): IMetricsResponse {
+		return this.MetricsService.GetMetrics();
 	}
 
 	/**
@@ -188,10 +188,10 @@ export class HealthController {
 	 */
 	@Get('status')
 	@Header('Cache-Control', 'no-store')
-	public getStatus(): { health: IHealthResponse; metrics: IMetricsResponse } {
+	public GetStatus(): { health: IHealthResponse; metrics: IMetricsResponse } {
 		return {
-			health: this.getHealth(),
-			metrics: this.getMetrics(),
+			health: this.GetHealth(),
+			metrics: this.GetMetrics(),
 		};
 	}
 
@@ -218,7 +218,7 @@ export class HealthController {
 	 */
 	@Get('metrics/prometheus')
 	@Header('Cache-Control', 'no-store')
-	public getPrometheusMetrics(): string {
-		return this.metricsService.getPrometheusMetrics();
+	public GetPrometheusMetrics(): string {
+		return this.MetricsService.GetPrometheusMetrics();
 	}
 }

@@ -1,5 +1,6 @@
 
 /// <reference types="vitest" />
+import { describe, it, expect, beforeEach } from 'vitest';
 import { INestApplication } from '@nestjs/common';
 import { register } from 'prom-client';
 import {
@@ -23,10 +24,10 @@ import {
  * Demonstrates how subclasses extend the base class to define domain-specific metrics
  */
 class TestMetricsCollector extends BaseMetricsCollector {
-	protected initializeMetrics(): void {
-		this.registerCounter('test_ops_total', 'Test operations completed', ['type', 'status']);
-		this.registerGauge('test_active', 'Number of active tests', ['environment']);
-		this.registerHistogram('test_duration_seconds', 'Test execution duration', ['suite']);
+	protected InitializeMetrics(): void {
+		this.RegisterCounter('test_ops_total', 'Test operations completed', ['type', 'status']);
+		this.RegisterGauge('test_active', 'Number of active tests', ['environment']);
+		this.RegisterHistogram('test_duration_seconds', 'Test execution duration', ['suite']);
 	}
 }
 
@@ -89,32 +90,32 @@ describe('nestjs-shared Integration Tests', () => {
 
 		it('should register multiple metric types during initialization', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			expect(collector['getMetric']('test_ops_total')).toBeDefined();
-			expect(collector['getMetric']('test_active')).toBeDefined();
-			expect(collector['getMetric']('test_duration_seconds')).toBeDefined();
+			expect(collector['GetMetric']('test_ops_total')).toBeDefined();
+			expect(collector['GetMetric']('test_active')).toBeDefined();
+			expect(collector['GetMetric']('test_duration_seconds')).toBeDefined();
 		});
 
 		it('should register counter metrics with labels', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const counterMetric = collector['getMetric']('test_ops_total');
+			const counterMetric = collector['GetMetric']('test_ops_total');
 			expect(counterMetric).toBeDefined();
 		});
 
 		it('should register gauge metrics with labels', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const gaugeMetric = collector['getMetric']('test_active');
+			const gaugeMetric = collector['GetMetric']('test_active');
 			expect(gaugeMetric).toBeDefined();
 		});
 
 		it('should register histogram metrics with buckets', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const histogramMetric = collector['getMetric']('test_duration_seconds');
+			const histogramMetric = collector['GetMetric']('test_duration_seconds');
 			expect(histogramMetric).toBeDefined();
 		});
 
 		it('should retrieve all registered metrics', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
-			const allMetrics = collector['getAllMetrics']();
+			const allMetrics = collector['GetAllMetrics']();
 			expect(allMetrics.size).toBeGreaterThan(0);
 			expect(allMetrics.has('test_ops_total')).toBe(true);
 			expect(allMetrics.has('test_active')).toBe(true);
@@ -124,7 +125,7 @@ describe('nestjs-shared Integration Tests', () => {
 
 	describe('HealthCheckService Integration', () => {
 		it('should instantiate HealthCheckService and return proper health response', () => {
-			const health = healthCheck.getHealth('test-service', '1.0.0');
+			const health = healthCheck.GetHealth('test-service', '1.0.0');
 			expect(health).toBeDefined();
 			expect(health.status).toBe('ok');
 			expect(health.service).toBe('test-service');
@@ -133,13 +134,13 @@ describe('nestjs-shared Integration Tests', () => {
 		});
 
 		it('should return health status with correct structure', () => {
-			const health = healthCheck.getHealth();
+			const health = healthCheck.GetHealth();
 			expect(health.status).toBe('ok');
 			expect(health.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 		});
 
 		it('should return readiness with default checks', () => {
-			const readiness = healthCheck.getReadiness();
+			const readiness = healthCheck.GetReadiness();
 			expect(readiness).toBeDefined();
 			expect(readiness.status).toBe('ready');
 			expect(readiness.checks).toBeDefined();
@@ -153,13 +154,13 @@ describe('nestjs-shared Integration Tests', () => {
 				cache: 'available',
 				queue: 'operational',
 			};
-			const readiness = healthCheck.getReadiness(customChecks);
+			const readiness = healthCheck.GetReadiness(customChecks);
 			expect(readiness.status).toBe('ready');
 			expect(readiness.checks).toEqual(customChecks);
 		});
 
 		it('should return liveness status', () => {
-			const liveness = healthCheck.getLiveness();
+			const liveness = healthCheck.GetLiveness();
 			expect(liveness).toBeDefined();
 			expect(liveness.status).toBe('alive');
 			expect(liveness.timestamp).toBeDefined();
@@ -167,7 +168,7 @@ describe('nestjs-shared Integration Tests', () => {
 	});
 
 	describe('ApplySecurityMiddleware Integration', () => {
-		it('should apply security middleware without errors', () => {
+		it('should apply security middleware without Error()s', () => {
 			expect(() => ApplySecurityMiddleware(app, {})).not.toThrow();
 			expect(appUseCallCount).toBeGreaterThan(0);
 		});
@@ -247,82 +248,82 @@ describe('nestjs-shared Integration Tests', () => {
 
 	describe('CreateRateLimitConfig Integration', () => {
 		it('should create default rate limit configuration', () => {
-			const config = CreateRateLimitConfig();
-			expect(config).toBeDefined();
-			expect(config.auth).toBeDefined();
-			expect(config.api).toBeDefined();
+			const Config = CreateRateLimitConfig();
+			expect(Config).toBeDefined();
+			expect(Config.auth).toBeDefined();
+			expect(Config.api).toBeDefined();
 		});
 
 		it('should have correct default auth limits', () => {
-			const config = CreateRateLimitConfig();
-			expect(config.auth?.login).toBeDefined();
-			expect(config.auth?.login?.ttl).toBe(60000);
-			expect(config.auth?.login?.limit).toBe(5);
-			expect(config.auth?.register).toBeDefined();
-			expect(config.auth?.register?.limit).toBe(3);
-			expect(config.auth?.refreshToken).toBeDefined();
-			expect(config.auth?.refreshToken?.limit).toBe(10);
+			const Config = CreateRateLimitConfig();
+			expect(Config.auth?.login).toBeDefined();
+			expect(Config.auth?.login?.ttl).toBe(60000);
+			expect(Config.auth?.login?.limit).toBe(5);
+			expect(Config.auth?.register).toBeDefined();
+			expect(Config.auth?.register?.limit).toBe(3);
+			expect(Config.auth?.refreshToken).toBeDefined();
+			expect(Config.auth?.refreshToken?.limit).toBe(10);
 		});
 
 		it('should have correct default API limits', () => {
-			const config = CreateRateLimitConfig();
-			expect(config.api?.default).toBeDefined();
-			expect(config.api?.default?.limit).toBe(100);
-			expect(config.api?.search).toBeDefined();
-			expect(config.api?.search?.limit).toBe(30);
+			const Config = CreateRateLimitConfig();
+			expect(Config.api?.default).toBeDefined();
+			expect(Config.api?.default?.limit).toBe(100);
+			expect(Config.api?.search).toBeDefined();
+			expect(Config.api?.search?.limit).toBe(30);
 		});
 
 		it('should merge custom overrides with defaults', () => {
-			const config = CreateRateLimitConfig({
+			const Config = CreateRateLimitConfig({
 				auth: {
 					login: { ttl: 30000, limit: 3 },
 				},
 			});
-			expect(config.auth?.login?.limit).toBe(3);
-			expect(config.auth?.login?.ttl).toBe(30000);
+			expect(Config.auth?.login?.limit).toBe(3);
+			expect(Config.auth?.login?.ttl).toBe(30000);
 			// Other auth limits should still have defaults
-			expect(config.auth?.register).toBeDefined();
-			expect(config.auth?.register?.limit).toBe(3);
+			expect(Config.auth?.register).toBeDefined();
+			expect(Config.auth?.register?.limit).toBe(3);
 		});
 
 		it('should preserve defaults when overriding partial auth config', () => {
-			const config = CreateRateLimitConfig({
+			const Config = CreateRateLimitConfig({
 				auth: {
 					login: { ttl: 45000, limit: 2 },
 				},
 			});
 			// Override applied
-			expect(config.auth?.login?.limit).toBe(2);
-			expect(config.auth?.login?.ttl).toBe(45000);
+			expect(Config.auth?.login?.limit).toBe(2);
+			expect(Config.auth?.login?.ttl).toBe(45000);
 			// Defaults preserved for other auth endpoints
-			expect(config.auth?.register?.limit).toBe(3);
-			expect(config.auth?.refreshToken?.limit).toBe(10);
+			expect(Config.auth?.register?.limit).toBe(3);
+			expect(Config.auth?.refreshToken?.limit).toBe(10);
 		});
 
 		it('should preserve defaults when overriding partial API config', () => {
-			const config = CreateRateLimitConfig({
+			const Config = CreateRateLimitConfig({
 				api: {
 					default: { ttl: 120000, limit: 50 },
 				},
 			});
 			// Override applied
-			expect(config.api?.default?.limit).toBe(50);
-			expect(config.api?.default?.ttl).toBe(120000);
+			expect(Config.api?.default?.limit).toBe(50);
+			expect(Config.api?.default?.ttl).toBe(120000);
 			// Search limit preserved from defaults
-			expect(config.api?.search?.limit).toBe(30);
+			expect(Config.api?.search?.limit).toBe(30);
 		});
 
 		it('should support custom rate limit definitions', () => {
-			const config = CreateRateLimitConfig({
+			const Config = CreateRateLimitConfig({
 				custom: {
 					upload: { ttl: 300000, limit: 5 },
 					export: { ttl: 600000, limit: 2 },
 				},
 			});
-			expect((config as any).custom?.upload).toBeDefined();
-			expect((config as any).custom?.upload?.limit).toBe(5);
-			expect((config as any).custom?.export).toBeDefined();
-			expect((config as any).custom?.export?.limit).toBe(2);
+			expect((Config as any).custom?.upload).toBeDefined();
+			expect((Config as any).custom?.upload?.limit).toBe(5);
+			expect((Config as any).custom?.export).toBeDefined();
+			expect((Config as any).custom?.export?.limit).toBe(2);
 		});
 	});
 
@@ -330,13 +331,13 @@ describe('nestjs-shared Integration Tests', () => {
 		it('should allow using BaseMetricsCollector with MetricsRegistryService', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
 			expect(collector).toBeDefined();
-			expect(collector['getMetric']('test_ops_total')).toBeDefined();
+			expect(collector['GetMetric']('test_ops_total')).toBeDefined();
 		});
 
 		it('should allow using HealthCheckService for Kubernetes probes', () => {
-			const health = healthCheck.getHealth('integration-test', '1.0.0');
-			const readiness = healthCheck.getReadiness();
-			const liveness = healthCheck.getLiveness();
+			const health = healthCheck.GetHealth('integration-test', '1.0.0');
+			const readiness = healthCheck.GetReadiness();
+			const liveness = healthCheck.GetLiveness();
 
 			expect(health.status).toBe('ok');
 			expect(readiness.status).toBe('ready');
@@ -369,8 +370,8 @@ describe('nestjs-shared Integration Tests', () => {
 			const collector = new TestMetricsCollector(metricsRegistry);
 
 			// Get health checks
-			const health = healthCheck.getHealth('integration-test', '1.0.0');
-			const readiness = healthCheck.getReadiness();
+			const health = healthCheck.GetHealth('integration-test', '1.0.0');
+			const readiness = healthCheck.GetReadiness();
 
 			// Apply security
 			ApplySecurityMiddleware(app, {
@@ -383,7 +384,7 @@ describe('nestjs-shared Integration Tests', () => {
 
 			// Verify all are available and functional
 			expect(collector).toBeDefined();
-			expect(collector['getAllMetrics']().size).toBeGreaterThan(0);
+			expect(collector['GetAllMetrics']().size).toBeGreaterThan(0);
 			expect(health.status).toBe('ok');
 			expect(readiness.status).toBe('ready');
 			expect(appUseCallCount).toBeGreaterThan(0);
@@ -397,9 +398,9 @@ describe('nestjs-shared Integration Tests', () => {
 
 			// Create a second collector with different metric names to avoid conflicts
 			class TestMetricsCollector2 extends BaseMetricsCollector {
-				protected initializeMetrics(): void {
-					this.registerCounter('test_ops_total_2', 'Test operations completed', ['type', 'status']);
-					this.registerGauge('test_active_2', 'Number of active tests', ['environment']);
+				protected InitializeMetrics(): void {
+					this.RegisterCounter('test_ops_total_2', 'Test operations completed', ['type', 'status']);
+					this.RegisterGauge('test_active_2', 'Number of active tests', ['environment']);
 				}
 			}
 			const collector2 = new TestMetricsCollector2(metricsRegistry);
@@ -407,8 +408,8 @@ describe('nestjs-shared Integration Tests', () => {
 			expect(collector1).toBeDefined();
 			expect(collector2).toBeDefined();
 			// Both should have access to their respective metrics
-			expect(collector1['getMetric']('test_ops_total')).toBeDefined();
-			expect(collector2['getMetric']('test_ops_total_2')).toBeDefined();
+			expect(collector1['GetMetric']('test_ops_total')).toBeDefined();
+			expect(collector2['GetMetric']('test_ops_total_2')).toBeDefined();
 		});
 
 		it('should work with different environment configurations', () => {
@@ -460,8 +461,8 @@ describe('nestjs-shared Integration Tests', () => {
 			class CustomMetricsCollector extends BaseMetricsCollector {
 				private operationCount = 0;
 
-				protected initializeMetrics(): void {
-					this.registerCounter('custom_ops', 'Custom operations');
+				protected InitializeMetrics(): void {
+					this.RegisterCounter('custom_ops', 'Custom operations');
 				}
 
 				public RecordOperation(): void {
@@ -478,27 +479,27 @@ describe('nestjs-shared Integration Tests', () => {
 			customCollector.RecordOperation();
 
 			expect(customCollector.GetOperationCount()).toBe(2);
-			expect(customCollector['getMetric']('custom_ops')).toBeDefined();
+			expect(customCollector['GetMetric']('custom_ops')).toBeDefined();
 		});
 
 		it('should properly isolate metrics from different collectors', () => {
 			class CollectorA extends BaseMetricsCollector {
-				protected initializeMetrics(): void {
-					this.registerCounter('collector_a_metric', 'Collector A metric');
+				protected InitializeMetrics(): void {
+					this.RegisterCounter('collector_a_metric', 'Collector A metric');
 				}
 			}
 
 			class CollectorB extends BaseMetricsCollector {
-				protected initializeMetrics(): void {
-					this.registerCounter('collector_b_metric', 'Collector B metric');
+				protected InitializeMetrics(): void {
+					this.RegisterCounter('collector_b_metric', 'Collector B metric');
 				}
 			}
 
 			const collectorA = new CollectorA(metricsRegistry);
 			const collectorB = new CollectorB(metricsRegistry);
 
-			const metricsA = collectorA['getAllMetrics']();
-			const metricsB = collectorB['getAllMetrics']();
+			const metricsA = collectorA['GetAllMetrics']();
+			const metricsB = collectorB['GetAllMetrics']();
 
 			expect(metricsA.has('collector_a_metric')).toBe(true);
 			expect(metricsB.has('collector_b_metric')).toBe(true);
@@ -510,19 +511,19 @@ describe('nestjs-shared Integration Tests', () => {
 
 	describe('Error Handling and Edge Cases', () => {
 		it('should handle empty rate limit configuration overrides', () => {
-			const config = CreateRateLimitConfig({});
-			expect(config.auth?.login?.limit).toBe(5);
-			expect(config.api?.default?.limit).toBe(100);
+			const Config = CreateRateLimitConfig({});
+			expect(Config.auth?.login?.limit).toBe(5);
+			expect(Config.api?.default?.limit).toBe(100);
 		});
 
 		it('should handle null rate limit configuration overrides', () => {
-			const config = CreateRateLimitConfig(undefined);
-			expect(config.auth?.login?.limit).toBe(5);
-			expect(config.api?.default?.limit).toBe(100);
+			const Config = CreateRateLimitConfig(undefined);
+			expect(Config.auth?.login?.limit).toBe(5);
+			expect(Config.api?.default?.limit).toBe(100);
 		});
 
 		it('should handle undefined health check parameters', () => {
-			const health = healthCheck.getHealth(undefined, undefined);
+			const health = healthCheck.GetHealth(undefined, undefined);
 			expect(health.service).toBeUndefined();
 			expect(health.version).toBeUndefined();
 			expect(health.status).toBe('ok');
@@ -538,13 +539,13 @@ describe('nestjs-shared Integration Tests', () => {
 
 	describe('Type Safety and Interfaces', () => {
 		it('should maintain type safety for IRateLimitConfig', () => {
-			const config: IRateLimitConfig = CreateRateLimitConfig();
-			expect(config.auth).toBeDefined();
-			expect(config.api).toBeDefined();
+			const Config: IRateLimitConfig = CreateRateLimitConfig();
+			expect(Config.auth).toBeDefined();
+			expect(Config.api).toBeDefined();
 		});
 
 		it('should maintain type safety for IHealthCheck', () => {
-			const health: IHealthCheck = healthCheck.getHealth('test', '1.0.0');
+			const health: IHealthCheck = healthCheck.GetHealth('test', '1.0.0');
 			expect(health.status).toBe('ok');
 			expect(health.service).toBe('test');
 			expect(health.version).toBe('1.0.0');
@@ -572,7 +573,7 @@ describe('nestjs-shared Integration Tests', () => {
 			expect(CSRFService).toBeDefined();
 		});
 
-		it('should export error sanitizer service from CommonModule', () => {
+		it('should export Error() sanitizer service from CommonModule', () => {
 			// Verify that ErrorSanitizerService is exported
 			expect(ErrorSanitizerService).toBeDefined();
 		});

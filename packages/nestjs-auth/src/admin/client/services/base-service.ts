@@ -2,7 +2,7 @@ import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import type { Logger } from '@pawells/logger';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import type { IRetryConfig } from '../utils/index.js';
-import { withRetry } from '../utils/index.js';
+import { WithRetry } from '../utils/index.js';
 import {
 	KeycloakClientError,
 	AuthenticationError,
@@ -28,7 +28,7 @@ const HTTP_STATUS_REQUEST_TIMEOUT = 408;
  * exceptions, retry logic for transient failures, and scope-based access control.
  * All Keycloak admin operations (user, role, client, group management, etc.) inherit from this class.
  *
- * Subclasses must call {@link requireScope} before API operations to enforce permission control.
+ * Subclasses must call {@link RequireScope} before API operations to enforce permission control.
  *
  * @abstract
  */
@@ -62,7 +62,7 @@ export abstract class BaseService {
 	 * All mutation operations ({@link TKeycloakAdminScope} ending in `:write`) are
 	 * audit-logged at INFO level when the check passes.
 	 */
-	protected requireScope(scope: TKeycloakAdminScope): void {
+	protected RequireScope(scope: TKeycloakAdminScope): void {
 		if (!this.GrantedScopes.has(scope)) {
 			this.Logger.warn(`Keycloak admin scope blocked: '${scope}' not granted`);
 			throw new KeycloakAdminScopeError(scope);
@@ -76,24 +76,24 @@ export abstract class BaseService {
 	/**
 	 * Execute a function with retry logic
 	 */
-	protected async withRetry<T>(
+	protected async WithRetry<T>(
 		fn: () => Promise<T>,
 		options?: IRetryConfig,
 	): Promise<T> {
-		const config = {
+		const Config = {
 			...this.RetryConfig,
 			...options,
 			...(this.LoggerConfig && { logger: this.LoggerConfig }),
 		};
 
-		const result = await withRetry(fn, config);
-		return result;
+		const Result = await WithRetry(fn, Config);
+		return Result;
 	}
 
 	/**
 	 * Handle and transform errors from Keycloak admin client
 	 */
-	protected handleError(error: unknown): never {
+	protected HandleError(error: unknown): never {
 		// Re-throw scope errors without wrapping
 		if (error instanceof KeycloakAdminScopeError) {
 			throw error;
@@ -106,48 +106,48 @@ export abstract class BaseService {
 
 		// Handle axios errors from admin client
 		if (error && typeof error === 'object' && 'response' in error) {
-			const axiosError = error as {
+			const AxiosError = error as {
 				response?: { status?: number; data?: unknown };
 				message?: string;
 				code?: string;
 			};
 
-			const status = axiosError.response?.status;
-			const message = axiosError.message ?? 'Unknown error';
-			const data = axiosError.response?.data;
+			const Status = AxiosError.response?.status;
+			const Message = AxiosError.message ?? 'Unknown error';
+			const Data = AxiosError.response?.data;
 
-			if (status === HTTP_STATUS_UNAUTHORIZED) {
-				throw new AuthenticationError(message, status, data);
+			if (Status === HTTP_STATUS_UNAUTHORIZED) {
+				throw new AuthenticationError(Message, Status, Data);
 			}
 
-			if (status === HTTP_STATUS_FORBIDDEN) {
-				throw new AuthorizationError(message, status, data);
+			if (Status === HTTP_STATUS_FORBIDDEN) {
+				throw new AuthorizationError(Message, Status, Data);
 			}
 
-			if (status === HTTP_STATUS_NOT_FOUND) {
-				throw new NotFoundError(message, data);
+			if (Status === HTTP_STATUS_NOT_FOUND) {
+				throw new NotFoundError(Message, Data);
 			}
 
-			if (status === HTTP_STATUS_BAD_REQUEST) {
-				throw new IValidationError(message, data);
+			if (Status === HTTP_STATUS_BAD_REQUEST) {
+				throw new IValidationError(Message, Data);
 			}
 
-			if (status === HTTP_STATUS_REQUEST_TIMEOUT) {
-				throw new TimeoutError(message);
+			if (Status === HTTP_STATUS_REQUEST_TIMEOUT) {
+				throw new TimeoutError(Message);
 			}
 
-			if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ETIMEDOUT') {
-				throw new NetworkError(message, error instanceof Error ? error : undefined);
+			if (AxiosError.code === 'ECONNREFUSED' || AxiosError.code === 'ETIMEDOUT') {
+				throw new NetworkError(Message, error instanceof Error ? error : undefined);
 			}
 
 			// Generic error with status code
-			if (status) {
-				throw new KeycloakClientError(message, status, data);
+			if (Status) {
+				throw new KeycloakClientError(Message, Status, Data);
 			}
 		}
 
 		// Generic error
-		const message = getErrorMessage(error);
-		throw new KeycloakClientError(message, undefined, undefined, error instanceof Error ? error : undefined);
+		const Message = getErrorMessage(error);
+		throw new KeycloakClientError(Message, undefined, undefined, error instanceof Error ? error : undefined);
 	}
 }

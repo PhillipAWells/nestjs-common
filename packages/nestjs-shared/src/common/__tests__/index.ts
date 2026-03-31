@@ -8,4 +8,4 @@
 export { MockCacheProvider } from './mocks/cache-provider.mock.js';
 
 // Helpers
-export { createTestModuleConfig, TestModule, type TestModuleConfig } from './helpers/test-module.factory.js';
+export { CreateTestModuleConfig as createTestModuleConfig, TestModule, type TestModuleConfig } from './helpers/test-module.factory.js';

@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector, ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 
 /**
@@ -32,7 +32,7 @@ export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLRolesGuard.name);
 		} catch {
@@ -56,19 +56,19 @@ export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 	 */
 	public canActivate(context: ExecutionContext): boolean {
 		// Get required roles from metadata
-		const requiredRoles = this.Reflector.getAllAndOverride<string[]>('roles', [
+		const RequiredRoles = this.Reflector.getAllAndOverride<string[]>('roles', [
 			context.getHandler(),
 			context.getClass(),
 		]);
 
 		// If no roles are required, allow access
-		if (!requiredRoles || requiredRoles.length === 0) {
+		if (!RequiredRoles || RequiredRoles.length === 0) {
 			return true;
 		}
 
 		// Extract user from GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const { user } = gqlContext.getContext();
+		const GqlContext = GqlExecutionContext.create(context);
+		const { user } = GqlContext.getContext();
 
 		if (!user) {
 			this.Logger?.warn('No user found in GraphQL context');
@@ -76,18 +76,18 @@ export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 		}
 
 		// Check if user has required roles
-		const userRoles = this.getUserRoles(user);
-		const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
+		const UserRoles = this.GetUserRoles(user);
+		const HasRequiredRole = RequiredRoles.some(role => UserRoles.includes(role));
 
-		if (!hasRequiredRole) {
+		if (!HasRequiredRole) {
 			this.Logger?.warn(
-				`IUser ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${requiredRoles.join(', ')}], IUser has: [${userRoles.join(', ')}]`,
+				`IUser ${user.id ?? user.sub ?? 'unknown'} lacks required roles. Required: [${RequiredRoles.join(', ')}], IUser has: [${UserRoles.join(', ')}]`,
 			);
 			throw new ForbiddenException('Insufficient permissions');
 		}
 
 		this.Logger?.debug(
-			`IUser ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${userRoles.join(', ')}]`,
+			`IUser ${user.id ?? user.sub ?? 'unknown'} authorized with roles: [${UserRoles.join(', ')}]`,
 		);
 
 		return true;
@@ -99,7 +99,7 @@ export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 	 * @param user - The user object from authentication
 	 * @returns string[] - Array of user roles
 	 */
-	private getUserRoles(user: any): string[] {
+	private GetUserRoles(user: any): string[] {
 		// Handle different user object structures
 		if (user.roles && Array.isArray(user.roles)) {
 			return user.roles;
@@ -114,8 +114,8 @@ export class GraphQLRolesGuard implements CanActivate, ILazyModuleRefService {
 		}
 
 		if (user.scope || user.scopes) {
-			const scopes = user.scope ?? user.scopes;
-			return Array.isArray(scopes) ? scopes : [scopes];
+			const Scopes = user.scope ?? user.scopes;
+			return Array.isArray(Scopes) ? Scopes : [Scopes];
 		}
 
 		// Default to empty array if no roles found

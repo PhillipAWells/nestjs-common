@@ -18,30 +18,31 @@ describe('ErrorCategorizerService', () => {
 	beforeEach(() => {
 		mockAppLogger = {
 			debug: vi.fn(),
+			Debug: vi.fn(),
 			info: vi.fn(),
+			Info: vi.fn(),
 			warn: vi.fn(),
+			Warn: vi.fn(),
 			error: vi.fn(),
-			createContextualLogger: vi.fn(() => ({
-				debug: vi.fn(),
-				info: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-			})),
+			Error: vi.fn(),
+		};
+
+		const baseLoggerMock = {
+			...mockAppLogger,
+			createContextualLogger: vi.fn(() => mockAppLogger),
+			CreateContextualLogger: vi.fn(() => mockAppLogger),
 		};
 
 		mockModuleRef = {
 			get: (token: any) => {
-				if (token === AppLogger) return mockAppLogger;
+				if (token === AppLogger) {
+					return baseLoggerMock;
+				}
 				return undefined;
 			},
 		};
 
 		service = new ErrorCategorizerService(mockModuleRef);
-		// Mock the logger property
-		Object.defineProperty(service, '_ContextualLogger', {
-			value: mockAppLogger,
-			writable: true,
-		});
 	});
 
 	describe('categorizeError', () => {
@@ -50,7 +51,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Connection refused');
 				(error as any).code = 'ECONNREFUSED';
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -62,7 +63,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Not found');
 				(error as any).code = 'ENOTFOUND';
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -73,7 +74,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Connection reset');
 				(error as any).code = 'ECONNRESET';
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -82,7 +83,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize network error by message', () => {
 				const error = new Error('Network error occurred');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.strategy).toBe('retry');
@@ -91,7 +92,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize connection error by message', () => {
 				const error = new Error('Connection lost to server');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -103,7 +104,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Operation timed out');
 				(error as any).code = 'ETIMEDOUT';
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -114,7 +115,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize timeout message as transient', () => {
 				const error = new Error('Request timeout after 5s');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.strategy).toBe('backoff');
@@ -125,7 +126,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize database connection error as transient', () => {
 				const error = new Error('MongoDB connection failed');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -136,7 +137,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize Redis connection error as transient', () => {
 				const error = new Error('Redis connection timeout');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -146,7 +147,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize generic database error as transient', () => {
 				const error = new Error('Database connection refused');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -157,7 +158,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize validation error message as permanent', () => {
 				const error = new Error('Validation failed: invalid email');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -168,7 +169,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Bad request');
 				(error as any).status = 400;
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -178,7 +179,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Invalid input');
 				(error as any).name = 'IValidationError';
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.strategy).toBe('fail');
@@ -190,7 +191,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Unauthorized');
 				(error as any).status = 401;
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -200,7 +201,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize unauthorized message as permanent', () => {
 				const error = new Error('Invalid credentials');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.strategy).toBe('fail');
@@ -209,7 +210,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize authentication error message as permanent', () => {
 				const error = new Error('Authentication failed: token expired');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -221,7 +222,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Forbidden');
 				(error as any).status = 403;
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -231,7 +232,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize forbidden message as permanent', () => {
 				const error = new Error('Access forbidden');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.strategy).toBe('fail');
@@ -240,7 +241,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize authorization message as permanent', () => {
 				const error = new Error('Authorization required: admin role');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -252,7 +253,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Not found');
 				(error as any).status = 404;
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -262,7 +263,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize not found message as permanent', () => {
 				const error = new Error('IUser not found');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.strategy).toBe('fail');
@@ -274,7 +275,7 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Too many requests');
 				(error as any).status = 429;
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -285,7 +286,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize rate limit message as transient', () => {
 				const error = new Error('Rate limit exceeded');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.retryable).toBe(true);
@@ -295,7 +296,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize too many requests message as transient', () => {
 				const error = new Error('Too many requests to API');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('transient');
 				expect(result.strategy).toBe('backoff');
@@ -306,7 +307,7 @@ describe('ErrorCategorizerService', () => {
 			it('should categorize unknown error as permanent', () => {
 				const error = new Error('Unknown error');
 
-				const result = service.categorizeError(error);
+				const result = service.CategorizeError(error);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -314,21 +315,21 @@ describe('ErrorCategorizerService', () => {
 			});
 
 			it('should handle null error', () => {
-				const result = service.categorizeError(null);
+				const result = service.CategorizeError(null);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
 			});
 
 			it('should handle undefined error', () => {
-				const result = service.categorizeError(undefined);
+				const result = service.CategorizeError(undefined);
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
 			});
 
 			it('should handle string error', () => {
-				const result = service.categorizeError('Some error string');
+				const result = service.CategorizeError('Some error string');
 
 				expect(result.type).toBe('permanent');
 				expect(result.retryable).toBe(false);
@@ -340,9 +341,9 @@ describe('ErrorCategorizerService', () => {
 				const error = new Error('Connection refused');
 				(error as any).code = 'ECONNREFUSED';
 
-				service.categorizeError(error);
+				service.CategorizeError(error);
 
-				expect(mockAppLogger.debug).toHaveBeenCalledWith(
+				expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 					'Categorized as transient network error (Node.js error code)',
 					expect.any(Object),
 				);
@@ -351,9 +352,9 @@ describe('ErrorCategorizerService', () => {
 			it('should log debug for categorized permanent errors', () => {
 				const error = new Error('Validation failed');
 
-				service.categorizeError(error);
+				service.CategorizeError(error);
 
-				expect(mockAppLogger.debug).toHaveBeenCalledWith(
+				expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 					'Categorized as permanent validation error',
 					expect.any(Object),
 				);
@@ -362,7 +363,7 @@ describe('ErrorCategorizerService', () => {
 			it('should log warn for uncategorized errors', () => {
 				const error = new Error('Strange error');
 
-				service.categorizeError(error);
+				service.CategorizeError(error);
 
 				expect(mockAppLogger.warn).toHaveBeenCalledWith(
 					'Uncategorized error treated as permanent',
@@ -377,7 +378,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Connection error');
 			(error as any).code = 'ECONNREFUSED';
 
-			service.logRecoveryAttempt(error, ATTEMPT_COUNT - 2, ATTEMPT_COUNT);
+			service.LogRecoveryAttempt(error, ATTEMPT_COUNT - 2, ATTEMPT_COUNT);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery attempt',
@@ -389,7 +390,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Timeout');
 			(error as any).code = 'ETIMEDOUT';
 
-			service.logRecoveryAttempt(error, 2, MAX_ATTEMPTS);
+			service.LogRecoveryAttempt(error, 2, MAX_ATTEMPTS);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery attempt',
@@ -400,7 +401,7 @@ describe('ErrorCategorizerService', () => {
 		it('should include max attempts in log', () => {
 			const error = new Error('Failed');
 
-			service.logRecoveryAttempt(error, ATTEMPT_COUNT, MAX_ATTEMPTS);
+			service.LogRecoveryAttempt(error, ATTEMPT_COUNT, MAX_ATTEMPTS);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery attempt',
@@ -411,7 +412,7 @@ describe('ErrorCategorizerService', () => {
 		it('should include error category and strategy', () => {
 			const error = new Error('Network issue');
 
-			service.logRecoveryAttempt(error, ATTEMPT_COUNT - 2, ATTEMPT_COUNT);
+			service.LogRecoveryAttempt(error, ATTEMPT_COUNT - 2, ATTEMPT_COUNT);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery attempt',
@@ -424,7 +425,7 @@ describe('ErrorCategorizerService', () => {
 		it('should log successful recovery', () => {
 			const error = new Error('Connection error');
 
-			service.logRecoverySuccess(error, 2);
+			service.LogRecoverySuccess(error, 2);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery successful',
@@ -435,7 +436,7 @@ describe('ErrorCategorizerService', () => {
 		it('should include attempt count in success log', () => {
 			const error = new Error('Failed request');
 
-			service.logRecoverySuccess(error, ATTEMPT_COUNT);
+			service.LogRecoverySuccess(error, ATTEMPT_COUNT);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery successful',
@@ -446,7 +447,7 @@ describe('ErrorCategorizerService', () => {
 		it('should include error message in success log', () => {
 			const error = new Error('Timeout error');
 
-			service.logRecoverySuccess(error, ATTEMPT_COUNT - 2);
+			service.LogRecoverySuccess(error, ATTEMPT_COUNT - 2);
 
 			expect(mockAppLogger.info).toHaveBeenCalledWith(
 				'Error recovery successful',
@@ -459,7 +460,7 @@ describe('ErrorCategorizerService', () => {
 		it('should log failed recovery', () => {
 			const error = new Error('Validation error');
 
-			service.logRecoveryFailed(error, MAX_ATTEMPTS);
+			service.LogRecoveryFailed(error, MAX_ATTEMPTS);
 
 			expect(mockAppLogger.error).toHaveBeenCalledWith(
 				'Error recovery failed', undefined, undefined,
@@ -470,7 +471,7 @@ describe('ErrorCategorizerService', () => {
 		it('should include attempt count in failure log', () => {
 			const error = new Error('Invalid data');
 
-			service.logRecoveryFailed(error, MAX_ATTEMPTS);
+			service.LogRecoveryFailed(error, MAX_ATTEMPTS);
 
 			expect(mockAppLogger.error).toHaveBeenCalledWith(
 				'Error recovery failed', undefined, undefined,
@@ -482,7 +483,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Auth error');
 			(error as any).status = 401;
 
-			service.logRecoveryFailed(error, ATTEMPT_COUNT);
+			service.LogRecoveryFailed(error, ATTEMPT_COUNT);
 
 			expect(mockAppLogger.error).toHaveBeenCalledWith(
 				'Error recovery failed', undefined, undefined,
@@ -494,7 +495,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Timeout');
 			(error as any).code = 'ETIMEDOUT';
 
-			service.logRecoveryFailed(error, MAX_ATTEMPTS);
+			service.LogRecoveryFailed(error, MAX_ATTEMPTS);
 
 			expect(mockAppLogger.error).toHaveBeenCalledWith(
 				'Error recovery failed', undefined, undefined,
@@ -508,7 +509,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Network connection timeout');
 			(error as any).code = 'ETIMEDOUT';
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			// Should categorize based on code first (ETIMEDOUT) - returns 1000ms for network code
 			expect(result.strategy).toBe('backoff');
@@ -520,9 +521,9 @@ describe('ErrorCategorizerService', () => {
 			const error2 = new Error('Network Error');
 			const error3 = new Error('network error');
 
-			const result1 = service.categorizeError(error1);
-			const result2 = service.categorizeError(error2);
-			const result3 = service.categorizeError(error3);
+			const result1 = service.CategorizeError(error1);
+			const result2 = service.CategorizeError(error2);
+			const result3 = service.CategorizeError(error3);
 
 			expect(result1.type).toBe(result2.type);
 			expect(result2.type).toBe(result3.type);
@@ -534,7 +535,7 @@ describe('ErrorCategorizerService', () => {
 			delete (error as any).code;
 			delete (error as any).status;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result).toBeDefined();
 			expect(result.type).toBeDefined();
@@ -546,7 +547,7 @@ describe('ErrorCategorizerService', () => {
 			(error as any).code = 'ECONNREFUSED'; // Network (transient)
 			(error as any).status = 400; // Validation (permanent)
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			// Should categorize as network error (code has priority)
 			expect(result.type).toBe('transient');
@@ -558,7 +559,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Bad gateway');
 			(error as any).status = 502;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.retryable).toBe(true);
@@ -570,7 +571,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Service unavailable');
 			(error as any).status = 503;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.retryable).toBe(true);
@@ -581,7 +582,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Gateway timeout');
 			(error as any).status = 504;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.retryable).toBe(true);
@@ -594,7 +595,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Broken pipe');
 			(error as any).code = 'EPIPE';
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.retryable).toBe(true);
@@ -605,7 +606,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Unprocessable entity');
 			(error as any).status = 422;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.retryable).toBe(false);
@@ -618,7 +619,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Connection refused');
 			(error as any).code = 'ECONNREFUSED';
 
-			const result = service.isRetryable(error);
+			const result = service.IsRetryable(error);
 
 			expect(result).toBe(true);
 		});
@@ -627,7 +628,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Unauthorized');
 			(error as any).status = 401;
 
-			const result = service.isRetryable(error);
+			const result = service.IsRetryable(error);
 
 			expect(result).toBe(false);
 		});
@@ -635,7 +636,7 @@ describe('ErrorCategorizerService', () => {
 		it('should return false for unknown errors', () => {
 			const error = new Error('Unknown');
 
-			const result = service.isRetryable(error);
+			const result = service.IsRetryable(error);
 
 			expect(result).toBe(false);
 		});
@@ -665,7 +666,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Broken pipe');
 			(error as any).code = 'EPIPE';
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.strategy).toBe('retry');
@@ -674,7 +675,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect connection message containing "connection"', () => {
 			const error = new Error('Connection lost to service');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 		});
@@ -682,7 +683,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect both database and connection in message', () => {
 			const error = new Error('Database connection timeout');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.strategy).toBe('backoff');
@@ -693,7 +694,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Network timeout occurred');
 			(error as any).code = 'ETIMEDOUT';
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			// Should be network category (Node.js error code has priority)
 			expect(result.strategy).toBe('backoff');
@@ -703,7 +704,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect database error with MongoDB mention', () => {
 			const error = new Error('MongoDB connection pool exhausted');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.strategy).toBe('backoff');
@@ -712,7 +713,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect database error with Redis mention', () => {
 			const error = new Error('Redis connection refused');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.strategy).toBe('backoff');
@@ -722,7 +723,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Invalid request body');
 			(error as any).status = 400;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.retryable).toBe(false);
@@ -731,7 +732,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "unauthorized" in message', () => {
 			const error = new Error('IUser is unauthorized to access');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.strategy).toBe('fail');
@@ -740,7 +741,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "authentication" in message', () => {
 			const error = new Error('Authentication failed for user');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.retryable).toBe(false);
@@ -749,7 +750,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "forbidden" in message', () => {
 			const error = new Error('Access is forbidden');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.strategy).toBe('fail');
@@ -758,7 +759,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "authorization" in message', () => {
 			const error = new Error('Authorization check failed');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.retryable).toBe(false);
@@ -767,7 +768,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "not found" in message for 404', () => {
 			const error = new Error('Resource not found');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('permanent');
 			expect(result.strategy).toBe('fail');
@@ -776,7 +777,7 @@ describe('ErrorCategorizerService', () => {
 		it('should detect "too many requests" in message', () => {
 			const error = new Error('Too many requests to API');
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 			expect(result.strategy).toBe('backoff');
@@ -786,7 +787,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error();
 			(error as any).status = 500;
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			// Without message, defaults to permanent
 			expect(result.type).toBe('permanent');
@@ -796,7 +797,7 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Test error');
 			(error as any).code = 'ECONNREFUSED';
 
-			const result = service.categorizeError(error);
+			const result = service.CategorizeError(error);
 
 			expect(result.type).toBe('transient');
 		});
@@ -807,9 +808,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('ECONNREFUSED');
 			(error as any).code = 'ECONNREFUSED';
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as transient network error (Node.js error code)',
 				expect.any(Object),
 			);
@@ -819,9 +820,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Request timeout');
 			(error as any).code = 'ETIMEDOUT';
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as transient network error (Node.js error code)',
 				expect.any(Object),
 			);
@@ -830,9 +831,9 @@ describe('ErrorCategorizerService', () => {
 		it('should log debug message for database errors', () => {
 			const error = new Error('MongoDB connection failed');
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as transient database error',
 				expect.any(Object),
 			);
@@ -842,9 +843,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Bad Gateway');
 			(error as any).status = 502;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as transient server error',
 				expect.any(Object),
 			);
@@ -854,9 +855,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Rate limit exceeded');
 			(error as any).status = 429;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as transient rate limit error',
 				expect.any(Object),
 			);
@@ -866,9 +867,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Invalid data');
 			(error as any).status = 400;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as permanent bad request error',
 				expect.any(Object),
 			);
@@ -877,9 +878,9 @@ describe('ErrorCategorizerService', () => {
 		it('should log debug message for validation errors', () => {
 			const error = new Error('Validation failed');
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as permanent validation error',
 				expect.any(Object),
 			);
@@ -889,9 +890,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Unauthorized access');
 			(error as any).status = 401;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as permanent authentication error',
 				expect.any(Object),
 			);
@@ -901,9 +902,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Forbidden');
 			(error as any).status = 403;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as permanent authorization error',
 				expect.any(Object),
 			);
@@ -913,9 +914,9 @@ describe('ErrorCategorizerService', () => {
 			const error = new Error('Resource not found');
 			(error as any).status = 404;
 
-			service.categorizeError(error);
+			service.CategorizeError(error);
 
-			expect(mockAppLogger.debug).toHaveBeenCalledWith(
+			expect(mockAppLogger.Debug).toHaveBeenCalledWith(
 				'Categorized as permanent not found error',
 				expect.any(Object),
 			);

@@ -62,7 +62,7 @@ export class ProfilingInterceptor implements NestInterceptor {
 		this.ModuleRef = moduleRef;
 	}
 
-	private get pyroscopeService(): PyroscopeService | null {
+	private get PyroscopeService(): PyroscopeService | null {
 		try {
 			return this.ModuleRef.get(PyroscopeService, { strict: false });
 		} catch {
@@ -71,47 +71,47 @@ export class ProfilingInterceptor implements NestInterceptor {
 	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-		const service = this.pyroscopeService;
-		if (!service?.isEnabled()) {
+		const Service = this.PyroscopeService;
+		if (!Service?.IsEnabled()) {
 			return next.handle();
 		}
 
-		const request = context.switchToHttp().getRequest<IHttpRequest>();
-		const response = context.switchToHttp().getResponse<IHttpResponse>();
+		const Request = context.switchToHttp().getRequest<IHttpRequest>();
+		const Response = context.switchToHttp().getResponse<IHttpResponse>();
 
-		const profileContext: IProfileContext = {
-			functionName: `HTTP ${request.method} ${request.route?.path ?? request.url}`,
+		const ProfileContext: IProfileContext = {
+			functionName: `HTTP ${Request.method} ${Request.route?.path ?? Request.url}`,
 			startTime: Date.now(),
 			tags: {
-				method: request.method,
-				path: request.route?.path ?? request.url,
-				userAgent: request.get('IUser-Agent') ?? 'unknown',
+				method: Request.method,
+				path: Request.route?.path ?? Request.url,
+				userAgent: Request.get('IUser-Agent') ?? 'unknown',
 			},
 		};
 
-		service.startProfiling(profileContext);
+		Service.StartProfiling(ProfileContext);
 
 		return next.handle().pipe(
 			tap(() => {
 				// Success case
-				profileContext.tags = {
-					...profileContext.tags,
-					statusCode: response.statusCode?.toString() ?? 'unknown',
+				ProfileContext.tags = {
+					...ProfileContext.tags,
+					statusCode: Response.statusCode?.toString() ?? 'unknown',
 					success: 'true',
 				};
-				service.stopProfiling(profileContext);
+				Service.StopProfiling(ProfileContext);
 			}),
 			catchError((error: unknown) => {
 				// Error case - do not expose error message in tags
-				const statusCode = (error as { status?: number }).status?.toString() ?? '500';
-				profileContext.tags = {
-					...profileContext.tags,
-					statusCode,
+				const StatusCode = (error as { status?: number }).status?.toString() ?? '500';
+				ProfileContext.tags = {
+					...ProfileContext.tags,
+					statusCode: StatusCode,
 					success: 'false',
 					error: 'unknown',
 				};
-				profileContext.error = error as Error;
-				service.stopProfiling(profileContext);
+				ProfileContext.error = error as Error;
+				Service.StopProfiling(ProfileContext);
 				throw error;
 			}),
 		);

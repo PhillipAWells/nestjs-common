@@ -18,9 +18,9 @@ describe('ItemsService', () => {
 		mockSearch = vi.fn();
 		mockUpsert = vi.fn();
 		mockDelete = vi.fn();
-		mockCollection = vi.fn().mockReturnValue({ search: mockSearch, upsert: mockUpsert, delete: mockDelete });
+		mockCollection = vi.fn().mockReturnValue({ Search: mockSearch, Upsert: mockUpsert, Delete: mockDelete });
 
-		const mockQdrantService = { collection: mockCollection };
+		const mockQdrantService = { Collection: mockCollection };
 
 		mockModuleRef = { get: vi.fn() };
 		mockModuleRef.get.mockImplementation((token) => {
@@ -31,14 +31,14 @@ describe('ItemsService', () => {
 		service = new ItemsService(mockModuleRef as unknown as ModuleRef);
 	});
 
-	describe('findSimilar', () => {
+	describe('FindSimilar', () => {
 		it('should return mapped items from Qdrant search results', async () => {
 			mockSearch.mockResolvedValue([
 				{ id: 'abc', score: 0.97, payload: { name: 'Widget A' } },
 				{ id: 'def', score: 0.85, payload: { name: 'Widget B' } },
 			]);
 
-			const results = await service.findSimilar([0.1, 0.2, 0.3, 0.4]);
+			const results = await service.FindSimilar([0.1, 0.2, 0.3, 0.4]);
 
 			expect(results).toStrictEqual([
 				{ id: 'abc', name: 'Widget A' },
@@ -49,7 +49,7 @@ describe('ItemsService', () => {
 		it('should pass vector and limit to the collection search', async () => {
 			mockSearch.mockResolvedValue([]);
 
-			await service.findSimilar([0.5, 0.6], 5);
+			await service.FindSimilar([0.5, 0.6], 5);
 
 			expect(mockCollection).toHaveBeenCalledWith('items');
 			expect(mockSearch).toHaveBeenCalledWith({
@@ -62,7 +62,7 @@ describe('ItemsService', () => {
 		it('should default limit to 10', async () => {
 			mockSearch.mockResolvedValue([]);
 
-			await service.findSimilar([0.1, 0.2]);
+			await service.FindSimilar([0.1, 0.2]);
 
 			expect(mockSearch).toHaveBeenCalledWith(
 				expect.objectContaining({ limit: 10 }),
@@ -72,7 +72,7 @@ describe('ItemsService', () => {
 		it('should return an empty array when Qdrant returns no results', async () => {
 			mockSearch.mockResolvedValue([]);
 
-			const results = await service.findSimilar([0.1]);
+			const results = await service.FindSimilar([0.1]);
 
 			expect(results).toStrictEqual([]);
 		});
@@ -82,7 +82,7 @@ describe('ItemsService', () => {
 				{ id: 42, score: 0.5, payload: null },
 			]);
 
-			const results = await service.findSimilar([0.1]);
+			const results = await service.FindSimilar([0.1]);
 
 			expect(results[0]).toStrictEqual({ id: '42', name: '' });
 		});
@@ -91,17 +91,17 @@ describe('ItemsService', () => {
 			const qdrantError = new Error('Qdrant search failed on collection "items": timeout');
 			mockSearch.mockRejectedValue(qdrantError);
 
-			await expect(service.findSimilar([0.1])).rejects.toThrow('timeout');
+			await expect(service.FindSimilar([0.1])).rejects.toThrow('timeout');
 		});
 	});
 
-	describe('upsertItem', () => {
+	describe('UpsertItem', () => {
 		const item: IStoredItem = { id: 'item-1', name: 'Test IItem', vector: [0.1, 0.2, 0.3] };
 
 		it('should call upsert on the correct collection', async () => {
 			mockUpsert.mockResolvedValue({ status: 'ok', result: { operation_id: 1 } });
 
-			await service.upsertItem(item);
+			await service.UpsertItem(item);
 
 			expect(mockCollection).toHaveBeenCalledWith('items');
 			expect(mockUpsert).toHaveBeenCalledWith({
@@ -116,15 +116,15 @@ describe('ItemsService', () => {
 		it('should propagate errors from Qdrant', async () => {
 			mockUpsert.mockRejectedValue(new Error('connection refused'));
 
-			await expect(service.upsertItem(item)).rejects.toThrow('connection refused');
+			await expect(service.UpsertItem(item)).rejects.toThrow('connection refused');
 		});
 	});
 
-	describe('deleteItem', () => {
+	describe('DeleteItem', () => {
 		it('should call delete on the correct collection', async () => {
 			mockDelete.mockResolvedValue({ status: 'ok', result: { operation_id: 2 } });
 
-			await service.deleteItem('item-1');
+			await service.DeleteItem('item-1');
 
 			expect(mockCollection).toHaveBeenCalledWith('items');
 			expect(mockDelete).toHaveBeenCalledWith({ points: ['item-1'] });
@@ -133,7 +133,7 @@ describe('ItemsService', () => {
 		it('should propagate errors from Qdrant', async () => {
 			mockDelete.mockRejectedValue(new Error('not found'));
 
-			await expect(service.deleteItem('missing')).rejects.toThrow('not found');
+			await expect(service.DeleteItem('missing')).rejects.toThrow('not found');
 		});
 	});
 });

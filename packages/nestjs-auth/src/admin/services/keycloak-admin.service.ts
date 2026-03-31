@@ -50,8 +50,8 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 			this.Logger.info('Initializing Keycloak admin client...');
 
 			// Build and validate permission scopes
-			const scopes = this.Config.permissions ?? [...KEYCLOAK_DEFAULT_SCOPES];
-			this.GrantedScopes = new Set(scopes) as ReadonlySet<TKeycloakAdminScope>;
+			const Scopes = this.Config.permissions ?? [...KEYCLOAK_DEFAULT_SCOPES];
+			this.GrantedScopes = new Set(Scopes) as ReadonlySet<TKeycloakAdminScope>;
 
 			if (!this.Config.permissions) {
 				this.Logger.warn(
@@ -60,19 +60,19 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 				);
 			}
 
-			const { type: _type, ...credentialsWithoutType } = this.Config.credentials as { type: string; [key: string]: string };
+			const { type: _Type, ...CredentialsWithoutType } = this.Config.credentials as { type: string; [key: string]: string };
 			this.Client = new KeycloakClient(
 				{
 					baseUrl: this.Config.baseUrl,
 					realmName: this.Config.realmName,
-					credentials: credentialsWithoutType as unknown as typeof this.Config.credentials,
+					credentials: CredentialsWithoutType as unknown as typeof this.Config.credentials,
 					timeout: this.Config.timeout,
 					retry: this.Config.retry,
 				},
 				this.GrantedScopes,
 			);
 
-			await this.Client.authenticate();
+			await this.Client.Authenticate();
 			this.Logger.info('Keycloak admin client initialized successfully');
 		} catch (error) {
 			this.Logger.error(
@@ -85,50 +85,50 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 		}
 	}
 
-	public getClient(): KeycloakClient | null {
+	public GetClient(): KeycloakClient | null {
 		return this.Client;
 	}
 
-	public isEnabled(): boolean {
+	public IsEnabled(): boolean {
 		return this.Config.enabled;
 	}
 
-	public isAuthenticated(): boolean {
-		return this.Client?.isAuthenticated() ?? false;
+	public IsAuthenticated(): boolean {
+		return this.Client?.IsAuthenticated() ?? false;
 	}
 
 	// Proxy methods to client services
-	public get users(): UserService {
+	public get Users(): UserService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Users;
 	}
 
-	public get realms(): RealmService {
+	public get Realms(): RealmService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Realms;
 	}
 
-	public get clients(): ClientService {
+	public get Clients(): ClientService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Clients;
 	}
 
-	public get roles(): RoleService {
+	public get Roles(): RoleService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Roles;
 	}
 
-	public get groups(): GroupService {
+	public get Groups(): GroupService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Groups;
 	}
 
-	public get identityProviders(): IdentityProviderService {
+	public get IdentityProviders(): IdentityProviderService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.IdentityProviders;
 	}
 
-	public get authentication(): AuthenticationService {
+	public get Authentication(): AuthenticationService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Authentication;
 	}
@@ -146,7 +146,7 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 	 * const links = await keycloakAdmin.federatedIdentity.list(userId);
 	 * ```
 	 */
-	public get federatedIdentity(): FederatedIdentityService {
+	public get FederatedIdentity(): FederatedIdentityService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.FederatedIdentities;
 	}
@@ -164,7 +164,7 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 	 * const events = await keycloakAdmin.events.getAdminEvents({ max: 100 });
 	 * ```
 	 */
-	public get events(): EventService {
+	public get Events(): EventService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Events;
 	}

@@ -59,7 +59,7 @@ export { KeycloakTokenValidationService } from './keycloak/services/keycloak-tok
 export { JwksCacheService } from './keycloak/services/jwks-cache.service.js';
 export type { ITokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
 export type { IKeycloakModuleOptions, IKeycloakTokenClaims, IKeycloakUser } from './keycloak/keycloak.types.js';
-export { createMockKeycloakUser } from './keycloak/keycloak.types.js';
+export { CreateMockKeycloakUser as createMockKeycloakUser } from './keycloak/keycloak.types.js';
 export type { IKeycloakModuleAsyncOptions } from './keycloak/keycloak.interfaces.js';
 export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 
@@ -71,7 +71,7 @@ export { KeycloakAdminService } from './admin/services/keycloak-admin.service.js
 export { KeycloakHealthIndicator } from './admin/health/keycloak.health.js';
 export type { IKeycloakAdminConfig } from './admin/config/keycloak.config.js';
 export type { IKeycloakAdminModuleAsyncOptions } from './admin/keycloak-admin.interfaces.js';
-export { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
+export { KeycloakAdminDefaults, ValidateKeycloakAdminConfig as validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
 export { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './admin/keycloak.constants.js';
 
 // Keycloak Admin Permission Scopes
@@ -112,7 +112,7 @@ export {
 } from './admin/client/errors/base-error.js';
 
 // Keycloak Admin Utils
-export { withRetry } from './admin/client/utils/retry.js';
+export { WithRetry as withRetry } from './admin/client/utils/retry.js';
 
 // ============================================================================
 // Guards — Authorization and JWT
@@ -134,10 +134,10 @@ export {
 	IS_PUBLIC_KEY,
 	ROLES_KEY,
 	PERMISSIONS_KEY,
-	detectContextType,
-	extractRequestFromContext,
-	extractUserFromContext,
-	extractAuthTokenFromContext,
+	DetectContextType,
+	ExtractRequestFromContext,
+	ExtractUserFromContext,
+	ExtractAuthTokenFromContext,
 } from './decorators/auth-decorators.js';
 
 export type { IContextOptions } from './decorators/auth-decorators.js';
@@ -151,5 +151,3 @@ export {
 	GraphQLContextParam,
 	GraphQLUser,
 } from './decorators/graphql-auth-decorators.js';
-
-export { ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext, DetectContextType } from './decorators/context-utils.js';

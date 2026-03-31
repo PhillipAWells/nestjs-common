@@ -29,42 +29,42 @@ export class BsonSerializationMiddleware implements NestMiddleware, ILazyModuleR
 	 * If Content-Type is application/bson, deserialize and mark request
 	 */
 	public use(req: Request, res: Response, next: NextFunction): void {
-		const contentType = req.get('content-type')?.toLowerCase() ?? '';
+		const ContentType = req.get('content-type')?.toLowerCase() ?? '';
 
 		// If not a BSON request, pass through
-		if (!contentType.includes('application/bson')) {
+		if (!ContentType.includes('application/bson')) {
 			next();
 			return;
 		}
 
 		// Collect raw body chunks
-		const chunks: Buffer[] = [];
+		const Chunks: Buffer[] = [];
 
 		// Handle data events
-		const onData = (chunk: Buffer): void => {
-			chunks.push(chunk);
+		const OnData = (chunk: Buffer): void => {
+			Chunks.push(chunk);
 		};
 
-		const removeListeners = (): void => {
+		const RemoveListeners = (): void => {
 			if (typeof req.removeListener === 'function') {
-				req.removeListener('data', onData);
-				req.removeListener('end', onEnd);
-				req.removeListener('error', onError);
+				req.removeListener('data', OnData);
+				req.removeListener('end', OnEnd);
+				req.removeListener('error', OnError);
 			}
 		};
 
 		// Handle end event — async with proper error handling and listener cleanup
-		const onEnd = (): void => {
-			const buffer = Buffer.concat(chunks);
-			this.BsonSerializationService.deserialize(buffer).then(
+		const OnEnd = (): void => {
+			const SerializedBuffer = Buffer.concat(Chunks);
+			this.BsonSerializationService.Deserialize(SerializedBuffer).then(
 				(body) => {
-					removeListeners();
+					RemoveListeners();
 					req.body = body;
 					(req as any)._bsonRequest = true;
 					next();
 				},
 				(error: unknown) => {
-					removeListeners();
+					RemoveListeners();
 					res.status(HTTP_STATUS_BAD_REQUEST).json({
 						errors: [
 							{
@@ -81,8 +81,8 @@ export class BsonSerializationMiddleware implements NestMiddleware, ILazyModuleR
 		};
 
 		// Handle error event
-		const onError = (err: Error): void => {
-			removeListeners();
+		const OnError = (err: Error): void => {
+			RemoveListeners();
 			res.status(HTTP_STATUS_BAD_REQUEST).json({
 				errors: [
 					{
@@ -97,8 +97,8 @@ export class BsonSerializationMiddleware implements NestMiddleware, ILazyModuleR
 		};
 
 		// Attach listeners
-		req.on('data', onData);
-		req.on('end', onEnd);
-		req.on('error', onError);
+		req.on('data', OnData);
+		req.on('end', OnEnd);
+		req.on('error', OnError);
 	}
 }

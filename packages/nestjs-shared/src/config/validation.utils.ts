@@ -22,7 +22,7 @@ export class ValidationService implements ILazyModuleRefService {
 	private get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			this._ContextualLogger = baseLogger.createContextualLogger(ValidationService.name);
+			this._ContextualLogger = baseLogger.CreateContextualLogger(ValidationService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -33,9 +33,9 @@ export class ValidationService implements ILazyModuleRefService {
 	 * @returns Compiled Joi ObjectSchema ready for validation
 	 */
 	public createValidationSchema(schema: IConfigSchema): Joi.ObjectSchema {
-		this.Logger.debug('Creating validation schema');
+		this.Logger.Debug('Creating validation schema');
 		const joiSchema = Joi.object(schema);
-		this.Logger.debug('Validation schema created successfully');
+		this.Logger.Debug('Validation schema created successfully');
 		return joiSchema;
 	}
 
@@ -46,7 +46,7 @@ export class ValidationService implements ILazyModuleRefService {
 	 * @returns IValidationResult with isValid flag and optional errors array
 	 */
 	public validateConfig(config: any, schema: Joi.ObjectSchema): IValidationResult {
-		this.Logger.debug('Starting configuration validation');
+		this.Logger.Debug('Starting configuration validation');
 		const { error } = schema.validate(config, {
 			allowUnknown: true,
 			stripUnknown: false,
@@ -54,7 +54,7 @@ export class ValidationService implements ILazyModuleRefService {
 
 		if (error) {
 			this.Logger.error(`Configuration validation failed with ${error.details.length} errors`);
-			this.Logger.debug(`Validation errors: ${error.details.map(detail => detail.message).join(', ')}`);
+			this.Logger.Debug(`Validation errors: ${error.details.map(detail => detail.message).join(', ')}`);
 			return {
 				isValid: false,
 				errors: error.details.map(detail => detail.message),

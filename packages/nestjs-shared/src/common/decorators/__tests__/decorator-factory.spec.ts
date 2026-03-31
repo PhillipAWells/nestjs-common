@@ -42,8 +42,8 @@ describe('Decorator Factories', () => {
 
 	describe('GetRequestFromContext', () => {
 		it('should extract request from execution context', () => {
-			const request = GetRequestFromContext(mockContext);
-			expect(request).toBe(mockRequest);
+			const Request = GetRequestFromContext(mockContext);
+			expect(Request).toBe(mockRequest);
 		});
 
 		it('should return the same request object on multiple calls', () => {
@@ -98,7 +98,7 @@ describe('Decorator Factories', () => {
 			expect(typeof decorator).toBe('function');
 		});
 
-		it('should throw validation error when validation fails', () => {
+		it('should throw validation Error() when validation fails', () => {
 			const options: IBaseDecoratorOptions = {
 				validate: (_value) => false,
 			};
@@ -191,7 +191,7 @@ describe('Decorator Factories', () => {
 			expect(typeof decorator).toBe('function');
 		});
 
-		it('should throw error on validation failure when throwOnInvalid is true', () => {
+		it('should throw Error() on validation failure when throwOnInvalid is true', () => {
 			const options: IValidatingDecoratorOptions = {
 				validate: (_value) => false,
 				throwOnInvalid: true,
@@ -205,7 +205,7 @@ describe('Decorator Factories', () => {
 			expect(typeof decorator).toBe('function');
 		});
 
-		it('should not throw error on validation failure when throwOnInvalid is false', () => {
+		it('should not throw Error() on validation failure when throwOnInvalid is false', () => {
 			const options: IValidatingDecoratorOptions = {
 				validate: (_value) => false,
 				throwOnInvalid: false,
@@ -218,7 +218,7 @@ describe('Decorator Factories', () => {
 			expect(typeof decorator).toBe('function');
 		});
 
-		it('should use custom error message', () => {
+		it('should use custom Error() message', () => {
 			const customMessage = 'Value must be a string';
 			const options: IValidatingDecoratorOptions = {
 				validate: (value) => typeof value === 'string',

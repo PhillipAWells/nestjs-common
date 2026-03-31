@@ -39,7 +39,7 @@ describe('RateLimitService', () => {
 			const clientId = 'user123';
 
 			for (let i = 0; i < 5; i++) {
-				const result: IRateLimitResult = await service.checkLimit(clientId);
+				const result: IRateLimitResult = await service.CheckLimit(clientId);
 				expect(result.allowed).toBe(true);
 				expect(result.remaining).toBe(99 - i);
 				expect(result.limit).toBe(100);
@@ -52,11 +52,11 @@ describe('RateLimitService', () => {
 
 			// Use up all requests
 			for (let i = 0; i < 100; i++) {
-				await service.checkLimit(clientId);
+				await service.CheckLimit(clientId);
 			}
 
 			// Next request should be blocked
-			const result: IRateLimitResult = await service.checkLimit(clientId);
+			const result: IRateLimitResult = await service.CheckLimit(clientId);
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);
 			expect(result.limit).toBe(100);
@@ -67,18 +67,18 @@ describe('RateLimitService', () => {
 
 			// Use up all requests
 			for (let i = 0; i < 100; i++) {
-				await service.checkLimit(clientId);
+				await service.CheckLimit(clientId);
 			}
 
 			// Verify blocked
-			let result = await service.checkLimit(clientId);
+			let result = await service.CheckLimit(clientId);
 			expect(result.allowed).toBe(false);
 
 			// Simulate time passing (15 minutes + 1 second)
 			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
 			// Should allow again
-			result = await service.checkLimit(clientId);
+			result = await service.CheckLimit(clientId);
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(99);
 		});
@@ -89,18 +89,18 @@ describe('RateLimitService', () => {
 
 			// Use up client1's limit
 			for (let i = 0; i < 100; i++) {
-				await service.checkLimit(client1);
+				await service.CheckLimit(client1);
 			}
 
 			// Client2 should still be allowed
-			const result = await service.checkLimit(client2);
+			const result = await service.CheckLimit(client2);
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(99);
 		});
 
 		it('should support custom operation configs', async () => {
 			const operation = 'intensiveQuery';
-			service.setOperationConfig(operation, {
+			service.SetOperationConfig(operation, {
 				windowMs: 60000, // 1 minute
 				maxRequests: 10,
 			});
@@ -109,13 +109,13 @@ describe('RateLimitService', () => {
 
 			// Use up the custom limit
 			for (let i = 0; i < 10; i++) {
-				const result = await service.checkLimit(clientId, operation);
+				const result = await service.CheckLimit(clientId, operation);
 				expect(result.allowed).toBe(true);
 				expect(result.limit).toBe(10);
 			}
 
 			// Next should be blocked
-			const result = await service.checkLimit(clientId, operation);
+			const result = await service.CheckLimit(clientId, operation);
 			expect(result.allowed).toBe(false);
 		});
 	});
@@ -128,10 +128,10 @@ describe('RateLimitService', () => {
 				maxRequests: 5,
 			};
 
-			service.setOperationConfig(operation, config);
+			service.SetOperationConfig(operation, config);
 
 			// Verify by checking limit
-			const result = await service.getStatus('test', operation);
+			const result = await service.GetStatus('test', operation);
 			expect(result).toBeNull(); // No requests made yet
 		});
 	});
@@ -141,14 +141,14 @@ describe('RateLimitService', () => {
 			const clientId = 'user123';
 
 			// Use some requests
-			await service.checkLimit(clientId);
-			await service.checkLimit(clientId);
+			await service.CheckLimit(clientId);
+			await service.CheckLimit(clientId);
 
 			// Reset
-			service.resetLimit(clientId);
+			service.ResetLimit(clientId);
 
 			// Should start fresh
-			const result = await service.checkLimit(clientId);
+			const result = await service.CheckLimit(clientId);
 			expect(result.allowed).toBe(true);
 			expect(result.remaining).toBe(99);
 		});
@@ -156,17 +156,17 @@ describe('RateLimitService', () => {
 
 	describe('getStatus', () => {
 		it('should return null for unknown client', async () => {
-			const result = await service.getStatus('unknown');
+			const result = await service.GetStatus('unknown');
 			expect(result).toBeNull();
 		});
 
 		it('should return current status for known client', async () => {
 			const clientId = 'user123';
 
-			await service.checkLimit(clientId);
-			await service.checkLimit(clientId);
+			await service.CheckLimit(clientId);
+			await service.CheckLimit(clientId);
 
-			const result = await service.getStatus(clientId);
+			const result = await service.GetStatus(clientId);
 
 			expect(result).not.toBeNull();
 			expect(result!.allowed).toBe(true);
@@ -177,12 +177,12 @@ describe('RateLimitService', () => {
 		it('should handle expired entries', async () => {
 			const clientId = 'user123';
 
-			await service.checkLimit(clientId);
+			await service.CheckLimit(clientId);
 
 			// Advance time past reset
 			vi.advanceTimersByTime(15 * 60 * 1000 + 1000);
 
-			const result = await service.getStatus(clientId);
+			const result = await service.GetStatus(clientId);
 			expect(result!.allowed).toBe(false); // Entry exists but expired
 		});
 	});
@@ -192,32 +192,32 @@ describe('RateLimitService', () => {
 			const client1 = 'user123';
 			const client2 = 'user456';
 
-			await service.checkLimit(client1);
+			await service.CheckLimit(client1);
 			// Advance time slightly so client2 has a later resetTime
 			vi.advanceTimersByTime(2000);
-			await service.checkLimit(client2);
+			await service.CheckLimit(client2);
 
-			expect(service.getStats().totalEntries).toBe(2);
+			expect(service.GetStats().totalEntries).toBe(2);
 
 			// Advance time past reset for client1 but not client2
 			vi.advanceTimersByTime(15 * 60 * 1000 - 1000);
 
 			// Trigger cleanup (normally done by interval)
-			(service as any).cleanup();
+			(service as any).Cleanup();
 
-			expect(service.getStats().totalEntries).toBe(1);
+			expect(service.GetStats().totalEntries).toBe(1);
 		});
 	});
 
 	describe('getStats', () => {
 		it('should return store statistics', async () => {
 			const operation = 'testOp';
-			service.setOperationConfig(operation, { windowMs: 60000, maxRequests: 10 });
+			service.SetOperationConfig(operation, { windowMs: 60000, maxRequests: 10 });
 
-			await service.checkLimit('user1');
-			await service.checkLimit('user2');
+			await service.CheckLimit('user1');
+			await service.CheckLimit('user2');
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			expect(stats.totalEntries).toBe(2);
 			expect(stats.operationConfigs).toBe(1);

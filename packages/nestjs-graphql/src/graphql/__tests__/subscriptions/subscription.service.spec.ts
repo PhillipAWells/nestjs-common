@@ -56,7 +56,7 @@ describe('SubscriptionService', () => {
 			const topic = 'user.created';
 			const payload = { id: '123', name: 'Test IUser' };
 
-			await service.publish(topic, payload);
+			await service.Publish(topic, payload);
 
 			// Test passes if no error is thrown
 			expect(true).toBe(true);
@@ -66,7 +66,7 @@ describe('SubscriptionService', () => {
 			const invalidTopic = 'invalid topic';
 			const payload = { id: '123' };
 
-			await expect(service.publish(invalidTopic, payload)).rejects.toThrow('Invalid topic format');
+			await expect(service.Publish(invalidTopic, payload)).rejects.toThrow('Invalid topic format');
 		});
 	});
 
@@ -74,7 +74,7 @@ describe('SubscriptionService', () => {
 		it('should subscribe to topic', async () => {
 			const topic = 'user.updated';
 
-			const iterator = service.subscribe(topic);
+			const iterator = service.Subscribe(topic);
 
 			expect(iterator).toBeDefined();
 			expect(typeof (iterator as any)[Symbol.asyncIterator]).toBe('function');
@@ -84,8 +84,8 @@ describe('SubscriptionService', () => {
 			const topic1 = 'user.updated';
 			const topic2 = 'user.deleted';
 
-			const iterator1 = service.subscribe(topic1);
-			const iterator2 = service.subscribe(topic2);
+			const iterator1 = service.Subscribe(topic1);
+			const iterator2 = service.Subscribe(topic2);
 
 			expect(iterator1).toBeDefined();
 			expect(iterator2).toBeDefined();
@@ -97,7 +97,7 @@ describe('SubscriptionService', () => {
 			const topic = 'user.deleted';
 			const data = { id: '123', name: 'John' };
 
-			await expect(service.publish(topic, data)).resolves.toBeUndefined();
+			await expect(service.Publish(topic, data)).resolves.toBeUndefined();
 		});
 	});
 

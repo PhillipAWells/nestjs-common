@@ -47,36 +47,36 @@ export class HTTPMetricsInterceptor implements NestInterceptor, ILazyModuleRefSe
 			return next.handle();
 		}
 
-		const request = context.switchToHttp().getRequest<Request>();
-		const response = context.switchToHttp().getResponse<Response>();
+		const Request = context.switchToHttp().getRequest<Request>();
+		const Response = context.switchToHttp().getResponse<Response>();
 
 		// Additional safety check for request object
-		if (!request?.method) {
+		if (!Request?.method) {
 			return next.handle();
 		}
 
-		const startTime = Date.now();
+		const StartTime = Date.now();
 
 		// Extract route information
-		const { method } = request;
-		const route = this.getRoute(request);
+		const { method } = Request;
+		const Route = this.GetRoute(Request);
 
 		return next.handle().pipe(
 			tap(() => {
-				const duration = Date.now() - startTime;
-				const contentLength = this.getContentLength(request);
-				const statusCode = response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
+				const Duration = Date.now() - StartTime;
+				const ContentLength = this.GetContentLength(Request);
+				const StatusCode = Response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
 
 				// Record metrics
-				this.MetricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
+				this.MetricsService.RecordHttpRequest(method, Route, StatusCode, Duration, ContentLength);
 			}),
 			catchError((error: unknown) => {
-				const duration = Date.now() - startTime;
-				const contentLength = this.getContentLength(request);
-				const statusCode = (error instanceof HttpException ? error.getStatus() : undefined) ?? response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
+				const Duration = Date.now() - StartTime;
+				const ContentLength = this.GetContentLength(Request);
+				const StatusCode = (error instanceof HttpException ? error.getStatus() : undefined) ?? Response.statusCode ?? DEFAULT_ERROR_STATUS_CODE;
 
 				// Record metrics even on error (use status code from HttpException if available, then response, then default)
-				this.MetricsService.recordHttpRequest(method, route, statusCode, duration, contentLength);
+				this.MetricsService.RecordHttpRequest(method, Route, StatusCode, Duration, ContentLength);
 				return throwError(() => error);
 			}),
 		);
@@ -87,7 +87,7 @@ export class HTTPMetricsInterceptor implements NestInterceptor, ILazyModuleRefSe
 	 * Prefers the Express route pattern (e.g., /users/:id) over the raw URL path
 	 * to prevent unbounded metric cardinality from dynamic path parameters.
 	 */
-	private getRoute(request: Request): string {
+	private GetRoute(request: Request): string {
 		// Try to get route pattern from Express (e.g., /users/:id instead of /users/123)
 		const { route } = (request as unknown as { route?: { path?: string } });
 		if (route?.path) {
@@ -96,15 +96,15 @@ export class HTTPMetricsInterceptor implements NestInterceptor, ILazyModuleRefSe
 
 		// Fallback: normalize the path to collapse UUIDs, ObjectIDs, and numeric IDs
 		// to prevent unbounded metric label cardinality
-		const rawPath = request.path || request.url || '/unknown';
-		return this.normalizePath(rawPath);
+		const RawPath = request.path || request.url || '/unknown';
+		return this.NormalizePath(RawPath);
 	}
 
 	/**
 	 * Normalize a URL path by replacing dynamic segments (UUIDs, ObjectIDs, numeric IDs)
 	 * with placeholder tokens to prevent unbounded metric cardinality.
 	 */
-	private normalizePath(path: string): string {
+	private NormalizePath(path: string): string {
 		return path
 			// Replace UUIDs (v1-v5)
 			.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, ':id')
@@ -117,11 +117,11 @@ export class HTTPMetricsInterceptor implements NestInterceptor, ILazyModuleRefSe
 	/**
 	 * Get request content length
 	 */
-	private getContentLength(request: Request): number | undefined {
-		const contentLength = request.headers['content-length'];
-		if (contentLength) {
-			const length = parseInt(contentLength, 10);
-			return isNaN(length) ? undefined : length;
+	private GetContentLength(request: Request): number | undefined {
+		const ContentLength = request.headers['content-length'];
+		if (ContentLength) {
+			const Length = parseInt(ContentLength, 10);
+			return isNaN(Length) ? undefined : Length;
 		}
 		return undefined;
 	}

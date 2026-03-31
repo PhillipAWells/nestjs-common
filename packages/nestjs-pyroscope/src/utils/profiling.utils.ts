@@ -35,42 +35,42 @@ export class ProfilingConfigValidator {
 	 * }
 	 * ```
 	 */
-	public static validate(config: IPyroscopeConfig): { isValid: boolean; errors: string[] } {
-		const errors: string[] = [];
+	public static Validate(config: IPyroscopeConfig): { isValid: boolean; errors: string[] } {
+		const Errors: string[] = [];
 
 		if (!config.serverAddress) {
-			errors.push('serverAddress is required');
+			Errors.push('serverAddress is required');
 		} else if (!config.serverAddress.startsWith('http')) {
-			errors.push('serverAddress must start with http:// or https://');
+			Errors.push('serverAddress must start with http:// or https://');
 		}
 
 		if (!config.applicationName) {
-			errors.push('applicationName is required');
+			Errors.push('applicationName is required');
 		}
 
 		if (config.sampleRate !== undefined && (config.sampleRate < 0 || config.sampleRate > 1)) {
-			errors.push('sampleRate must be between 0 and 1');
+			Errors.push('sampleRate must be between 0 and 1');
 		}
 
 		if (config.profileTypes) {
-			const validTypes: TProfileType[] = ['cpu', 'memory', 'goroutine', 'mutex', 'block'];
-			const invalidTypes = config.profileTypes.filter(type => !validTypes.includes(type));
-			if (invalidTypes.length > 0) {
-				errors.push(`Invalid profile types: ${invalidTypes.join(', ')}`);
+			const ValidTypes: TProfileType[] = ['cpu', 'memory', 'goroutine', 'mutex', 'block'];
+			const InvalidTypes = config.profileTypes.filter(type => !ValidTypes.includes(type));
+			if (InvalidTypes.length > 0) {
+				Errors.push(`Invalid profile types: ${InvalidTypes.join(', ')}`);
 			}
 		}
 
 		if (config.basicAuthUser && !config.basicAuthPassword) {
-			errors.push('basicAuthPassword is required when basicAuthUser is provided');
+			Errors.push('basicAuthPassword is required when basicAuthUser is provided');
 		}
 
 		if (config.basicAuthPassword && !config.basicAuthUser) {
-			errors.push('basicAuthUser is required when basicAuthPassword is provided');
+			Errors.push('basicAuthUser is required when basicAuthPassword is provided');
 		}
 
 		return {
-			isValid: errors.length === 0,
-			errors,
+			isValid: Errors.length === 0,
+			errors: Errors,
 		};
 	}
 }
@@ -95,16 +95,16 @@ export class TagFormatter {
 	 * // Returns { user_id: '123', user_name: 'john' }
 	 * ```
 	 */
-	public static format(tags: Record<string, string>): Record<string, string> {
-		const formatted: Record<string, string> = {};
+	public static Format(tags: Record<string, string>): Record<string, string> {
+		const Formatted: Record<string, string> = {};
 
-		for (const [key, value] of Object.entries(tags)) {
+		for (const [Key, Value] of Object.entries(tags)) {
 			// Convert camelCase to snake_case for consistency
-			const formattedKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-			formatted[formattedKey] = String(value);
+			const FormattedKey = Key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+			Formatted[FormattedKey] = String(Value);
 		}
 
-		return formatted;
+		return Formatted;
 	}
 
 	/**
@@ -122,7 +122,7 @@ export class TagFormatter {
 	 * // Returns { env: 'prod', region: 'us-east-1' }
 	 * ```
 	 */
-	public static merge(baseTags: Record<string, string>, overrideTags: Record<string, string>): Record<string, string> {
+	public static Merge(baseTags: Record<string, string>, overrideTags: Record<string, string>): Record<string, string> {
 		return { ...baseTags, ...overrideTags };
 	}
 
@@ -142,17 +142,17 @@ export class TagFormatter {
 	 * // Removes 'empty', truncates 'token' if needed
 	 * ```
 	 */
-	public static sanitize(tags: Record<string, string>, maxLength?: number): Record<string, string> {
-		const sanitized: Record<string, string> = {};
-		const tagMaxLength = maxLength ?? PROFILING_TAG_MAX_LENGTH;
+	public static Sanitize(tags: Record<string, string>, maxLength?: number): Record<string, string> {
+		const Sanitized: Record<string, string> = {};
+		const TagMaxLength = maxLength ?? PROFILING_TAG_MAX_LENGTH;
 
-		for (const [key, value] of Object.entries(tags)) {
-			if (value !== null && value !== undefined && value !== '') {
-				sanitized[key] = String(value).substring(0, tagMaxLength); // Limit tag value length
+		for (const [Key, Value] of Object.entries(tags)) {
+			if (Value !== null && Value !== undefined && Value !== '') {
+				Sanitized[Key] = String(Value).substring(0, TagMaxLength); // Limit tag value length
 			}
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 }
 
@@ -177,11 +177,11 @@ export class MetricAggregator {
 	 * // Returns 150
 	 * ```
 	 */
-	public static averageDuration(metrics: Array<{ duration: number }>): number {
+	public static AverageDuration(metrics: Array<{ duration: number }>): number {
 		if (metrics.length === 0) return 0;
 
-		const total = metrics.reduce((sum, metric) => sum + metric.duration, 0);
-		return total / metrics.length;
+		const Total = metrics.reduce((sum, metric) => sum + metric.duration, 0);
+		return Total / metrics.length;
 	}
 
 	/**
@@ -199,13 +199,13 @@ export class MetricAggregator {
 	 * // 95% of requests completed in <= p95 milliseconds
 	 * ```
 	 */
-	public static percentile(metrics: Array<{ duration: number }>, p: number): number {
+	public static Percentile(metrics: Array<{ duration: number }>, p: number): number {
 		if (metrics.length === 0) return 0;
 
-		const sorted = metrics.map(m => m.duration).sort((a, b) => a - b);
+		const Sorted = metrics.map(m => m.duration).sort((a, b) => a - b);
 
-		const index = Math.ceil((p / PROFILING_PERCENTILE_DIVISOR) * sorted.length) - 1;
-		return sorted[Math.min(sorted.length - 1, Math.max(0, index))] ?? 0;
+		const Index = Math.ceil((p / PROFILING_PERCENTILE_DIVISOR) * Sorted.length) - 1;
+		return Sorted[Math.min(Sorted.length - 1, Math.max(0, Index))] ?? 0;
 	}
 
 	/**
@@ -224,22 +224,22 @@ export class MetricAggregator {
 	 * // grouped['select'] contains all metrics with operation: 'select'
 	 * ```
 	 */
-	public static groupByTags<T extends { tags?: Record<string, string> }>(
+	public static GroupByTags<T extends { tags?: Record<string, string> }>(
 		metrics: T[],
 		tagKeys: string[],
 	): Record<string, T[]> {
-		const groups: Record<string, T[]> = {};
+		const Groups: Record<string, T[]> = {};
 
-		for (const metric of metrics) {
-			const key = tagKeys
-				.map(key => metric.tags?.[key] ?? 'unknown')
+		for (const Metric of metrics) {
+			const Key = tagKeys
+				.map(key => Metric.tags?.[key] ?? 'unknown')
 				.join('_');
 
-			(groups[key] ??= []);
-			groups[key].push(metric);
+			(Groups[Key] ??= []);
+			Groups[Key].push(Metric);
 		}
 
-		return groups;
+		return Groups;
 	}
 }
 
@@ -266,7 +266,7 @@ export class ProfilingErrorHandler {
 	 * }
 	 * ```
 	 */
-	public static isRecoverableError(error: Error): boolean {
+	public static IsRecoverableError(error: Error): boolean {
 		// Network errors are usually recoverable
 		if (error.message.includes('ECONNREFUSED') ||
 			error.message.includes('ENOTFOUND') ||
@@ -297,7 +297,7 @@ export class ProfilingErrorHandler {
 	 * logger.error(message); // Safe to expose to users
 	 * ```
 	 */
-	public static formatError(error: Error): string {
+	public static FormatError(error: Error): string {
 		if (error.message.includes('ECONNREFUSED')) {
 			return 'Unable to connect to Pyroscope server. Please check server address and network connectivity.';
 		}
@@ -333,18 +333,18 @@ export class ProfilingErrorHandler {
 	 * // Returns exponential backoff: min(100 * 2^2, 10000) + random jitter
 	 * ```
 	 */
-	public static getRetryDelay(error: Error, attempt: number, baseDelayMs?: number, maxDelayMs?: number, jitterMs?: number): number {
-		if (!this.isRecoverableError(error)) {
+	public static GetRetryDelay(error: Error, attempt: number, baseDelayMs?: number, maxDelayMs?: number, jitterMs?: number): number {
+		if (!this.IsRecoverableError(error)) {
 			return 0; // No retry
 		}
 
 		// Exponential backoff with jitter
-		const baseDelay = baseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS;
-		const maxDelay = maxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS;
-		const jitter = jitterMs ?? PROFILING_RETRY_JITTER_MS;
+		const BaseDelay = baseDelayMs ?? PROFILING_RETRY_BASE_DELAY_MS;
+		const MaxDelay = maxDelayMs ?? PROFILING_RETRY_MAX_DELAY_MS;
+		const Jitter = jitterMs ?? PROFILING_RETRY_JITTER_MS;
 
-		const calculatedDelay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-		return calculatedDelay + Math.random() * jitter;
+		const CalculatedDelay = Math.min(BaseDelay * Math.pow(2, attempt), MaxDelay);
+		return CalculatedDelay + Math.random() * Jitter;
 	}
 }
 
@@ -363,11 +363,11 @@ export class ProfilingErrorHandler {
  *
  * @example
  * ```typescript
- * const id = generateProfileId('op');
+ * const id = GenerateProfileId('op');
  * // Returns something like 'op_1710429254123_abc123def'
  * ```
  */
-export function generateProfileId(prefix: string = 'profile'): string {
+export function GenerateProfileId(prefix: string = 'profile'): string {
 	return `${prefix}_${Date.now()}_${Math.random().toString(PROFILING_ID_RADIX).substring(2, PROFILING_ID_SUBSTR_END)}`;
 }
 
@@ -382,11 +382,11 @@ export function generateProfileId(prefix: string = 'profile'): string {
  *
  * @example
  * ```typescript
- * formatDuration(450);  // Returns '450.00ms'
- * formatDuration(1500); // Returns '1.50s'
+ * FormatDuration(450);  // Returns '450.00ms'
+ * FormatDuration(1500); // Returns '1.50s'
  * ```
  */
-export function formatDuration(ms: number): string {
+export function FormatDuration(ms: number): string {
 	if (ms < PROFILING_DURATION_SECONDS_THRESHOLD) {
 		return `${ms.toFixed(2)}ms`;
 	}
@@ -410,7 +410,7 @@ export function formatDuration(ms: number): string {
  * }
  * ```
  */
-export function isProfilingEnabled(): boolean {
-	const enabled = process.env['PYROSCOPE_ENABLED'];
-	return enabled === 'true' || enabled === '1';
+export function IsProfilingEnabled(): boolean {
+	const Enabled = process.env['PYROSCOPE_ENABLED'];
+	return Enabled === 'true' || Enabled === '1';
 }

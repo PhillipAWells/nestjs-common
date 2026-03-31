@@ -33,7 +33,7 @@ export class ItemsResolver {
 	 * The operation name in the GraphQL schema will be "GetItems" (PascalCase).
 	 */
 	@Query(() => [IItem], { name: 'GetItems' })
-	public getItems(): IItem[] {
+	public GetItems(): IItem[] {
 		this.Logger.debug('GetItems query executed');
 		// Simulated return — in a real resolver, this would query ItemsService
 		// or a database. For now, we return a static demo list.
@@ -58,7 +58,7 @@ export class ItemsResolver {
 	 * Returns null if the item is not found (nullable: true).
 	 */
 	@Query(() => IItem, { name: 'GetItem', nullable: true })
-	public getItem(@Args('id') id: string): IItem | null {
+	public GetItem(@Args('id') id: string): IItem | null {
 		this.Logger.debug(`GetItem query executed for id: ${id}`);
 		// Simulated logic — check if the ID matches a demo item
 		if (id === '1') {
@@ -85,18 +85,18 @@ export class ItemsResolver {
 	 * Returns the created item.
 	 */
 	@Mutation(() => IItem, { name: 'CreateItem' })
-	public createItem(
+	public CreateItem(
 		@Args('name') name: string,
 		@Args('description') description: string,
 	): IItem {
 		this.Logger.debug(`CreateItem mutation executed with name: ${name}`);
 		// Simulated item creation
-		const newItem: IItem = {
+		const NewItem: IItem = {
 			Id: String(Date.now()),
 			Name: name,
 			Description: description,
 		};
-		return newItem;
+		return NewItem;
 	}
 
 	/**
@@ -106,11 +106,11 @@ export class ItemsResolver {
 	 * Returns a boolean indicating success.
 	 */
 	@Mutation(() => Boolean, { name: 'DeleteItem' })
-	public async deleteItem(@Args('id') id: string): Promise<boolean> {
+	public async DeleteItem(@Args('id') id: string): Promise<boolean> {
 		this.Logger.debug(`DeleteItem mutation executed for id: ${id}`);
 		// Simulated deletion — always returns true for demo purposes
 		try {
-			await this.ItemsService.deleteItem(id);
+			await this.ItemsService.DeleteItem(id);
 			return true;
 		} catch (error) {
 			this.Logger.error(`Failed to delete item ${id}: ${String(error)}`);

@@ -93,8 +93,8 @@ export class MetricsController {
 	@UseGuards(MetricsGuard)
 	@Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
 	@Header('X-Robots-ITag', 'noindex, nofollow')
-	public async getMetrics(@Res() response: Response): Promise<void> {
-		const metrics = await this.Exporter.getMetrics();
-		response.send(metrics);
+	public async GetMetrics(@Res() response: Response): Promise<void> {
+		const Metrics = await this.Exporter.GetMetrics();
+		response.send(Metrics);
 	}
 }

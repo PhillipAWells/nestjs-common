@@ -16,14 +16,14 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import type {
 	IComplexityConfig,
 } from '../graphql/query-complexity.js';
 import {
-	calculateQueryComplexity,
-	exceedsComplexityLimit,
+	CalculateQueryComplexity,
+	ExceedsComplexityLimit,
 	DEFAULT_COMPLEXITY_CONFIG,
 } from '../graphql/query-complexity.js';
 import { QUERY_COMPLEXITY_CACHE_MAX_SIZE, QUERY_COMPLEXITY_CACHE_CLEANUP_INTERVAL_MS, QUERY_COMPLEXITY_THRESHOLD } from '../constants/complexity.constants.js';
@@ -47,7 +47,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(QueryComplexityGuard.name);
 		} catch {
@@ -70,7 +70,7 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 
 	constructor(moduleRef: ModuleRef) {
 		this.Module = moduleRef;
-		this.startPeriodicCleanup();
+		this.StartPeriodicCleanup();
 	}
 
 	/**
@@ -79,9 +79,9 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 	 * @param query GraphQL query document
 	 * @returns SHA-256 hex string
 	 */
-	private hashQuery(query: any): string {
-		const queryStr = JSON.stringify(query);
-		return createHash('sha256').update(queryStr).digest('hex');
+	private HashQuery(query: any): string {
+		const QueryStr = JSON.stringify(query);
+		return createHash('sha256').update(QueryStr).digest('hex');
 	}
 
 	/**
@@ -89,8 +89,8 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 	 * @param query GraphQL query document
 	 * @returns Cached complexity or undefined
 	 */
-	private getComplexityFromCache(query: any): number | undefined {
-		return this.ComplexityCache.get(this.hashQuery(query));
+	private GetComplexityFromCache(query: any): number | undefined {
+		return this.ComplexityCache.get(this.HashQuery(query));
 	}
 
 	/**
@@ -99,25 +99,25 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 	 * @param query GraphQL query document
 	 * @param complexity Calculated complexity
 	 */
-	private setComplexityCache(query: any, complexity: number): void {
-		const key = this.hashQuery(query);
+	private SetComplexityCache(query: any, complexity: number): void {
+		const Key = this.HashQuery(query);
 
 		// Clean up cache if it exceeds max size (FIFO)
 		if (this.ComplexityCache.size >= QUERY_COMPLEXITY_CACHE_MAX_SIZE) {
-			const firstKey = this.ComplexityCache.keys().next().value as string;
-			if (firstKey) {
-				this.ComplexityCache.delete(firstKey);
+			const FirstKey = this.ComplexityCache.keys().next().value as string;
+			if (FirstKey) {
+				this.ComplexityCache.delete(FirstKey);
 			}
 		}
 
-		this.ComplexityCache.set(key, complexity);
+		this.ComplexityCache.set(Key, complexity);
 	}
 
 	/**
 	 * Starts periodic cleanup of the complexity cache
 	 * Clears cache every 10 minutes to prevent stale entries
 	 */
-	private startPeriodicCleanup(): void {
+	private StartPeriodicCleanup(): void {
 		if (this.CleanupIntervalRef) {
 			return;
 		}
@@ -148,21 +148,21 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 	 */
 	// eslint-disable-next-line require-await
 	public async canActivate(context: ExecutionContext): Promise<boolean> {
-		const gqlContext = GqlExecutionContext.create(context);
-		const { req } = gqlContext.getContext();
-		const { schema, document, variables, operationName } = gqlContext.getArgs();
+		const GqlContext = GqlExecutionContext.create(context);
+		const { req } = GqlContext.getContext();
+		const { schema, document, variables, operationName } = GqlContext.getArgs();
 
 		try {
 			// Check cache first
-			const cachedComplexity = this.getComplexityFromCache(document);
-			let complexity: number;
+			const CachedComplexity = this.GetComplexityFromCache(document);
+			let Complexity: number;
 
-			if (cachedComplexity !== undefined) {
-				complexity = cachedComplexity;
-				this.Logger?.debug(`Query complexity from cache: ${complexity}`);
+			if (CachedComplexity !== undefined) {
+				Complexity = CachedComplexity;
+				this.Logger?.debug(`Query complexity from cache: ${Complexity}`);
 			} else {
 				// Calculate query complexity
-				complexity = calculateQueryComplexity(
+				Complexity = CalculateQueryComplexity(
 					schema,
 					document,
 					variables,
@@ -171,28 +171,28 @@ export class QueryComplexityGuard implements CanActivate, OnModuleDestroy, ILazy
 				);
 
 				// Store in cache
-				this.setComplexityCache(document, complexity);
-				this.Logger?.debug(`Query complexity calculated: ${complexity}`);
+				this.SetComplexityCache(document, Complexity);
+				this.Logger?.debug(`Query complexity calculated: ${Complexity}`);
 			}
 
 			// Check if complexity exceeds limits
-			if (exceedsComplexityLimit(complexity, this.Config)) {
-				const maxComplexity = this.Config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
-				const message = `Query complexity ${complexity} exceeds maximum allowed complexity of ${maxComplexity}`;
+			if (ExceedsComplexityLimit(Complexity, this.Config)) {
+				const MaxComplexity = this.Config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
+				const Message = `Query complexity ${Complexity} exceeds maximum allowed complexity of ${MaxComplexity}`;
 
-				this.Logger?.warn(message, {
-					complexity,
-					maxComplexity,
+				this.Logger?.warn(Message, {
+					complexity: Complexity,
+					maxComplexity: MaxComplexity,
 					operationName,
 					userId: req?.user?.id,
 				});
 
-				throw new BadRequestException(message);
+				throw new BadRequestException(Message);
 			}
 
 			// Add complexity to request for monitoring
 			if (req) {
-				req.queryComplexity = complexity;
+				req.queryComplexity = Complexity;
 			}
 
 			return true;

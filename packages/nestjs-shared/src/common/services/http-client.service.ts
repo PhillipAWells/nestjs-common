@@ -4,7 +4,7 @@ import * as https from 'https';
 import * as http from 'http';
 import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
-import { getHttpClientTimeout } from '../constants/timeout.constants.js';
+import { GetHttpClientTimeout } from '../constants/timeout.constants.js';
 import { HTTP_STATUS_OK } from '../constants/http-status.constants.js';
 
 /**
@@ -80,17 +80,17 @@ interface IHttpResponse<T = Record<string, unknown>> {
  * @example
  * ```typescript
  * // Simple GET request
- * const response = await client.get('https://api.example.com/users');
+ * const Response = await client.get('https://api.example.com/users');
  *
  * // POST with custom timeout and correlation ID
- * const response = await client.post('https://api.example.com/users',
+ * const Response = await client.post('https://api.example.com/users',
  *   { name: 'John', email: 'john@example.com' },
  *   { timeout: 5000, correlationId: 'req-123' }
  * );
  *
  * // HTTPS with custom CA certificate
  * const cert = fs.readFileSync('/path/to/ca.pem');
- * const response = await client.get('https://internal-api.local/data', { ca: cert });
+ * const Response = await client.get('https://internal-api.local/data', { ca: cert });
  * ```
  */
 @Injectable()
@@ -106,7 +106,7 @@ export class HttpClientService implements ILazyModuleRefService {
 	public get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._ContextualLogger = baseLogger.createContextualLogger(HttpClientService.name);
+			this._ContextualLogger = baseLogger.CreateContextualLogger(HttpClientService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -116,14 +116,14 @@ export class HttpClientService implements ILazyModuleRefService {
 	 * are sanitized before logging.
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public request<T = Record<string, unknown>>(options: IHttpRequestOptions): Promise<IHttpResponse<T>> {
-		const { method, url: requestUrl, headers, data, timeout = getHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
-		const startTime = Date.now();
+	public Request<T = Record<string, unknown>>(options: IHttpRequestOptions): Promise<IHttpResponse<T>> {
+		const { method, url: requestUrl, headers, data, timeout = GetHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
+		const StartTime = Date.now();
 		const MAX_PAYLOAD_SIZE = 10_485_760; // 10MB in bytes
 
 		const safeUrl = this.sanitizeUrl(requestUrl);
 
-		this.Logger.debug('Making HTTP request', JSON.stringify({
+		this.Logger.Debug('Making HTTP request', JSON.stringify({
 			method,
 			url: safeUrl,
 			headers: this.sanitizeHeaders(headers),
@@ -161,7 +161,7 @@ export class HttpClientService implements ILazyModuleRefService {
 				res.on('data', (chunk: Buffer) => {
 					totalSize += chunk.length;
 					if (totalSize > MAX_PAYLOAD_SIZE) {
-						const duration = Date.now() - startTime;
+						const Duration = Date.now() - StartTime;
 						req.destroy();
 						const error = new Error('Payload too large');
 						this.Logger.error('HTTP response payload exceeded size limit', JSON.stringify({
@@ -169,7 +169,7 @@ export class HttpClientService implements ILazyModuleRefService {
 							url: safeUrl,
 							maxSize: MAX_PAYLOAD_SIZE,
 							actualSize: totalSize,
-							durationMs: duration,
+							durationMs: Duration,
 							correlationId: correlationId ?? 'unknown',
 						}));
 						reject(error);
@@ -179,19 +179,19 @@ export class HttpClientService implements ILazyModuleRefService {
 				});
 
 				res.on('error', (error) => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 					this.Logger.error('HTTP response error', JSON.stringify({
 						method,
 						url: safeUrl,
 						error: error.message,
-						durationMs: duration,
+						durationMs: Duration,
 						correlationId: correlationId ?? 'unknown',
 					}));
 					reject(error);
 				});
 
 				res.on('end', () => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 
 					try {
 						const body = Buffer.concat(chunks).toString('utf-8');
@@ -203,7 +203,7 @@ export class HttpClientService implements ILazyModuleRefService {
 								url: safeUrl,
 								maxSize: MAX_PAYLOAD_SIZE,
 								actualSize: body.length,
-								durationMs: duration,
+								durationMs: Duration,
 								correlationId: correlationId ?? 'unknown',
 							}));
 							reject(new Error('Payload too large'));
@@ -229,7 +229,7 @@ export class HttpClientService implements ILazyModuleRefService {
 							method,
 							url: safeUrl,
 							statusCode: res.statusCode,
-							durationMs: duration,
+							durationMs: Duration,
 							responseSize: body.length,
 							correlationId: correlationId ?? 'unknown',
 						}));
@@ -239,7 +239,7 @@ export class HttpClientService implements ILazyModuleRefService {
 							status: res.statusCode ?? HTTP_STATUS_OK,
 							statusText: res.statusMessage ?? 'OK',
 							headers: res.headers as Record<string, string>,
-							duration,
+							duration: Duration,
 						});
 					} catch (error) {
 						this.Logger.error('HTTP response parsing failed', JSON.stringify({
@@ -247,7 +247,7 @@ export class HttpClientService implements ILazyModuleRefService {
 							url: safeUrl,
 							statusCode: res.statusCode,
 							error: (error as Error).message,
-							durationMs: duration,
+							durationMs: Duration,
 							correlationId: correlationId ?? 'unknown',
 						}));
 						reject(error);
@@ -256,25 +256,25 @@ export class HttpClientService implements ILazyModuleRefService {
 			});
 
 			req.on('error', (error) => {
-				const duration = Date.now() - startTime;
+				const Duration = Date.now() - StartTime;
 				this.Logger.error('HTTP request failed', JSON.stringify({
 					method,
 					url: safeUrl,
 					error: error.message,
-					durationMs: duration,
+					durationMs: Duration,
 					correlationId: correlationId ?? 'unknown',
 				}));
 				reject(error);
 			});
 
 			req.on('timeout', () => {
-				const duration = Date.now() - startTime;
+				const Duration = Date.now() - StartTime;
 				req.destroy();
 				this.Logger.warn('HTTP request timeout', JSON.stringify({
 					method,
 					url: safeUrl,
 					timeout,
-					durationMs: duration,
+					durationMs: Duration,
 					correlationId: correlationId ?? 'unknown',
 				}));
 				reject(new Error('Request timeout'));
@@ -290,23 +290,23 @@ export class HttpClientService implements ILazyModuleRefService {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public get<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
-		return this.request<T>({ ...options, method: 'GET', url });
+	public Get<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
+		return this.Request<T>({ ...options, method: 'GET', url });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public Post<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<IHttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<IHttpResponse<T>> {
-		return this.request<T>({ ...options, method: 'POST', url, data });
+		return this.Request<T>({ ...options, method: 'POST', url, data });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public put<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<IHttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<IHttpResponse<T>> {
-		return this.request<T>({ ...options, method: 'PUT', url, data });
+	public Put<T = Record<string, unknown>>(url: string, data?: Record<string, unknown> | string, options: Omit<IHttpRequestOptions, 'method' | 'url' | 'data'> = {}): Promise<IHttpResponse<T>> {
+		return this.Request<T>({ ...options, method: 'PUT', url, data });
 	}
 
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public delete<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
-		return this.request<T>({ ...options, method: 'DELETE', url });
+	public Delete<T = Record<string, unknown>>(url: string, options: Omit<IHttpRequestOptions, 'method' | 'url'> = {}): Promise<IHttpResponse<T>> {
+		return this.Request<T>({ ...options, method: 'DELETE', url });
 	}
 
 	/**
@@ -333,7 +333,7 @@ export class HttpClientService implements ILazyModuleRefService {
 	private sanitizeHeaders(headers?: Record<string, string>): Record<string, string> | undefined {
 		if (!headers) return undefined;
 
-		const sensitiveHeaders = [
+		const SensitiveHeaders = [
 			'authorization',
 			'x-api-key',
 			'cookie',
@@ -342,15 +342,15 @@ export class HttpClientService implements ILazyModuleRefService {
 			'proxy-authorization',
 			'x-csrf-token',
 		];
-		const sanitized = { ...headers };
+		const Sanitized = { ...headers };
 
 		// Replace sensitive headers with redacted value (case-insensitive)
-		for (const [key] of Object.entries(sanitized)) {
-			if (sensitiveHeaders.includes(key.toLowerCase())) {
-				sanitized[key] = '[REDACTED]';
+		for (const [key] of Object.entries(Sanitized)) {
+			if (SensitiveHeaders.includes(key.toLowerCase())) {
+				Sanitized[key] = '[REDACTED]';
 			}
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 }

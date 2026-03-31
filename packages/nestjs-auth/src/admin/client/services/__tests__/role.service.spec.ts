@@ -33,14 +33,14 @@ describe('RoleService', () => {
 	describe('listRealm', () => {
 		it('throws KeycloakAdminScopeError when roles:read scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, noScopes);
-			await expect(service.listRealm('realm')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.ListRealm('realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.roles.find).not.toHaveBeenCalled();
 		});
 
 		it('calls adminClient.roles.find when roles:read scope is granted', async () => {
 			mockAdminClient.roles.find.mockResolvedValue([{ id: 'role1', name: 'admin' }]);
 			service = new RoleService(mockAdminClient, readOnlyScopes);
-			const result = await service.listRealm('realm');
+			const result = await service.ListRealm('realm');
 			expect(result).toEqual([{ id: 'role1', name: 'admin' }]);
 			expect(mockAdminClient.roles.find).toHaveBeenCalledWith({ realm: 'realm' });
 		});
@@ -48,7 +48,7 @@ describe('RoleService', () => {
 		it('returns empty array when no roles found', async () => {
 			mockAdminClient.roles.find.mockResolvedValue([]);
 			service = new RoleService(mockAdminClient, readOnlyScopes);
-			const result = await service.listRealm('realm');
+			const result = await service.ListRealm('realm');
 			expect(result).toEqual([]);
 		});
 	});
@@ -56,7 +56,7 @@ describe('RoleService', () => {
 	describe('listClient', () => {
 		it('throws KeycloakAdminScopeError when roles:read scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, noScopes);
-			await expect(service.listClient('realm', 'client-id')).rejects.toThrow(
+			await expect(service.ListClient('realm', 'client-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.listRoles).not.toHaveBeenCalled();
@@ -65,7 +65,7 @@ describe('RoleService', () => {
 		it('calls adminClient.clients.listRoles when roles:read scope is granted', async () => {
 			mockAdminClient.clients.listRoles.mockResolvedValue([{ id: 'role1' }]);
 			service = new RoleService(mockAdminClient, readOnlyScopes);
-			const result = await service.listClient('realm', 'client-id');
+			const result = await service.ListClient('realm', 'client-id');
 			expect(result).toEqual([{ id: 'role1' }]);
 			expect(mockAdminClient.clients.listRoles).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -77,7 +77,7 @@ describe('RoleService', () => {
 	describe('getByName', () => {
 		it('throws KeycloakAdminScopeError when roles:read scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, noScopes);
-			await expect(service.getByName('realm', 'admin')).rejects.toThrow(
+			await expect(service.GetByName('realm', 'admin')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.roles.findOneByName).not.toHaveBeenCalled();
@@ -86,7 +86,7 @@ describe('RoleService', () => {
 		it('calls adminClient.roles.findOneByName when roles:read scope is granted', async () => {
 			mockAdminClient.roles.findOneByName.mockResolvedValue({ id: 'role1', name: 'admin' });
 			service = new RoleService(mockAdminClient, readOnlyScopes);
-			const result = await service.getByName('realm', 'admin');
+			const result = await service.GetByName('realm', 'admin');
 			expect(result).toEqual({ id: 'role1', name: 'admin' });
 			expect(mockAdminClient.roles.findOneByName).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -99,7 +99,7 @@ describe('RoleService', () => {
 		it('throws KeycloakAdminScopeError when roles:write scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.create('realm', { name: 'new-role' }),
+				service.Create('realm', { name: 'new-role' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.roles.create).not.toHaveBeenCalled();
 		});
@@ -107,7 +107,7 @@ describe('RoleService', () => {
 		it('calls adminClient.roles.create when roles:write scope is granted', async () => {
 			mockAdminClient.roles.create.mockResolvedValue(undefined);
 			service = new RoleService(mockAdminClient, allScopes);
-			await service.create('realm', { name: 'new-role' });
+			await service.Create('realm', { name: 'new-role' });
 			expect(mockAdminClient.roles.create).toHaveBeenCalledWith({
 				realm: 'realm',
 				name: 'new-role',
@@ -119,7 +119,7 @@ describe('RoleService', () => {
 		it('throws KeycloakAdminScopeError when roles:write scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.update('realm', 'old-name', { name: 'new-name' }),
+				service.Update('realm', 'old-name', { name: 'new-name' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.roles.updateByName).not.toHaveBeenCalled();
 		});
@@ -127,7 +127,7 @@ describe('RoleService', () => {
 		it('calls adminClient.roles.updateByName when roles:write scope is granted', async () => {
 			mockAdminClient.roles.updateByName.mockResolvedValue(undefined);
 			service = new RoleService(mockAdminClient, allScopes);
-			await service.update('realm', 'old-name', { name: 'new-name' });
+			await service.Update('realm', 'old-name', { name: 'new-name' });
 			expect(mockAdminClient.roles.updateByName).toHaveBeenCalledWith(
 				{ realm: 'realm', name: 'old-name' },
 				{ name: 'new-name' },
@@ -138,14 +138,14 @@ describe('RoleService', () => {
 	describe('delete', () => {
 		it('throws KeycloakAdminScopeError when roles:write scope is not granted', async () => {
 			service = new RoleService(mockAdminClient, readOnlyScopes);
-			await expect(service.delete('realm', 'admin')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.Delete('realm', 'admin')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.roles.delByName).not.toHaveBeenCalled();
 		});
 
 		it('calls adminClient.roles.delByName when roles:write scope is granted', async () => {
 			mockAdminClient.roles.delByName.mockResolvedValue(undefined);
 			service = new RoleService(mockAdminClient, allScopes);
-			await service.delete('realm', 'admin');
+			await service.Delete('realm', 'admin');
 			expect(mockAdminClient.roles.delByName).toHaveBeenCalledWith({
 				realm: 'realm',
 				name: 'admin',

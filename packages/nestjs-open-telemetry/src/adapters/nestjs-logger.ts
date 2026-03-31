@@ -35,36 +35,36 @@ export class OpenTelemetryLogger implements LoggerService {
 	/**
 	 * Log a message (info level).
 	 */
-	public log(message: unknown, context?: string): void {
-		const metadata = this.buildMetadata(context);
-		this.Logger.info(this.formatMessage(message), metadata);
+	public Log(message: unknown, context?: string): void {
+		const Metadata = this.BuildMetadata(context);
+		this.Logger.info(this.FormatMessage(message), Metadata);
 	}
 
 	/**
 	 * Log an error message.
 	 */
-	public error(message: unknown, stackTrace?: string, context?: string): void {
-		const metadata = this.buildMetadata(context);
+	public Error(message: unknown, stackTrace?: string, context?: string): void {
+		const Metadata = this.BuildMetadata(context);
 		if (stackTrace) {
-			metadata['stackTrace'] = stackTrace;
+			Metadata['stackTrace'] = stackTrace;
 		}
-		this.Logger.error(this.formatMessage(message), metadata);
+		this.Logger.error(this.FormatMessage(message), Metadata);
 	}
 
 	/**
 	 * Log a warning message.
 	 */
-	public warn(message: unknown, context?: string): void {
-		const metadata = this.buildMetadata(context);
-		this.Logger.warn(this.formatMessage(message), metadata);
+	public Warn(message: unknown, context?: string): void {
+		const Metadata = this.BuildMetadata(context);
+		this.Logger.warn(this.FormatMessage(message), Metadata);
 	}
 
 	/**
 	 * Log a debug message.
 	 */
-	public debug(message: unknown, context?: string): void {
-		const metadata = this.buildMetadata(context);
-		this.Logger.debug(this.formatMessage(message), metadata);
+	public Debug(message: unknown, context?: string): void {
+		const Metadata = this.BuildMetadata(context);
+		this.Logger.debug(this.FormatMessage(message), Metadata);
 	}
 
 	/**
@@ -72,49 +72,49 @@ export class OpenTelemetryLogger implements LoggerService {
 	 * Intentional downgrade: NestJS verbose is the most verbose level, but AppLogger
 	 * has no verbose level, so verbose messages are mapped to debug level.
 	 */
-	public verbose(message: unknown, context?: string): void {
-		this.debug(message, context);
+	public Verbose(message: unknown, context?: string): void {
+		this.Debug(message, context);
 	}
 
 	/**
 	 * Log a fatal error message.
 	 */
-	public fatal(message: unknown, context?: string): void {
-		const metadata = this.buildMetadata(context);
-		this.Logger.fatal(this.formatMessage(message), metadata);
+	public Fatal(message: unknown, context?: string): void {
+		const Metadata = this.BuildMetadata(context);
+		this.Logger.fatal(this.FormatMessage(message), Metadata);
 	}
 
 	/**
 	 * Build metadata with trace context and NestJS context.
 	 * @private
 	 */
-	private buildMetadata(
+	private BuildMetadata(
 		context?: string,
 	): Record<string, string | number> {
-		const metadata: Record<string, string | number> = {};
+		const Metadata: Record<string, string | number> = {};
 
 		// Add NestJS context if provided
 		if (context) {
-			metadata['context'] = context;
+			Metadata['context'] = context;
 		}
 
 		// Add OpenTelemetry trace context
-		const span = trace.getSpan(otelContext.active());
-		if (span) {
-			const spanContext = span.spanContext();
-			metadata['trace_id'] = spanContext.traceId;
-			metadata['span_id'] = spanContext.spanId;
-			metadata['trace_flags'] = spanContext.traceFlags;
+		const Span = trace.getSpan(otelContext.active());
+		if (Span) {
+			const SpanContext = Span.spanContext();
+			Metadata['trace_id'] = SpanContext.traceId;
+			Metadata['span_id'] = SpanContext.spanId;
+			Metadata['trace_flags'] = SpanContext.traceFlags;
 		}
 
-		return metadata;
+		return Metadata;
 	}
 
 	/**
 	 * Format message to string.
 	 * @private
 	 */
-	private formatMessage(
+	private FormatMessage(
 		message: unknown,
 	): string {
 		if (typeof message === 'string') {

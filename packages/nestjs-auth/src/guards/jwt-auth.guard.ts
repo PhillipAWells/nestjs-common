@@ -54,47 +54,47 @@ export class JwtAuthGuard implements CanActivate {
 
 	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		// Check for @Public() decorator — if true, allow access without authentication
-		const isPublic = this.Reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+		const IsPublic = this.Reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
 			context.getHandler(),
 			context.getClass(),
 		]);
 
-		if (isPublic) {
+		if (IsPublic) {
 			return true;
 		}
 
 		// Extract request from context (supports HTTP, GraphQL, WebSocket)
-		const request = ExtractRequestFromContext(context);
+		const Request = ExtractRequestFromContext(context);
 
 		// Extract token from Authorization header
-		const authHeader = request.headers?.authorization ?? request.headers?.Authorization;
+		const AuthHeader = Request.headers?.authorization ?? Request.headers?.Authorization;
 
-		if (!authHeader || typeof authHeader !== 'string') {
+		if (!AuthHeader || typeof AuthHeader !== 'string') {
 			throw new UnauthorizedException('No authentication token provided');
 		}
 
 		// Strip "Bearer " prefix
-		const token = authHeader.replace(/^Bearer\s+/i, '');
+		const Token = AuthHeader.replace(/^Bearer\s+/i, '');
 
-		if (!token) {
+		if (!Token) {
 			throw new UnauthorizedException('No authentication token provided');
 		}
 
 		// Validate token
-		const result = await this.TokenValidation.validateToken(token);
+		const Result = await this.TokenValidation.ValidateToken(Token);
 
-		if (!result.valid) {
-			throw new UnauthorizedException(result.error ?? 'Invalid token');
+		if (!Result.valid) {
+			throw new UnauthorizedException(Result.error ?? 'Invalid token');
 		}
 
 		// Extract user from claims and attach to request
-		if (!result.claims) {
+		if (!Result.claims) {
 			throw new UnauthorizedException('Missing token claims');
 		}
 
-		const user: IKeycloakUser = this.TokenValidation.extractUser(result.claims);
-		request.user = user;
-		request.keycloakClaims = result.claims as IKeycloakTokenClaims;
+		const User: IKeycloakUser = this.TokenValidation.ExtractUser(Result.claims);
+		Request.user = User;
+		Request.keycloakClaims = Result.claims as IKeycloakTokenClaims;
 
 		return true;
 	}

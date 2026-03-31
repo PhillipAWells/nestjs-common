@@ -55,45 +55,45 @@ export interface ICacheInvalidateOptions {
  * - Uses del() method which safely handles non-existent keys
  */
 export function CacheInvalidate(options: ICacheInvalidateOptions) {
-	const logger = new AppLogger(undefined, 'CacheInvalidateDecorator');
+	const Logger = new AppLogger(undefined, 'CacheInvalidateDecorator');
 
 	return function(
 		_target: any,
 		propertyKey: string,
 		descriptor: PropertyDescriptor,
 	) {
-		const originalMethod = descriptor.value;
+		const OriginalMethod = descriptor.value;
 
 		descriptor.value = async function(...args: any[]) {
-			const cacheManager = (this as any)[CACHE_MANAGER] ?? (this as any).cacheManager;
-			if (!cacheManager) {
-				logger.warn(`Cache manager not found for ${propertyKey}, executing without cache invalidation`);
-				return originalMethod.apply(this, args);
+			const CacheManager = (this as any)[CACHE_MANAGER] ?? (this as any).cacheManager;
+			if (!CacheManager) {
+				Logger.warn(`Cache manager not found for ${propertyKey}, executing without cache invalidation`);
+				return OriginalMethod.apply(this, args);
 			}
 
 			try {
 				// Execute the method first
-				const result = await originalMethod.apply(this, args);
+				const Result = await OriginalMethod.apply(this, args);
 
 				// Invalidate cache keys
-				const keys = typeof options.keys === 'function'
+				const Keys = typeof options.keys === 'function'
 					? options.keys(...args)
 					: options.keys;
 
-				const keyArray = Array.isArray(keys) ? keys : [keys];
+				const KeyArray = Array.isArray(Keys) ? Keys : [Keys];
 
-				for (const key of keyArray) {
+				for (const Key of KeyArray) {
 					try {
-						await cacheManager.del(key);
-						logger.debug(`Invalidated cache key: ${key}`);
+						await CacheManager.del(Key);
+						Logger.debug(`Invalidated cache key: ${Key}`);
 					} catch (error) {
-						logger.error(`Failed to invalidate cache key ${key}:`, getErrorStack(error));
+						Logger.error(`Failed to invalidate cache key ${Key}:`, getErrorStack(error));
 					}
 				}
 
-				return result;
+				return Result;
 			} catch (error) {
-				logger.error(`Method execution error for ${propertyKey}:`, getErrorStack(error));
+				Logger.error(`Method execution error for ${propertyKey}:`, getErrorStack(error));
 				throw error;
 			}
 		};

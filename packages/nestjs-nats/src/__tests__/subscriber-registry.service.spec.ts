@@ -14,8 +14,8 @@ describe('NatsSubscriberRegistry', () => {
 	};
 
 	const mockNatsService = {
-		subscribe: vi.fn(),
-		isConnected: vi.fn().mockReturnValue(true),
+		Subscribe: vi.fn(),
+		IsConnected: vi.fn().mockReturnValue(true),
 	};
 
 	@Injectable()
@@ -44,7 +44,7 @@ describe('NatsSubscriberRegistry', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockNatsService.subscribe.mockReturnValue(mockSubscription);
+		mockNatsService.Subscribe.mockReturnValue(mockSubscription);
 		mockDiscoveryService.getProviders.mockReturnValue([{ instance: testHandlerInstance }]);
 		mockDiscoveryService.getControllers.mockReturnValue([]);
 		mockMetadataScanner.getAllMethodNames.mockImplementation((proto: object) =>
@@ -61,7 +61,7 @@ describe('NatsSubscriberRegistry', () => {
 	});
 
 	it('should register a handler for the @Subscribe("orders.created") method', () => {
-		expect(mockNatsService.subscribe).toHaveBeenCalledWith(
+		expect(mockNatsService.Subscribe).toHaveBeenCalledWith(
 			'orders.created',
 			expect.any(Function),
 			{ queue: undefined },
@@ -69,7 +69,7 @@ describe('NatsSubscriberRegistry', () => {
 	});
 
 	it('should register a handler with a queue group for the @Subscribe("tasks.process") method', () => {
-		expect(mockNatsService.subscribe).toHaveBeenCalledWith(
+		expect(mockNatsService.Subscribe).toHaveBeenCalledWith(
 			'tasks.process',
 			expect.any(Function),
 			{ queue: 'worker-pool' },
@@ -77,11 +77,11 @@ describe('NatsSubscriberRegistry', () => {
 	});
 
 	it('should register exactly two handlers (non-decorated methods are ignored)', () => {
-		expect(mockNatsService.subscribe).toHaveBeenCalledTimes(2);
+		expect(mockNatsService.Subscribe).toHaveBeenCalledTimes(2);
 	});
 
 	it('should bind the handler to the class instance', async () => {
-		const calls = (mockNatsService.subscribe as ReturnType<typeof vi.fn>).mock.calls as [
+		const calls = (mockNatsService.Subscribe as ReturnType<typeof vi.fn>).mock.calls as [
 			string,
 			() => Promise<void>,
 			unknown,
@@ -91,7 +91,7 @@ describe('NatsSubscriberRegistry', () => {
 	});
 
 	it('should not register undecorated methods', () => {
-		const subscribedSubjects = (mockNatsService.subscribe as ReturnType<typeof vi.fn>).mock.calls
+		const subscribedSubjects = (mockNatsService.Subscribe as ReturnType<typeof vi.fn>).mock.calls
 			.map(([subject]: unknown[]) => subject as string);
 		expect(subscribedSubjects).not.toContain('notDecorated');
 	});

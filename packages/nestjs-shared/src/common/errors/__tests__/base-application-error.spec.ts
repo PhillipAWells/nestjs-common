@@ -46,7 +46,7 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json).toEqual({
 				name: 'BaseApplicationError',
@@ -65,7 +65,7 @@ describe('BaseApplicationError', () => {
 			process.env.NODE_ENV = 'development';
 
 			const error = new BaseApplicationError('Test error');
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json.stack).toBeDefined();
 
@@ -77,7 +77,7 @@ describe('BaseApplicationError', () => {
 			process.env.NODE_ENV = 'production';
 
 			const error = new BaseApplicationError('Test error');
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json.stack).toBeUndefined();
 
@@ -91,7 +91,7 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const newError = originalError.withContext({ action: 'login' });
+			const newError = originalError.WithContext({ action: 'login' });
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('Test error');
@@ -105,7 +105,7 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123', action: 'register' },
 			});
 
-			const newError = originalError.withContext({ action: 'login' });
+			const newError = originalError.WithContext({ action: 'login' });
 
 			expect(newError.Context).toEqual({ userId: '123', action: 'login' });
 		});
@@ -118,7 +118,7 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const newError = originalError.withMessage('New message');
+			const newError = originalError.WithMessage('New message');
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('New message');

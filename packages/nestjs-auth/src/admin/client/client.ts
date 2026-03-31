@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import KcAdminClient from '@keycloak/keycloak-admin-client';
 import type { IKeycloakClientConfig } from './types/index.js';
-import { isPasswordCredentials, isClientCredentials } from './types/index.js';
+import { IsPasswordCredentials, IsClientCredentials } from './types/index.js';
 import type { TKeycloakAdminScope } from '../permissions/keycloak-admin.permissions.js';
 import {
 	RealmService,
@@ -133,9 +133,9 @@ export class KeycloakClient {
 	 * Authenticate with Keycloak admin API
 	 * This must be called before making API requests
 	 */
-	public async authenticate(): Promise<void> {
+	public async Authenticate(): Promise<void> {
 		try {
-			if (isPasswordCredentials(this.Config.credentials)) {
+			if (IsPasswordCredentials(this.Config.credentials)) {
 				await this.AdminClient.auth({
 					username: this.Config.credentials.username,
 					password: this.Config.credentials.password,
@@ -148,7 +148,7 @@ export class KeycloakClient {
 						username: this.Config.credentials.username,
 					});
 				}
-			} else if (isClientCredentials(this.Config.credentials)) {
+			} else if (IsClientCredentials(this.Config.credentials)) {
 				await this.AdminClient.auth({
 					grantType: 'client_credentials',
 					clientId: this.Config.credentials.clientId,
@@ -172,21 +172,21 @@ export class KeycloakClient {
 	/**
 	 * Check if the client is authenticated
 	 */
-	public isAuthenticated(): boolean {
+	public IsAuthenticated(): boolean {
 		return this.AdminClient.accessToken !== undefined;
 	}
 
 	/**
 	 * Get the current access token
 	 */
-	public getAccessToken(): string | undefined {
+	public GetAccessToken(): string | undefined {
 		return this.AdminClient.accessToken;
 	}
 
 	/**
 	 * Set the access token manually (for use with external auth)
 	 */
-	public setAccessToken(token: string): void {
+	public SetAccessToken(token: string): void {
 		this.AdminClient.setAccessToken(token);
 	}
 }

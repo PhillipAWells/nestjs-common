@@ -13,7 +13,7 @@ export class BsonSerializationService {
 	/**
 	 * Check if bson package is available
 	 */
-	public isAvailable(): boolean {
+	public IsAvailable(): boolean {
 		// Use the cached bson instance if available
 		// If getBson() has already been called and succeeded, the module is cached
 		return this.BsonLib !== null;
@@ -23,7 +23,7 @@ export class BsonSerializationService {
 	 * Lazy load the bson library
 	 */
 	// eslint-disable-next-line require-await
-	private async getBson(): Promise<any> {
+	private async GetBson(): Promise<any> {
 		if (this.BsonLib) {
 			return this.BsonLib;
 		}
@@ -35,9 +35,9 @@ export class BsonSerializationService {
 		this.LoadPromise = (async () => {
 			try {
 				// Dynamic import to load bson
-				const bson = await import('bson');
-				this.BsonLib = bson;
-				return bson;
+				const Bson = await import('bson');
+				this.BsonLib = Bson;
+				return Bson;
 			} catch (error) {
 				throw new Error(
 					'BSON package is not installed. Please install it with: npm install bson or yarn add bson',
@@ -57,9 +57,9 @@ export class BsonSerializationService {
 	 */
 	public async serialize(data: unknown): Promise<Buffer> {
 		try {
-			const bson = await this.getBson();
+			const Bson = await this.GetBson();
 			// Use BSON.serialize to convert object to buffer
-			return Buffer.from(bson.serialize(data));
+			return Buffer.from(Bson.serialize(data));
 		} catch (error) {
 			throw new Error(
 				`Failed to serialize to BSON: ${getErrorMessage(error)}`,
@@ -74,11 +74,11 @@ export class BsonSerializationService {
 	 * @returns Deserialized data
 	 * @throws Error if bson is not available or deserialization fails
 	 */
-	public async deserialize(buffer: Buffer): Promise<unknown> {
+	public async Deserialize(buffer: Buffer): Promise<unknown> {
 		try {
-			const bson = await this.getBson();
+			const Bson = await this.GetBson();
 			// Use BSON.deserialize to convert buffer back to object
-			return bson.deserialize(buffer);
+			return Bson.deserialize(buffer);
 		} catch (error) {
 			throw new Error(
 				`Failed to deserialize BSON: ${getErrorMessage(error)}`,

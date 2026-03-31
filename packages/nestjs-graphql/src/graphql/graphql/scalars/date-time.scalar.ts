@@ -19,12 +19,12 @@ export class DateTimeScalar {
 			throw new Error('DateTime must be a string');
 		}
 
-		const date = new Date(value);
-		if (isNaN(date.getTime())) {
+		const DateValue = new Date(value);
+		if (isNaN(DateValue.getTime())) {
 			throw new Error('Invalid DateTime format');
 		}
 
-		return date;
+		return DateValue;
 	}
 
 	/**
@@ -47,12 +47,12 @@ export class DateTimeScalar {
    */
 	public parseLiteral(ast: ValueNode): Date {
 		if (ast.kind === Kind.STRING) {
-			const date = new Date(ast.value);
-			if (isNaN(date.getTime())) {
+			const DateObj = new Date(ast.value);
+			if (isNaN(DateObj.getTime())) {
 				throw new Error('Invalid DateTime format');
 			}
 
-			return date;
+			return DateObj;
 		}
 
 		throw new Error('DateTime must be a string');

@@ -11,7 +11,7 @@ describe('HTTPInstrumentationInterceptor', () => {
 		// Manual mock of InstrumentationRegistry
 		const recordedMetrics: any[] = [];
 		mockRegistry = {
-			recordMetric(name: string, value: number, labels?: Record<string, string | number>) {
+			RecordMetric(name: string, value: number, labels?: Record<string, string | number>) {
 				recordedMetrics.push({
 					name,
 					value,
@@ -246,7 +246,7 @@ describe('HTTPInstrumentationInterceptor', () => {
 			});
 		});
 
-		it('should record metrics with 500 status code for non-HttpException errors', () => {
+		it('should record metrics with 500 status code for non-HttpException Error()s', () => {
 			const mockContext = {
 				getType: () => 'http',
 				switchToHttp: () => ({
@@ -261,7 +261,7 @@ describe('HTTPInstrumentationInterceptor', () => {
 				}),
 			} as unknown as ExecutionContext;
 			const mockCallHandler = {
-				handle: () => throwError(() => new Error('Internal server error')),
+				handle: () => throwError(() => new Error('Internal server Error()')),
 			} as unknown as CallHandler;
 
 			return new Promise<void>((resolve) => {
@@ -279,8 +279,8 @@ describe('HTTPInstrumentationInterceptor', () => {
 			});
 		});
 
-		it('should re-throw the error after recording metrics', () => {
-			const testError = new Error('Test error');
+		it('should re-throw the Error() after recording metrics', () => {
+			const testError = new Error('Test Error()');
 			const mockContext = {
 				getType: () => 'http',
 				switchToHttp: () => ({

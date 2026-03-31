@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable, Scope } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { DataLoaderFactory, IBatchLoadFn, IDataLoaderOptions } from './dataloader.factory.js';
 
@@ -17,7 +17,7 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(DataLoaderRegistry.name);
 	}
 
@@ -37,7 +37,7 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * @param options DataLoader configuration options
    * @returns DataLoader instance
    */
-	public getOrCreate<K, V>(
+	public GetOrCreate<K, V>(
 		key: string,
 		options: IDataLoaderOptions<K, V>,
 	): DataLoader<K, V> {
@@ -47,10 +47,10 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
 		}
 
 		this.Logger.debug(`Creating new DataLoader for key: ${key}`);
-		const dataLoader = this.DataLoaderFactory.create(options);
-		this.Loaders.set(key, dataLoader);
+		const Loader = this.DataLoaderFactory.Create(options);
+		this.Loaders.set(key, Loader);
 
-		return dataLoader;
+		return Loader;
 	}
 
 	/**
@@ -60,12 +60,12 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * @param options Additional options
    * @returns DataLoader instance
    */
-	public createWithCache<K, V>(
+	public CreateWithCache<K, V>(
 		key: string,
 		batchLoadFn: IBatchLoadFn<K, V>,
 		options: Omit<IDataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
-		return this.getOrCreate(key, {
+		return this.GetOrCreate(key, {
 			batchLoadFn,
 			cache: true,
 			...options,
@@ -79,12 +79,12 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * @param options Additional options
    * @returns DataLoader instance
    */
-	public createWithoutCache<K, V>(
+	public CreateWithoutCache<K, V>(
 		key: string,
 		batchLoadFn: IBatchLoadFn<K, V>,
 		options: Omit<IDataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
-		return this.getOrCreate(key, {
+		return this.GetOrCreate(key, {
 			batchLoadFn,
 			cache: false,
 			...options,
@@ -95,10 +95,10 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * Clears the cache for a specific DataLoader
    * @param key DataLoader key
    */
-	public clearCache(key: string): void {
-		const loader = this.Loaders.get(key);
-		if (loader) {
-			loader.clearAll();
+	public ClearCache(key: string): void {
+		const Loader = this.Loaders.get(key);
+		if (Loader) {
+			Loader.clearAll();
 			this.Logger.debug(`Cleared cache for DataLoader: ${key}`);
 		}
 	}
@@ -106,10 +106,10 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
 	/**
    * Clears all DataLoader caches
    */
-	public clearAllCaches(): void {
-		for (const [key, loader] of this.Loaders) {
-			loader.clearAll();
-			this.Logger.debug(`Cleared cache for DataLoader: ${key}`);
+	public ClearAllCaches(): void {
+		for (const [Key, Loader] of this.Loaders) {
+			Loader.clearAll();
+			this.Logger.debug(`Cleared cache for DataLoader: ${Key}`);
 		}
 	}
 
@@ -117,7 +117,7 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * Gets the number of registered DataLoaders
    * @returns Number of DataLoaders
    */
-	public getLoaderCount(): number {
+	public GetLoaderCount(): number {
 		return this.Loaders.size;
 	}
 
@@ -125,7 +125,7 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * Gets all registered DataLoader keys
    * @returns Array of keys
    */
-	public getLoaderKeys(): string[] {
+	public GetLoaderKeys(): string[] {
 		return Array.from(this.Loaders.keys());
 	}
 
@@ -133,7 +133,7 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
    * Removes a DataLoader from the registry
    * @param key DataLoader key to remove
    */
-	public removeLoader(key: string): void {
+	public RemoveLoader(key: string): void {
 		if (this.Loaders.has(key)) {
 			this.Loaders.delete(key);
 			this.Logger.debug(`Removed DataLoader: ${key}`);
@@ -143,8 +143,8 @@ export class DataLoaderRegistry implements ILazyModuleRefService {
 	/**
    * Cleans up all DataLoaders (called at end of request)
    */
-	public cleanup(): void {
-		this.clearAllCaches();
+	public Cleanup(): void {
+		this.ClearAllCaches();
 		this.Loaders.clear();
 		this.Logger.debug('DataLoader registry cleaned up');
 	}

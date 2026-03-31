@@ -3,6 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { IContextualLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Input Validation Pipe
@@ -29,7 +30,7 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLInputValidationPipe.name);
 	}
 
@@ -60,18 +61,18 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 		const { metatype } = metadata;
 
 		// Skip validation for primitive types and null/undefined
-		if (!metatype || !this.shouldValidate(metatype) || value === null) {
+		if (!metatype || !this.ShouldValidate(metatype) || value === null) {
 			return value;
 		}
 
 		// Perform security checks before validation
-		this.performSecurityChecks(value);
+		this.PerformSecurityChecks(value);
 
 		// Transform plain object to class instance
-		const object = plainToClass(metatype, value);
+		const Object = plainToClass(metatype, value);
 
 		// Validate with nested validation enabled
-		const errors = await validate(object, {
+		const Errors = await validate(Object, {
 			whitelist: true,
 			forbidNonWhitelisted: true,
 			transform: true,
@@ -79,18 +80,18 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			stopAtFirstError: false,
 		});
 
-		if (errors.length > 0) {
-			const formattedErrors = this.formatDetailedErrors(errors);
-			this.Logger?.warn(`Input validation failed: ${JSON.stringify(formattedErrors)}`);
+		if (Errors.length > 0) {
+			const FormattedErrors = this.FormatDetailedErrors(Errors);
+			this.Logger?.warn(`Input validation failed: ${JSON.stringify(FormattedErrors)}`);
 
 			throw new BadRequestException({
 				message: 'Input validation failed',
 				code: 'VALIDATION_ERROR',
-				errors: formattedErrors,
+				errors: FormattedErrors,
 			});
 		}
 
-		return object;
+		return Object;
 	}
 
 	/**
@@ -99,11 +100,11 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	 * @param value - The input value to check
 	 * @throws BadRequestException if suspicious patterns detected
 	 */
-	private performSecurityChecks(value: any): void {
+	private PerformSecurityChecks(value: any): void {
 		// Check input size
-		const inputSize = JSON.stringify(value).length;
-		if (inputSize > this.MAX_INPUT_SIZE) {
-			this.Logger?.warn(`Input size ${inputSize} exceeds maximum of ${this.MAX_INPUT_SIZE}`);
+		const InputSize = JSON.stringify(value).length;
+		if (InputSize > this.MAX_INPUT_SIZE) {
+			this.Logger?.warn(`Input size ${InputSize} exceeds maximum of ${this.MAX_INPUT_SIZE}`);
 			throw new BadRequestException({
 				message: 'Input data exceeds maximum size limit',
 				code: 'INPUT_SIZE_EXCEEDED',
@@ -111,18 +112,18 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 		}
 
 		// Recursively check string fields for XSS patterns
-		this.checkForXssPatterns(value);
+		this.CheckForXssPatterns(value);
 	}
 
 	/**
 	 * Recursively checks object properties for XSS patterns.
 	 * SQL/NoSQL injection is prevented at the database layer via parameterized queries.
 	 */
-	private checkForXssPatterns(obj: any, path = ''): void {
+	private CheckForXssPatterns(obj: any, path = ''): void {
 		if (typeof obj !== 'object' || obj === null) {
 			if (typeof obj === 'string') {
-				for (const pattern of this.XSS_PATTERNS) {
-					if (pattern.test(obj)) {
+				for (const Pattern of this.XSS_PATTERNS) {
+					if (Pattern.test(obj)) {
 						this.Logger?.warn(`Potential XSS attack detected at ${path}`);
 						throw new BadRequestException({
 							message: 'Invalid characters or patterns detected in input',
@@ -134,23 +135,23 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 			return;
 		}
 
-		for (const key in obj) {
-			if (Object.prototype.hasOwnProperty.call(obj, key)) {
-				const value = obj[key];
-				const currentPath = path ? `${path}.${key}` : key;
+		for (const Key in obj) {
+			if (Object.prototype.hasOwnProperty.call(obj, Key)) {
+				const Value = obj[Key];
+				const CurrentPath = path ? `${path}.${Key}` : Key;
 
-				if (typeof value === 'string') {
-					for (const pattern of this.XSS_PATTERNS) {
-						if (pattern.test(value)) {
-							this.Logger?.warn(`Potential XSS attack detected at ${currentPath}`);
+				if (typeof Value === 'string') {
+					for (const Pattern of this.XSS_PATTERNS) {
+						if (Pattern.test(Value)) {
+							this.Logger?.warn(`Potential XSS attack detected at ${CurrentPath}`);
 							throw new BadRequestException({
 								message: 'Invalid characters or patterns detected in input',
 								code: 'XSS_DETECTED',
 							});
 						}
 					}
-				} else if (typeof value === 'object' && value !== null) {
-					this.checkForXssPatterns(value, currentPath);
+				} else if (typeof Value === 'object' && Value !== null) {
+					this.CheckForXssPatterns(Value, CurrentPath);
 				}
 			}
 		}
@@ -162,9 +163,9 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	 * @param metatype - The type to check
 	 * @returns boolean - True if validation should be performed
 	 */
-	private shouldValidate(metatype: any): boolean {
-		const primitiveTypes = [String, Boolean, Number, Array, Object, Date];
-		return !primitiveTypes.includes(metatype);
+	private ShouldValidate(metatype: any): boolean {
+		const PrimitiveTypes = [String, Boolean, Number, Array, Object, Date];
+		return !PrimitiveTypes.includes(metatype);
 	}
 
 	/**
@@ -174,28 +175,28 @@ export class GraphQLInputValidationPipe implements PipeTransform<any> {
 	 * @param parentPath - The parent path for nested errors
 	 * @returns any[] - Detailed error objects
 	 */
-	private formatDetailedErrors(errors: ValidationError[], parentPath = ''): any[] {
-		const formattedErrors: any[] = [];
+	private FormatDetailedErrors(errors: ValidationError[], parentPath = ''): any[] {
+		const FormattedErrors: any[] = [];
 
-		for (const error of errors) {
-			const fieldPath = parentPath ? `${parentPath}.${error.property}` : error.property;
+		for (const Error of errors) {
+			const FieldPath = parentPath ? `${parentPath}.${Error.property}` : Error.property;
 
 			// Add constraints for this field
-			if (error.constraints) {
-				formattedErrors.push({
-					field: fieldPath,
-					value: error.value,
-					constraints: error.constraints,
+			if (Error.constraints) {
+				FormattedErrors.push({
+					field: FieldPath,
+					value: Error.value,
+					constraints: Error.constraints,
 				});
 			}
 
 			// Handle nested validation errors
-			if (error.children && error.children.length > 0) {
-				const nestedErrors = this.formatDetailedErrors(error.children, fieldPath);
-				formattedErrors.push(...nestedErrors);
+			if (Error.children && Error.children.length > 0) {
+				const NestedErrors = this.FormatDetailedErrors(Error.children, FieldPath);
+				FormattedErrors.push(...NestedErrors);
 			}
 		}
 
-		return formattedErrors;
+		return FormattedErrors;
 	}
 }

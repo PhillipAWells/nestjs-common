@@ -8,7 +8,7 @@ import {
 } from '../constants/histogram-buckets.constants.js';
 import { AppLogger } from './logger.service.js';
 import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
-import { getErrorMessage } from '../utils/error.utils.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 const HTTP_STATUS_CODE_500 = 500;
 const HTTP_STATUS_CODE_400 = 400;
@@ -108,28 +108,28 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	 * Memoized for performance
 	 */
 	private get Logger(): AppLogger {
-		this._ContextualLogger ??= this.Module.get(AppLogger).createContextualLogger(MetricsRegistryService.name);
+		this._ContextualLogger ??= this.Module.get(AppLogger).CreateContextualLogger(MetricsRegistryService.name);
 		return this._ContextualLogger;
 	}
 
 	/**
 	 * Get the Prometheus registry
 	 */
-	public getRegistry(): Registry {
+	public GetRegistry(): Registry {
 		return this.Registry;
 	}
 
 	/**
 	 * Record HTTP request metrics
 	 */
-	public recordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
+	public RecordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
 		if (!this.Enabled || !this.HttpRequestDuration || !this.HttpRequestTotal) return;
 
 		const statusClass = statusCode >= HTTP_STATUS_CODE_500 ? '5xx' : statusCode >= HTTP_STATUS_CODE_400 ? '4xx' : '2xx';
-		const labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
+		const Labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
 
-		this.HttpRequestDuration.observe(labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
-		this.HttpRequestTotal.inc(labels);
+		this.HttpRequestDuration.observe(Labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
+		this.HttpRequestTotal.inc(Labels);
 
 		if (size !== undefined && this.HttpRequestSize) {
 			this.HttpRequestSize.observe({ method, route }, size);
@@ -139,7 +139,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	/**
 	 * Record a counter metric
 	 */
-	public recordCounter(name: string, value: number = 1, labels: Record<string, string | number> = {}): void {
+	public RecordCounter(name: string, value: number = 1, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
 			const counter = this.Registry.getSingleMetric(name) as Counter<string> | undefined;
@@ -149,7 +149,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 				this.Logger.warn(`Counter metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			const errorMsg = getErrorMessage(error);
+			const errorMsg = GetErrorMessage(error);
 			this.Logger.error(`Failed to record counter '${name}': ${errorMsg}`);
 		}
 	}
@@ -157,7 +157,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	/**
 	 * Record a gauge metric
 	 */
-	public recordGauge(name: string, value: number, labels: Record<string, string | number> = {}): void {
+	public RecordGauge(name: string, value: number, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
 			const gauge = this.Registry.getSingleMetric(name) as Gauge<string> | undefined;
@@ -167,14 +167,14 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 				this.Logger.warn(`Gauge metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			this.Logger.error(`Failed to record gauge '${name}': ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to record gauge '${name}': ${GetErrorMessage(error)}`);
 		}
 	}
 
 	/**
 	 * Record a histogram observation
 	 */
-	public recordHistogram(name: string, value: number, labels: Record<string, string | number> = {}): void {
+	public RecordHistogram(name: string, value: number, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
 			const histogram = this.Registry.getSingleMetric(name) as Histogram<string> | undefined;
@@ -184,14 +184,14 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 				this.Logger.warn(`Histogram metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			this.Logger.error(`Failed to record histogram '${name}': ${getErrorMessage(error)}`);
+			this.Logger.error(`Failed to record histogram '${name}': ${GetErrorMessage(error)}`);
 		}
 	}
 
 	/**
 	 * Create and register a new counter metric
 	 */
-	public createCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
+	public CreateCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
 		const counter = new Counter({
 			name,
 			help,
@@ -205,7 +205,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	/**
 	 * Create and register a new gauge metric
 	 */
-	public createGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
+	public CreateGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
 		const gauge = new Gauge({
 			name,
 			help,
@@ -219,7 +219,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	/**
 	 * Create and register a new histogram metric
 	 */
-	public createHistogram(name: string, help: string, labelNames: string[] = [], buckets?: number[]): Histogram<string> {
+	public CreateHistogram(name: string, help: string, labelNames: string[] = [], buckets?: number[]): Histogram<string> {
 		const config: { name: string; help: string; labelNames: string[]; registers: Registry[]; buckets?: number[] } = {
 			name,
 			help,
@@ -239,7 +239,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	/**
 	 * Register a custom metric
 	 */
-	public registerMetric<T>(metric: T): T {
+	public RegisterMetric<T>(metric: T): T {
 		if (metric && typeof metric === 'object' && 'register' in metric && typeof metric.register === 'function') {
 			metric.register(this.Registry);
 		}
@@ -250,7 +250,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	 * Get metrics in Prometheus format
 	 */
 	// eslint-disable-next-line require-await
-	public async getMetrics(): Promise<string> {
+	public async GetMetrics(): Promise<string> {
 		return this.Registry.metrics();
 	}
 
@@ -258,14 +258,14 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	 * Get registry metrics as JSON for debugging
 	 */
 	// eslint-disable-next-line require-await
-	public async getMetricsAsJSON(): Promise<any> {
+	public async GetMetricsAsJSON(): Promise<any> {
 		return this.Registry.getMetricsAsJSON();
 	}
 
 	/**
 	 * Clear all metrics (useful for testing)
 	 */
-	public clear(): void {
+	public Clear(): void {
 		this.Registry.clear();
 		this.Logger.warn('All metrics cleared');
 	}

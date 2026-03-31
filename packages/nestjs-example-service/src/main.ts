@@ -10,12 +10,12 @@ import { AppModule } from './app.module.js';
  * This entry point is used by the `serve` NX target for local development.
  * Configure the service via environment variables — see `.env.example`.
  */
-async function bootstrap(): Promise<void> {
-	const app = await NestFactory.create(AppModule, {
+async function Bootstrap(): Promise<void> {
+	const App = await NestFactory.create(AppModule, {
 		logger: new NestLoggerAdapter(),
 	});
-	const port = parseInt(process.env['PORT'] ?? '3000', 10);
-	await app.listen(port);
+	const Port = parseInt(process.env['PORT'] ?? '3000', 10);
+	await App.listen(Port);
 }
 
-void bootstrap();
+void Bootstrap();

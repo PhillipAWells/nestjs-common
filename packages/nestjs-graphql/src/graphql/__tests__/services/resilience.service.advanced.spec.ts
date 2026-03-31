@@ -51,9 +51,9 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				_callbackCount++;
 			};
 
-			service.startKeepalive('conn-1', callback);
+			service.StartKeepalive('conn-1', callback);
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(1);
 		});
 
@@ -61,9 +61,9 @@ describe('Resilience Service - Advanced Connection Management', () => {
 			mockConfig.resilience.keepalive.enabled = false;
 			const newService = createService(mockConfig);
 
-			newService.startKeepalive('conn-1', () => {});
+			newService.StartKeepalive('conn-1', () => {});
 
-			const stats = newService.getStats();
+			const stats = newService.GetStats();
 			expect(stats.activeKeepalives).toBe(0);
 		});
 
@@ -76,7 +76,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				callbackCount++;
 			};
 
-			newService.startKeepalive('conn-1', callback);
+			newService.StartKeepalive('conn-1', callback);
 
 			await new Promise(resolve => setTimeout(resolve, 250));
 
@@ -95,7 +95,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 			// Should not throw
 			expect(() => {
-				newService.startKeepalive('conn-1', failingCallback);
+				newService.StartKeepalive('conn-1', failingCallback);
 			}).not.toThrow();
 
 			await new Promise(resolve => setTimeout(resolve, 100));
@@ -104,47 +104,47 @@ describe('Resilience Service - Advanced Connection Management', () => {
 		});
 
 		it('should track multiple keepalive connections', () => {
-			service.startKeepalive('conn-1', () => {});
-			service.startKeepalive('conn-2', () => {});
-			service.startKeepalive('conn-3', () => {});
+			service.StartKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-2', () => {});
+			service.StartKeepalive('conn-3', () => {});
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(3);
 		});
 	});
 
 	describe('stopKeepalive() - Cleanup', () => {
 		it('should stop keepalive timer', () => {
-			service.startKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-1', () => {});
 
-			service.stopKeepalive('conn-1');
+			service.StopKeepalive('conn-1');
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(0);
 		});
 
 		it('should handle stopping non-existent keepalive', () => {
 			expect(() => {
-				service.stopKeepalive('non-existent');
+				service.StopKeepalive('non-existent');
 			}).not.toThrow();
 		});
 
 		it('should only stop specified connection', () => {
-			service.startKeepalive('conn-1', () => {});
-			service.startKeepalive('conn-2', () => {});
+			service.StartKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-2', () => {});
 
-			service.stopKeepalive('conn-1');
+			service.StopKeepalive('conn-1');
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(1);
 		});
 	});
 
 	describe('scheduleReconnection() - Reconnection Logic', () => {
 		it('should schedule reconnection when enabled', () => {
-			service.scheduleReconnection('conn-1', async () => {});
+			service.ScheduleReconnection('conn-1', async () => {});
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.pendingReconnections).toBe(1);
 		});
 
@@ -152,9 +152,9 @@ describe('Resilience Service - Advanced Connection Management', () => {
 			mockConfig.resilience.reconnection.enabled = false;
 			const newService = createService(mockConfig);
 
-			newService.scheduleReconnection('conn-1', async () => {});
+			newService.ScheduleReconnection('conn-1', async () => {});
 
-			const stats = newService.getStats();
+			const stats = newService.GetStats();
 			expect(stats.pendingReconnections).toBe(0);
 		});
 
@@ -167,7 +167,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				callbackExecuted = true;
 			};
 
-			newService.scheduleReconnection('conn-1', callback);
+			newService.ScheduleReconnection('conn-1', callback);
 
 			await new Promise(resolve => setTimeout(resolve, 150));
 
@@ -187,7 +187,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				throw new Error('Connection failed');
 			};
 
-			newService.scheduleReconnection('conn-1', callback);
+			newService.ScheduleReconnection('conn-1', callback);
 
 			await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -207,7 +207,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				throw new Error('Connection failed');
 			};
 
-			newService.scheduleReconnection('conn-1', callback);
+			newService.ScheduleReconnection('conn-1', callback);
 
 			await new Promise(resolve => setTimeout(resolve, 400));
 
@@ -229,7 +229,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				}
 			};
 
-			newService.scheduleReconnection('conn-1', callback, 1);
+			newService.ScheduleReconnection('conn-1', callback, 1);
 
 			await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -246,17 +246,17 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 	describe('cancelReconnection() - Cancel Pending', () => {
 		it('should cancel pending reconnection', () => {
-			service.scheduleReconnection('conn-1', async () => {});
+			service.ScheduleReconnection('conn-1', async () => {});
 
-			service.cancelReconnection('conn-1');
+			service.CancelReconnection('conn-1');
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.pendingReconnections).toBe(0);
 		});
 
 		it('should handle cancelling non-existent reconnection', () => {
 			expect(() => {
-				service.cancelReconnection('non-existent');
+				service.CancelReconnection('non-existent');
 			}).not.toThrow();
 		});
 	});
@@ -268,18 +268,18 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				recoveryExecuted = true;
 			};
 
-			await service.handleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
+			await service.HandleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
 
 			expect(recoveryExecuted).toBe(true);
 		});
 
 		it('should stop keepalive on error', async () => {
-			service.startKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-1', () => {});
 
-			await service.handleConnectionError('conn-1', new Error('Test error'), async () => {});
+			await service.HandleConnectionError('conn-1', new Error('Test error'), async () => {});
 
 			// Keepalive should be stopped but stats check happens after recovery
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(0);
 		});
 
@@ -296,7 +296,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				}
 			};
 
-			await newService.handleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
+			await newService.HandleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
 
 			expect(attemptCount).toBe(2);
 		});
@@ -310,7 +310,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				recoveryExecuted = true;
 			};
 
-			await newService.handleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
+			await newService.HandleConnectionError('conn-1', new Error('Test error'), recoveryCallback);
 
 			expect(recoveryExecuted).toBe(false);
 		});
@@ -323,7 +323,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 				shutdownExecuted = true;
 			};
 
-			await service.gracefulShutdown(shutdownCallback);
+			await service.GracefulShutdown(shutdownCallback);
 
 			expect(shutdownExecuted).toBe(true);
 		});
@@ -335,7 +335,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 			// Should not throw
 			await expect(
-				service.gracefulShutdown(shutdownCallback),
+				service.GracefulShutdown(shutdownCallback),
 			).resolves.not.toThrow();
 		});
 
@@ -343,7 +343,7 @@ describe('Resilience Service - Advanced Connection Management', () => {
 			let shutdownCompleted = false;
 			const newService = createService(mockConfig);
 
-			await newService.gracefulShutdown(async () => {
+			await newService.GracefulShutdown(async () => {
 				shutdownCompleted = true;
 			});
 
@@ -354,11 +354,11 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 	describe('getStats() - Statistics', () => {
 		it('should return accurate statistics', () => {
-			service.startKeepalive('conn-1', () => {});
-			service.startKeepalive('conn-2', () => {});
-			service.scheduleReconnection('conn-3', async () => {});
+			service.StartKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-2', () => {});
+			service.ScheduleReconnection('conn-3', async () => {});
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			expect(stats.activeKeepalives).toBe(2);
 			expect(stats.pendingReconnections).toBe(1);
@@ -368,13 +368,13 @@ describe('Resilience Service - Advanced Connection Management', () => {
 
 	describe('onModuleDestroy() - Cleanup', () => {
 		it('should clear all timers', async () => {
-			service.startKeepalive('conn-1', () => {});
-			service.startKeepalive('conn-2', () => {});
-			service.scheduleReconnection('conn-3', async () => {});
+			service.StartKeepalive('conn-1', () => {});
+			service.StartKeepalive('conn-2', () => {});
+			service.ScheduleReconnection('conn-3', async () => {});
 
 			await service.onModuleDestroy();
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.activeKeepalives).toBe(0);
 			expect(stats.pendingReconnections).toBe(0);
 		});

@@ -1,6 +1,6 @@
-import { Logger } from '@nestjs/common';
 import xss from 'xss';
-import { getErrorMessage } from './error.utils.js';
+import { GetErrorMessage } from './error.utils.js';
+import type { IContextualLogger } from '../interfaces/logger.interface.js';
 
 /**
  * Maximum recursion depth for sanitization operations.
@@ -22,7 +22,7 @@ export const MAX_SANITIZE_DEPTH = 20;
  * escapeNewlines('foo\rbar') // Returns: 'foo\\rbar'
  * ```
  */
-export function escapeNewlines(str: string): string {
+export function EscapeNewlines(str: string): string {
 	if (typeof str !== 'string') {
 		return String(str);
 	}
@@ -62,11 +62,11 @@ export function escapeNewlines(str: string): string {
  * const user = sanitizeObject(req.body.user); // Misses req.body itself
  *
  * // CORRECT: Sanitize complete object first
- * const sanitized = sanitizeObject(req.body);
+ * const Sanitized = sanitizeObject(req.body);
  * const user = sanitized.user; // Now safe
  * ```
  */
-export function sanitizeObject(value: any, depth: number = 0, logger?: Logger): any {
+export function SanitizeObject(value: any, depth: number = 0, logger?: IContextualLogger): any {
 	if (depth >= MAX_SANITIZE_DEPTH) {
 		if (logger) {
 			logger.error(`Sanitization depth limit exceeded at depth ${MAX_SANITIZE_DEPTH}`);
@@ -76,7 +76,7 @@ export function sanitizeObject(value: any, depth: number = 0, logger?: Logger): 
 
 	if (typeof value === 'object' && value !== null) {
 		if (Array.isArray(value)) {
-			return value.map(item => sanitizeObject(item, depth + 1, logger));
+			return value.map(item => SanitizeObject(item, depth + 1, logger));
 		}
 
 		const sanitized: any = {};
@@ -100,7 +100,7 @@ export function sanitizeObject(value: any, depth: number = 0, logger?: Logger): 
 			}
 
 			// Recursively sanitize nested objects/arrays, but preserve string values
-			sanitized[sanitizedKey] = typeof val === 'object' ? sanitizeObject(val, depth + 1, logger) : val;
+			sanitized[sanitizedKey] = typeof val === 'object' ? SanitizeObject(val, depth + 1, logger) : val;
 		}
 
 		return sanitized;
@@ -120,7 +120,7 @@ export function sanitizeObject(value: any, depth: number = 0, logger?: Logger): 
  * @param logger Optional logger instance for warnings
  * @returns Sanitized value with XSS vectors removed
  */
-export function sanitizeXss(value: unknown, logger?: Logger): unknown {
+export function SanitizeXss(value: unknown, logger?: IContextualLogger): unknown {
 	if (typeof value === 'string') {
 		// Use xss library for server-side HTML string sanitization
 		// Removes common XSS patterns: script tags, event handlers, dangerous protocols
@@ -134,7 +134,7 @@ export function sanitizeXss(value: unknown, logger?: Logger): unknown {
 			sanitized = xss(sanitized);
 		} catch (error) {
 			if (logger) {
-				logger.warn(`XSS sanitization (xss library) failed: ${getErrorMessage(error)}`);
+				logger.warn(`XSS sanitization (xss library) failed: ${GetErrorMessage(error)}`);
 			}
 		}
 
@@ -147,12 +147,12 @@ export function sanitizeXss(value: unknown, logger?: Logger): unknown {
 	}
 
 	if (Array.isArray(value)) {
-		return value.map(v => sanitizeXss(v, logger));
+		return value.map(v => SanitizeXss(v, logger));
 	}
 
 	if (value && typeof value === 'object') {
 		return Object.fromEntries(
-			Object.entries(value).map(([k, v]) => [k, sanitizeXss(v, logger)]),
+			Object.entries(value).map(([k, v]) => [k, SanitizeXss(v, logger)]),
 		);
 	}
 

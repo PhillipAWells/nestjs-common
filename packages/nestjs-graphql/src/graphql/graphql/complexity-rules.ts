@@ -93,14 +93,14 @@ export const FIELD_COMPLEXITY_RULES = {
  * @param field Field name
  * @returns Complexity weight or default
  */
-export function getFieldComplexityWeight(
+export function GetFieldComplexityWeight(
 	type: keyof typeof FIELD_COMPLEXITY_RULES,
 	field: string,
 ): number {
-	const typeRules = FIELD_COMPLEXITY_RULES[type];
-	if (!typeRules) return COMPLEXITY_WEIGHTS.SIMPLE_FIELD;
+	const TypeRules = FIELD_COMPLEXITY_RULES[type];
+	if (!TypeRules) return COMPLEXITY_WEIGHTS.SIMPLE_FIELD;
 
-	return (typeRules as any)[field] ?? COMPLEXITY_WEIGHTS.SIMPLE_FIELD;
+	return (TypeRules as any)[field] ?? COMPLEXITY_WEIGHTS.SIMPLE_FIELD;
 }
 
 /**
@@ -110,7 +110,7 @@ export function getFieldComplexityWeight(
  * @param config Complexity configuration
  * @returns Calculated list complexity
  */
-export function calculateListComplexity(
+export function CalculateListComplexity(
 	baseComplexity: number,
 	estimatedItems: number = DEFAULT_ESTIMATED_ITEMS,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
@@ -126,13 +126,13 @@ export function calculateListComplexity(
  * @param config Complexity configuration
  * @returns Calculated nested complexity
  */
-export function calculateNestedComplexity(
+export function CalculateNestedComplexity(
 	baseComplexity: number,
 	depth: number,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
-	const { depth: depthMultiplier = 2 } = config.multipliers ?? {};
-	return baseComplexity * Math.pow(depthMultiplier, depth);
+	const { depth: DepthMultiplier = 2 } = config.multipliers ?? {};
+	return baseComplexity * Math.pow(DepthMultiplier, depth);
 }
 
 /**
@@ -142,12 +142,12 @@ export function calculateNestedComplexity(
  * @param config Complexity configuration
  * @returns Calculated connection complexity
  */
-export function calculateConnectionComplexity(
+export function CalculateConnectionComplexity(
 	baseComplexity: number,
 	first: number = DEFAULT_ESTIMATED_ITEMS,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_RULES,
 ): number {
-	return COMPLEXITY_WEIGHTS.CONNECTION + calculateListComplexity(baseComplexity, first, config);
+	return COMPLEXITY_WEIGHTS.CONNECTION + CalculateListComplexity(baseComplexity, first, config);
 }
 
 /**
@@ -155,7 +155,7 @@ export function calculateConnectionComplexity(
  * @param config Complexity configuration to validate
  * @returns True if configuration is valid
  */
-export function validateComplexityConfig(config: IComplexityConfig): boolean {
+export function ValidateComplexityConfig(config: IComplexityConfig): boolean {
 	const { multipliers, limits } = config;
 
 	// Validate multipliers
@@ -178,10 +178,10 @@ export function validateComplexityConfig(config: IComplexityConfig): boolean {
  * @param overrides Configuration overrides
  * @returns Merged complexity configuration
  */
-export function createComplexityConfig(
+export function CreateComplexityConfig(
 	overrides: Partial<IComplexityConfig> = {},
 ): IComplexityConfig {
-	const config = {
+	const Config = {
 		...DEFAULT_COMPLEXITY_RULES,
 		...overrides,
 		multipliers: {
@@ -194,9 +194,9 @@ export function createComplexityConfig(
 		},
 	};
 
-	if (!validateComplexityConfig(config)) {
+	if (!ValidateComplexityConfig(Config)) {
 		throw new Error('Invalid complexity configuration');
 	}
 
-	return config;
+	return Config;
 }

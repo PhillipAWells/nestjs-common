@@ -216,7 +216,7 @@ export interface IMetricsExporter {
 	 * ```typescript
 	 * onMetricRecorded(value: IMetricValue): void {
 	 *   // Update in-memory registry
-	 *   const key = this.buildKey(value);
+	 *   const Key = this.buildKey(value);
 	 *   this.Registry.update(key, value);
 	 *
 	 *   // If async work needed, queue it

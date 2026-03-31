@@ -32,7 +32,7 @@ export interface IErrorConfig {
  * });
  * ```
  */
-export function createError(config: IErrorConfig): typeof BaseApplicationError {
+export function CreateError(config: IErrorConfig): typeof BaseApplicationError {
 	const { code, statusCode, defaultMessage, name = `${code}Error` } = config;
 
 	/**
@@ -46,14 +46,14 @@ export function createError(config: IErrorConfig): typeof BaseApplicationError {
 		 * @param context - Additional context information (optional)
 		 */
 		constructor(message = defaultMessage, context?: Record<string, any>) {
-			const options: any = {
+			const Options: any = {
 				code,
 				statusCode,
 			};
 			if (context !== undefined) {
-				options.context = context;
+				Options.context = context;
 			}
-			super(message, options);
+			super(message, Options);
 		}
 	}
 
@@ -65,6 +65,11 @@ export function createError(config: IErrorConfig): typeof BaseApplicationError {
 
 	return GeneratedApplicationError;
 }
+
+/**
+ * Backward compatibility alias for CreateError
+ */
+export const createError = CreateError;
 
 /**
  * Error configurations for all standard HTTP error types

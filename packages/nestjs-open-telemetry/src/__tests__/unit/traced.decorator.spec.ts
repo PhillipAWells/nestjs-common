@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { Injectable } from '@nestjs/common';
 import { SpanKind } from '@opentelemetry/api';
-import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized } from '../helpers/otel-setup.js';
+import { InitializeOpenTelemetry, ShutdownOpenTelemetry, IsInitialized } from '../helpers/otel-setup.js';
 import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
 import { Traced } from '../../decorators/traced.decorator.js';
 
@@ -86,7 +86,7 @@ describe('@Traced Decorator', () => {
 		};
 
 		try {
-			await initializeOpenTelemetry(testConfig);
+			await InitializeOpenTelemetry(testConfig);
 		} catch (error) {
 			// Gracefully handle initialization errors in tests
 			// The decorators still work without initialization
@@ -99,9 +99,9 @@ describe('@Traced Decorator', () => {
 	});
 
 	afterAll(async () => {
-		if (isInitialized()) {
+		if (IsInitialized()) {
 			try {
-				await shutdownOpenTelemetry();
+				await ShutdownOpenTelemetry();
 			} catch {
 				// Gracefully handle shutdown errors - expected when OTEL collector not available
 				console.log('Skipping OpenTelemetry shutdown - collector not available');

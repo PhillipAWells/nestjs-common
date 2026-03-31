@@ -89,9 +89,9 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * Normalize label keys to handle consistent ordering regardless of insertion order
 	 * @private
 	 */
-	private static normalizeLabelKey(labels: Record<string, string | number>): string {
-		const sortedEntries = Object.entries(labels).sort(([a], [b]) => a.localeCompare(b));
-		return JSON.stringify(Object.fromEntries(sortedEntries));
+	private static NormalizeLabelKey(labels: Record<string, string | number>): string {
+		const SortedEntries = Object.entries(labels).sort(([a], [b]) => a.localeCompare(b));
+		return JSON.stringify(Object.fromEntries(SortedEntries));
 	}
 
 	/**
@@ -137,7 +137,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * });
 	 * ```
 	 */
-	public onDescriptorRegistered(descriptor: IMetricDescriptor): void {
+	public OnDescriptorRegistered(descriptor: IMetricDescriptor): void {
 		const { name, type, help, labelNames, buckets } = descriptor;
 
 		// Guard against duplicate registration
@@ -156,11 +156,11 @@ export class PrometheusExporter implements IMetricsExporter {
 			return;
 		}
 
-		let instrument: Counter<string> | Histogram<string> | Gauge<string>;
+		let Instrument: Counter<string> | Histogram<string> | Gauge<string>;
 
 		switch (type) {
 			case 'counter':
-				instrument = new Counter({
+				Instrument = new Counter({
 					name,
 					help,
 					labelNames,
@@ -169,7 +169,7 @@ export class PrometheusExporter implements IMetricsExporter {
 				break;
 
 			case 'histogram':
-				instrument = new Histogram({
+				Instrument = new Histogram({
 					name,
 					help,
 					labelNames,
@@ -181,7 +181,7 @@ export class PrometheusExporter implements IMetricsExporter {
 			case 'gauge':
 			case 'updown_counter':
 				// Both gauge and updown_counter map to prom-client Gauge
-				instrument = new Gauge({
+				Instrument = new Gauge({
 					name,
 					help,
 					labelNames,
@@ -197,7 +197,7 @@ export class PrometheusExporter implements IMetricsExporter {
 				throw new Error(`Unsupported metric type "${type}" for descriptor "${name}"`);
 		}
 
-		this.Instruments.set(name, instrument);
+		this.Instruments.set(name, Instrument);
 		this.Pending.set(name, []);
 	}
 
@@ -224,20 +224,20 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * });
 	 * ```
 	 */
-	public onMetricRecorded(value: IMetricValue): void {
-		const metricName = value.descriptor.name;
-		const pendingArray = this.Pending.get(metricName);
+	public OnMetricRecorded(value: IMetricValue): void {
+		const MetricName = value.descriptor.name;
+		const PendingArray = this.Pending.get(MetricName);
 
-		if (pendingArray) {
-			pendingArray.push(value);
+		if (PendingArray) {
+			PendingArray.push(value);
 
 			// Cap pending array to prevent unbounded memory growth
-			if (pendingArray.length > PrometheusExporter.MAX_PENDING_PER_METRIC) {
-				pendingArray.shift();
+			if (PendingArray.length > PrometheusExporter.MAX_PENDING_PER_METRIC) {
+				PendingArray.shift();
 			}
 		} else {
 			// Warn if metric recorded before descriptor registration (data will be lost)
-			this.Logger.warn(`Metric recorded before descriptor registration: ${metricName}`);
+			this.Logger.warn(`Metric recorded before descriptor registration: ${MetricName}`);
 		}
 	}
 
@@ -271,91 +271,91 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * // http_request_duration_seconds_bucket{le="0.01",...} 5
 	 * ```
 	 */
-	public async getMetrics(): Promise<string> {
+	public async GetMetrics(): Promise<string> {
 		// Flush all pending values into prom-client instruments
 		// Use atomic swap pattern: capture current values and replace with empty array
 		// to prevent loss of metrics recorded concurrently during flush
-		for (const [metricName, pendingValues] of this.Pending.entries()) {
+		for (const [MetricName, PendingValues] of this.Pending.entries()) {
 			// Atomically swap pending array with a fresh one
-			this.Pending.set(metricName, []);
+			this.Pending.set(MetricName, []);
 
-			if (pendingValues.length === 0) {
+			if (PendingValues.length === 0) {
 				continue;
 			}
 
-			const instrument = this.Instruments.get(metricName);
-			if (!instrument) {
+			const Instrument = this.Instruments.get(MetricName);
+			if (!Instrument) {
 				// Instrument not yet created, skip pending values
 				continue;
 			}
 
 			// Record all pending values into the appropriate instrument
-			if (instrument instanceof Counter) {
+			if (Instrument instanceof Counter) {
 				// Counter: increment by value for each pending entry
-				for (const metricValue of pendingValues) {
+				for (const MetricValue of PendingValues) {
 					try {
-						instrument.inc(metricValue.labels, metricValue.value);
+						Instrument.inc(MetricValue.labels, MetricValue.value);
 					} catch (recordError) {
 						this.Logger.warn(
-							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
+							`Failed to record metric value for "${MetricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
-			} else if (instrument instanceof Histogram) {
+			} else if (Instrument instanceof Histogram) {
 				// Histogram: observe value for each pending entry
-				for (const metricValue of pendingValues) {
+				for (const MetricValue of PendingValues) {
 					try {
-						instrument.observe(metricValue.labels, metricValue.value);
+						Instrument.observe(MetricValue.labels, MetricValue.value);
 					} catch (recordError) {
 						this.Logger.warn(
-							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
+							`Failed to record metric value for "${MetricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
-			} else if (instrument instanceof Gauge) {
+			} else if (Instrument instanceof Gauge) {
 				// Gauge: set values directly per label set
 				// updown_counter: accumulate values per label set and maintain running total
-				const accumulatedValues = new Map<string, { labels: Record<string, string | number>; value: number }>();
+				const AccumulatedValues = new Map<string, { labels: Record<string, string | number>; value: number }>();
 
-				for (const metricValue of pendingValues) {
-					const labelKey = PrometheusExporter.normalizeLabelKey(metricValue.labels);
-					const existing = accumulatedValues.get(labelKey);
-					if (existing) {
-						existing.value += metricValue.value;
+				for (const MetricValue of PendingValues) {
+					const LabelKey = PrometheusExporter.NormalizeLabelKey(MetricValue.labels);
+					const Existing = AccumulatedValues.get(LabelKey);
+					if (Existing) {
+						Existing.value += MetricValue.value;
 					} else {
-						accumulatedValues.set(labelKey, {
-							labels: metricValue.labels,
-							value: metricValue.value,
+						AccumulatedValues.set(LabelKey, {
+							labels: MetricValue.labels,
+							value: MetricValue.value,
 						});
 					}
 				}
 
 				// Get running totals map for this metric (if it exists, it's an updown_counter)
-				const runningTotals = this.GaugeValues.get(metricName);
+				const RunningTotals = this.GaugeValues.get(MetricName);
 
 				// Apply accumulated values to the gauge (iterate only through unique label sets)
-				for (const { labels, value: accumulatedValue } of accumulatedValues.values()) {
+				for (const { labels, value: AccumulatedValue } of AccumulatedValues.values()) {
 					try {
-						let finalValue = accumulatedValue;
+						let FinalValue = AccumulatedValue;
 
 						// For updown_counters, add to running total; for regular gauges, use value directly
-						if (runningTotals) {
-							const normalizedKey = PrometheusExporter.normalizeLabelKey(labels);
-							const currentTotal = runningTotals.get(normalizedKey) ?? 0;
-							finalValue = currentTotal + accumulatedValue;
-							runningTotals.set(normalizedKey, finalValue);
+						if (RunningTotals) {
+							const NormalizedKey = PrometheusExporter.NormalizeLabelKey(labels);
+							const CurrentTotal = RunningTotals.get(NormalizedKey) ?? 0;
+							FinalValue = CurrentTotal + AccumulatedValue;
+							RunningTotals.set(NormalizedKey, FinalValue);
 						}
 
 						// Convert number values to strings if needed for prom-client
-						const labelsForProm: Record<string, string> = {};
-						for (const [key, val] of Object.entries(labels)) {
-							labelsForProm[key] = String(val);
+						const LabelsForProm: Record<string, string> = {};
+						for (const [Key, Val] of Object.entries(labels)) {
+							LabelsForProm[Key] = String(Val);
 						}
 
-						instrument.set(labelsForProm, finalValue);
+						Instrument.set(LabelsForProm, FinalValue);
 					} catch (recordError) {
 						this.Logger.warn(
-							`Failed to record metric value for "${metricName}": ${getErrorMessage(recordError)}`,
+							`Failed to record metric value for "${MetricName}": ${getErrorMessage(recordError)}`,
 						);
 					}
 				}
@@ -366,8 +366,8 @@ export class PrometheusExporter implements IMetricsExporter {
 		try {
 			return await this.Registry.metrics();
 		} catch (error) {
-			const message = getErrorMessage(error);
-			this.Logger.error(`Failed to generate Prometheus metrics: ${message}`);
+			const Message = getErrorMessage(error);
+			this.Logger.error(`Failed to generate Prometheus metrics: ${Message}`);
 			throw error;
 		}
 	}
@@ -390,7 +390,7 @@ export class PrometheusExporter implements IMetricsExporter {
 	 * ```
 	 */
 	// eslint-disable-next-line require-await
-	public async shutdown(): Promise<void> {
+	public async Shutdown(): Promise<void> {
 		this.Registry.clear();
 		this.Instruments.clear();
 		this.Pending.clear();

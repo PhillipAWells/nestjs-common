@@ -42,25 +42,25 @@ export class PermissionGuard implements CanActivate {
 	}
 
 	public canActivate(context: ExecutionContext): boolean {
-		const requiredPermissions = this.Reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+		const RequiredPermissions = this.Reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
-		if (!requiredPermissions || requiredPermissions.length === 0) {
+		if (!RequiredPermissions || RequiredPermissions.length === 0) {
 			// No permissions required, allow access
 			return true;
 		}
 
-		const request = ExtractRequestFromContext(context);
-		const user = request.user as IKeycloakUser | undefined;
+		const Request = ExtractRequestFromContext(context);
+		const User = Request.user as IKeycloakUser | undefined;
 
-		if (!user) {
+		if (!User) {
 			throw new UnauthorizedException('IUser not authenticated');
 		}
 
 		// Check if user has any of the required permissions in realmRoles or clientRoles
-		const userRoles = [...user.realmRoles, ...user.clientRoles];
-		const hasRequiredPermission = requiredPermissions.some(permission => userRoles.includes(permission));
+		const UserRoles = [...User.realmRoles, ...User.clientRoles];
+		const HasRequiredPermission = RequiredPermissions.some(permission => UserRoles.includes(permission));
 
-		if (!hasRequiredPermission) {
+		if (!HasRequiredPermission) {
 			throw new ForbiddenException('Insufficient permissions');
 		}
 

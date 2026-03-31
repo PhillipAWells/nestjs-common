@@ -12,8 +12,8 @@ describe('JwtAuthGuard', () => {
 
 	beforeEach(() => {
 		mockTokenValidationService = {
-			validateToken: vi.fn(),
-			extractUser: vi.fn(),
+			ValidateToken: vi.fn(),
+			ExtractUser: vi.fn(),
 		};
 
 		mockReflector = {
@@ -47,7 +47,7 @@ describe('JwtAuthGuard', () => {
 				const result = await guard.canActivate(mockContext as ExecutionContext);
 
 				expect(result).toBe(true);
-				expect(mockTokenValidationService.validateToken).not.toHaveBeenCalled();
+				expect(mockTokenValidationService.ValidateToken).not.toHaveBeenCalled();
 			});
 		});
 
@@ -120,11 +120,11 @@ describe('JwtAuthGuard', () => {
 					clientRoles: [],
 				};
 
-				(mockTokenValidationService.validateToken as Mock).mockResolvedValue({
+				(mockTokenValidationService.ValidateToken as Mock).mockResolvedValue({
 					valid: true,
 					claims: mockClaims,
 				});
-				(mockTokenValidationService.extractUser as Mock).mockReturnValue(mockUser);
+				(mockTokenValidationService.ExtractUser as Mock).mockReturnValue(mockUser);
 
 				const result = await guard.canActivate(mockContext as ExecutionContext);
 
@@ -134,7 +134,7 @@ describe('JwtAuthGuard', () => {
 			});
 
 			it('should throw UnauthorizedException when token is invalid', async () => {
-				(mockTokenValidationService.validateToken as Mock).mockResolvedValue({
+				(mockTokenValidationService.ValidateToken as Mock).mockResolvedValue({
 					valid: false,
 					error: 'token_expired',
 				});
@@ -145,7 +145,7 @@ describe('JwtAuthGuard', () => {
 			});
 
 			it('should throw UnauthorizedException when claims are missing', async () => {
-				(mockTokenValidationService.validateToken as Mock).mockResolvedValue({
+				(mockTokenValidationService.ValidateToken as Mock).mockResolvedValue({
 					valid: true,
 				});
 

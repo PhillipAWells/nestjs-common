@@ -17,7 +17,7 @@ import { SetRequestPropertyDecoratorLogger } from './decorators/request-property
 import { InstrumentationRegistryHolder } from './decorators/instrument.decorator.js';
 import { ConfigService } from '../config/index.js';
 import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
-import { getErrorMessage } from './utils/error.utils.js';
+import { GetErrorMessage } from './utils/error.utils.js';
 
 /**
  * Common Module.
@@ -137,26 +137,26 @@ export class CommonModule implements OnModuleInit {
 		SetRequestPropertyDecoratorLogger(this.AppLogger);
 
 		// Set the InstrumentationRegistry instance in the holder for @Instrument() decorator access
-		InstrumentationRegistryHolder.setInstance(this.Registry);
+		InstrumentationRegistryHolder.SetInstance(this.Registry);
 
 		// Verify ConfigService is available to help developers catch import order issues early
-		this.verifyConfigServiceAvailable();
+		this.VerifyConfigServiceAvailable();
 	}
 
 	/**
 	 * Verify that ConfigService from the config module is registered in the application.
 	 * This helps catch import order issues where CommonModule is imported before ConfigModule.
 	 */
-	private verifyConfigServiceAvailable(): void {
+	private VerifyConfigServiceAvailable(): void {
 		try {
-			const configService = this.ModuleRef.get(ConfigService, { strict: false });
-			if (!configService) {
+			const ConfigServiceInstance = this.ModuleRef.get(ConfigService, { strict: false });
+			if (!ConfigServiceInstance) {
 				throw new Error('ConfigService is null or undefined');
 			}
 		} catch (error) {
-			const errorMessage = `\nFailed to initialize CommonModule: ConfigService is not registered in the module hierarchy.\n\nCommonModule requires ConfigModule to be imported first in your application.\nEnsure your AppModule imports ConfigModule before CommonModule:\n\n  @Module({\n    imports: [ConfigModule, CommonModule],\n  })\n  export class AppModule {}\n\nImporting in the wrong order will cause services to fail during initialization.\nError details: ${getErrorMessage(error)}\n\t\t\t`.trim();
+			const ErrorMessage = `\nFailed to initialize CommonModule: ConfigService is not registered in the module hierarchy.\n\nCommonModule requires ConfigModule to be imported first in your application.\nEnsure your AppModule imports ConfigModule before CommonModule:\n\n  @Module({\n    imports: [ConfigModule, CommonModule],\n  })\n  export class AppModule {}\n\nImporting in the wrong order will cause services to fail during initialization.\nError details: ${GetErrorMessage(error)}\n\t\t\t`.trim();
 
-			throw new Error(errorMessage, { cause: error });
+			throw new Error(ErrorMessage, { cause: error });
 		}
 	}
 }

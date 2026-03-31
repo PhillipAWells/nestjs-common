@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ValidationError } from 'class-validator';
 import { AppLogger, BaseValidationPipe } from '@pawells/nestjs-shared/common';
+import type { IContextualLogger } from '@pawells/nestjs-shared/common';
 
 /**
  * GraphQL Validation Pipe
@@ -27,7 +28,7 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLValidationPipe.name);
 	}
 
@@ -41,7 +42,7 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 	 *
 	 * @returns Validation options for class-validator
 	 */
-	protected override getValidationOptions(): any {
+	protected override GetValidationOptions(): any {
 		return {
 			whitelist: true,
 			forbidNonWhitelisted: true,
@@ -54,9 +55,9 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 	 *
 	 * @param errors - The validation errors
 	 */
-	protected override handleValidationErrors(errors: ValidationError[]): void {
-		const formattedErrors = this.formatValidationErrors(errors);
-		this.Logger?.warn(`Validation failed: ${JSON.stringify(formattedErrors)}`);
+	protected override HandleValidationErrors(errors: ValidationError[]): void {
+		const FormattedErrors = this.FormatValidationErrors(errors);
+		this.Logger?.warn(`Validation failed: ${JSON.stringify(FormattedErrors)}`);
 	}
 
 	/**
@@ -65,14 +66,14 @@ export class GraphQLValidationPipe extends BaseValidationPipe {
 	 * @param errors - The validation errors
 	 * @returns any - Structured error response
 	 */
-	protected override formatValidationErrors(errors: ValidationError[]): any {
+	protected override FormatValidationErrors(errors: ValidationError[]): any {
 		return {
 			message: 'Validation failed',
 			errors: errors.map(error => ({
 				field: error.property,
 				value: error.value,
 				constraints: error.constraints,
-				children: error.children?.length ? this.formatValidationErrors(error.children) : undefined,
+				children: error.children?.length ? this.FormatValidationErrors(error.children) : undefined,
 			})),
 		};
 	}

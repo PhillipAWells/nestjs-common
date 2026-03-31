@@ -8,7 +8,7 @@ import { WebSocketAuthService } from './websocket-auth.service.js';
 import type { IWebSocketServerConfig } from './websocket-config.interface.js';
 
 // Lazy load graphql-ws to handle module resolution issues with different bundler environments
-const getUseServer = (): any => {
+const GetUseServer = (): any => {
 	return require('@nestjs/graphql/node_modules/graphql-ws/dist/use/ws.cjs').useServer as any;
 };
 
@@ -47,7 +47,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		this.Logger = new AppLogger(undefined, GraphQLWebSocketServer.name);
 	}
 
-	private get httpAdapterHost(): HttpAdapterHost | undefined {
+	private get HttpAdapterHost(): HttpAdapterHost | undefined {
 		try {
 			return this.Module.get(HttpAdapterHost, { strict: false });
 		} catch {
@@ -55,7 +55,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		}
 	}
 
-	private get schemaHost(): GraphQLSchemaHost | undefined {
+	private get SchemaHost(): GraphQLSchemaHost | undefined {
 		try {
 			return this.Module.get(GraphQLSchemaHost, { strict: false });
 		} catch {
@@ -63,7 +63,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		}
 	}
 
-	private get authService(): WebSocketAuthService | undefined {
+	private get AuthService(): WebSocketAuthService | undefined {
 		try {
 			return this.Module.get(WebSocketAuthService, { strict: false });
 		} catch {
@@ -89,7 +89,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 			this.Logger.debug('No WebSocket config set — skipping auto-initialization. Call configure() then initialize() to enable subscriptions.');
 			return;
 		}
-		await this.initialize(this.ServerConfig);
+		await this.Initialize(this.ServerConfig);
 	}
 
 	/**
@@ -98,40 +98,40 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 	 * @param config WebSocket server configuration
 	 */
 	// eslint-disable-next-line require-await
-	public async initialize(config: IWebSocketServerConfig): Promise<void> {
-		const { httpAdapterHost } = this;
-		if (!httpAdapterHost?.httpAdapter) {
+	public async Initialize(config: IWebSocketServerConfig): Promise<void> {
+		const { HttpAdapterHost: HttpAdapterHostVar } = this;
+		if (!HttpAdapterHostVar?.httpAdapter) {
 			this.Logger.warn('HttpAdapterHost unavailable — WebSocket server cannot start');
 			return;
 		}
 
-		const { schemaHost } = this;
-		if (!schemaHost?.schema) {
+		const { SchemaHost: SchemaHostVar } = this;
+		if (!SchemaHostVar?.schema) {
 			this.Logger.warn('GraphQLSchemaHost unavailable — WebSocket server cannot start (schema not yet built)');
 			return;
 		}
 
-		const httpServer = httpAdapterHost.httpAdapter.getHttpServer() as import('http').Server;
-		const { schema } = schemaHost;
-		const { authService } = this;
+		const HttpServer = HttpAdapterHostVar.httpAdapter.getHttpServer() as import('http').Server;
+		const { schema } = SchemaHostVar;
+		const { AuthService: AuthServiceVar } = this;
 
-		this.WsServer = new WebSocketServer({ server: httpServer, path: config.path });
+		this.WsServer = new WebSocketServer({ server: HttpServer, path: config.path });
 
-		const useServer = getUseServer();
-		const cleanup = useServer(
+		const UseServer = GetUseServer();
+		const Cleanup = UseServer(
 			{
 				schema,
 				onConnect: async (ctx: any) => {
-					if (!authService) {
+					if (!AuthServiceVar) {
 						this.Logger.debug('No WebSocketAuthService — accepting connection without auth');
 						return true;
 					}
 
-					const params = ctx.connectionParams ?? {};
-					const result = await authService.authenticate(params);
+					const Params = ctx.connectionParams ?? {};
+					const Result = await AuthServiceVar.Authenticate(Params);
 
-					if (!result.authenticated) {
-						this.Logger.warn(`WebSocket connection rejected: ${result.error ?? 'authentication failed'}`);
+					if (!Result.authenticated) {
+						this.Logger.warn(`WebSocket connection rejected: ${Result.error ?? 'authentication failed'}`);
 						return false;
 					}
 
@@ -143,7 +143,7 @@ export class GraphQLWebSocketServer implements OnApplicationBootstrap, OnModuleD
 		);
 
 		this.DisposeServer = async () => {
-			await cleanup.dispose();
+			await Cleanup.dispose();
 		};
 		this.Logger.info(`GraphQL WebSocket server listening at ${config.path}`);
 	}

@@ -28,35 +28,35 @@ describe('GraphQLService', () => {
 				value: () => ({}),
 			});
 
-			expect(() => service.validateSchema(schema)).not.toThrow();
-			expect(service.getSchema()).toBe(schema);
+			expect(() => service.ValidateSchema(schema)).not.toThrow();
+			expect(service.GetSchema()).toBe(schema);
 		});
 
 		it('should throw error for invalid schema', () => {
 			const schema = new GraphQLSchema({});
 
-			expect(() => service.validateSchema(schema)).toThrow('GraphQL schema must have a query type');
+			expect(() => service.ValidateSchema(schema)).toThrow('GraphQL schema must have a query type');
 		});
 	});
 
 	describe('formatError', () => {
 		it('should format validation error', () => {
 			const error = { message: 'validation error' };
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe('VALIDATION_ERROR');
 		});
 
 		it('should format authentication error', () => {
 			const error = { message: 'authentication failed' };
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe('UNAUTHENTICATED');
 		});
 
 		it('should format unknown error as internal error', () => {
 			const error = { message: 'some error' };
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe('INTERNAL_ERROR');
 		});
@@ -64,7 +64,7 @@ describe('GraphQLService', () => {
 
 	describe('createCursor', () => {
 		it('should create base64 encoded cursor', () => {
-			const cursor = service.createCursor('123', 1234567890);
+			const cursor = service.CreateCursor('123', 1234567890);
 
 			expect(cursor).toBeDefined();
 			expect(typeof cursor).toBe('string');
@@ -79,13 +79,13 @@ describe('GraphQLService', () => {
 			const original = { id: '123', timestamp: 1234567890 };
 			const cursor = Buffer.from(JSON.stringify(original)).toString('base64');
 
-			const decoded = service.decodeCursor(cursor);
+			const decoded = service.DecodeCursor(cursor);
 
 			expect(decoded).toEqual(original);
 		});
 
 		it('should throw error for invalid cursor', () => {
-			expect(() => service.decodeCursor('invalid')).toThrow('Invalid cursor format');
+			expect(() => service.DecodeCursor('invalid')).toThrow('Invalid cursor format');
 		});
 	});
 
@@ -97,7 +97,7 @@ describe('GraphQLService', () => {
 		];
 
 		it('should return all items when no pagination', () => {
-			const result = service.paginateItems(items);
+			const result = service.PaginateItems(items);
 
 			expect(result.edges).toHaveLength(3);
 			expect(result.pageInfo.hasNextPage).toBe(false);
@@ -105,7 +105,7 @@ describe('GraphQLService', () => {
 		});
 
 		it('should paginate with first parameter', () => {
-			const result = service.paginateItems(items, 2);
+			const result = service.PaginateItems(items, 2);
 
 			expect(result.edges).toHaveLength(2);
 			expect(result.pageInfo.hasNextPage).toBe(true);
@@ -113,8 +113,8 @@ describe('GraphQLService', () => {
 		});
 
 		it('should paginate with after cursor', () => {
-			const cursor = service.createCursor('1');
-			const result = service.paginateItems(items, 2, cursor);
+			const cursor = service.CreateCursor('1');
+			const result = service.PaginateItems(items, 2, cursor);
 
 			expect(result.edges).toHaveLength(2);
 			expect(result.edges[0].node.id).toBe('2');

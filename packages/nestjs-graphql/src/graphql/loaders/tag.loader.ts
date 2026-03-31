@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
@@ -25,7 +25,7 @@ export class TagLoader implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(TagLoader.name);
 	}
 
@@ -42,12 +42,12 @@ export class TagLoader implements ILazyModuleRefService {
    * @param batchLoadFn Custom batch loading function (optional)
    * @returns DataLoader for tags
    */
-	public getLoader(
+	public GetLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(ITag | Error)[]>,
 	): DataLoader<string, ITag> {
-		return this.DataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.CreateWithCache(
 			'tag-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
+			batchLoadFn ?? this.DefaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -58,7 +58,7 @@ export class TagLoader implements ILazyModuleRefService {
    * @returns Promise resolving to array of tags or errors
    */
 	// eslint-disable-next-line require-await
-	private async defaultBatchLoadFn(
+	private async DefaultBatchLoadFn(
 		tagIds: readonly string[],
 	): Promise<(ITag | Error)[]> {
 		this.Logger.warn(
@@ -78,10 +78,10 @@ export class TagLoader implements ILazyModuleRefService {
    * @param tagId ITag ID to load
    * @returns Promise resolving to tag or undefined
    */
-	public async load(tagId: string): Promise<ITag | undefined> {
-		const loader = this.getLoader();
+	public async Load(tagId: string): Promise<ITag | undefined> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.load(tagId);
+			return await Loader.load(tagId);
 		} catch (error) {
 			this.Logger.error(`Failed to load tag ${tagId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
@@ -93,10 +93,10 @@ export class TagLoader implements ILazyModuleRefService {
    * @param tagIds Array of tag IDs to load
    * @returns Promise resolving to array of tags
    */
-	public async loadMany(tagIds: string[]): Promise<(ITag | Error)[]> {
-		const loader = this.getLoader();
+	public async LoadMany(tagIds: string[]): Promise<(ITag | Error)[]> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.loadMany(tagIds);
+			return await Loader.loadMany(tagIds);
 		} catch (error) {
 			this.Logger.error(`Failed to load tags ${tagIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return tagIds.map(() => error as Error);
@@ -107,16 +107,16 @@ export class TagLoader implements ILazyModuleRefService {
    * Clears the cache for a specific tag
    * @param tagId ITag ID to clear from cache
    */
-	public clear(tagId: string): void {
-		const loader = this.getLoader();
-		loader.clear(tagId);
+	public Clear(tagId: string): void {
+		const Loader = this.GetLoader();
+		Loader.clear(tagId);
 		this.Logger.debug(`Cleared cache for tag ${tagId}`);
 	}
 
 	/**
    * Clears all cached tags
    */
-	public clearAll(): void {
-		this.DataLoaderRegistry.clearCache('tag-loader');
+	public ClearAll(): void {
+		this.DataLoaderRegistry.ClearCache('tag-loader');
 	}
 }

@@ -76,7 +76,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 	public get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._ContextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
+			this._ContextualLogger = baseLogger.CreateContextualLogger(ErrorCategorizerService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -84,15 +84,15 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 	/**
 	 * Check if an error is retryable
 	 */
-	public isRetryable(error: unknown): boolean {
-		const category = this.categorizeError(error);
+	public IsRetryable(error: unknown): boolean {
+		const category = this.CategorizeError(error);
 		return category.retryable;
 	}
 
 	/**
 	 * Categorize an error and determine recovery strategy
 	 */
-	public categorizeError(error: unknown): IErrorCategory {
+	public CategorizeError(error: unknown): IErrorCategory {
 		const err = error as Record<string, any>;
 		const errorMessage = err?.message ?? String(error);
 		const errorCode = err?.code ?? err?.status;
@@ -100,7 +100,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 		// Node.js network error codes are always transient (checked first before pattern matching)
 		const NODE_TRANSIENT_CODES = new Set(['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN']);
 		if (error && NODE_TRANSIENT_CODES.has((error as { code?: string }).code ?? '')) {
-			this.Logger.debug('Categorized as transient network error (Node.js error code)', {
+			this.Logger.Debug('Categorized as transient network error (Node.js error code)', {
 				error: errorMessage,
 				code: errorCode,
 				category: 'transient',
@@ -116,7 +116,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Database connection errors (transient) - check before timeout since "timeout" may be in message
 		if (this.isDatabaseError(error)) {
-			this.Logger.debug('Categorized as transient database error', {
+			this.Logger.Debug('Categorized as transient database error', {
 				error: errorMessage,
 				category: 'transient',
 				strategy: 'backoff',
@@ -131,7 +131,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Timeout errors (transient) - check before generic network errors since ETIMEDOUT is in networkCodes
 		if (this.isTimeoutError(error)) {
-			this.Logger.debug('Categorized as transient timeout error', {
+			this.Logger.Debug('Categorized as transient timeout error', {
 				error: errorMessage,
 				category: 'transient',
 				strategy: 'backoff',
@@ -146,7 +146,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Network errors (transient)
 		if (this.isNetworkError(error)) {
-			this.Logger.debug('Categorized as transient network error', {
+			this.Logger.Debug('Categorized as transient network error', {
 				error: errorMessage,
 				category: 'transient',
 				strategy: 'retry',
@@ -161,7 +161,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Server errors (transient) - 502, 503, 504
 		if (this.isServerError(error)) {
-			this.Logger.debug('Categorized as transient server error', {
+			this.Logger.Debug('Categorized as transient server error', {
 				error: errorMessage,
 				status: errorCode,
 				category: 'transient',
@@ -177,7 +177,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Rate limit errors (transient) - 429
 		if (this.isRateLimitError(error)) {
-			this.Logger.debug('Categorized as transient rate limit error', {
+			this.Logger.Debug('Categorized as transient rate limit error', {
 				error: errorMessage,
 				category: 'transient',
 				strategy: 'backoff',
@@ -192,7 +192,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Bad request errors (permanent) - 400, 422
 		if (this.isBadRequestError(error)) {
-			this.Logger.debug('Categorized as permanent bad request error', {
+			this.Logger.Debug('Categorized as permanent bad request error', {
 				error: errorMessage,
 				category: 'permanent',
 				strategy: 'fail',
@@ -206,7 +206,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Validation errors (permanent)
 		if (this.isValidationError(error)) {
-			this.Logger.debug('Categorized as permanent validation error', {
+			this.Logger.Debug('Categorized as permanent validation error', {
 				error: errorMessage,
 				category: 'permanent',
 				strategy: 'fail',
@@ -220,7 +220,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Authentication errors (permanent) - 401
 		if (this.isAuthError(error)) {
-			this.Logger.debug('Categorized as permanent authentication error', {
+			this.Logger.Debug('Categorized as permanent authentication error', {
 				error: errorMessage,
 				category: 'permanent',
 				strategy: 'fail',
@@ -234,7 +234,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Authorization errors (permanent) - 403
 		if (this.isAuthzError(error)) {
-			this.Logger.debug('Categorized as permanent authorization error', {
+			this.Logger.Debug('Categorized as permanent authorization error', {
 				error: errorMessage,
 				category: 'permanent',
 				strategy: 'fail',
@@ -248,7 +248,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 
 		// Not found errors (permanent) - 404
 		if (this.isNotFoundError(error)) {
-			this.Logger.debug('Categorized as permanent not found error', {
+			this.Logger.Debug('Categorized as permanent not found error', {
 				error: errorMessage,
 				category: 'permanent',
 				strategy: 'fail',
@@ -278,8 +278,8 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 	/**
 	 * Log error recovery attempt
 	 */
-	public logRecoveryAttempt(error: unknown, attempt: number, maxAttempts: number): void {
-		const category = this.categorizeError(error);
+	public LogRecoveryAttempt(error: unknown, attempt: number, maxAttempts: number): void {
+		const category = this.CategorizeError(error);
 		this.Logger.info('Error recovery attempt', {
 			attempt,
 			maxAttempts,
@@ -293,7 +293,7 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 	/**
 	 * Log successful recovery
 	 */
-	public logRecoverySuccess(error: unknown, attempts: number): void {
+	public LogRecoverySuccess(error: unknown, attempts: number): void {
 		this.Logger.info('Error recovery successful', {
 			attempts,
 			error: (error as Record<string, any>)?.message ?? String(error),
@@ -303,9 +303,9 @@ export class ErrorCategorizerService implements ILazyModuleRefService {
 	/**
 	 * Log failed recovery
 	 */
-	public logRecoveryFailed(error: unknown, attempts: number): void {
+	public LogRecoveryFailed(error: unknown, attempts: number): void {
 		const err = error as Record<string, any>;
-		const category = this.categorizeError(error);
+		const category = this.CategorizeError(error);
 		this.Logger.error('Error recovery failed', undefined, undefined, {
 			attempts,
 			errorType: category.type,

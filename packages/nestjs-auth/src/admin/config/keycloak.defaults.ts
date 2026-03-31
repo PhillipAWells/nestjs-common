@@ -30,8 +30,8 @@ export const KeycloakAdminDefaults: IKeycloakAdminConfig = {
 	},
 };
 
-export function validateKeycloakAdminConfig(config: IKeycloakAdminConfig): void {
-	const schema = Joi.object({
+export function ValidateKeycloakAdminConfig(config: IKeycloakAdminConfig): void {
+	const Schema = Joi.object({
 		enabled: Joi.boolean().required(),
 		baseUrl: Joi.string()
 			.uri({ scheme: ['http', 'https'] })
@@ -61,7 +61,7 @@ export function validateKeycloakAdminConfig(config: IKeycloakAdminConfig): void 
 			.optional(),
 	});
 
-	const { error } = schema.validate(config);
+	const { error } = Schema.validate(config);
 	if (error) {
 		throw new Error(`Keycloak configuration validation failed: ${error.details.map((d) => d.message).join(', ')}`);
 	}

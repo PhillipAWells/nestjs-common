@@ -45,17 +45,17 @@ export const DEFAULT_CONTEXT_OPTIONS: IContextOptions = {
 export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | 'websocket' {
 	// Use the context type reported by NestJS rather than try/catch,
 	// because GqlExecutionContext.create() never throws - it always wraps the context.
-	const contextType = ctx.getType<string>();
+	const ContextType = ctx.getType<string>();
 
-	if (contextType === 'graphql') {
+	if (ContextType === 'graphql') {
 		return 'graphql';
 	}
 
-	if (contextType === 'ws') {
+	if (ContextType === 'ws') {
 		return 'websocket';
 	}
 
-	if (contextType === 'http') {
+	if (ContextType === 'http') {
 		return 'http';
 	}
 
@@ -63,9 +63,9 @@ export function DetectContextType(ctx: ExecutionContext): 'http' | 'graphql' | '
 	// but some setups may use 'http' with a GraphQL layer on top.
 	// Fall back to checking if GqlExecutionContext can extract GraphQL args.
 	try {
-		const gqlCtx = GqlExecutionContext.create(ctx);
-		const info = gqlCtx.getInfo();
-		if (info?.fieldName) {
+		const GqlCtx = GqlExecutionContext.create(ctx);
+		const Info = GqlCtx.getInfo();
+		if (Info?.fieldName) {
 			return 'graphql';
 		}
 	} catch {
@@ -95,44 +95,44 @@ export function ExtractRequestFromContext(
 	ctx: ExecutionContext,
 	options: IContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): any {
-	const contextType = options.autoDetect
+	const ContextType = options.autoDetect
 		? DetectContextType(ctx)
 		: options.contextType;
 
-	if (!contextType) {
+	if (!ContextType) {
 		throw new Error('Context type must be specified when autoDetect is false');
 	}
 
-	switch (contextType) {
+	switch (ContextType) {
 		case 'http':
 			return ctx.switchToHttp().getRequest();
 
 		case 'graphql': {
-			const gqlCtx = GqlExecutionContext.create(ctx);
-			return gqlCtx.getContext().req;
+			const GqlCtx = GqlExecutionContext.create(ctx);
+			return GqlCtx.getContext().req;
 		}
 
 		case 'websocket': {
-			const wsCtx = ctx.switchToWs();
-			const client = wsCtx.getClient();
+			const WsCtx = ctx.switchToWs();
+			const Client = WsCtx.getClient();
 
 			// Socket.IO provides handshake data with headers; raw WebSockets use upgradeReq
 			// Attempt to return an object with headers for header-based auth extraction
-			if (client?.handshake) {
+			if (Client?.handshake) {
 				// Socket.IO client — has handshake with headers
-				return { headers: client.handshake.headers, ...client };
+				return { headers: Client.handshake.headers, ...Client };
 			}
-			if (client?.upgradeReq?.headers) {
+			if (Client?.upgradeReq?.headers) {
 				// Raw WS — has upgradeReq with headers
-				return { headers: client.upgradeReq.headers, ...client };
+				return { headers: Client.upgradeReq.headers, ...Client };
 			}
 
 			// Fallback to raw client if no headers available
-			return client;
+			return Client;
 		}
 
 		default:
-			throw new Error(`Unsupported context type: ${contextType}`);
+			throw new Error(`Unsupported context type: ${ContextType}`);
 	}
 }
 
@@ -160,27 +160,27 @@ export function ExtractUserFromContext(
 	ctx: ExecutionContext,
 	options: IContextOptions & { property?: string } = DEFAULT_CONTEXT_OPTIONS,
 ): any {
-	const request = ExtractRequestFromContext(ctx, options);
+	const Request = ExtractRequestFromContext(ctx, options);
 
-	if (!request) {
+	if (!Request) {
 		return undefined;
 	}
 
-	let { user } = request;
+	let { user: User } = Request;
 
-	if (options.property && user) {
+	if (options.property && User) {
 		// Extract nested property using dot notation
-		const keys = options.property.split('.');
-		for (const key of keys) {
-			if (user && typeof user === 'object') {
-				user = user[key];
+		const Keys = options.property.split('.');
+		for (const Key of Keys) {
+			if (User && typeof User === 'object') {
+				User = User[Key];
 			} else {
 				return undefined;
 			}
 		}
 	}
 
-	return user;
+	return User;
 }
 
 /**
@@ -202,22 +202,22 @@ export function ExtractAuthTokenFromContext(
 	ctx: ExecutionContext,
 	options: IContextOptions = DEFAULT_CONTEXT_OPTIONS,
 ): string | undefined {
-	const request = ExtractRequestFromContext(ctx, options);
+	const Request = ExtractRequestFromContext(ctx, options);
 
-	if (!request) {
+	if (!Request) {
 		return undefined;
 	}
 
 	// Try different common header variations
-	const authHeader =
-		request.headers?.authorization ??
-		request.headers?.Authorization ??
-		request.headers?.['authorization'] ??
-		request.headers?.['Authorization'];
+	const AuthHeader =
+		Request.headers?.authorization ??
+		Request.headers?.Authorization ??
+		Request.headers?.['authorization'] ??
+		Request.headers?.['Authorization'];
 
-	if (typeof authHeader === 'string') {
+	if (typeof AuthHeader === 'string') {
 		// Remove 'Bearer ' prefix if present
-		return authHeader.replace(/^Bearer\s+/i, '');
+		return AuthHeader.replace(/^Bearer\s+/i, '');
 	}
 
 	return undefined;
@@ -225,8 +225,5 @@ export function ExtractAuthTokenFromContext(
 
 /**
  * Backwards compatibility aliases - exported functions use PascalCase per project conventions
+ * Note: PascalCase versions are exported directly above
  */
-export const detectContextType = DetectContextType;
-export const extractAuthTokenFromContext = ExtractAuthTokenFromContext;
-export const extractRequestFromContext = ExtractRequestFromContext;
-export const extractUserFromContext = ExtractUserFromContext;

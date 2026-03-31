@@ -56,11 +56,11 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 		this.ModuleRef = moduleRef;
 	}
 
-	private get pyroscopeService(): PyroscopeService {
+	private get PyroscopeService(): PyroscopeService {
 		return this.ModuleRef.get(PyroscopeService, { strict: false });
 	}
 
-	private get config(): IPyroscopeConfig {
+	private get Config(): IPyroscopeConfig {
 		return this.ModuleRef.get(PYROSCOPE_CONFIG_TOKEN, { strict: false });
 	}
 
@@ -76,29 +76,29 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 	 * // Returns { profiling: { status: 'up', initialized: true, activeProfiles: 42 } }
 	 * ```
 	 */
-	public check(key: string): HealthIndicatorResult {
-		const health = this.pyroscopeService.getHealth();
+	public Check(key: string): HealthIndicatorResult {
+		const Health = this.PyroscopeService.GetHealth();
 
-		if (!health.details.initialized && this.pyroscopeService.isEnabled()) {
+		if (!Health.details.initialized && this.PyroscopeService.IsEnabled()) {
 			return this.getStatus(key, false, {
 				message: 'Pyroscope profiling is enabled but not initialized',
-				enabled: health.details.enabled,
-				initialized: health.details.initialized,
+				enabled: Health.details.enabled,
+				initialized: Health.details.initialized,
 			});
 		}
 
-		if ((health.details.activeProfiles ?? 0) > (this.config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
+		if ((Health.details.activeProfiles ?? 0) > (this.Config.degradedActiveProfilesThreshold ?? PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD)) {
 			return this.getStatus(key, false, {
 				message: 'Too many active profiles, service may be degraded',
-				activeProfiles: health.details.activeProfiles,
-				totalMetrics: health.details.totalMetrics,
+				activeProfiles: Health.details.activeProfiles,
+				totalMetrics: Health.details.totalMetrics,
 			});
 		}
 
 		return this.getStatus(key, true, {
-			initialized: health.details.initialized,
-			activeProfiles: health.details.activeProfiles,
-			totalMetrics: health.details.totalMetrics,
+			initialized: Health.details.initialized,
+			activeProfiles: Health.details.activeProfiles,
+			totalMetrics: Health.details.totalMetrics,
 		});
 	}
 }

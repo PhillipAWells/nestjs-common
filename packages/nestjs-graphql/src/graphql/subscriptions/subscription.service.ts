@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage, getErrorStack } from '@pawells/nestjs-shared/common';
 
 /**
@@ -15,11 +15,11 @@ export class SubscriptionService implements OnModuleDestroy, ILazyModuleRefServi
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(SubscriptionService.name);
 	}
 
-	private get pubSub(): any | undefined {
+	private get PubSub(): any | undefined {
 		try {
 			return this.Module.get('GRAPHQL_PUBSUB', { strict: false });
 		} catch {
@@ -37,17 +37,17 @@ export class SubscriptionService implements OnModuleDestroy, ILazyModuleRefServi
 	 * @param data Data to publish
 	 * @throws Error if publish fails
 	 */
-	public async publish(topic: string, data: any): Promise<void> {
+	public async Publish(topic: string, data: any): Promise<void> {
 		try {
 			// Validate topic format: must contain only word characters, dots, hyphens, and underscores
 			if (!/^[\w.-]+$/.test(topic)) {
 				throw new Error('Invalid topic format');
 			}
 			this.Logger.debug(`Publishing to topic: ${topic}`);
-			if (!this.pubSub) {
+			if (!this.PubSub) {
 				throw new Error('PubSub instance not configured');
 			}
-			await this.pubSub.publish(topic, data);
+			await this.PubSub.publish(topic, data);
 		} catch (error) {
 			this.Logger.error(
 				`Failed to publish to topic ${topic}: ${getErrorMessage(error)}`,
@@ -63,22 +63,22 @@ export class SubscriptionService implements OnModuleDestroy, ILazyModuleRefServi
 	 * @returns AsyncIterable for the topic
 	 * @throws Error if subscribe fails
 	 */
-	public subscribe(topic: string): AsyncIterable<unknown> {
+	public Subscribe(topic: string): AsyncIterable<unknown> {
 		try {
 			this.Logger.debug(`Subscribing to topic: ${topic}`);
-			if (!this.pubSub) {
+			if (!this.PubSub) {
 				throw new Error('PubSub instance not configured');
 			}
-			const iterator = this.pubSub.asyncIterator(topic);
+			const Iterator = this.PubSub.asyncIterator(topic);
 			// Ensure the returned object implements Symbol.asyncIterator
-			if (!iterator[Symbol.asyncIterator]) {
+			if (!Iterator[Symbol.asyncIterator]) {
 				return {
 					[Symbol.asyncIterator](): AsyncIterator<unknown> {
-						return iterator;
+						return Iterator;
 					},
 				};
 			}
-			return iterator;
+			return Iterator;
 		} catch (error) {
 			this.Logger.error(
 				`Failed to subscribe to topic ${topic}: ${getErrorMessage(error)}`,

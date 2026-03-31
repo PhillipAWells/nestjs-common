@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
@@ -53,7 +53,7 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 		misses: 0,
 	};
 
-	private readonly Logger: AppLogger;
+	private readonly Logger: IContextualLogger;
 
 	public get CacheManager(): Cache {
 		return this.Module.get<Cache>(CACHE_MANAGER, { strict: false });
@@ -76,24 +76,24 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param context - Optional context data (user ID, etc.)
 	 * @returns string - Generated cache key
 	 */
-	public generateKey(operation: string, args: Record<string, any> = {}, context?: Record<string, any>): string {
-		const keyParts = [`graphql:${operation}`];
+	public GenerateKey(operation: string, args: Record<string, any> = {}, context?: Record<string, any>): string {
+		const KeyParts = [`graphql:${operation}`];
 
 		// Add sorted argument keys and values
-		const sortedArgs = Object.keys(args).sort();
-		for (const arg of sortedArgs) {
-			keyParts.push(`${arg}:${JSON.stringify(args[arg])}`);
+		const SortedArgs = Object.keys(args).sort();
+		for (const Arg of SortedArgs) {
+			KeyParts.push(`${Arg}:${JSON.stringify(args[Arg])}`);
 		}
 
 		// Add context if provided
 		if (context) {
-			const sortedContext = Object.keys(context).sort();
-			for (const ctx of sortedContext) {
-				keyParts.push(`${ctx}:${JSON.stringify(context[ctx])}`);
+			const SortedContext = Object.keys(context).sort();
+			for (const Ctx of SortedContext) {
+				KeyParts.push(`${Ctx}:${JSON.stringify(context[Ctx])}`);
 			}
 		}
 
-		return keyParts.join('|');
+		return KeyParts.join('|');
 	}
 
 	/**
@@ -104,11 +104,11 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param ttl - Time to live in milliseconds (optional, defaults to 5 minutes)
 	 * @returns Promise<void>
 	 */
-	public async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+	public async Set<T>(key: string, value: T, ttl?: number): Promise<void> {
 		try {
-			const cacheTtl = ttl ?? DEFAULT_CACHE_TTL;
-			await this.CacheManager.set(key, value, cacheTtl);
-			this.Logger.debug(`Cached value for key: ${key} (TTL: ${cacheTtl}ms)`);
+			const CacheTtl = ttl ?? DEFAULT_CACHE_TTL;
+			await this.CacheManager.set(key, value, CacheTtl);
+			this.Logger.debug(`Cached value for key: ${key} (TTL: ${CacheTtl}ms)`);
 		} catch (error) {
 			this.Logger.error(`Failed to cache value for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
@@ -121,13 +121,13 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param key - Cache key
 	 * @returns Promise<T | undefined> - Cached value or undefined
 	 */
-	public async get<T>(key: string): Promise<T | undefined> {
+	public async Get<T>(key: string): Promise<T | undefined> {
 		try {
-			const value = await this.CacheManager.get<T>(key);
-			if (value !== null && value !== undefined) {
+			const Value = await this.CacheManager.get<T>(key);
+			if (Value !== null && Value !== undefined) {
 				this.CacheStats.hits++;
-				this.Logger.debug(`Cache hit for key: ${key} (Hit rate: ${this.getHitRate().toFixed(2)}%)`);
-				return value;
+				this.Logger.debug(`Cache hit for key: ${key} (Hit rate: ${this.GetHitRate().toFixed(2)}%)`);
+				return Value;
 			}
 			this.CacheStats.misses++;
 			this.Logger.debug(`Cache miss for key: ${key}`);
@@ -147,16 +147,16 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param ttl - Time to live in milliseconds (optional)
 	 * @returns Promise<T> - Cached or computed value
 	 */
-	public async getOrSet<T>(key: string, loader: () => Promise<T>, ttl?: number): Promise<T> {
+	public async GetOrSet<T>(key: string, loader: () => Promise<T>, ttl?: number): Promise<T> {
 		try {
-			const cached = await this.get<T>(key);
-			if (cached !== undefined) {
-				return cached;
+			const Cached = await this.Get<T>(key);
+			if (Cached !== undefined) {
+				return Cached;
 			}
 
-			const value = await loader();
-			await this.set(key, value, ttl);
-			return value;
+			const Value = await loader();
+			await this.Set(key, Value, ttl);
+			return Value;
 		} catch (error) {
 			this.Logger.error(`Failed in getOrSet for key ${key}: ${getErrorMessage(error)}`);
 			throw error;
@@ -169,7 +169,7 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param key - Cache key
 	 * @returns Promise<void>
 	 */
-	public async delete(key: string): Promise<void> {
+	public async Delete(key: string): Promise<void> {
 		try {
 			await this.CacheManager.del(key);
 			this.Logger.debug(`Deleted cache entry for key: ${key}`);
@@ -184,7 +184,7 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 *
 	 * @returns Promise<void>
 	 */
-	public async clear(): Promise<void> {
+	public async Clear(): Promise<void> {
 		try {
 			if (typeof (this.CacheManager as any).clear === 'function') {
 				await (this.CacheManager as any).clear();
@@ -207,32 +207,32 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * @param pattern - Pattern to match (e.g., 'graphql:user|id:*')
 	 * @returns Promise<void>
 	 */
-	public async invalidatePattern(pattern: string): Promise<void> {
+	public async InvalidatePattern(pattern: string): Promise<void> {
 		try {
-			const cacheManager = this.CacheManager as any;
+			const CacheManager = this.CacheManager as any;
 			// Check if store is Redis-like with scan capabilities
-			if (cacheManager?.store?.getClient && typeof cacheManager.store.getClient === 'function') {
-				const client = cacheManager.store.getClient();
-				if (client && typeof client.scan === 'function') {
+			if (CacheManager?.store?.getClient && typeof CacheManager.store.getClient === 'function') {
+				const Client = CacheManager.store.getClient();
+				if (Client && typeof Client.scan === 'function') {
 					// Use Redis SCAN to find and delete matching keys
 					const REDIS_SCAN_COUNT = 100;
-					let cursor = '0';
-					let totalDeleted = 0;
+					let Cursor = '0';
+					let TotalDeleted = 0;
 					do {
-						const [nextCursor, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', REDIS_SCAN_COUNT) as [string, string[]];
-						cursor = nextCursor;
-						if (keys.length > 0) {
-							await client.del(...keys);
-							totalDeleted += keys.length;
+						const [NextCursor, Keys] = await Client.scan(Cursor, 'MATCH', pattern, 'COUNT', REDIS_SCAN_COUNT) as [string, string[]];
+						Cursor = NextCursor;
+						if (Keys.length > 0) {
+							await Client.del(...Keys);
+							TotalDeleted += Keys.length;
 						}
-					} while (cursor !== '0');
-					this.Logger.debug(`Invalidated ${totalDeleted} cache entries matching pattern: ${pattern}`);
+					} while (Cursor !== '0');
+					this.Logger.debug(`Invalidated ${TotalDeleted} cache entries matching pattern: ${pattern}`);
 					return;
 				}
 			}
 			// Fallback: try store-specific methods
-			if (typeof (cacheManager as any).reset === 'function') {
-				await (cacheManager as any).reset();
+			if (typeof (CacheManager as any).reset === 'function') {
+				await (CacheManager as any).reset();
 				this.Logger.warn(`Pattern invalidation for '${pattern}' fell back to clearing entire cache`);
 				return;
 			}
@@ -245,7 +245,7 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	/**
 	 * Resets cache statistics (hits and misses)
 	 */
-	public resetStats(): void {
+	public ResetStats(): void {
 		this.CacheStats.hits = 0;
 		this.CacheStats.misses = 0;
 		this.Logger.debug('Cache statistics reset');
@@ -255,10 +255,10 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 * Calculates cache hit rate
 	 * @returns Hit rate as percentage (0-100)
 	 */
-	private getHitRate(): number {
-		const total = this.CacheStats.hits + this.CacheStats.misses;
-		if (total === 0) return 0;
-		return (this.CacheStats.hits / total) * HIT_RATE_PERCENTAGE;
+	private GetHitRate(): number {
+		const Total = this.CacheStats.hits + this.CacheStats.misses;
+		if (Total === 0) return 0;
+		return (this.CacheStats.hits / Total) * HIT_RATE_PERCENTAGE;
 	}
 
 	/**
@@ -266,11 +266,11 @@ export class GraphQLCacheService implements ILazyModuleRefService {
 	 *
 	 * @returns Object with cache statistics including hit rate
 	 */
-	public getStats(): ICacheStats {
+	public GetStats(): ICacheStats {
 		return {
 			hits: this.CacheStats.hits,
 			misses: this.CacheStats.misses,
-			hitRate: this.getHitRate(),
+			hitRate: this.GetHitRate(),
 			size: 0, // Redis would provide this
 			store: 'CacheManager',
 		};

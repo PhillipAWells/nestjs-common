@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 
@@ -25,7 +25,7 @@ export class CommentLoader implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(CommentLoader.name);
 	}
 
@@ -42,12 +42,12 @@ export class CommentLoader implements ILazyModuleRefService {
    * @param batchLoadFn Custom batch loading function (optional)
    * @returns DataLoader for comments
    */
-	public getLoader(
+	public GetLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(IComment | Error)[]>,
 	): DataLoader<string, IComment> {
-		return this.DataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.CreateWithCache(
 			'comment-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
+			batchLoadFn ?? this.DefaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -58,7 +58,7 @@ export class CommentLoader implements ILazyModuleRefService {
    * @returns Promise resolving to array of comments or errors
    */
 	// eslint-disable-next-line require-await
-	private async defaultBatchLoadFn(
+	private async DefaultBatchLoadFn(
 		commentIds: readonly string[],
 	): Promise<(IComment | Error)[]> {
 		this.Logger.warn(
@@ -78,10 +78,10 @@ export class CommentLoader implements ILazyModuleRefService {
    * @param commentId IComment ID to load
    * @returns Promise resolving to comment or undefined
    */
-	public async load(commentId: string): Promise<IComment | undefined> {
-		const loader = this.getLoader();
+	public async Load(commentId: string): Promise<IComment | undefined> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.load(commentId);
+			return await Loader.load(commentId);
 		} catch (error) {
 			this.Logger.error(`Failed to load comment ${commentId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
@@ -93,10 +93,10 @@ export class CommentLoader implements ILazyModuleRefService {
    * @param commentIds Array of comment IDs to load
    * @returns Promise resolving to array of comments
    */
-	public async loadMany(commentIds: string[]): Promise<(IComment | Error)[]> {
-		const loader = this.getLoader();
+	public async LoadMany(commentIds: string[]): Promise<(IComment | Error)[]> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.loadMany(commentIds);
+			return await Loader.loadMany(commentIds);
 		} catch (error) {
 			this.Logger.error(`Failed to load comments ${commentIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return commentIds.map(() => error as Error);
@@ -107,16 +107,16 @@ export class CommentLoader implements ILazyModuleRefService {
    * Clears the cache for a specific comment
    * @param commentId IComment ID to clear from cache
    */
-	public clear(commentId: string): void {
-		const loader = this.getLoader();
-		loader.clear(commentId);
+	public Clear(commentId: string): void {
+		const Loader = this.GetLoader();
+		Loader.clear(commentId);
 		this.Logger.debug(`Cleared cache for comment ${commentId}`);
 	}
 
 	/**
    * Clears all cached comments
    */
-	public clearAll(): void {
-		this.DataLoaderRegistry.clearCache('comment-loader');
+	public ClearAll(): void {
+		this.DataLoaderRegistry.ClearCache('comment-loader');
 	}
 }

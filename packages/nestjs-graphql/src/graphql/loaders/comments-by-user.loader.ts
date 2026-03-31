@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { DataLoaderRegistry } from './dataloader-registry.js';
 import { IComment } from './comment.loader.js';
@@ -18,7 +18,7 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(CommentsByUserLoader.name);
 	}
 
@@ -35,12 +35,12 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
    * @param batchLoadFn Custom batch loading function (optional)
    * @returns DataLoader for comments by user
    */
-	public getLoader(
+	public GetLoader(
 		batchLoadFn?: (keys: readonly string[]) => Promise<(IComment[] | Error)[]>,
 	): DataLoader<string, IComment[]> {
-		return this.DataLoaderRegistry.createWithCache(
+		return this.DataLoaderRegistry.CreateWithCache(
 			'comments-by-user-loader',
-			batchLoadFn ?? this.defaultBatchLoadFn.bind(this),
+			batchLoadFn ?? this.DefaultBatchLoadFn.bind(this),
 		);
 	}
 
@@ -51,7 +51,7 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
    * @returns Promise resolving to arrays of comments or errors
    */
 	// eslint-disable-next-line require-await
-	private async defaultBatchLoadFn(
+	private async DefaultBatchLoadFn(
 		userIds: readonly string[],
 	): Promise<(IComment[] | Error)[]> {
 		this.Logger.warn(
@@ -71,10 +71,10 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
    * @param userId IUser ID to load comments for
    * @returns Promise resolving to array of comments or undefined
    */
-	public async load(userId: string): Promise<IComment[] | undefined> {
-		const loader = this.getLoader();
+	public async Load(userId: string): Promise<IComment[] | undefined> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.load(userId);
+			return await Loader.load(userId);
 		} catch (error) {
 			this.Logger.error(`Failed to load comments for user ${userId}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return undefined;
@@ -86,10 +86,10 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
    * @param userIds Array of user IDs to load comments for
    * @returns Promise resolving to arrays of comments
    */
-	public async loadMany(userIds: string[]): Promise<(IComment[] | Error)[]> {
-		const loader = this.getLoader();
+	public async LoadMany(userIds: string[]): Promise<(IComment[] | Error)[]> {
+		const Loader = this.GetLoader();
 		try {
-			return await loader.loadMany(userIds);
+			return await Loader.loadMany(userIds);
 		} catch (error) {
 			this.Logger.error(`Failed to load comments for users ${userIds}${error instanceof Error ? `: ${getErrorMessage(error)}` : ''}`);
 			return userIds.map(() => error as Error);
@@ -100,16 +100,16 @@ export class CommentsByUserLoader implements ILazyModuleRefService {
    * Clears the cache for a specific user's comments
    * @param userId IUser ID to clear comments cache for
    */
-	public clear(userId: string): void {
-		const loader = this.getLoader();
-		loader.clear(userId);
+	public Clear(userId: string): void {
+		const Loader = this.GetLoader();
+		Loader.clear(userId);
 		this.Logger.debug(`Cleared cache for comments of user ${userId}`);
 	}
 
 	/**
    * Clears all cached comments by user
    */
-	public clearAll(): void {
-		this.DataLoaderRegistry.clearCache('comments-by-user-loader');
+	public ClearAll(): void {
+		this.DataLoaderRegistry.ClearCache('comments-by-user-loader');
 	}
 }

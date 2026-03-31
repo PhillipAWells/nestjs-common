@@ -74,7 +74,7 @@ export class HealthCheckService implements ILazyModuleRefService {
 	private get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger);
-			this._ContextualLogger = baseLogger.createContextualLogger(HealthCheckService.name);
+			this._ContextualLogger = baseLogger.CreateContextualLogger(HealthCheckService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -86,8 +86,8 @@ export class HealthCheckService implements ILazyModuleRefService {
 	 * @param version - Optional version string
 	 * @returns Health check response
 	 */
-	public getHealth(serviceName?: string, version?: string): IHealthCheck {
-		this.Logger.debug('Health check requested');
+	public GetHealth(serviceName?: string, version?: string): IHealthCheck {
+		this.Logger.Debug('Health check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.OK,
@@ -102,7 +102,7 @@ export class HealthCheckService implements ILazyModuleRefService {
 			response.version = version;
 		}
 
-		this.Logger.debug(`Health check response: ${JSON.stringify(response)}`);
+		this.Logger.Debug(`Health check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 
@@ -112,8 +112,8 @@ export class HealthCheckService implements ILazyModuleRefService {
 	 * @param checks - Optional custom health checks (e.g., database, cache status)
 	 * @returns Readiness check response
 	 */
-	public getReadiness(checks?: Record<string, string>): IHealthCheck {
-		this.Logger.debug('Readiness check requested');
+	public GetReadiness(checks?: Record<string, string>): IHealthCheck {
+		this.Logger.Debug('Readiness check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.READY,
@@ -121,7 +121,7 @@ export class HealthCheckService implements ILazyModuleRefService {
 			checks: checks ?? {},
 		};
 
-		this.Logger.debug(`Readiness check response: ${JSON.stringify(response)}`);
+		this.Logger.Debug(`Readiness check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 
@@ -130,15 +130,15 @@ export class HealthCheckService implements ILazyModuleRefService {
 	 * Used for Kubernetes liveness probes to determine if service is alive
 	 * @returns Liveness check response
 	 */
-	public getLiveness(): IHealthCheck {
-		this.Logger.debug('Liveness check requested');
+	public GetLiveness(): IHealthCheck {
+		this.Logger.Debug('Liveness check requested');
 
 		const response: IHealthCheck = {
 			status: HealthStatus.ALIVE,
 			timestamp: new Date().toISOString(),
 		};
 
-		this.Logger.debug(`Liveness check response: ${JSON.stringify(response)}`);
+		this.Logger.Debug(`Liveness check response: ${JSON.stringify(response)}`);
 		return response;
 	}
 }

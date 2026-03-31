@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
-import { getErrorMessage } from '../utils/error.utils.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Exposes Prometheus metrics at GET /metrics.
@@ -35,12 +35,12 @@ export class MetricsController {
 	@Get('metrics')
 	@Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
 	@Header('X-Robots-ITag', 'noindex, nofollow')
-	public async getMetrics(@Res() response: Response): Promise<void> {
+	public async GetMetrics(@Res() response: Response): Promise<void> {
 		try {
-			const metrics = await this.MetricsService.getMetrics();
-			response.send(metrics);
+			const Metrics = await this.MetricsService.GetMetrics();
+			response.send(Metrics);
 		} catch (error) {
-			this.Logger.error('Failed to collect metrics', getErrorMessage(error));
+			this.Logger.error('Failed to collect metrics', GetErrorMessage(error));
 			// Return empty metrics on error to avoid breaking scrapers
 			response.status(HTTP_STATUS_INTERNAL_SERVER_ERROR).send('# Error collecting metrics\n');
 		}

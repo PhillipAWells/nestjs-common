@@ -24,20 +24,20 @@ export class KeycloakHealthIndicator extends HealthIndicator implements ILazyMod
 		this.Module = module;
 	}
 
-	public check(key: string): HealthIndicatorResult {
+	public Check(key: string): HealthIndicatorResult {
 		if (!this.Config.enabled) {
 			return this.getStatus(key, true, { enabled: false });
 		}
 
 		try {
-			const isAuthenticated = this.KeycloakAdminService.isAuthenticated();
-			const client = this.KeycloakAdminService.getClient();
+			const IsAuthenticated = this.KeycloakAdminService.IsAuthenticated();
+			const Client = this.KeycloakAdminService.GetClient();
 
-			return this.getStatus(key, isAuthenticated, {
-				authenticated: isAuthenticated,
+			return this.getStatus(key, IsAuthenticated, {
+				authenticated: IsAuthenticated,
 				baseUrl: this.Config.baseUrl,
 				realm: this.Config.realmName,
-				initialized: client !== null,
+				initialized: Client !== null,
 			});
 		} catch (error) {
 			return this.getStatus(key, false, {

@@ -40,7 +40,7 @@ describe('GraphQLWebSocketServer', () => {
 	describe('initialize', () => {
 		it('should initialize without errors when config is valid', async () => {
 			const config = { path: '/graphql', keepalive: 12000, maxPayloadSize: 102400, connectionTimeout: 60000 };
-			await expect(server.initialize(config)).resolves.toBeUndefined();
+			await expect(server.Initialize(config)).resolves.toBeUndefined();
 		});
 
 		it('should warn when HttpAdapterHost is unavailable', async () => {
@@ -55,7 +55,7 @@ describe('GraphQLWebSocketServer', () => {
 			const brokenServer = new (server.constructor as any)(brokenModuleRef);
 			const brokenLoggerSpy = vi.spyOn(brokenServer['Logger'], 'warn');
 
-			await brokenServer.initialize(config);
+			await brokenServer.Initialize(config);
 
 			expect(brokenLoggerSpy).toHaveBeenCalledWith(expect.stringContaining('HttpAdapterHost unavailable'));
 		});
@@ -71,7 +71,7 @@ describe('GraphQLWebSocketServer', () => {
 		it('should store configuration for auto-initialization', async () => {
 			const config = { path: '/graphql', keepalive: 12000, maxPayloadSize: 102400, connectionTimeout: 60000 };
 			server.configure(config);
-			const initSpy = vi.spyOn(server, 'initialize').mockResolvedValue(undefined);
+			const initSpy = vi.spyOn(server, 'Initialize').mockResolvedValue(undefined);
 			await server.onApplicationBootstrap();
 			expect(initSpy).toHaveBeenCalledWith(config);
 		});
@@ -79,7 +79,7 @@ describe('GraphQLWebSocketServer', () => {
 
 	describe('onApplicationBootstrap', () => {
 		it('should skip initialization when no config is set', async () => {
-			const initSpy = vi.spyOn(server, 'initialize');
+			const initSpy = vi.spyOn(server, 'Initialize');
 			await server.onApplicationBootstrap();
 			expect(initSpy).not.toHaveBeenCalled();
 		});

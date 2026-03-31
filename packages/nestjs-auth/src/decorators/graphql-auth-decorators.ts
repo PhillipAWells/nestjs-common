@@ -136,8 +136,8 @@ export const GraphQLAuthToken = (): ParameterDecorator => AuthToken({ contextTyp
  */
 export const GraphQLContextParam = (): ParameterDecorator => createParamDecorator(
 	(_data: unknown, ctx: ExecutionContext) => {
-		const gqlCtx = GqlExecutionContext.create(ctx);
-		return gqlCtx.getContext();
+		const GqlCtx = GqlExecutionContext.create(ctx);
+		return GqlCtx.getContext();
 	},
 )();
 

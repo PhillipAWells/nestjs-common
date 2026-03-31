@@ -30,17 +30,17 @@ export class BsonResponseInterceptor implements NestInterceptor, ILazyModuleRefS
 	 */
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		// Get HTTP context
-		const ctx = context.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const request = ctx.getRequest<any>();
+		const Ctx = context.switchToHttp();
+		const Response = Ctx.getResponse<Response>();
+		const Request = Ctx.getRequest<any>();
 
 		return next.handle().pipe(
 			switchMap((data) => {
 				// Check if client requested BSON response via Accept header
-				const acceptHeader = request.get('accept')?.toLowerCase() ?? '';
-				const acceptsBson = acceptHeader.includes('application/bson');
+				const AcceptHeader = Request.get('accept')?.toLowerCase() ?? '';
+				const AcceptsBson = AcceptHeader.includes('application/bson');
 
-				if (!acceptsBson) {
+				if (!AcceptsBson) {
 					// If not BSON request, let default JSON serialization handle it
 					return from(Promise.resolve(data));
 				}
@@ -49,11 +49,11 @@ export class BsonResponseInterceptor implements NestInterceptor, ILazyModuleRefS
 					this.BsonSerializationService.serialize(data).then(
 						(bsonBuffer) => {
 							// Set response headers
-							response.setHeader('Content-Type', 'application/bson');
-							response.setHeader('Content-Length', bsonBuffer.length);
+							Response.setHeader('Content-Type', 'application/bson');
+							Response.setHeader('Content-Length', bsonBuffer.length);
 
 							// Send BSON buffer directly
-							response.end(bsonBuffer);
+							Response.end(bsonBuffer);
 							return EMPTY;
 						},
 						(error: unknown) => {
@@ -63,10 +63,10 @@ export class BsonResponseInterceptor implements NestInterceptor, ILazyModuleRefS
 							);
 
 							// Set content type to JSON as fallback
-							response.setHeader('Content-Type', 'application/json');
+							Response.setHeader('Content-Type', 'application/json');
 
 							// Return data as JSON (will be handled by default serialization)
-							response.json(data);
+							Response.json(data);
 							return EMPTY;
 						},
 					),

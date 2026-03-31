@@ -53,8 +53,8 @@ export class KeycloakTestingModule {
 	 * @param options - Optional overrides for default stub values
 	 * @returns DynamicModule configuration
 	 */
-	public static forRoot(options: IKeycloakTestingModuleOptions = {}): DynamicModule {
-		const keycloakOptions: IKeycloakModuleOptions = {
+	public static ForRoot(options: IKeycloakTestingModuleOptions = {}): DynamicModule {
+		const KeycloakOptions: IKeycloakModuleOptions = {
 			...DEFAULT_KEYCLOAK_OPTIONS,
 			...options.keycloakOptions,
 		};
@@ -64,7 +64,7 @@ export class KeycloakTestingModule {
 			providers: [
 				{
 					provide: KEYCLOAK_MODULE_OPTIONS,
-					useValue: keycloakOptions,
+					useValue: KeycloakOptions,
 				},
 				MockKeycloakTokenValidationService,
 				{

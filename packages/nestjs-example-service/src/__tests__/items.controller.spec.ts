@@ -17,9 +17,9 @@ describe('ItemsController', () => {
 		mockDeleteItem = vi.fn();
 
 		const mockItemsService = {
-			findSimilar: mockFindSimilar,
-			upsertItem: mockUpsertItem,
-			deleteItem: mockDeleteItem,
+			FindSimilar: mockFindSimilar,
+			UpsertItem: mockUpsertItem,
+			DeleteItem: mockDeleteItem,
 		};
 
 		mockModuleRef = { get: vi.fn() };
@@ -36,7 +36,7 @@ describe('ItemsController', () => {
 			const items: IItem[] = [{ id: 'a', name: 'Alpha' }];
 			mockFindSimilar.mockResolvedValue(items);
 
-			const result = await controller.findSimilar('0.1,0.2,0.3');
+			const result = await controller.FindSimilar('0.1,0.2,0.3');
 
 			expect(mockFindSimilar).toHaveBeenCalledWith([0.1, 0.2, 0.3], 10);
 			expect(result).toStrictEqual(items);
@@ -45,7 +45,7 @@ describe('ItemsController', () => {
 		it('should use provided limit when specified', async () => {
 			mockFindSimilar.mockResolvedValue([]);
 
-			await controller.findSimilar('0.5,0.6', '3');
+			await controller.FindSimilar('0.5,0.6', '3');
 
 			expect(mockFindSimilar).toHaveBeenCalledWith([0.5, 0.6], 3);
 		});
@@ -53,7 +53,7 @@ describe('ItemsController', () => {
 		it('should default limit to 10 when not specified', async () => {
 			mockFindSimilar.mockResolvedValue([]);
 
-			await controller.findSimilar('0.1');
+			await controller.FindSimilar('0.1');
 
 			expect(mockFindSimilar).toHaveBeenCalledWith([0.1], 10);
 		});
@@ -65,7 +65,7 @@ describe('ItemsController', () => {
 			const fakeUser = { id: 'user-1', email: 'u@test.com', roles: [] };
 			mockUpsertItem.mockResolvedValue(undefined);
 
-			const result = await controller.upsertItem(body, fakeUser as any);
+			const result = await controller.UpsertItem(body, fakeUser as any);
 
 			expect(mockUpsertItem).toHaveBeenCalledWith(body);
 			expect(result).toBeUndefined();
@@ -77,7 +77,7 @@ describe('ItemsController', () => {
 			const fakeUser = { id: 'user-1', email: 'u@test.com', roles: [] };
 			mockDeleteItem.mockResolvedValue(undefined);
 
-			await controller.deleteItem('item-99', fakeUser as any);
+			await controller.DeleteItem('item-99', fakeUser as any);
 
 			expect(mockDeleteItem).toHaveBeenCalledWith('item-99');
 		});

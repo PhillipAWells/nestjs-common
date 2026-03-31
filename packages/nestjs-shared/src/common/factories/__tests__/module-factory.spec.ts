@@ -53,9 +53,9 @@ describe('Module Factory Utilities', () => {
 				exports: [],
 			};
 
-			const result = CreateGlobalModule(config);
+			const Result = CreateGlobalModule(config);
 
-			const loggerProvider = result.providers?.find(
+			const loggerProvider = Result.providers?.find(
 				(p: any) => p?.provide === Logger || p === Logger,
 			);
 			expect(loggerProvider).toBeDefined();

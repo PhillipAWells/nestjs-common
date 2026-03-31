@@ -60,7 +60,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 		if (!this._ContextualLogger) {
 			const baseLogger = this.Module.get(AppLogger, { strict: false });
 			if (baseLogger) {
-				this._ContextualLogger = baseLogger.createContextualLogger(ConfigService.name);
+				this._ContextualLogger = baseLogger.CreateContextualLogger(ConfigService.name);
 			}
 		}
 		return this._ContextualLogger ?? this.Module.get(AppLogger);
@@ -73,9 +73,9 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	/**
 	 * Validate configuration against schema
 	 */
-	public validate(schema: IConfigSchemaDefinition): void {
-		const startTime = Date.now();
-		this.Logger.debug('Starting configuration validation', {
+	public Validate(schema: IConfigSchemaDefinition): void {
+		const StartTime = Date.now();
+		this.Logger.Debug('Starting configuration validation', {
 			schemaKeys: Object.keys(schema).length,
 		});
 
@@ -86,7 +86,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 			const missingFields = requiredFields.filter(field => this.get(field) === undefined);
 
 			if (missingFields.length > 0) {
-				const durationMs = Date.now() - startTime;
+				const durationMs = Date.now() - StartTime;
 				this.Logger.error('Configuration validation failed', undefined, undefined, {
 					missingFields,
 					requiredFields: requiredFields.length,
@@ -95,7 +95,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 				throw new Error(`Missing required configuration fields: ${missingFields.join(', ')}`);
 			}
 
-			const durationMs = Date.now() - startTime;
+			const durationMs = Date.now() - StartTime;
 			this.Logger.info('Configuration validation successful', {
 				validatedFields: Object.keys(schema).length,
 				requiredFields: requiredFields.length,
@@ -103,7 +103,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 				durationMs,
 			});
 		} catch (error) {
-			const durationMs = Date.now() - startTime;
+			const durationMs = Date.now() - StartTime;
 			this.Logger.error('Configuration validation error', undefined, undefined, {
 				error: getErrorMessage(error),
 				durationMs,
@@ -122,26 +122,26 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	/**
 	 * Get configuration value or throw
 	 */
-	public getOrThrow<T = any>(propertyPath: string): T {
+	public GetOrThrow<T = any>(propertyPath: string): T {
 		return this.NestConfig.getOrThrow(propertyPath);
 	}
 
 	/**
 	 * Get configuration value as string
 	 */
-	public getString(propertyPath: string, defaultValue?: string): string | undefined {
-		const value = this.get(propertyPath, defaultValue);
-		if (value === undefined) return undefined;
-		return String(value);
+	public GetString(propertyPath: string, defaultValue?: string): string | undefined {
+		const Value = this.get(propertyPath, defaultValue);
+		if (Value === undefined) return undefined;
+		return String(Value);
 	}
 
 	/**
 	 * Get configuration value as number
 	 */
-	public getNumber(propertyPath: string, defaultValue?: number): number | undefined {
-		const value = this.get(propertyPath, defaultValue);
-		if (value === undefined) return undefined;
-		const num = Number(value);
+	public GetNumber(propertyPath: string, defaultValue?: number): number | undefined {
+		const Value = this.get(propertyPath, defaultValue);
+		if (Value === undefined) return undefined;
+		const num = Number(Value);
 		return isNaN(num) ? undefined : num;
 	}
 

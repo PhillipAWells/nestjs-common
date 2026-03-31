@@ -50,7 +50,7 @@ export {
 	TagFormatter,
 	MetricAggregator,
 	ProfilingErrorHandler,
-	generateProfileId,
-	formatDuration,
-	isProfilingEnabled,
+	GenerateProfileId,
+	FormatDuration,
+	IsProfilingEnabled,
 } from './utils/profiling.utils.js';

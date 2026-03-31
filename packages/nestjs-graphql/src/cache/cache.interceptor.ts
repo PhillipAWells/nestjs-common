@@ -31,9 +31,9 @@ export class HttpCacheKeyGenerator implements ICacheKeyGenerator {
 	 * @returns Base64-encoded cache key
 	 * @throws Error if the request is not a GET request
 	 */
-	public generate(context: ExecutionContext): string {
-		const request = context.switchToHttp().getRequest();
-		const { method, url, query, params, user } = request;
+	public Generate(context: ExecutionContext): string {
+		const Request = context.switchToHttp().getRequest();
+		const { method, url, query, params, user } = Request;
 
 		// Only cache GET requests
 		if (method !== 'GET') {
@@ -41,18 +41,18 @@ export class HttpCacheKeyGenerator implements ICacheKeyGenerator {
 		}
 
 		// Include user ID in key for user-specific caching
-		const userId = user?.id ?? 'anonymous';
+		const UserId = user?.id ?? 'anonymous';
 
 		// Create a deterministic key from request data
-		const keyData = {
+		const KeyData = {
 			method,
 			url,
-			query: this.sortObject(query),
-			params: this.sortObject(params),
-			userId,
+			query: this.SortObject(query),
+			params: this.SortObject(params),
+			UserId,
 		};
 
-		return `http:${Buffer.from(JSON.stringify(keyData)).toString('base64')}`;
+		return `http:${Buffer.from(JSON.stringify(KeyData)).toString('base64')}`;
 	}
 
 	/**
@@ -60,18 +60,18 @@ export class HttpCacheKeyGenerator implements ICacheKeyGenerator {
 	 * @param obj Object to sort (can be nested)
 	 * @returns Object with sorted keys
 	 */
-	private sortObject(obj: any): any {
+	private SortObject(obj: any): any {
 		if (!obj || typeof obj !== 'object') return obj;
-		if (Array.isArray(obj)) return obj.map(this.sortObject.bind(this));
+		if (Array.isArray(obj)) return obj.map(this.SortObject.bind(this));
 
-		const sorted: any = {};
+		const Sorted: any = {};
 		Object.keys(obj)
 			.sort()
 			.forEach((key) => {
-				sorted[key] = this.sortObject(obj[key]);
+				Sorted[key] = this.SortObject(obj[key]);
 			});
 
-		return sorted;
+		return Sorted;
 	}
 }
 
@@ -92,10 +92,10 @@ export class HttpCacheMetadataExtractor implements ICacheMetadataExtractor {
 	 * @param context Execution context from the request
 	 * @returns True if cache-disabled metadata is present
 	 */
-	public getCacheDisabled(context: ExecutionContext): boolean {
-		const handler = context.getHandler();
-		const metadata = Reflect.getMetadata('cache-disabled', handler);
-		return !!metadata;
+	public GetCacheDisabled(context: ExecutionContext): boolean {
+		const Handler = context.getHandler();
+		const Metadata = Reflect.getMetadata('cache-disabled', Handler);
+		return !!Metadata;
 	}
 
 	/**
@@ -103,10 +103,10 @@ export class HttpCacheMetadataExtractor implements ICacheMetadataExtractor {
 	 * @param context Execution context from the request
 	 * @returns TTL in milliseconds or undefined if not configured
 	 */
-	public getCacheTtl(context: ExecutionContext): number | undefined {
-		const handler = context.getHandler();
-		const metadata = Reflect.getMetadata('cache-ttl', handler);
-		return metadata;
+	public GetCacheTtl(context: ExecutionContext): number | undefined {
+		const Handler = context.getHandler();
+		const Metadata = Reflect.getMetadata('cache-ttl', Handler);
+		return Metadata;
 	}
 }
 
@@ -128,16 +128,16 @@ export class HttpCacheContextHandler implements ICacheContextHandler {
 	 * @param hit Whether the response was a cache hit
 	 * @param ttl Time-to-live in seconds for the cached response
 	 */
-	public setCacheHeaders(context: ExecutionContext, hit: boolean, ttl?: number): void {
-		const response = context.switchToHttp().getResponse<Response>();
+	public SetCacheHeaders(context: ExecutionContext, hit: boolean, ttl?: number): void {
+		const Response = context.switchToHttp().getResponse<Response>();
 
 		if (hit) {
-			response.setHeader('X-Cache', 'HIT');
-			response.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
+			Response.setHeader('X-Cache', 'HIT');
+			Response.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
 		} else {
-			response.setHeader('X-Cache', 'MISS');
+			Response.setHeader('X-Cache', 'MISS');
 			if (ttl) {
-				response.setHeader('Cache-Control', `public, max-age=${ttl}`);
+				Response.setHeader('Cache-Control', `public, max-age=${ttl}`);
 			}
 		}
 	}
@@ -147,9 +147,9 @@ export class HttpCacheContextHandler implements ICacheContextHandler {
 	 * @param context Execution context from the request
 	 * @returns True if the request method is GET
 	 */
-	public shouldCacheRequest(context: ExecutionContext): boolean {
-		const request = context.switchToHttp().getRequest();
-		return request.method === 'GET';
+	public ShouldCacheRequest(context: ExecutionContext): boolean {
+		const Request = context.switchToHttp().getRequest();
+		return Request.method === 'GET';
 	}
 }
 
@@ -185,7 +185,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache key generator for HTTP requests
 	 * @returns HttpCacheKeyGenerator instance
 	 */
-	protected getCacheKeyGenerator(): ICacheKeyGenerator {
+	protected GetCacheKeyGenerator(): ICacheKeyGenerator {
 		return new HttpCacheKeyGenerator();
 	}
 
@@ -193,7 +193,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache metadata extractor for HTTP routes
 	 * @returns HttpCacheMetadataExtractor instance
 	 */
-	protected getCacheMetadataExtractor(): ICacheMetadataExtractor {
+	protected GetCacheMetadataExtractor(): ICacheMetadataExtractor {
 		return new HttpCacheMetadataExtractor();
 	}
 
@@ -201,7 +201,7 @@ export class CacheInterceptor extends BaseCacheInterceptor {
 	 * Provides the cache context handler for HTTP responses
 	 * @returns HttpCacheContextHandler instance
 	 */
-	protected getCacheContextHandler(): ICacheContextHandler {
+	protected GetCacheContextHandler(): ICacheContextHandler {
 		return new HttpCacheContextHandler();
 	}
 }

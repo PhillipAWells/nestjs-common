@@ -30,7 +30,7 @@ export interface IGraphQLErrorConfig {
  * });
  * ```
  */
-export function createGraphQLError(config: IGraphQLErrorConfig): typeof GraphqlError {
+export function CreateGraphQLError(config: IGraphQLErrorConfig): typeof GraphqlError {
 	const { code, statusCode, defaultMessage } = config;
 
 	/**
@@ -44,14 +44,14 @@ export function createGraphQLError(config: IGraphQLErrorConfig): typeof GraphqlE
 		 * @param context - Additional context information (optional)
 		 */
 		constructor(message = defaultMessage, context?: Record<string, any>) {
-			const options: any = {
+			const Options: any = {
 				code,
 				statusCode,
 			};
 			if (context !== undefined) {
-				options.context = context;
+				Options.context = context;
 			}
-			super(message, options);
+			super(message, Options);
 		}
 	}
 

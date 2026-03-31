@@ -1,8 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger, HttpException, HttpStatus, Inject, Optional } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, HttpException, HttpStatus, Inject, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { doubleCsrf, type DoubleCsrfUtilities } from 'csrf-csrf';
 import { Request, Response, NextFunction } from 'express';
-import { escapeNewlines } from '../utils/sanitization.utils.js';
+import { EscapeNewlines } from '../utils/sanitization.utils.js';
+import { AppLogger } from './logger.service.js';
 
 /**
  * Configuration options for CSRF protection.
@@ -55,7 +56,7 @@ export interface ICSRFServiceOptions {
  * res.render('form', { csrfToken: token });
  *
  * // Validate incoming request (done automatically by CSRFGuard)
- * const isValid = csrfService.validateToken(req);
+ * const IsValid = csrfService.validateToken(req);
  *
  * // Refresh token after sensitive operation (login, password change)
  * const newToken = await csrfService.refreshToken(req, res);
@@ -101,7 +102,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	private static readonly CAPACITY_THRESHOLD_PERCENT = 0.8;
 
 	private CsrfProtection: DoubleCsrfUtilities | undefined;
-	private readonly Logger = new Logger('CSRFService');
+	private _Logger: AppLogger | undefined;
 	private readonly TokenGenTimestamps = new Map<string, number[]>();
 	private readonly IpLocks = new Map<string, Promise<unknown>>();
 	private readonly TrustProxy: boolean;
@@ -113,11 +114,21 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	constructor(
 		@Inject(ConfigService) @Optional() configService?: ConfigService,
 		@Optional() options?: ICSRFServiceOptions,
+		@Optional() logger?: AppLogger,
 	) {
 		this.ConfigService = configService;
+		this._Logger = logger;
 		// Note: CSRF_SECRET validation is deferred to onModuleInit() to ensure
 		// NestJS surfaces the error at bootstrap time rather than during DI resolution
 		this.TrustProxy = options?.trustProxy ?? false;
+	}
+
+	private get Logger(): AppLogger {
+		if (!this._Logger) {
+			// Fallback: create a new AppLogger if none was provided
+			this._Logger = new AppLogger();
+		}
+		return this._Logger;
 	}
 
 	/**
@@ -373,7 +384,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @throws {HttpException} 429 - When rate limit exceeded for this IP
 	 * @throws {HttpException} 503 - When service is at capacity
 	 */
-	public async generateToken(req: Request, res: Response): Promise<string> {
+	public async GenerateToken(req: Request, res: Response): Promise<string> {
 		if (!this.CsrfProtection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
@@ -470,7 +481,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		timestamps = timestamps.filter(ts => now - ts < CSRFService.RATE_LIMIT_WINDOW_MS);
 
 		if (timestamps.length >= CSRFService.RATE_LIMIT_COUNT) {
-			this.Logger.warn(`CSRF token rate limit exceeded for IP: ${escapeNewlines(ip)}`);
+			this.Logger.warn(`CSRF token rate limit exceeded for IP: ${EscapeNewlines(ip)}`);
 			throw new HttpException(
 				'Rate limit exceeded for CSRF token generation',
 				HttpStatus.TOO_MANY_REQUESTS,
@@ -497,7 +508,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @returns true if token is valid, false otherwise
 	 * @throws Error if CSRF_SECRET was not initialized in onModuleInit
 	 */
-	public validateToken(req: Request): boolean {
+	public ValidateToken(req: Request): boolean {
 		if (!this.CsrfProtection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
@@ -520,7 +531,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @throws Error if CSRF_SECRET was not initialized in onModuleInit
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public refreshToken(req: Request, res: Response): Promise<string> {
+	public RefreshToken(req: Request, res: Response): Promise<string> {
 		if (!this.CsrfProtection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
@@ -528,7 +539,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		// Route through rate limiting to enforce per-IP token generation limits
 		// Clear any session-bound CSRF state by generating a fresh token
 		// The doubleCsrf library handles invalidation through cookie/session updates
-		return this.generateToken(req, res);
+		return this.GenerateToken(req, res);
 	}
 
 	/**
@@ -536,7 +547,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @returns CSRF protection middleware
 	 * @throws Error if CSRF_SECRET was not initialized in onModuleInit
 	 */
-	public getMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
+	public GetMiddleware(): (req: Request, res: Response, next: NextFunction) => void {
 		if (!this.CsrfProtection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}

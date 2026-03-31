@@ -53,7 +53,7 @@ describe('PrometheusExporter', () => {
 
 	describe('onDescriptorRegistered', () => {
 		it('should create Counter for counter type descriptor', () => {
-			exporter.onDescriptorRegistered({
+			exporter.OnDescriptorRegistered({
 				name: 'test_counter',
 				type: 'counter',
 				help: 'Test counter',
@@ -66,7 +66,7 @@ describe('PrometheusExporter', () => {
 		});
 
 		it('should create Histogram for histogram type descriptor', () => {
-			exporter.onDescriptorRegistered({
+			exporter.OnDescriptorRegistered({
 				name: 'test_histogram',
 				type: 'histogram',
 				help: 'Test histogram',
@@ -79,7 +79,7 @@ describe('PrometheusExporter', () => {
 		});
 
 		it('should create Gauge for gauge type descriptor', () => {
-			exporter.onDescriptorRegistered({
+			exporter.OnDescriptorRegistered({
 				name: 'test_gauge',
 				type: 'gauge',
 				help: 'Test gauge',
@@ -91,7 +91,7 @@ describe('PrometheusExporter', () => {
 		});
 
 		it('should create Gauge for updown_counter type descriptor', () => {
-			exporter.onDescriptorRegistered({
+			exporter.OnDescriptorRegistered({
 				name: 'test_updown',
 				type: 'updown_counter',
 				help: 'Test updown counter',
@@ -104,7 +104,7 @@ describe('PrometheusExporter', () => {
 
 		it('should throw error for unsupported metric type', () => {
 			expect(() => {
-				exporter.onDescriptorRegistered({
+				exporter.OnDescriptorRegistered({
 					name: 'test_invalid',
 					type: 'invalid_type' as any,
 					help: 'Test invalid',
@@ -123,7 +123,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -131,7 +131,7 @@ describe('PrometheusExporter', () => {
 				labels: {},
 				timestamp: Date.now(),
 			};
-			exporter.onMetricRecorded(metricValue);
+			exporter.OnMetricRecorded(metricValue);
 
 			// Verify that the metric was buffered in the pending map
 			expect(exporter).toBeDefined();
@@ -156,7 +156,7 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
+			exporter.OnMetricRecorded(metricValue);
 
 			expect(warnSpy).toHaveBeenCalledWith(
 				'Metric recorded before descriptor registration: unregistered_metric',
@@ -172,7 +172,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -184,7 +184,7 @@ describe('PrometheusExporter', () => {
 			// Record MAX_PENDING_PER_METRIC + 100 values
 
 			for (let i = 0; i < 1100; i++) {
-				exporter.onMetricRecorded(metricValue);
+				exporter.OnMetricRecorded(metricValue);
 			}
 
 			// Should have at most MAX_PENDING_PER_METRIC items
@@ -202,7 +202,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -211,8 +211,8 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
-			await exporter.getMetrics();
+			exporter.OnMetricRecorded(metricValue);
+			await exporter.GetMetrics();
 
 			expect(mockCounter.inc).toHaveBeenCalledWith({}, 10);
 		});
@@ -226,7 +226,7 @@ describe('PrometheusExporter', () => {
 				buckets: [0.1, 0.5, 1.0],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -235,8 +235,8 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
-			await exporter.getMetrics();
+			exporter.OnMetricRecorded(metricValue);
+			await exporter.GetMetrics();
 
 			expect(mockHistogram.observe).toHaveBeenCalledWith({}, 0.25);
 		});
@@ -249,7 +249,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -258,14 +258,14 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
-			await exporter.getMetrics();
+			exporter.OnMetricRecorded(metricValue);
+			await exporter.GetMetrics();
 
 			expect(mockGauge.set).toHaveBeenCalledWith({}, 42);
 		});
 
 		it('should return Prometheus text format string', async () => {
-			const result = await exporter.getMetrics();
+			const result = await exporter.GetMetrics();
 
 			expect(mockRegistry.metrics).toHaveBeenCalled();
 			expect(typeof result).toBe('string');
@@ -279,7 +279,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -288,11 +288,11 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
-			await exporter.getMetrics();
+			exporter.OnMetricRecorded(metricValue);
+			await exporter.GetMetrics();
 
 			mockCounter.inc.mockClear();
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 
 			expect(mockCounter.inc).not.toHaveBeenCalled();
 		});
@@ -307,10 +307,10 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// Call getMetrics without recording any metrics
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 
 			// Counter.inc should not have been called since pendingValues is empty
 			expect(mockCounter.inc).not.toHaveBeenCalled();
@@ -324,7 +324,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -333,12 +333,12 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
+			exporter.OnMetricRecorded(metricValue);
 
 			// Remove the instrument before calling getMetrics
 			exporter['Instruments'].delete('test_counter');
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 
 			// Counter.inc should not have been called since instrument was removed
 			expect(mockCounter.inc).not.toHaveBeenCalled();
@@ -352,7 +352,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// Manually add a pending array with an entry that has no descriptor
 			exporter['Pending'].set('test_no_descriptor', [
@@ -364,7 +364,7 @@ describe('PrometheusExporter', () => {
 				},
 			]);
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 
 			expect(mockCounter.inc).not.toHaveBeenCalled();
 		});
@@ -377,7 +377,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -386,8 +386,8 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
-			await exporter.getMetrics();
+			exporter.OnMetricRecorded(metricValue);
+			await exporter.GetMetrics();
 
 			expect(mockGauge.set).toHaveBeenCalledWith({}, 42);
 		});
@@ -395,7 +395,7 @@ describe('PrometheusExporter', () => {
 
 	describe('shutdown', () => {
 		it('should clear the registry', async () => {
-			await exporter.shutdown();
+			await exporter.Shutdown();
 
 			expect(mockRegistry.clear).toHaveBeenCalled();
 		});
@@ -408,7 +408,7 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			const metricValue = {
 				descriptor,
@@ -417,9 +417,9 @@ describe('PrometheusExporter', () => {
 				timestamp: Date.now(),
 			};
 
-			exporter.onMetricRecorded(metricValue);
+			exporter.OnMetricRecorded(metricValue);
 
-			await exporter.shutdown();
+			await exporter.Shutdown();
 
 			expect(exporter['Instruments'].size).toBe(0);
 			expect(exporter['Pending'].size).toBe(0);
@@ -435,10 +435,10 @@ describe('PrometheusExporter', () => {
 				labelNames: ['request_id'],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// First batch: record +10
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 10,
 				labels: { request_id: 'req1' },
@@ -446,13 +446,13 @@ describe('PrometheusExporter', () => {
 			});
 
 			// First flush
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			expect(mockGauge.set).toHaveBeenLastCalledWith({ request_id: 'req1' }, 10);
 
 			mockGauge.set.mockClear();
 
 			// Second batch: record +5 (should accumulate to 15)
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 5,
 				labels: { request_id: 'req1' },
@@ -460,7 +460,7 @@ describe('PrometheusExporter', () => {
 			});
 
 			// Second flush
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			expect(mockGauge.set).toHaveBeenLastCalledWith({ request_id: 'req1' }, 15);
 		});
 
@@ -472,30 +472,30 @@ describe('PrometheusExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// First: +20
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 20,
 				labels: {},
 				timestamp: Date.now(),
 			});
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			expect(mockGauge.set).toHaveBeenLastCalledWith({}, 20);
 
 			mockGauge.set.mockClear();
 
 			// Second: -5 (should give 15)
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: -5,
 				labels: {},
 				timestamp: Date.now(),
 			});
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			expect(mockGauge.set).toHaveBeenLastCalledWith({}, 15);
 		});
 	});
@@ -509,30 +509,30 @@ describe('PrometheusExporter', () => {
 				labelNames: ['a', 'b'],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// First metric: {a: '1', b: '2'}
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 10,
 				labels: { a: '1', b: '2' },
 				timestamp: Date.now(),
 			});
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			expect(mockGauge.set).toHaveBeenLastCalledWith({ a: '1', b: '2' }, 10);
 
 			mockGauge.set.mockClear();
 
 			// Second metric: {b: '2', a: '1'} (different order, same labels)
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 5,
 				labels: { b: '2', a: '1' },
 				timestamp: Date.now(),
 			});
 
-			await exporter.getMetrics();
+			await exporter.GetMetrics();
 			// Should accumulate with first batch, giving 15
 			expect(mockGauge.set).toHaveBeenLastCalledWith({ b: '2', a: '1' }, 15);
 		});

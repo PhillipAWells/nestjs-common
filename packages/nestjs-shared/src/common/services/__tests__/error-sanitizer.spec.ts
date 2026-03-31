@@ -19,7 +19,7 @@ describe('ErrorSanitizerService', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('/workspaces');
 			expect(sanitized.message).toContain('[FILE]');
 		});
@@ -30,7 +30,7 @@ describe('ErrorSanitizerService', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('mongodb://');
 			expect(sanitized.message).toContain('[REDACTED]');
 		});
@@ -41,7 +41,7 @@ describe('ErrorSanitizerService', () => {
 				statusCode: 401,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('sk_live_');
 			expect(sanitized.message).toContain('[REDACTED]');
 		});
@@ -53,7 +53,7 @@ describe('ErrorSanitizerService', () => {
 				stack: 'Error: Something went wrong\n  at ...',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, false);
+			const sanitized = service.SanitizeErrorResponse(error, false);
 			expect(sanitized.stack).toBeUndefined();
 		});
 
@@ -64,7 +64,7 @@ describe('ErrorSanitizerService', () => {
 				stack: 'Error: Something went wrong\n  at ...',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, true);
+			const sanitized = service.SanitizeErrorResponse(error, true);
 			expect(sanitized.stack).toBeDefined();
 		});
 	});

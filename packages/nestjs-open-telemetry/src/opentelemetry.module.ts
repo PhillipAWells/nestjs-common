@@ -80,7 +80,7 @@ export class OpenTelemetryModule implements OnModuleInit {
 				'Ensure that CommonModule from @pawells/nestjs-shared is imported in your module or a parent module.',
 			);
 		}
-		this.Registry.registerExporter(this.Exporter);
+		this.Registry.RegisterExporter(this.Exporter);
 	}
 
 	/**
@@ -95,7 +95,7 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: OpenTelemetryModule,
 			providers: [OpenTelemetryExporter],

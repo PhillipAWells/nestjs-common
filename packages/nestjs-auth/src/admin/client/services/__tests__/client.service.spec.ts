@@ -38,14 +38,14 @@ describe('ClientService', () => {
 	describe('list', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.list('realm')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.List('realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.find).not.toHaveBeenCalled();
 		});
 
 		it('calls adminClient.clients.find when clients:read scope is granted', async () => {
 			mockAdminClient.clients.find.mockResolvedValue([{ id: 'client1', clientId: 'my-app' }]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('realm');
+			const result = await service.List('realm');
 			expect(result).toEqual([{ id: 'client1', clientId: 'my-app' }]);
 			expect(mockAdminClient.clients.find).toHaveBeenCalledWith({ realm: 'realm' });
 		});
@@ -53,7 +53,7 @@ describe('ClientService', () => {
 		it('returns empty array when no clients found', async () => {
 			mockAdminClient.clients.find.mockResolvedValue([]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('realm');
+			const result = await service.List('realm');
 			expect(result).toEqual([]);
 		});
 	});
@@ -61,14 +61,14 @@ describe('ClientService', () => {
 	describe('get', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.get('realm', 'client-id')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.Get('realm', 'client-id')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.findOne).not.toHaveBeenCalled();
 		});
 
 		it('calls adminClient.clients.findOne when clients:read scope is granted', async () => {
 			mockAdminClient.clients.findOne.mockResolvedValue({ id: 'client-id', clientId: 'my-app' });
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.get('realm', 'client-id');
+			const result = await service.Get('realm', 'client-id');
 			expect(result).toEqual({ id: 'client-id', clientId: 'my-app' });
 			expect(mockAdminClient.clients.findOne).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -80,7 +80,7 @@ describe('ClientService', () => {
 	describe('findByClientId', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.findByClientId('realm', 'my-app')).rejects.toThrow(
+			await expect(service.FindByClientId('realm', 'my-app')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.find).not.toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe('ClientService', () => {
 		it('returns first client when clients:read scope is granted and client found', async () => {
 			mockAdminClient.clients.find.mockResolvedValue([{ id: 'client-id', clientId: 'my-app' }]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.findByClientId('realm', 'my-app');
+			const result = await service.FindByClientId('realm', 'my-app');
 			expect(result).toEqual({ id: 'client-id', clientId: 'my-app' });
 			expect(mockAdminClient.clients.find).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -100,7 +100,7 @@ describe('ClientService', () => {
 		it('returns undefined when no client found', async () => {
 			mockAdminClient.clients.find.mockResolvedValue([]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.findByClientId('realm', 'my-app');
+			const result = await service.FindByClientId('realm', 'my-app');
 			expect(result).toBeUndefined();
 		});
 	});
@@ -109,7 +109,7 @@ describe('ClientService', () => {
 		it('throws KeycloakAdminScopeError when clients:write scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.create('realm', { clientId: 'my-app' }),
+				service.Create('realm', { clientId: 'my-app' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.create).not.toHaveBeenCalled();
 		});
@@ -117,7 +117,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.create when clients:write scope is granted', async () => {
 			mockAdminClient.clients.create.mockResolvedValue({ id: 'new-client-id' });
 			service = new ClientService(mockAdminClient, allScopes);
-			const result = await service.create('realm', { clientId: 'my-app' });
+			const result = await service.Create('realm', { clientId: 'my-app' });
 			expect(result).toEqual({ id: 'new-client-id' });
 			expect(mockAdminClient.clients.create).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -130,7 +130,7 @@ describe('ClientService', () => {
 		it('throws KeycloakAdminScopeError when clients:write scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.update('realm', 'client-id', { clientId: 'updated-app' }),
+				service.Update('realm', 'client-id', { clientId: 'updated-app' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.update).not.toHaveBeenCalled();
 		});
@@ -138,7 +138,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.update when clients:write scope is granted', async () => {
 			mockAdminClient.clients.update.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
-			await service.update('realm', 'client-id', { clientId: 'updated-app' });
+			await service.Update('realm', 'client-id', { clientId: 'updated-app' });
 			expect(mockAdminClient.clients.update).toHaveBeenCalledWith(
 				{ realm: 'realm', id: 'client-id' },
 				{ clientId: 'updated-app' },
@@ -149,7 +149,7 @@ describe('ClientService', () => {
 	describe('delete', () => {
 		it('throws KeycloakAdminScopeError when clients:write scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			await expect(service.delete('realm', 'client-id')).rejects.toThrow(
+			await expect(service.Delete('realm', 'client-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.del).not.toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.del when clients:write scope is granted', async () => {
 			mockAdminClient.clients.del.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
-			await service.delete('realm', 'client-id');
+			await service.Delete('realm', 'client-id');
 			expect(mockAdminClient.clients.del).toHaveBeenCalledWith({
 				realm: 'realm',
 				id: 'client-id',
@@ -169,7 +169,7 @@ describe('ClientService', () => {
 	describe('getSecret', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.getSecret('realm', 'client-id')).rejects.toThrow(
+			await expect(service.GetSecret('realm', 'client-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.getClientSecret).not.toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.getClientSecret when clients:read scope is granted', async () => {
 			mockAdminClient.clients.getClientSecret.mockResolvedValue({ value: 'secret123' });
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.getSecret('realm', 'client-id');
+			const result = await service.GetSecret('realm', 'client-id');
 			expect(result).toEqual({ value: 'secret123' });
 			expect(mockAdminClient.clients.getClientSecret).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -192,7 +192,7 @@ describe('ClientService', () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			const mapper = { name: 'mapper1', protocolMapper: 'openid-connect-usermodel-attribute-mapper' };
 			await expect(
-				service.createProtocolMapper('realm', 'client-id', mapper),
+				service.CreateProtocolMapper('realm', 'client-id', mapper),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.addProtocolMapper).not.toHaveBeenCalled();
 		});
@@ -201,7 +201,7 @@ describe('ClientService', () => {
 			mockAdminClient.clients.addProtocolMapper.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
 			const mapper = { name: 'mapper1', protocolMapper: 'openid-connect-usermodel-attribute-mapper' };
-			await service.createProtocolMapper('realm', 'client-id', mapper);
+			await service.CreateProtocolMapper('realm', 'client-id', mapper);
 			expect(mockAdminClient.clients.addProtocolMapper).toHaveBeenCalledWith(
 				{ realm: 'realm', id: 'client-id' },
 				mapper,
@@ -212,7 +212,7 @@ describe('ClientService', () => {
 	describe('listProtocolMappers', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.listProtocolMappers('realm', 'client-id')).rejects.toThrow(
+			await expect(service.ListProtocolMappers('realm', 'client-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.listProtocolMappers).not.toHaveBeenCalled();
@@ -221,7 +221,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.listProtocolMappers when clients:read scope is granted', async () => {
 			mockAdminClient.clients.listProtocolMappers.mockResolvedValue([{ id: 'mapper1' }]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.listProtocolMappers('realm', 'client-id');
+			const result = await service.ListProtocolMappers('realm', 'client-id');
 			expect(result).toEqual([{ id: 'mapper1' }]);
 			expect(mockAdminClient.clients.listProtocolMappers).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -234,7 +234,7 @@ describe('ClientService', () => {
 		it('throws KeycloakAdminScopeError when clients:write scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.deleteProtocolMapper('realm', 'client-id', 'mapper-id'),
+				service.DeleteProtocolMapper('realm', 'client-id', 'mapper-id'),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.delProtocolMapper).not.toHaveBeenCalled();
 		});
@@ -242,7 +242,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.delProtocolMapper when clients:write scope is granted', async () => {
 			mockAdminClient.clients.delProtocolMapper.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
-			await service.deleteProtocolMapper('realm', 'client-id', 'mapper-id');
+			await service.DeleteProtocolMapper('realm', 'client-id', 'mapper-id');
 			expect(mockAdminClient.clients.delProtocolMapper).toHaveBeenCalledWith({
 				realm: 'realm',
 				id: 'client-id',
@@ -256,7 +256,7 @@ describe('ClientService', () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			const role = { name: 'client-admin' };
 			await expect(
-				service.createRole('realm', 'client-id', role),
+				service.CreateRole('realm', 'client-id', role),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.createRole).not.toHaveBeenCalled();
 		});
@@ -265,7 +265,7 @@ describe('ClientService', () => {
 			mockAdminClient.clients.createRole.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
 			const role = { name: 'client-admin' };
-			await service.createRole('realm', 'client-id', role);
+			await service.CreateRole('realm', 'client-id', role);
 			expect(mockAdminClient.clients.createRole).toHaveBeenCalledWith(
 				{ realm: 'realm', id: 'client-id' },
 				role,
@@ -276,7 +276,7 @@ describe('ClientService', () => {
 	describe('listRoles', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
-			await expect(service.listRoles('realm', 'client-id')).rejects.toThrow(
+			await expect(service.ListRoles('realm', 'client-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.clients.listRoles).not.toHaveBeenCalled();
@@ -285,7 +285,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.listRoles when clients:read scope is granted', async () => {
 			mockAdminClient.clients.listRoles.mockResolvedValue([{ id: 'role1', name: 'client-admin' }]);
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.listRoles('realm', 'client-id');
+			const result = await service.ListRoles('realm', 'client-id');
 			expect(result).toEqual([{ id: 'role1', name: 'client-admin' }]);
 			expect(mockAdminClient.clients.listRoles).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -298,7 +298,7 @@ describe('ClientService', () => {
 		it('throws KeycloakAdminScopeError when clients:read scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, noScopes);
 			await expect(
-				service.findRole('realm', 'client-id', 'client-admin'),
+				service.FindRole('realm', 'client-id', 'client-admin'),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.findRole).not.toHaveBeenCalled();
 		});
@@ -306,7 +306,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.findRole when clients:read scope is granted', async () => {
 			mockAdminClient.clients.findRole.mockResolvedValue({ id: 'role1', name: 'client-admin' });
 			service = new ClientService(mockAdminClient, readOnlyScopes);
-			const result = await service.findRole('realm', 'client-id', 'client-admin');
+			const result = await service.FindRole('realm', 'client-id', 'client-admin');
 			expect(result).toEqual({ id: 'role1', name: 'client-admin' });
 			expect(mockAdminClient.clients.findRole).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -320,7 +320,7 @@ describe('ClientService', () => {
 		it('throws KeycloakAdminScopeError when clients:write scope is not granted', async () => {
 			service = new ClientService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.deleteRole('realm', 'client-id', 'client-admin'),
+				service.DeleteRole('realm', 'client-id', 'client-admin'),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.clients.delRole).not.toHaveBeenCalled();
 		});
@@ -328,7 +328,7 @@ describe('ClientService', () => {
 		it('calls adminClient.clients.delRole when clients:write scope is granted', async () => {
 			mockAdminClient.clients.delRole.mockResolvedValue(undefined);
 			service = new ClientService(mockAdminClient, allScopes);
-			await service.deleteRole('realm', 'client-id', 'client-admin');
+			await service.DeleteRole('realm', 'client-id', 'client-admin');
 			expect(mockAdminClient.clients.delRole).toHaveBeenCalledWith({
 				realm: 'realm',
 				id: 'client-id',

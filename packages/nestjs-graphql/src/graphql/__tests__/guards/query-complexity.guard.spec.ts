@@ -51,8 +51,8 @@ describe('QueryComplexityGuard', () => {
 		const COMPLEXITY_MID_RANGE = 750;
 
 		it('should allow query when complexity is within limits', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_WITHIN_LIMITS);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(COMPLEXITY_WITHIN_LIMITS);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -61,8 +61,8 @@ describe('QueryComplexityGuard', () => {
 
 		it('should attach complexity to request object', async () => {
 			const complexity = COMPLEXITY_MID_RANGE;
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(complexity);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			await guard.canActivate(mockExecutionContext);
 
@@ -70,8 +70,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should reject query when complexity exceeds limit', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(true);
 
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(BadRequestException);
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(/exceeds maximum/);
@@ -82,7 +82,7 @@ describe('QueryComplexityGuard', () => {
 		const COMPLEXITY_EXCEEDED = 2000;
 
 		it('should throw InternalServerErrorException on complexity calculation error', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -90,7 +90,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should NOT allow query on complexity calculation error', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -99,7 +99,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should NOT return true on calculation error (fail closed)', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -118,7 +118,7 @@ describe('QueryComplexityGuard', () => {
 		it('should log error with context when complexity calculation fails', async () => {
 			const calculationError = new Error('Complexity calculation failed');
 
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw calculationError;
 			});
 
@@ -131,7 +131,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should handle errors from calculateQueryComplexity function', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Schema validation failed');
 			});
 
@@ -140,8 +140,8 @@ describe('QueryComplexityGuard', () => {
 
 		it('should distinguish between BadRequestException (limit exceeded) and other errors', async () => {
 			// First test: BadRequestException should be re-thrown
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(true);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(COMPLEXITY_EXCEEDED);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(true);
 
 			await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(BadRequestException);
 
@@ -157,7 +157,7 @@ describe('QueryComplexityGuard', () => {
 				}),
 			});
 
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Unexpected error');
 			});
 
@@ -165,7 +165,7 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should throw InternalServerErrorException with appropriate message on error', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw new Error('Complexity calculation failed');
 			});
 
@@ -179,7 +179,7 @@ describe('QueryComplexityGuard', () => {
 
 		it('should handle thrown errors gracefully', async () => {
 			const thrownError = new Error('Some unexpected error');
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockImplementation(() => {
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockImplementation(() => {
 				throw thrownError;
 			});
 
@@ -193,8 +193,8 @@ describe('QueryComplexityGuard', () => {
 
 		it('should handle requests without user object', async () => {
 			mockRequest.user = undefined;
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -214,8 +214,8 @@ describe('QueryComplexityGuard', () => {
 				}),
 			} as any);
 
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -223,8 +223,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should handle zero complexity', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(ZERO_COMPLEXITY);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(ZERO_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -244,8 +244,8 @@ describe('QueryComplexityGuard', () => {
 				}),
 			} as any);
 
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(VALID_COMPLEXITY);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const result = await guard.canActivate(mockExecutionContext);
 
@@ -256,8 +256,8 @@ describe('QueryComplexityGuard', () => {
 	describe('QueryComplexityGuard - Complexity Caching', () => {
 		it('should cache complexity calculation for identical queries', async () => {
 			const mockDocument = { kind: 'Document', definitions: [] };
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			(GqlExecutionContext.create as any).mockReturnValue({
 				getContext: () => ({
@@ -273,17 +273,17 @@ describe('QueryComplexityGuard', () => {
 
 			// First call - should calculate
 			await guard.canActivate(mockExecutionContext);
-			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(1);
+			expect(QueryComplexity.CalculateQueryComplexity).toHaveBeenCalledTimes(1);
 
 			// Second call with same document - should use cache
 			await guard.canActivate(mockExecutionContext);
-			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(1); // Still 1, not 2
+			expect(QueryComplexity.CalculateQueryComplexity).toHaveBeenCalledTimes(1); // Still 1, not 2
 		});
 
 		it('should avoid recalculation for repeated identical queries', async () => {
 			const complexity = 750;
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(complexity);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(complexity);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const mockDocument = { kind: 'Document', definitions: [] };
 			(GqlExecutionContext.create as any).mockReturnValue({
@@ -303,12 +303,12 @@ describe('QueryComplexityGuard', () => {
 				await guard.canActivate(mockExecutionContext);
 			}
 
-			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(1);
+			expect(QueryComplexity.CalculateQueryComplexity).toHaveBeenCalledTimes(1);
 		});
 
 		it('should perform complexity calculation under 10ms', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			const start = performance.now();
 			await guard.canActivate(mockExecutionContext);
@@ -318,8 +318,8 @@ describe('QueryComplexityGuard', () => {
 		});
 
 		it('should use cache lookup under 1ms on subsequent calls', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			// Prime the cache
 			await guard.canActivate(mockExecutionContext);
@@ -335,8 +335,8 @@ describe('QueryComplexityGuard', () => {
 
 	describe('QueryComplexityGuard - Cache Management', () => {
 		it('should cleanup cache on module destroy', async () => {
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			// Populate cache
 			await guard.canActivate(mockExecutionContext);
@@ -345,28 +345,28 @@ describe('QueryComplexityGuard', () => {
 			guard.onModuleDestroy();
 
 			// Cache should be cleared - next call should recalculate
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(600);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(600);
 			await guard.canActivate(mockExecutionContext);
 
 			// Should have been called again
-			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(2);
+			expect(QueryComplexity.CalculateQueryComplexity).toHaveBeenCalledTimes(2);
 		});
 
 		it('should periodically clear cache every 10 minutes', async () => {
 			vi.useFakeTimers();
 
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
-			vi.spyOn(QueryComplexity, 'exceedsComplexityLimit').mockReturnValue(false);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'ExceedsComplexityLimit').mockReturnValue(false);
 
 			// Populate cache
 			await guard.canActivate(mockExecutionContext);
-			expect(QueryComplexity.calculateQueryComplexity).toHaveBeenCalledTimes(1);
+			expect(QueryComplexity.CalculateQueryComplexity).toHaveBeenCalledTimes(1);
 
 			// Fast forward 10 minutes
 			vi.advanceTimersByTime(600000);
 
 			// Next call should recalculate after cleanup
-			vi.spyOn(QueryComplexity, 'calculateQueryComplexity').mockReturnValue(500);
+			vi.spyOn(QueryComplexity, 'CalculateQueryComplexity').mockReturnValue(500);
 			await guard.canActivate(mockExecutionContext);
 
 			vi.useRealTimers();

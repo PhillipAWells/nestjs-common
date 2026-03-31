@@ -100,6 +100,54 @@ class MyService implements OnModuleInit {
 
 When mapping between an external contract and internal code, do the conversion at the boundary (e.g. in a mapper/transformer service) and use our conventions on the internal side.
 
+### Known Framework Exceptions
+
+The following names are dictated by framework contracts and are intentionally left in their framework-expected casing — **do not rename these**.
+
+#### NestJS lifecycle methods (camelCase — NestJS contract)
+
+| Method | Interface |
+|---|---|
+| `onModuleInit()` | `OnModuleInit` |
+| `onModuleDestroy()` | `OnModuleDestroy` |
+| `onApplicationBootstrap()` | `OnApplicationBootstrap` |
+| `onApplicationShutdown()` | `OnApplicationShutdown` |
+| `canActivate()` | `CanActivate` (Guard) |
+| `intercept()` | `NestInterceptor` (Interceptor) |
+| `catch()` | `ExceptionFilter` (Filter) |
+
+```typescript
+// Correct — NestJS owns this method name
+@Injectable()
+export class JtvSyncService implements OnModuleInit, OnModuleDestroy {
+	public onModuleInit(): void { ... }
+	public onModuleDestroy(): void { ... }
+}
+```
+
+#### React conventions (camelCase — React contract)
+
+| Pattern | Convention | Example |
+|---|---|---|
+| Custom hooks | `use` + camelCase | `useAuth`, `useModal`, `useFormInput` |
+| Internal event handler implementations | `handle` + PascalCase word | `handleClick`, `handleSubmit`, `handleItemSelect` |
+
+```typescript
+// Correct — React owns the hook prefix convention
+function useAuth(): TAuthState { ... }
+
+// Correct — React convention for internal handler implementations
+function Form({ onSubmit }: TFormProps): React.JSX.Element {
+	function handleSubmit(e: React.FormEvent): void {
+		e.preventDefault();
+		onSubmit(collectData());
+	}
+	return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+Note: React component function names and prop names remain governed by our conventions — `function UserCard(...)` (PascalCase component) and `onSubmit` (camelCase prop, per React DOM event naming).
+
 ### General Rules
 
 | Construct | Format | Notes |

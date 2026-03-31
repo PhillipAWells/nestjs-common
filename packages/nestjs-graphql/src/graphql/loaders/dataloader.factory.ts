@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 /**
@@ -34,7 +34,7 @@ export class DataLoaderFactory implements ILazyModuleRefService {
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(DataLoaderFactory.name);
 	}
 
@@ -48,7 +48,7 @@ export class DataLoaderFactory implements ILazyModuleRefService {
     * @returns Configured DataLoader instance
     */
 	@ProfileMethod({ tags: { operation: 'dataloader', action: 'create' } })
-	public create<K, V>(options: IDataLoaderOptions<K, V>): DataLoader<K, V> {
+	public Create<K, V>(options: IDataLoaderOptions<K, V>): DataLoader<K, V> {
 		const {
 			batchLoadFn,
 			cache = true,
@@ -57,28 +57,28 @@ export class DataLoaderFactory implements ILazyModuleRefService {
 			batchScheduleFn,
 		} = options;
 
-		const dataLoader = new DataLoader<K, V>(
+		const Instance = new DataLoader<K, V>(
 			async (keys: readonly K[]): Promise<(V | Error)[]> => {
 				try {
 					this.Logger.debug(`Batch loading ${keys.length} keys`);
-					const results = await batchLoadFn(keys);
+					const Results = await batchLoadFn(keys);
 
 					// Ensure we return exactly the same number of results as keys
-					if (results.length !== keys.length) {
+					if (Results.length !== keys.length) {
 						this.Logger.warn(
-							`Batch load function returned ${results.length} results for ${keys.length} keys`,
+							`Batch load function returned ${Results.length} results for ${keys.length} keys`,
 						);
 						// Pad with errors if necessary
-						while (results.length < keys.length) {
-							results.push(new Error('Batch load function returned insufficient results'));
+						while (Results.length < keys.length) {
+							Results.push(new Error('Batch load function returned insufficient results'));
 						}
 						// DataLoader requires results[i] to correspond to keys[i] with exactly keys.length results
-						if (results.length > keys.length) {
-							results.length = keys.length;
+						if (Results.length > keys.length) {
+							Results.length = keys.length;
 						}
 					}
 
-					return results;
+					return Results;
 				} catch (error) {
 					this.Logger.error(`Batch loading failed: ${getErrorMessage(error)}`);
 					// Return errors for all keys
@@ -93,7 +93,7 @@ export class DataLoaderFactory implements ILazyModuleRefService {
 			},
 		);
 
-		return dataLoader;
+		return Instance;
 	}
 
 	/**
@@ -102,11 +102,11 @@ export class DataLoaderFactory implements ILazyModuleRefService {
    * @param options Additional options
    * @returns Configured DataLoader instance
    */
-	public createWithCache<K, V>(
+	public CreateWithCache<K, V>(
 		batchLoadFn: IBatchLoadFn<K, V>,
 		options: Omit<IDataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
-		return this.create({
+		return this.Create({
 			batchLoadFn,
 			cache: true,
 			...options,
@@ -119,11 +119,11 @@ export class DataLoaderFactory implements ILazyModuleRefService {
    * @param options Additional options
    * @returns Configured DataLoader instance
    */
-	public createWithoutCache<K, V>(
+	public CreateWithoutCache<K, V>(
 		batchLoadFn: IBatchLoadFn<K, V>,
 		options: Omit<IDataLoaderOptions<K, V>, 'batchLoadFn' | 'cache'> = {},
 	): DataLoader<K, V> {
-		return this.create({
+		return this.Create({
 			batchLoadFn,
 			cache: false,
 			...options,

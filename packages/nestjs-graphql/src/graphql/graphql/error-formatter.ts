@@ -18,49 +18,49 @@ export class GraphQLErrorFormatter {
 	 * @param context - Optional request context with user and operation information
 	 * @returns Formatted error object
 	 */
-	public static formatError(error: GraphQLError, context?: any): GraphQLFormattedError {
+	public static FormatError(error: GraphQLError, context?: any): GraphQLFormattedError {
 		const { originalError } = error;
 
 		// Handle custom application errors
-		if (originalError && this.isApplicationError(originalError)) {
-			return this.formatApplicationError(error, originalError, context);
+		if (originalError && this.IsApplicationError(originalError)) {
+			return this.FormatApplicationError(error, originalError, context);
 		}
 
 		// Handle validation errors
-		if (originalError && this.isValidationError(originalError)) {
-			return this.formatValidationError(error, originalError, context);
+		if (originalError && this.IsValidationError(originalError)) {
+			return this.FormatValidationError(error, originalError, context);
 		}
 
 		// Handle authentication errors
-		if (originalError && this.isAuthenticationError(originalError)) {
-			return this.formatAuthenticationError(error, context);
+		if (originalError && this.IsAuthenticationError(originalError)) {
+			return this.FormatAuthenticationError(error, context);
 		}
 
 		// Handle authorization errors
-		if (originalError && this.isAuthorizationError(originalError)) {
-			return this.formatAuthorizationError(error, context);
+		if (originalError && this.IsAuthorizationError(originalError)) {
+			return this.FormatAuthorizationError(error, context);
 		}
 
 		// Handle rate limiting errors
-		if (originalError && this.isRateLimitError(originalError)) {
-			return this.formatRateLimitError(error, context);
+		if (originalError && this.IsRateLimitError(originalError)) {
+			return this.FormatRateLimitError(error, context);
 		}
 
 		// Default error formatting
-		return this.formatGenericError(error, context);
+		return this.FormatGenericError(error, context);
 	}
 
 	/**
 	 * Checks if error is an application-specific error
 	 */
-	private static isApplicationError(error: any): boolean {
+	private static IsApplicationError(error: any): boolean {
 		return error.code && Object.values(GraphQLErrorCode).includes(error.code);
 	}
 
 	/**
 	 * Checks if error is a validation error
 	 */
-	private static isValidationError(error: any): boolean {
+	private static IsValidationError(error: any): boolean {
 		return error.name === 'IValidationError' ||
 			   Boolean(error.message?.includes('validation')) ||
 			   Boolean(error.errors);
@@ -69,7 +69,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Checks if error is an authentication error
 	 */
-	private static isAuthenticationError(error: any): boolean {
+	private static IsAuthenticationError(error: any): boolean {
 		return error.name === 'UnauthorizedException' ||
 			   Boolean(error.message?.includes('authentication')) ||
 			   Boolean(error.message?.includes('token'));
@@ -78,7 +78,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Checks if error is an authorization error
 	 */
-	private static isAuthorizationError(error: any): boolean {
+	private static IsAuthorizationError(error: any): boolean {
 		return error.name === 'ForbiddenException' ||
 			   Boolean(error.message?.includes('permission')) ||
 			   Boolean(error.message?.includes('forbidden'));
@@ -87,7 +87,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Checks if error is a rate limit error
 	 */
-	private static isRateLimitError(error: any): boolean {
+	private static IsRateLimitError(error: any): boolean {
 		return error.name === 'RateLimitException' ||
 			   Boolean(error.message?.includes('rate limit')) ||
 			   Boolean(error.message?.includes('too many requests'));
@@ -96,7 +96,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats application-specific errors
 	 */
-	private static formatApplicationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
+	private static FormatApplicationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
 		this.Logger.warn(`Application error: ${originalError.message}`, originalError.stack);
 
 		return {
@@ -113,15 +113,15 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats validation errors
 	 */
-	private static formatValidationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
-		const validationErrors = this.extractValidationErrors(originalError);
+	private static FormatValidationError(_error: GraphQLError, originalError: any, context?: any): GraphQLFormattedError {
+		const ValidationErrors = this.ExtractValidationErrors(originalError);
 
 		return {
 			message: 'Validation failed',
 			extensions: {
 				code: GraphQLErrorCode.BAD_USER_INPUT,
 				timestamp: new Date().toISOString(),
-				validationErrors,
+				validationErrors: ValidationErrors,
 				...(context?.operationName && { operationName: context.operationName }),
 			},
 		};
@@ -130,7 +130,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats authentication errors
 	 */
-	private static formatAuthenticationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+	private static FormatAuthenticationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
 		return {
 			message: 'Authentication required',
 			extensions: {
@@ -144,7 +144,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats authorization errors
 	 */
-	private static formatAuthorizationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+	private static FormatAuthorizationError(_error: GraphQLError, context?: any): GraphQLFormattedError {
 		return {
 			message: 'Access denied',
 			extensions: {
@@ -158,7 +158,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats rate limit errors
 	 */
-	private static formatRateLimitError(_error: GraphQLError, context?: any): GraphQLFormattedError {
+	private static FormatRateLimitError(_error: GraphQLError, context?: any): GraphQLFormattedError {
 		return {
 			message: 'Rate limit exceeded',
 			extensions: {
@@ -172,12 +172,12 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Formats generic/unexpected errors
 	 */
-	private static formatGenericError(error: GraphQLError, context?: any): GraphQLFormattedError {
+	private static FormatGenericError(error: GraphQLError, context?: any): GraphQLFormattedError {
 		// Log internal errors for debugging
 		this.Logger.error(`GraphQL Error: ${error.message}`, error.stack);
 
-		const originalError = error.originalError as any;
-		const statusCode = originalError?.getStatus?.() ?? originalError?.status ?? originalError?.statusCode;
+		const OriginalError = error.originalError as any;
+		const StatusCode = OriginalError?.getStatus?.() ?? OriginalError?.status ?? OriginalError?.statusCode;
 
 		// Don't expose internal error details to client
 		return {
@@ -185,7 +185,7 @@ export class GraphQLErrorFormatter {
 			extensions: {
 				code: GraphQLErrorCode.INTERNAL_ERROR,
 				timestamp: new Date().toISOString(),
-				...(statusCode !== undefined && { statusCode }),
+				...(StatusCode !== undefined && { statusCode: StatusCode }),
 				...(context?.user?.id && { userId: context.user.id }),
 				...(context?.operationName && { operationName: context.operationName }),
 			},
@@ -195,7 +195,7 @@ export class GraphQLErrorFormatter {
 	/**
 	 * Extracts validation errors from various formats
 	 */
-	private static extractValidationErrors(error: any): any[] {
+	private static ExtractValidationErrors(error: any): any[] {
 		if (error.errors) {
 			// Class-validator errors
 			return Object.values(error.errors).map((fieldErrors: any) => ({

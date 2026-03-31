@@ -40,7 +40,7 @@ let isInitializedFlag = false;
  * Get the global SDK instance (internal use, primarily for testing)
  * @internal
  */
-export function getSdkInstance(): NodeTracerProvider | null {
+export function GetSdkInstance(): NodeTracerProvider | null {
 	return sdkInstance;
 }
 
@@ -61,7 +61,7 @@ export function getSdkInstance(): NodeTracerProvider | null {
  * });
  * ```
  */
-export async function initializeOpenTelemetry(config: OpenTelemetryConfig): Promise<void> {
+export async function InitializeOpenTelemetry(config: OpenTelemetryConfig): Promise<void> {
 	if (isInitializedFlag) {
 		return;
 	}
@@ -100,7 +100,7 @@ export async function initializeOpenTelemetry(config: OpenTelemetryConfig): Prom
  *
  * @returns Promise<void>
  */
-export async function shutdownOpenTelemetry(): Promise<void> {
+export async function ShutdownOpenTelemetry(): Promise<void> {
 	if (!sdkInstance) {
 		return;
 	}
@@ -121,6 +121,6 @@ export async function shutdownOpenTelemetry(): Promise<void> {
  *
  * @returns boolean
  */
-export function isInitialized(): boolean {
+export function IsInitialized(): boolean {
 	return isInitializedFlag;
 }

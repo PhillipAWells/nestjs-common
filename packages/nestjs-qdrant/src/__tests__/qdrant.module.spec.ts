@@ -7,7 +7,7 @@ import { Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { QdrantModule } from '../qdrant.module.js';
 import { QdrantService } from '../qdrant.service.js';
-import { QDRANT_CLIENT_TOKEN, QDRANT_MODULE_OPTIONS, getQdrantClientToken, getQdrantModuleOptionsToken } from '../qdrant.constants.js';
+import { QDRANT_CLIENT_TOKEN, QDRANT_MODULE_OPTIONS, GetQdrantClientToken, GetQdrantModuleOptionsToken } from '../qdrant.constants.js';
 import type { TQdrantModuleOptions, IQdrantOptionsFactory } from '../qdrant.interfaces.js';
 
 describe('QdrantModule', () => {
@@ -21,7 +21,7 @@ describe('QdrantModule', () => {
 
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [QdrantModule.forRoot(mockQdrantOptions)],
+				imports: [QdrantModule.ForRoot(mockQdrantOptions)],
 			}).compile();
 		});
 
@@ -63,7 +63,7 @@ describe('QdrantModule', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
 				imports: [
-					QdrantModule.forRootAsync({
+					QdrantModule.ForRootAsync({
 						useFactory: () => mockQdrantOptions,
 					}),
 				],
@@ -109,7 +109,7 @@ describe('QdrantModule', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
 				imports: [
-					QdrantModule.forRootAsync({
+					QdrantModule.ForRootAsync({
 						useClass: TestOptionsFactory,
 					}),
 				],
@@ -161,7 +161,7 @@ describe('QdrantModule', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
 				imports: [
-					QdrantModule.forRootAsync({
+					QdrantModule.ForRootAsync({
 						imports: [TestOptionsModule],
 						useExisting: TestOptionsFactory,
 					}),
@@ -199,7 +199,7 @@ describe('QdrantModule', () => {
 	describe('error handling', () => {
 		it('should throw error for invalid async options', () => {
 			expect(() => {
-				QdrantModule.forRootAsync({} as any);
+				QdrantModule.ForRootAsync({} as any);
 			}).toThrow('Invalid async module options: must specify useFactory, useClass, or useExisting.');
 		});
 	});
@@ -216,7 +216,7 @@ describe('QdrantModule', () => {
 
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
-					imports: [QdrantModule.forRoot(namedOptions)],
+					imports: [QdrantModule.ForRoot(namedOptions)],
 				}).compile();
 			});
 
@@ -225,14 +225,14 @@ describe('QdrantModule', () => {
 			});
 
 			it('should register client under named token', () => {
-				const namedClientToken = getQdrantClientToken('archive');
+				const namedClientToken = GetQdrantClientToken('archive');
 				const client = module.get<QdrantClient>(namedClientToken);
 				expect(client).toBeDefined();
 				expect(client).toBeInstanceOf(QdrantClient);
 			});
 
 			it('should register options under named token without name field', () => {
-				const namedOptionsToken = getQdrantModuleOptionsToken('archive');
+				const namedOptionsToken = GetQdrantModuleOptionsToken('archive');
 				const options = module.get<TQdrantModuleOptions>(namedOptionsToken);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://qdrant-archive:6333');
@@ -253,7 +253,7 @@ describe('QdrantModule', () => {
 
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
-					imports: [QdrantModule.forRoot(mockQdrantOptions)],
+					imports: [QdrantModule.ForRoot(mockQdrantOptions)],
 				}).compile();
 			});
 
@@ -286,7 +286,7 @@ describe('QdrantModule', () => {
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
 					imports: [
-						QdrantModule.forRootAsync({
+						QdrantModule.ForRootAsync({
 							useFactory: () => namedOptions,
 							name: 'archive',
 						}),
@@ -299,14 +299,14 @@ describe('QdrantModule', () => {
 			});
 
 			it('should register client under named token', () => {
-				const namedClientToken = getQdrantClientToken('archive');
+				const namedClientToken = GetQdrantClientToken('archive');
 				const client = module.get<QdrantClient>(namedClientToken);
 				expect(client).toBeDefined();
 				expect(client).toBeInstanceOf(QdrantClient);
 			});
 
 			it('should register options under named token without name field', () => {
-				const namedOptionsToken = getQdrantModuleOptionsToken('archive');
+				const namedOptionsToken = GetQdrantModuleOptionsToken('archive');
 				const options = module.get<TQdrantModuleOptions>(namedOptionsToken);
 				expect(options).toBeDefined();
 				expect(options.url).toBe('http://qdrant-archive:6333');
@@ -320,8 +320,8 @@ describe('QdrantModule', () => {
 			beforeEach(async () => {
 				module = await Test.createTestingModule({
 					imports: [
-						QdrantModule.forRoot({ url: 'http://qdrant-main:6333', name: 'main', checkCompatibility: false }),
-						QdrantModule.forRoot({ url: 'http://qdrant-archive:6333', name: 'archive', checkCompatibility: false }, false),
+						QdrantModule.ForRoot({ url: 'http://qdrant-main:6333', name: 'main', checkCompatibility: false }),
+						QdrantModule.ForRoot({ url: 'http://qdrant-archive:6333', name: 'archive', checkCompatibility: false }, false),
 					],
 				}).compile();
 			});
@@ -331,8 +331,8 @@ describe('QdrantModule', () => {
 			});
 
 			it('should register both named clients under different tokens', () => {
-				const mainClientToken = getQdrantClientToken('main');
-				const archiveClientToken = getQdrantClientToken('archive');
+				const mainClientToken = GetQdrantClientToken('main');
+				const archiveClientToken = GetQdrantClientToken('archive');
 
 				const mainClient = module.get<QdrantClient>(mainClientToken);
 				const archiveClient = module.get<QdrantClient>(archiveClientToken);

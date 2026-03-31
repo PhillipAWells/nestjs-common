@@ -18,7 +18,7 @@ describe('GraphQL Rate Limit Guard - Advanced Rate Limiting', () => {
 
 		// Manual mock for RateLimitService
 		mockRateLimitService = {
-			checkLimit: async (clientId: string) => {
+			CheckLimit: async (clientId: string) => {
 				// Default: allow request
 				if ((mockRateLimitService as any)._checkLimitOverride) {
 					return (mockRateLimitService as any)._checkLimitOverride(clientId);

@@ -42,7 +42,7 @@ export const DEFAULT_COMPLEXITY_CONFIG: IComplexityConfig = {
  * @param config Complexity configuration
  * @returns Calculated complexity score
  */
-export function calculateQueryComplexity(
+export function CalculateQueryComplexity(
 	schema: any,
 	query: any,
 	variables: Record<string, any> | undefined,
@@ -52,7 +52,7 @@ export function calculateQueryComplexity(
 	const { defaultComplexity = 1 } = config;
 
 	try {
-		const complexity = getComplexity({
+		const Complexity = getComplexity({
 			schema,
 			query,
 			...(variables !== undefined ? { variables } : {}),
@@ -63,11 +63,11 @@ export function calculateQueryComplexity(
 			],
 		});
 
-		return complexity;
+		return Complexity;
 	} catch (error) {
 		// If complexity calculation fails, return a high complexity to be safe
-		const logger = new AppLogger(undefined, 'QueryComplexity');
-		logger.warn('Failed to calculate query complexity:', getErrorStack(error));
+		const Logger = new AppLogger(undefined, 'QueryComplexity');
+		Logger.warn('Failed to calculate query complexity:', getErrorStack(error));
 		return config.limits?.maxComplexity ?? QUERY_COMPLEXITY_THRESHOLD;
 	}
 }
@@ -78,7 +78,7 @@ export function calculateQueryComplexity(
  * @param config Complexity configuration
  * @returns True if query exceeds limits
  */
-export function exceedsComplexityLimit(
+export function ExceedsComplexityLimit(
 	complexity: number,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
@@ -92,28 +92,28 @@ export function exceedsComplexityLimit(
  * @param maxDepth Maximum allowed depth
  * @returns Query depth
  */
-export function calculateQueryDepth(
+export function CalculateQueryDepth(
 	info: GraphQLResolveInfo,
 	maxDepth: number = QUERY_DEPTH_LIMIT,
 ): number {
-	let depth = 0;
-	let [current] = info.fieldNodes;
+	let Depth = 0;
+	let [Current] = info.fieldNodes;
 
-	while (current && depth < maxDepth) {
-		depth++;
-		const selections = current.selectionSet?.selections ?? [];
-		if (selections.length === 0) break;
+	while (Current && Depth < maxDepth) {
+		Depth++;
+		const Selections = Current.selectionSet?.selections ?? [];
+		if (Selections.length === 0) break;
 
 		// Find the first field selection (skip fragments for simplicity)
-		const fieldSelection = selections.find(
+		const FieldSelection = Selections.find(
 			(selection: any) => selection.kind === 'Field',
 		) as any;
 
-		if (!fieldSelection) break;
-		current = fieldSelection;
+		if (!FieldSelection) break;
+		Current = FieldSelection;
 	}
 
-	return depth;
+	return Depth;
 }
 
 /**
@@ -122,7 +122,7 @@ export function calculateQueryDepth(
  * @param config Complexity configuration
  * @returns True if depth exceeds limits
  */
-export function exceedsDepthLimit(
+export function ExceedsDepthLimit(
 	depth: number,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): boolean {
@@ -135,7 +135,7 @@ export function exceedsDepthLimit(
  * @param fieldConfig GraphQL field configuration
  * @returns Field complexity or default
  */
-export function getFieldComplexity(
+export function GetFieldComplexity(
 	fieldConfig: any,
 	defaultComplexity: number = 1,
 ): number {
@@ -149,7 +149,7 @@ export function getFieldComplexity(
  * @param config Complexity configuration
  * @returns Adjusted complexity
  */
-export function applyListMultiplier(
+export function ApplyListMultiplier(
 	complexity: number,
 	isList: boolean,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
@@ -167,11 +167,11 @@ export function applyListMultiplier(
  * @param config Complexity configuration
  * @returns Adjusted complexity
  */
-export function applyDepthMultiplier(
+export function ApplyDepthMultiplier(
 	complexity: number,
 	depth: number,
 	config: IComplexityConfig = DEFAULT_COMPLEXITY_CONFIG,
 ): number {
-	const { depth: depthMultiplier = QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } = config.multipliers ?? {};
-	return complexity * Math.pow(depthMultiplier, depth - 1);
+	const { depth: DepthMultiplier = QUERY_COMPLEXITY_DEFAULT_DEPTH_MULTIPLIER } = config.multipliers ?? {};
+	return complexity * Math.pow(DepthMultiplier, depth - 1);
 }

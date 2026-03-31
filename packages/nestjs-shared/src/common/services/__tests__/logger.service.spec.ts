@@ -41,25 +41,25 @@ describe('AppLogger', () => {
 			}
 		});
 
-		it('should parse debug level', () => {
+		it('should parse Debug() level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('debug');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 		});
 
-		it('should parse info level', () => {
+		it('should parse Info() level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 
-		it('should parse warn level', () => {
+		it('should parse Warn() level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('warn');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.WARN);
 		});
 
-		it('should parse error level', () => {
+		it('should parse Error() level', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('error');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.ERROR);
@@ -89,17 +89,17 @@ describe('AppLogger', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 	});
 
-	describe('createContextualLogger', () => {
+	describe('CreateContextualLogger', () => {
 		it('should create logger with context', () => {
-			const contextualLogger = service.createContextualLogger('TestContext');
+			const contextualLogger = service.CreateContextualLogger('TestContext');
 			expect(contextualLogger).toBeInstanceOf(AppLogger);
 		});
 	});
@@ -107,57 +107,57 @@ describe('AppLogger', () => {
 	describe('sanitizeMetadata', () => {
 		it('should redact password fields', () => {
 			const metadata = { username: 'user', password: 'secret123' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.password).toBe('[REDACTED]');
 			expect(result.username).toBe('user');
 		});
 
 		it('should redact token fields', () => {
 			const metadata = { token: 'abc123', refreshToken: 'xyz789' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.token).toBe('[REDACTED]');
 			expect(result.refreshToken).toBe('[REDACTED]');
 		});
 
 		it('should redact authorization headers', () => {
 			const metadata = { authorization: 'Bearer token123', auth: 'secret' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.authorization).toBe('[REDACTED]');
 			expect(result.auth).toBe('[REDACTED]');
 		});
 
 		it('should redact API keys', () => {
 			const metadata = { api_key: 'key123', apiKey: 'key456', apisecret: 'secret' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.api_key).toBe('[REDACTED]');
 			expect(result.apiKey).toBe('[REDACTED]');
 			expect(result.apisecret).toBe('[REDACTED]');
 		});
 
-		it('should redact credit card info', () => {
+		it('should redact credit card Info()', () => {
 			const metadata = { credit_card: '4111111111111111', cardnumber: '1234' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.credit_card).toBe('[REDACTED]');
 			expect(result.cardnumber).toBe('[REDACTED]');
 		});
 
 		it('should redact SSN', () => {
 			const metadata = { ssn: '123-45-6789', social_security: '987654321' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.ssn).toBe('[REDACTED]');
 			expect(result.social_security).toBe('[REDACTED]');
 		});
 
 		it('should redact cookies and sessions', () => {
 			const metadata = { cookie: 'sessionid=abc', session: 'xyz' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.cookie).toBe('[REDACTED]');
 			expect(result.session).toBe('[REDACTED]');
 		});
 
 		it('should handle case-insensitive matching', () => {
 			const metadata = { PASSWORD: 'secret', Token: 'token', AUTHORIZATION: 'Bearer' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.PASSWORD).toBe('[REDACTED]');
 			expect(result.Token).toBe('[REDACTED]');
 			expect(result.AUTHORIZATION).toBe('[REDACTED]');
@@ -168,14 +168,14 @@ describe('AppLogger', () => {
 				user: { password: 'secret', name: 'John' },
 				config: { api_key: 'key123' },
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.user.password).toBe('[REDACTED]');
 			expect(result.user.name).toBe('John');
 			expect(result.config.api_key).toBe('[REDACTED]');
 		});
 
 		it('should handle undefined metadata', () => {
-			const result = (service as any).sanitizeMetadata(undefined);
+			const result = (service as any).SanitizeMetadata(undefined);
 			expect(result).toBeUndefined();
 		});
 
@@ -186,7 +186,7 @@ describe('AppLogger', () => {
 					{ password: 'secret2' },
 				],
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.items[0].password).toBe('[REDACTED]');
 			expect(result.items[1].password).toBe('[REDACTED]');
 		});
@@ -194,7 +194,7 @@ describe('AppLogger', () => {
 		it('should handle circular references in objects', () => {
 			const obj: any = { name: 'test', password: 'secret' };
 			obj.self = obj; // Create circular reference
-			const result = (service as any).sanitizeMetadata({ obj });
+			const result = (service as any).SanitizeMetadata({ obj });
 			expect(result).toBeDefined();
 		});
 
@@ -205,20 +205,20 @@ describe('AppLogger', () => {
 				current[`level${i}`] = { password: `secret${i}` };
 				current = current[`level${i}`];
 			}
-			const result = (service as any).sanitizeMetadata(deepObj);
+			const result = (service as any).SanitizeMetadata(deepObj);
 			expect(result.level1.password).toBe('[REDACTED]');
 		});
 
 		it('should redact sensitive keys even with null values', () => {
 			const metadata = { password: null, username: 'user' };
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.password).toBe('[REDACTED]');
 			expect(result.username).toBe('user');
 		});
 
 		it('should handle empty objects', () => {
 			const metadata = {};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result).toEqual({});
 		});
 
@@ -228,7 +228,7 @@ describe('AppLogger', () => {
 				encryptionkey: 'key3',
 				apisecret: 'key4',
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.privatekey).toBe('[REDACTED]');
 			expect(result.encryptionkey).toBe('[REDACTED]');
 			expect(result.apisecret).toBe('[REDACTED]');
@@ -236,25 +236,25 @@ describe('AppLogger', () => {
 	});
 
 	describe('Various log levels', () => {
-		it('should log debug messages when level is DEBUG', () => {
+		it('should log Debug() messages when level is DEBUG', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('debug');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.DEBUG);
 		});
 
-		it('should log info messages when level is INFO', () => {
+		it('should log Info() messages when level is INFO', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
 		});
 
-		it('should log warn messages when level is WARN', () => {
+		it('should log Warn() messages when level is WARN', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('warn');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.WARN);
 		});
 
-		it('should log error messages when level is ERROR', () => {
+		it('should log Error() messages when level is ERROR', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('error');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.ERROR);
@@ -269,7 +269,7 @@ describe('AppLogger', () => {
 
 	describe('Edge cases', () => {
 		it('should handle null metadata gracefully', () => {
-			const result = (service as any).sanitizeMetadata(null);
+			const result = (service as any).SanitizeMetadata(null);
 			expect(result).toBeUndefined(); // sanitizeMetadata returns undefined for null input
 		});
 
@@ -283,7 +283,7 @@ describe('AppLogger', () => {
 				// eslint-disable-next-line object-shorthand
 				undefined: undefined,
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.number).toBe(123);
 			expect(result.string).toBe('value');
 			expect(result.boolean).toBe(true);
@@ -295,14 +295,14 @@ describe('AppLogger', () => {
 				api_key_id: '123',
 				token_expires: 'tomorrow',
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			// Fields that contain but are not exactly named sensitive keys should be redacted
 			expect(result).toBeDefined();
 		});
 
 		it('should create unique logger instances for different contexts', () => {
-			const logger1 = service.createContextualLogger('Context1');
-			const logger2 = service.createContextualLogger('Context2');
+			const logger1 = service.CreateContextualLogger('Context1');
+			const logger2 = service.CreateContextualLogger('Context2');
 			expect(logger1).toBeDefined();
 			expect(logger2).toBeDefined();
 		});
@@ -316,7 +316,7 @@ describe('AppLogger', () => {
 					null,
 				],
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.items[0].password).toBe('[REDACTED]');
 			expect(result.items[1]).toBe('string');
 			expect(result.items[2]).toBe(123);
@@ -328,55 +328,55 @@ describe('AppLogger', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('debug');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 
 		it('should respect INFO log level and filter DEBUG', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('info');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 
 		it('should respect WARN log level and filter DEBUG and INFO', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('warn');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 
 		it('should respect ERROR log level and filter DEBUG, INFO, and WARN', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('error');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(true);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 
 		it('should respect FATAL log level and filter all others', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('fatal');
 			const logger = new AppLogger(configService);
 
-			expect((logger as any).shouldLog(LogLevel.DEBUG)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.INFO)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.WARN)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.ERROR)).toBe(false);
-			expect((logger as any).shouldLog(LogLevel.FATAL)).toBe(true);
+			expect((logger as any).ShouldLog(LogLevel.DEBUG)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.INFO)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.WARN)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.ERROR)).toBe(false);
+			expect((logger as any).ShouldLog(LogLevel.FATAL)).toBe(true);
 		});
 	});
 
@@ -387,7 +387,7 @@ describe('AppLogger', () => {
 				update_password_request: 'data',
 				confirm_password: 'match',
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			// Fields that contain sensitive patterns have their key names redacted
 			expect(result['[REDACTED_KEY]']).toBe('[REDACTED]');
 		});
@@ -400,7 +400,7 @@ describe('AppLogger', () => {
 				bearertoken: 'token123',
 				sessiontoken: 'sess456',
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.token).toBe('[REDACTED]');
 			expect(result.accesstoken).toBe('[REDACTED]');
 			expect(result.refreshtoken).toBe('[REDACTED]');
@@ -419,7 +419,7 @@ describe('AppLogger', () => {
 					},
 				},
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.level1.level2.level3.password).toBe('[REDACTED]');
 			expect(result.level1.level2.level3.api_key).toBe('[REDACTED]');
 		});
@@ -432,7 +432,7 @@ describe('AppLogger', () => {
 					{ id: 3, api_key: 'key3', name: 'User3' },
 				],
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.users[0].password).toBe('[REDACTED]');
 			expect(result.users[1].password).toBe('[REDACTED]');
 			expect(result.users[2].api_key).toBe('[REDACTED]');
@@ -446,7 +446,7 @@ describe('AppLogger', () => {
 				current.nested = { value: `level${i}`, password: `secret${i}` };
 				current = current.nested;
 			}
-			const result = (service as any).sanitizeMetadata(deepObj);
+			const result = (service as any).SanitizeMetadata(deepObj);
 			expect(result).toBeDefined();
 		});
 
@@ -456,7 +456,7 @@ describe('AppLogger', () => {
 				encryptionkey: 'enc456',
 				apisecret: 'secret123',
 			};
-			const result = (service as any).sanitizeMetadata(metadata);
+			const result = (service as any).SanitizeMetadata(metadata);
 			expect(result.privatekey).toBe('[REDACTED]');
 			expect(result.encryptionkey).toBe('[REDACTED]');
 			expect(result.apisecret).toBe('[REDACTED]');
@@ -485,25 +485,25 @@ describe('AppLogger', () => {
 			}).not.toThrow();
 		});
 
-		it('should support info(message) signature', () => {
+		it('should support Info()(message) signature', () => {
 			expect(() => {
 				service.info('Info message');
 			}).not.toThrow();
 		});
 
-		it('should support warn(message) signature', () => {
+		it('should support Warn()(message) signature', () => {
 			expect(() => {
 				service.warn('Warning message');
 			}).not.toThrow();
 		});
 
-		it('should support error(message) signature', () => {
+		it('should support Error()(message) signature', () => {
 			expect(() => {
 				service.error('Error message');
 			}).not.toThrow();
 		});
 
-		it('should support error(message, trace, context) signature', () => {
+		it('should support Error()(message, trace, context) signature', () => {
 			expect(() => {
 				service.error('Error message', 'stack trace', 'ErrorContext');
 			}).not.toThrow();
@@ -523,7 +523,7 @@ describe('AppLogger', () => {
 	});
 
 	describe('Invalid log level handling', () => {
-		it('should fall back to INFO for invalid LOG_LEVEL and log warning', () => {
+		it('should fall back to INFO for invalid LOG_LEVEL and log Warn()ing', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('invalid_level');
 			const logger = new AppLogger(configService);
 			expect((logger as any).MinLevel).toBe(LogLevel.INFO);
@@ -538,8 +538,8 @@ describe('AppLogger', () => {
 
 	describe('Contextual logger creation', () => {
 		it('should create contextual logger with proper isolation', () => {
-			const contextualLogger1 = service.createContextualLogger('Context1');
-			const contextualLogger2 = service.createContextualLogger('Context2');
+			const contextualLogger1 = service.CreateContextualLogger('Context1');
+			const contextualLogger2 = service.CreateContextualLogger('Context2');
 
 			expect(contextualLogger1).toBeInstanceOf(AppLogger);
 			expect(contextualLogger2).toBeInstanceOf(AppLogger);
@@ -547,8 +547,8 @@ describe('AppLogger', () => {
 		});
 
 		it('should create multiple contexts without affecting parent logger', () => {
-			const context1 = service.createContextualLogger('ServiceA');
-			const context2 = service.createContextualLogger('ServiceB');
+			const context1 = service.CreateContextualLogger('ServiceA');
+			const context2 = service.CreateContextualLogger('ServiceB');
 
 			expect(context1).toBeDefined();
 			expect(context2).toBeDefined();
@@ -556,23 +556,23 @@ describe('AppLogger', () => {
 		});
 
 		it('should handle nested contextual logger creation', () => {
-			const context1 = service.createContextualLogger('Context1');
-			const context2 = context1.createContextualLogger('Context2');
+			const context1 = service.CreateContextualLogger('Context1');
+			const context2 = context1.CreateContextualLogger('Context2');
 
 			expect(context2).toBeInstanceOf(AppLogger);
 		});
 	});
 
-	describe('Fallback behavior with console.error', () => {
-		it('should handle console.error gracefully during invalid log level warning', () => {
+	describe('Fallback behavior with console.Error()', () => {
+		it('should handle console.Error() gracefully during invalid log level Warn()ing', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('invalid');
-			// This should not throw even if console.error fails
+			// This should not throw even if console.Error() fails
 			expect(() => {
 				new AppLogger(configService);
 			}).not.toThrow();
 		});
 
-		it('should suppress console.error failures silently', () => {
+		it('should suppress console.Error() failures silently', () => {
 			vi.spyOn(configService, 'get').mockReturnValue('not_a_level');
 			const logger = new AppLogger(configService);
 			expect(logger).toBeDefined();
@@ -580,28 +580,28 @@ describe('AppLogger', () => {
 	});
 
 	describe('Metadata building with trace context', () => {
-		it('should build metadata with context information', () => {
+		it('should build metadata with context Info()rmation', () => {
 			const metadata = { user: 'test' };
-			const result = (service as any).buildMetadata('TestContext', metadata);
+			const result = (service as any).BuildMetadata('TestContext', metadata);
 
 			expect(result.context).toBe('TestContext');
 			expect(result.metadata).toBeDefined();
 		});
 
 		it('should handle metadata building without trace context', () => {
-			const result = (service as any).buildMetadata('SimpleContext');
+			const result = (service as any).BuildMetadata('SimpleContext');
 			expect(result.context).toBe('SimpleContext');
 			expect(result).toBeDefined();
 		});
 
 		it('should handle empty context string', () => {
-			const result = (service as any).buildMetadata('');
+			const result = (service as any).BuildMetadata('');
 			expect(result.context).toBe('');
 		});
 
 		it('should sanitize metadata during building', () => {
 			const metadata = { password: 'secret' };
-			const result = (service as any).buildMetadata('Context', metadata);
+			const result = (service as any).BuildMetadata('Context', metadata);
 
 			expect(result.metadata.password).toBe('[REDACTED]');
 		});

@@ -31,9 +31,9 @@ describe('GraphQLService - Type Safety', () => {
 			});
 
 			// Type-safe validation
-			expect(() => service.validateSchema(schema)).not.toThrow();
+			expect(() => service.ValidateSchema(schema)).not.toThrow();
 
-			const retrievedSchema = service.getSchema();
+			const retrievedSchema = service.GetSchema();
 
 			expect(retrievedSchema).toEqual(schema);
 			expect(retrievedSchema).toBeInstanceOf(GraphQLSchema);
@@ -42,7 +42,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should throw error for invalid schema with typed error', () => {
 			const invalidSchema = new GraphQLSchema({});
 
-			expect(() => service.validateSchema(invalidSchema)).toThrow(
+			expect(() => service.ValidateSchema(invalidSchema)).toThrow(
 				'GraphQL schema must have a query type',
 			);
 		});
@@ -50,7 +50,7 @@ describe('GraphQLService - Type Safety', () => {
 
 	describe('Cursor creation with typed data', () => {
 		it('should create properly typed cursor from ID and timestamp', () => {
-			const cursor = service.createCursor('item-123', 1_635_700_000);
+			const cursor = service.CreateCursor('item-123', 1_635_700_000);
 
 			expect(typeof cursor).toBe('string');
 			expect(cursor.length).toBeGreaterThan(0);
@@ -61,13 +61,13 @@ describe('GraphQLService - Type Safety', () => {
 
 		it('should create cursor with auto-generated timestamp', () => {
 			const beforeTime = Date.now();
-			const cursor = service.createCursor('item-456');
+			const cursor = service.CreateCursor('item-456');
 			const afterTime = Date.now();
 
 			expect(typeof cursor).toBe('string');
 
 			// Verify it can be decoded
-			const decoded = service.decodeCursor(cursor);
+			const decoded = service.DecodeCursor(cursor);
 
 			expect(decoded.id).toBe('item-456');
 			expect(decoded.timestamp).toBeGreaterThanOrEqual(beforeTime);
@@ -83,7 +83,7 @@ describe('GraphQLService - Type Safety', () => {
 			};
 
 			const cursor = Buffer.from(JSON.stringify(originalData)).toString('base64');
-			const decoded = service.decodeCursor(cursor);
+			const decoded = service.DecodeCursor(cursor);
 
 			// Type-safe access to decoded data
 			const { id } = decoded;
@@ -94,7 +94,7 @@ describe('GraphQLService - Type Safety', () => {
 		});
 
 		it('should throw error for invalid cursor', () => {
-			expect(() => service.decodeCursor('invalid-base64!')).toThrow(
+			expect(() => service.DecodeCursor('invalid-base64!')).toThrow(
 				'Invalid cursor format',
 			);
 		});
@@ -114,7 +114,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should paginate items and return typed result', () => {
 			const items = createTestItems(5);
 
-			const result = service.paginateItems(items, 2);
+			const result = service.PaginateItems(items, 2);
 
 			// Type-safe access to pagination result
 			const { edges } = result;
@@ -129,7 +129,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should handle pagination without items', () => {
 			const items: Array<{ id: string; createdAt?: Date }> = [];
 
-			const result = service.paginateItems(items);
+			const result = service.PaginateItems(items);
 
 			expect(result.edges).toHaveLength(0);
 			expect(result.pageInfo.hasNextPage).toBe(false);
@@ -139,9 +139,9 @@ describe('GraphQLService - Type Safety', () => {
 
 		it('should paginate with cursor and return typed result', () => {
 			const items = createTestItems(5);
-			const cursor = service.createCursor('item-2', 1_672_531_200_000);
+			const cursor = service.CreateCursor('item-2', 1_672_531_200_000);
 
-			const result = service.paginateItems(items, 2, cursor);
+			const result = service.PaginateItems(items, 2, cursor);
 
 			expect(result.edges).toHaveLength(2);
 			expect(result.edges[0].node.id).toBe('item-3');
@@ -151,14 +151,14 @@ describe('GraphQLService - Type Safety', () => {
 		it('should include proper cursors in edges', () => {
 			const items = createTestItems(3);
 
-			const result = service.paginateItems(items, 2);
+			const result = service.PaginateItems(items, 2);
 
 			result.edges.forEach((edge) => {
 				expect(typeof edge.cursor).toBe('string');
 				expect(edge.cursor.length).toBeGreaterThan(0);
 
 				// Verify cursor can be decoded
-				const decoded = service.decodeCursor(edge.cursor);
+				const decoded = service.DecodeCursor(edge.cursor);
 
 				expect(typeof decoded.id).toBe('string');
 				expect(typeof decoded.timestamp).toBe('number');
@@ -168,7 +168,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should set page info cursors correctly', () => {
 			const items = createTestItems(4);
 
-			const result = service.paginateItems(items, 2);
+			const result = service.PaginateItems(items, 2);
 
 			expect(result.pageInfo.startCursor).toBeDefined();
 			expect(result.pageInfo.endCursor).toBeDefined();
@@ -180,7 +180,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should format error with typed return value', () => {
 			const error = new Error('Validation failed');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect(formatted).toBeDefined();
 			expect(formatted.message).toBe('Validation failed');
@@ -191,7 +191,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should map validation errors correctly', () => {
 			const error = new Error('validation failed');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.VALIDATION_ERROR);
 		});
@@ -199,7 +199,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should map authentication errors correctly', () => {
 			const error = new Error('authentication failed');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.UNAUTHENTICATED);
 		});
@@ -207,7 +207,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should map authorization errors correctly', () => {
 			const error = new Error('authorization failed');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.FORBIDDEN);
 		});
@@ -215,7 +215,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should map not found errors correctly', () => {
 			const error = new Error('Resource not found');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.NOT_FOUND);
 		});
@@ -223,7 +223,7 @@ describe('GraphQLService - Type Safety', () => {
 		it('should default to internal error', () => {
 			const error = new Error('Something unexpected happened');
 
-			const formatted = service.formatError(error);
+			const formatted = service.FormatError(error);
 
 			expect((formatted.extensions as any).code).toBe(GraphQLErrorCode.INTERNAL_ERROR);
 		});
@@ -235,7 +235,7 @@ describe('GraphQLService - Type Safety', () => {
 				process.env['NODE_ENV'] = 'development';
 
 				const error = new Error('Test error');
-				const formatted = service.formatError(error);
+				const formatted = service.FormatError(error);
 
 				expect((formatted.extensions as any).stack).toBeDefined();
 			} finally {
@@ -250,7 +250,7 @@ describe('GraphQLService - Type Safety', () => {
 				process.env['NODE_ENV'] = 'production';
 
 				const error = new Error('Test error');
-				const formatted = service.formatError(error);
+				const formatted = service.FormatError(error);
 
 				expect((formatted.extensions as any).stack).toBeUndefined();
 			} finally {
@@ -271,7 +271,7 @@ describe('GraphQLService - Type Safety', () => {
 				{ id: 'test-1', name: 'Test 1', createdAt: new Date() },
 			];
 
-			const result = service.paginateItems(items, 1);
+			const result = service.PaginateItems(items, 1);
 
 			// Type-safe access
 			const [firstEdge] = result.edges;

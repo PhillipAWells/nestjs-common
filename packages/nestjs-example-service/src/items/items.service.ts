@@ -34,7 +34,7 @@ export class ItemsService {
 		this.ModuleRef = moduleRef;
 	}
 
-	private get qdrant(): QdrantService {
+	private get Qdrant(): QdrantService {
 		return this.ModuleRef.get(QdrantService, { strict: false }) as QdrantService;
 	}
 
@@ -43,12 +43,12 @@ export class ItemsService {
 	 */
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'findSimilar' } })
-	public async findSimilar(vector: number[], limit = DEFAULT_SEARCH_LIMIT): Promise<IItem[]> {
-		const results = await this.qdrant
-			.collection(ItemsService.COLLECTION)
-			.search({ vector, limit, with_payload: true });
+	public async FindSimilar(vector: number[], limit = DEFAULT_SEARCH_LIMIT): Promise<IItem[]> {
+		const Results = await this.Qdrant
+			.Collection(ItemsService.COLLECTION)
+			.Search({ vector, limit, with_payload: true });
 
-		return results.map((r) => ({
+		return Results.map((r) => ({
 			id: String(r.id),
 			name: String(r.payload?.['name'] ?? ''),
 		}));
@@ -59,10 +59,10 @@ export class ItemsService {
 	 */
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'upsertItem' } })
-	public async upsertItem(item: IStoredItem): Promise<void> {
-		await this.qdrant
-			.collection(ItemsService.COLLECTION)
-			.upsert({
+	public async UpsertItem(item: IStoredItem): Promise<void> {
+		await this.Qdrant
+			.Collection(ItemsService.COLLECTION)
+			.Upsert({
 				points: [{
 					id: item.id,
 					vector: item.vector,
@@ -76,9 +76,9 @@ export class ItemsService {
 	 */
 	@Traced()
 	@ProfileMethod({ tags: { operation: 'deleteItem' } })
-	public async deleteItem(id: string): Promise<void> {
-		await this.qdrant
-			.collection(ItemsService.COLLECTION)
-			.delete({ points: [id] });
+	public async DeleteItem(id: string): Promise<void> {
+		await this.Qdrant
+			.Collection(ItemsService.COLLECTION)
+			.Delete({ points: [id] });
 	}
 }

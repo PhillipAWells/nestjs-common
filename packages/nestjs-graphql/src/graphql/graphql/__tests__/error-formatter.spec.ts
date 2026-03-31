@@ -7,7 +7,7 @@ describe('GraphQLErrorFormatter', () => {
 		it('should format a basic GraphQL error', () => {
 			const error = new GraphQLError('Test error');
 
-			const formatted = GraphQLErrorFormatter.formatError(error);
+			const formatted = GraphQLErrorFormatter.FormatError(error);
 
 			expect(formatted.message).toBeDefined();
 			expect((formatted.extensions as any)).toBeDefined();
@@ -22,7 +22,7 @@ describe('GraphQLErrorFormatter', () => {
 				operationName: 'GetUser',
 			} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any)).toBeDefined();
 			expect((formatted.extensions as any).userId).toBe('user_123');
@@ -35,7 +35,7 @@ describe('GraphQLErrorFormatter', () => {
 			(error as any).originalError = new BadRequestException('Invalid input');
 			const request = {} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any).code).toBeDefined();
 			expect((formatted.extensions as any).statusCode).toBeDefined();
@@ -47,7 +47,7 @@ describe('GraphQLErrorFormatter', () => {
 				operationName: 'GetUser',
 			} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any)).toBeDefined();
 			expect((formatted.extensions as any).userId).toBeUndefined();
@@ -60,7 +60,7 @@ describe('GraphQLErrorFormatter', () => {
 				user: { id: 'user_456' },
 			} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any)).toBeDefined();
 			expect((formatted.extensions as any).userId).toBe('user_456');
@@ -71,7 +71,7 @@ describe('GraphQLErrorFormatter', () => {
 			const error = new GraphQLError('Test error');
 			const request = {} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any).timestamp).toBeDefined();
 			expect(typeof (formatted.extensions as any).timestamp).toBe('string');
@@ -80,7 +80,7 @@ describe('GraphQLErrorFormatter', () => {
 		it('should handle null/undefined context', () => {
 			const error = new GraphQLError('Test error');
 
-			const formatted = GraphQLErrorFormatter.formatError(error, undefined);
+			const formatted = GraphQLErrorFormatter.FormatError(error, undefined);
 
 			expect((formatted.extensions as any)).toBeDefined();
 			expect((formatted.extensions as any).timestamp).toBeDefined();
@@ -92,7 +92,7 @@ describe('GraphQLErrorFormatter', () => {
 				user: { id: 'nested_user_id', name: 'John' },
 			} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any).userId).toBe('nested_user_id');
 		});
@@ -105,7 +105,7 @@ describe('GraphQLErrorFormatter', () => {
 				operationName: 'CreateUser',
 			} as any;
 
-			const formatted = GraphQLErrorFormatter.formatError(error, request);
+			const formatted = GraphQLErrorFormatter.FormatError(error, request);
 
 			expect((formatted.extensions as any).userId).toBe('user_789');
 			expect((formatted.extensions as any).operationName).toBe('CreateUser');

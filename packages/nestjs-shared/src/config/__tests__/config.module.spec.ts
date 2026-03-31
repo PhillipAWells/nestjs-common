@@ -7,12 +7,34 @@ import { ValidationService } from '../validation.utils.js';
 describe('ConfigModule', () => {
 	it('should provide ConfigService', () => {
 		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
+			CreateContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
 				debug: vi.fn(),
+				Warn: vi.fn(),
 				warn: vi.fn(),
+				Error: vi.fn(),
 				error: vi.fn(),
+				Info: vi.fn(),
 				info: vi.fn(),
 			}),
+			createContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
+				debug: vi.fn(),
+				Warn: vi.fn(),
+				warn: vi.fn(),
+				Error: vi.fn(),
+				error: vi.fn(),
+				Info: vi.fn(),
+				info: vi.fn(),
+			}),
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
 		} as any;
 		const mockNestConfigService = {
 			get: vi.fn(),
@@ -34,12 +56,34 @@ describe('ConfigModule', () => {
 
 	it('should provide ValidationService', () => {
 		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
+			CreateContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
 				debug: vi.fn(),
+				Warn: vi.fn(),
 				warn: vi.fn(),
+				Error: vi.fn(),
 				error: vi.fn(),
+				Info: vi.fn(),
 				info: vi.fn(),
 			}),
+			createContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
+				debug: vi.fn(),
+				Warn: vi.fn(),
+				warn: vi.fn(),
+				Error: vi.fn(),
+				error: vi.fn(),
+				Info: vi.fn(),
+				info: vi.fn(),
+			}),
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
 		} as any;
 		const mockModuleRef = { get: vi.fn().mockReturnValue(mockAppLogger) } as any;
 		const validationService = new ValidationService(mockModuleRef);
@@ -49,12 +93,34 @@ describe('ConfigModule', () => {
 
 	it('should export ConfigService', () => {
 		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
+			CreateContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
 				debug: vi.fn(),
+				Warn: vi.fn(),
 				warn: vi.fn(),
+				Error: vi.fn(),
 				error: vi.fn(),
+				Info: vi.fn(),
 				info: vi.fn(),
 			}),
+			createContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
+				debug: vi.fn(),
+				Warn: vi.fn(),
+				warn: vi.fn(),
+				Error: vi.fn(),
+				error: vi.fn(),
+				Info: vi.fn(),
+				info: vi.fn(),
+			}),
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
 		} as any;
 		const mockNestConfigService = {
 			get: vi.fn(),
@@ -75,12 +141,34 @@ describe('ConfigModule', () => {
 
 	it('should export ValidationService', () => {
 		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
+			CreateContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
 				debug: vi.fn(),
+				Warn: vi.fn(),
 				warn: vi.fn(),
+				Error: vi.fn(),
 				error: vi.fn(),
+				Info: vi.fn(),
 				info: vi.fn(),
 			}),
+			createContextualLogger: vi.fn().mockReturnValue({
+				Debug: vi.fn(),
+				debug: vi.fn(),
+				Warn: vi.fn(),
+				warn: vi.fn(),
+				Error: vi.fn(),
+				error: vi.fn(),
+				Info: vi.fn(),
+				info: vi.fn(),
+			}),
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
 		} as any;
 		const mockModuleRef = { get: vi.fn().mockReturnValue(mockAppLogger) } as any;
 		const validationService = new ValidationService(mockModuleRef);

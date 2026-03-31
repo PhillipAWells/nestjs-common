@@ -21,6 +21,15 @@ describe('HTTPMetricsInterceptor', () => {
 					contentLength: args[4],
 				});
 			},
+			RecordHttpRequest(...args: any[]) {
+				recordedMetrics.push({
+					method: args[0],
+					route: args[1],
+					statusCode: args[2],
+					duration: args[3],
+					contentLength: args[4],
+				});
+			},
 			recordCounter() {},
 			recordHistogram() {},
 			_metrics: recordedMetrics,

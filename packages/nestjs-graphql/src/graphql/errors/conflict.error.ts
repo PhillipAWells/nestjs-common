@@ -13,13 +13,13 @@ import { GraphqlError } from './graphql-error.js';
  */
 export class ConflictError extends GraphqlError {
 	constructor(message = 'Resource conflict', context?: Record<string, any>) {
-		const options: any = {
+		const Options: any = {
 			code: 'CONFLICT',
 			statusCode: 409,
 		};
 		if (context !== undefined) {
-			options.context = context;
+			Options.context = context;
 		}
-		super(message, options);
+		super(message, Options);
 	}
 }

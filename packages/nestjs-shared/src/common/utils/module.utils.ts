@@ -22,7 +22,7 @@ export interface IAsyncModuleOptions<T, F = unknown> {
  * @param factoryFn  Calls the factory method on the options-factory instance,
  *                   e.g. `(f) => f.createNatsOptions()`
  */
-export function createAsyncOptionsProvider<T, F>(
+export function CreateAsyncOptionsProvider<T, F>(
 	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
@@ -55,17 +55,17 @@ export function createAsyncOptionsProvider<T, F>(
  * @param token      Injection token to provide the resolved options under
  * @param factoryFn  Calls the factory method on the options-factory instance
  */
-export function createAsyncProviders<T, F>(
+export function CreateAsyncProviders<T, F>(
 	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
 ): Provider[] {
 	if (options.useExisting !== undefined || options.useFactory !== undefined) {
-		return [createAsyncOptionsProvider(options, token, factoryFn)];
+		return [CreateAsyncOptionsProvider(options, token, factoryFn)];
 	}
 	if (options.useClass !== undefined) {
 		return [
-			createAsyncOptionsProvider(options, token, factoryFn),
+			CreateAsyncOptionsProvider(options, token, factoryFn),
 			{ provide: options.useClass, useClass: options.useClass },
 		];
 	}

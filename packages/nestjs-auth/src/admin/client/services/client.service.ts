@@ -29,204 +29,204 @@ export class ClientService extends BaseService {
 	/**
 	 * List all clients in a realm
 	 */
-	public async list(realm: string): Promise<IClientRepresentation[]> {
-		this.requireScope('clients:read');
+	public async List(realm: string): Promise<IClientRepresentation[]> {
+		this.RequireScope('clients:read');
 		try {
-			return (await this.withRetry(() => this.AdminClient.clients.find({ realm }))) as any;
+			return (await this.WithRetry(() => this.AdminClient.clients.find({ realm }))) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get a client by ID (internal Keycloak ID, not clientId)
 	 */
-	public async get(realm: string, id: string): Promise<IClientRepresentation> {
-		this.requireScope('clients:read');
+	public async Get(realm: string, id: string): Promise<IClientRepresentation> {
+		this.RequireScope('clients:read');
 		try {
-			return (await this.withRetry(() =>
+			return (await this.WithRetry(() =>
 				this.AdminClient.clients.findOne({ realm, id }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Find a client by clientId (the public Client identifier)
 	 */
-	public async findByClientId(realm: string, clientId: string): Promise<IClientRepresentation | undefined> {
-		this.requireScope('clients:read');
+	public async FindByClientId(realm: string, clientId: string): Promise<IClientRepresentation | undefined> {
+		this.RequireScope('clients:read');
 		try {
-			const clients = (await this.withRetry(() =>
+			const Clients = (await this.WithRetry(() =>
 				this.AdminClient.clients.find({ realm, clientId }),
 			)) as any;
-			return clients[0];
+			return Clients[0];
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a new client
 	 */
-	public async create(realm: string, client: IClientRepresentation): Promise<{ id: string }> {
-		this.requireScope('clients:write');
+	public async Create(realm: string, client: IClientRepresentation): Promise<{ id: string }> {
+		this.RequireScope('clients:write');
 		try {
-			return await this.withRetry(() =>
+			return await this.WithRetry(() =>
 				this.AdminClient.clients.create({ ...client, realm }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Update a client
 	 */
-	public async update(realm: string, id: string, client: IClientRepresentation): Promise<void> {
-		this.requireScope('clients:write');
+	public async Update(realm: string, id: string, client: IClientRepresentation): Promise<void> {
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.clients.update({ realm, id }, client),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete a client
 	 */
-	public async delete(realm: string, id: string): Promise<void> {
-		this.requireScope('clients:write');
+	public async Delete(realm: string, id: string): Promise<void> {
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() => this.AdminClient.clients.del({ realm, id }));
+			await this.WithRetry(() => this.AdminClient.clients.del({ realm, id }));
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get client secret
 	 */
-	public async getSecret(realm: string, id: string): Promise<{ type?: string; value?: string }> {
-		this.requireScope('clients:read');
+	public async GetSecret(realm: string, id: string): Promise<{ type?: string; value?: string }> {
+		this.RequireScope('clients:read');
 		try {
-			return await this.withRetry(() =>
+			return await this.WithRetry(() =>
 				this.AdminClient.clients.getClientSecret({ realm, id }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a protocol mapper for a client
 	 */
-	public async createProtocolMapper(
+	public async CreateProtocolMapper(
 		realm: string,
 		id: string,
 		mapper: IProtocolMapperRepresentation,
 	): Promise<void> {
-		this.requireScope('clients:write');
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.clients.addProtocolMapper({ realm, id }, mapper),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * List protocol mappers for a client
 	 */
-	public async listProtocolMappers(
+	public async ListProtocolMappers(
 		realm: string,
 		id: string,
 	): Promise<IProtocolMapperRepresentation[]> {
-		this.requireScope('clients:read');
+		this.RequireScope('clients:read');
 		try {
-			return (await this.withRetry(() =>
+			return (await this.WithRetry(() =>
 				this.AdminClient.clients.listProtocolMappers({ realm, id }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete a protocol mapper
 	 */
-	public async deleteProtocolMapper(
+	public async DeleteProtocolMapper(
 		realm: string,
 		id: string,
 		mapperId: string,
 	): Promise<void> {
-		this.requireScope('clients:write');
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.clients.delProtocolMapper({ realm, id, mapperId }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a client role
 	 */
-	public async createRole(realm: string, id: string, role: IRoleRepresentation): Promise<void> {
-		this.requireScope('clients:write');
+	public async CreateRole(realm: string, id: string, role: IRoleRepresentation): Promise<void> {
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.clients.createRole({ realm, id }, role as any),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * List roles for a client
 	 */
-	public async listRoles(realm: string, id: string): Promise<IRoleRepresentation[]> {
-		this.requireScope('clients:read');
+	public async ListRoles(realm: string, id: string): Promise<IRoleRepresentation[]> {
+		this.RequireScope('clients:read');
 		try {
-			return (await this.withRetry(() =>
+			return (await this.WithRetry(() =>
 				this.AdminClient.clients.listRoles({ realm, id }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Find a client role by name
 	 */
-	public async findRole(realm: string, id: string, roleName: string): Promise<IRoleRepresentation> {
-		this.requireScope('clients:read');
+	public async FindRole(realm: string, id: string, roleName: string): Promise<IRoleRepresentation> {
+		this.RequireScope('clients:read');
 		try {
-			return (await this.withRetry(() =>
+			return (await this.WithRetry(() =>
 				this.AdminClient.clients.findRole({ realm, id, roleName }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete a client role
 	 */
-	public async deleteRole(realm: string, id: string, roleName: string): Promise<void> {
-		this.requireScope('clients:write');
+	public async DeleteRole(realm: string, id: string, roleName: string): Promise<void> {
+		this.RequireScope('clients:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.clients.delRole({ realm, id, roleName }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

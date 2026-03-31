@@ -75,7 +75,7 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 			};
 
-			const pubSub = factory.createPubSub(config);
+			const pubSub = factory.CreatePubSub(config);
 
 			expect(pubSub).toBeDefined();
 			expect(mockRedisInstance.on).toHaveBeenCalledWith('connect', expect.any(Function));
@@ -94,7 +94,7 @@ describe('RedisPubSubFactory', () => {
 				tls: { ca: 'ca-cert' },
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			expect(MockRedis).toHaveBeenCalledWith(expect.objectContaining({
 				host: 'redis.example.com',
@@ -117,7 +117,7 @@ describe('RedisPubSubFactory', () => {
 				},
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			// Health check interval should be set
 			expect((factory as any).HealthCheckInterval).toBeDefined();
@@ -134,7 +134,7 @@ describe('RedisPubSubFactory', () => {
 				},
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			expect((factory as any).HealthCheckInterval).toBeUndefined();
 		});
@@ -153,9 +153,9 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
-			const status = await factory.getHealthStatus();
+			const status = await factory.GetHealthStatus();
 
 			expect(status.publisher).toBe(true);
 			expect(status.subscriber).toBe(true);
@@ -172,9 +172,9 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
-			const status = await factory.getHealthStatus();
+			const status = await factory.GetHealthStatus();
 
 			expect(status.publisher).toBe(false);
 			expect(status.subscriber).toBe(false);
@@ -193,10 +193,10 @@ describe('RedisPubSubFactory', () => {
 				port: 6379,
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			// Start the health check and advance timers to trigger timeout
-			const statusPromise = factory.getHealthStatus();
+			const statusPromise = factory.GetHealthStatus();
 			await vi.advanceTimersByTimeAsync(10000); // Advance past the 5s timeout
 			const status = await statusPromise;
 
@@ -215,7 +215,7 @@ describe('RedisPubSubFactory', () => {
 				healthCheck: { enabled: true, interval: 60000, timeout: 5000 },
 			};
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			await factory.onModuleDestroy();
 
@@ -231,7 +231,7 @@ describe('RedisPubSubFactory', () => {
 
 			mockPubSubInstance.close.mockRejectedValue(new Error('Close failed'));
 
-			factory.createPubSub(config);
+			factory.CreatePubSub(config);
 
 			// Should not throw despite errors
 			await expect(factory.onModuleDestroy()).resolves.not.toThrow();

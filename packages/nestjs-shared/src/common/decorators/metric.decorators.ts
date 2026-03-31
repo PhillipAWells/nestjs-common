@@ -32,72 +32,72 @@ export class MetricFactory {
 	/**
 	 * Create a counter metric
 	 */
-	public static createCounter(name: string, help: string, labelNames?: string[]): Counter<string> {
-		const config: { name: string; help: string; labelNames?: string[] } = {
+	public static CreateCounter(name: string, help: string, labelNames?: string[]): Counter<string> {
+		const Config: { name: string; help: string; labelNames?: string[] } = {
 			name,
 			help,
 		};
 		if (labelNames !== undefined) {
-			config.labelNames = labelNames;
+			Config.labelNames = labelNames;
 		}
-		return new Counter(config);
+		return new Counter(Config);
 	}
 
 	/**
 	 * Create a gauge metric
 	 */
-	public static createGauge(name: string, help: string, labelNames?: string[]): Gauge<string> {
-		const config: { name: string; help: string; labelNames?: string[] } = {
+	public static CreateGauge(name: string, help: string, labelNames?: string[]): Gauge<string> {
+		const Config: { name: string; help: string; labelNames?: string[] } = {
 			name,
 			help,
 		};
 		if (labelNames !== undefined) {
-			config.labelNames = labelNames;
+			Config.labelNames = labelNames;
 		}
-		return new Gauge(config);
+		return new Gauge(Config);
 	}
 
 	/**
 	 * Create a histogram metric
 	 */
-	public static createHistogram(
+	public static CreateHistogram(
 		name: string,
 		help: string,
 		labelNames?: string[],
 		buckets?: number[],
 	): Histogram<string> {
-		const config: { name: string; help: string; labelNames?: string[]; buckets?: number[] } = {
+		const Config: { name: string; help: string; labelNames?: string[]; buckets?: number[] } = {
 			name,
 			help,
 		};
 		if (labelNames !== undefined) {
-			config.labelNames = labelNames;
+			Config.labelNames = labelNames;
 		}
 		if (buckets !== undefined) {
-			config.buckets = buckets;
+			Config.buckets = buckets;
 		}
-		return new Histogram(config);
+		return new Histogram(Config);
 	}
 
 	/**
 	 * Create a summary metric
 	 */
-	public static createSummary(
+	public static CreateSummary(
 		name: string,
 		help: string,
 		labelNames?: string[],
 		percentiles?: number[],
 	): Summary<string> {
-		const config: { name: string; help: string; labelNames?: string[]; percentiles?: number[] } = {
+		const Config: { name: string; help: string; labelNames?: string[]; percentiles?: number[] } = {
 			name,
 			help,
 		};
 		if (labelNames !== undefined) {
-			config.labelNames = labelNames;
+			Config.labelNames = labelNames;
 		}
 		if (percentiles !== undefined) {
-			config.percentiles = percentiles;
+			Config.percentiles = percentiles;
 		}
-		return new Summary(config);
+		return new Summary(Config);
 	}
 }

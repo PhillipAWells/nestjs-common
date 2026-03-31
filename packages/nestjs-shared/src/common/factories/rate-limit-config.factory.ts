@@ -96,32 +96,32 @@ function DeepMerge(target: any, source: any): any {
 		return target;
 	}
 
-	const result = { ...target };
+	const Result = { ...target };
 
-	for (const key in source) {
-		if (Object.prototype.hasOwnProperty.call(source, key)) {
-			const sourceValue = source[key];
-			const targetValue = target[key];
+	for (const Key in source) {
+		if (Object.prototype.hasOwnProperty.call(source, Key)) {
+			const SourceValue = source[Key];
+			const TargetValue = target[Key];
 
 			// If source is an object (but not array or null), merge recursively
 			if (
-				sourceValue &&
-				typeof sourceValue === 'object' &&
-				!Array.isArray(sourceValue) &&
-				sourceValue !== null &&
-				targetValue &&
-				typeof targetValue === 'object' &&
-				!Array.isArray(targetValue)
+				SourceValue &&
+				typeof SourceValue === 'object' &&
+				!Array.isArray(SourceValue) &&
+				SourceValue !== null &&
+				TargetValue &&
+				typeof TargetValue === 'object' &&
+				!Array.isArray(TargetValue)
 			) {
-				result[key] = DeepMerge(targetValue, sourceValue);
+				Result[Key] = DeepMerge(TargetValue, SourceValue);
 			} else {
 				// Otherwise, use source value (overwrite)
-				result[key] = sourceValue;
+				Result[Key] = SourceValue;
 			}
 		}
 	}
 
-	return result;
+	return Result;
 }
 
 /**
@@ -139,7 +139,7 @@ function DeepMerge(target: any, source: any): any {
  * import { CreateRateLimitConfig } from '@pawells/nestjs-shared';
  *
  * // Use all defaults
- * const config = CreateRateLimitConfig();
+ * const Config = CreateRateLimitConfig();
  *
  * // Override specific limits
  * const customConfig = CreateRateLimitConfig({

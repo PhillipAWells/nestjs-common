@@ -5,9 +5,9 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { initializeOpenTelemetry, shutdownOpenTelemetry, isInitialized } from '../helpers/otel-setup.js';
+import { InitializeOpenTelemetry, ShutdownOpenTelemetry, IsInitialized } from '../helpers/otel-setup.js';
 import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
-import { getTracer, setTracerNamespace, resetTracerNamespace, createSpan, withSpan, addAttributes } from '../../lib/tracing.js';
+import { GetTracer, SetTracerNamespace, ResetTracerNamespace, CreateSpan, WithSpan, AddAttributes } from '../../lib/tracing.js';
 
 describe('Tracing Helpers', () => {
 	let testConfig: OpenTelemetryConfig;
@@ -24,16 +24,16 @@ describe('Tracing Helpers', () => {
 		};
 
 		try {
-			await initializeOpenTelemetry(testConfig);
+			await InitializeOpenTelemetry(testConfig);
 		} catch (error) {
 			console.debug('OpenTelemetry initialization skipped for tests:', error instanceof Error ? error.message : String(error));
 		}
 	});
 
 	afterAll(async () => {
-		if (isInitialized()) {
+		if (IsInitialized()) {
 			try {
-				await shutdownOpenTelemetry();
+				await ShutdownOpenTelemetry();
 			} catch {
 				console.log('Skipping OpenTelemetry shutdown - collector not available');
 			}
@@ -42,14 +42,14 @@ describe('Tracing Helpers', () => {
 
 	describe('getTracer', () => {
 		it('should get a tracer with default namespace', () => {
-			const tracer = getTracer('user-service');
+			const tracer = GetTracer('user-service');
 			expect(tracer).toBeDefined();
 			// Tracer name should be prefixed with namespace
 			expect(tracer).toBeTruthy();
 		});
 
 		it('should get a tracer with custom version', () => {
-			const tracer = getTracer('order-service', '1.2.3');
+			const tracer = GetTracer('order-service', '1.2.3');
 			expect(tracer).toBeDefined();
 		});
 	});
@@ -57,41 +57,41 @@ describe('Tracing Helpers', () => {
 	describe('setTracerNamespace and resetTracerNamespace', () => {
 		it('should set a custom namespace for tracer names', () => {
 			// First, set a custom namespace
-			setTracerNamespace('custom-namespace');
+			SetTracerNamespace('custom-namespace');
 
 			// Get a tracer - it should use the custom namespace
-			const tracer = getTracer('service-name');
+			const tracer = GetTracer('service-name');
 			expect(tracer).toBeDefined();
 
 			// Reset back to default
-			resetTracerNamespace();
+			ResetTracerNamespace();
 		});
 
 		it('should reset tracer namespace to default', () => {
-			setTracerNamespace('temporary-namespace');
+			SetTracerNamespace('temporary-namespace');
 			// Namespace is set to 'temporary-namespace'
 
-			resetTracerNamespace();
+			ResetTracerNamespace();
 			// After reset, subsequent tracers should use default namespace
 
-			const tracer = getTracer('service-name');
+			const tracer = GetTracer('service-name');
 			expect(tracer).toBeDefined();
 		});
 
 		it('should allow empty namespace', () => {
-			setTracerNamespace('');
+			SetTracerNamespace('');
 
-			const tracer = getTracer('service-name');
+			const tracer = GetTracer('service-name');
 			expect(tracer).toBeDefined();
 
-			resetTracerNamespace();
+			ResetTracerNamespace();
 		});
 	});
 
-	describe('createSpan', () => {
+	describe('CreateSpan', () => {
 		it('should create a span with the given name', () => {
-			const tracer = getTracer('test-service');
-			const { span, ctx } = createSpan(tracer, 'test-span');
+			const tracer = GetTracer('test-service');
+			const { span, ctx } = CreateSpan(tracer, 'test-span');
 
 			expect(span).toBeDefined();
 			expect(ctx).toBeDefined();
@@ -99,8 +99,8 @@ describe('Tracing Helpers', () => {
 		});
 
 		it('should create a span with custom options', () => {
-			const tracer = getTracer('test-service');
-			const { span, ctx } = createSpan(tracer, 'test-span', {
+			const tracer = GetTracer('test-service');
+			const { span, ctx } = CreateSpan(tracer, 'test-span', {
 				attributes: { 'test.key': 'test.value' },
 			});
 
@@ -110,8 +110,8 @@ describe('Tracing Helpers', () => {
 		});
 
 		it('should create a span without making it active', () => {
-			const tracer = getTracer('test-service');
-			const { span, ctx } = createSpan(tracer, 'test-span', undefined, false);
+			const tracer = GetTracer('test-service');
+			const { span, ctx } = CreateSpan(tracer, 'test-span', undefined, false);
 
 			expect(span).toBeDefined();
 			expect(ctx).toBeDefined();
@@ -119,18 +119,18 @@ describe('Tracing Helpers', () => {
 		});
 	});
 
-	describe('withSpan', () => {
+	describe('WithSpan', () => {
 		it('should execute a sync function within a span', async () => {
-			const tracer = getTracer('test-service');
+			const tracer = GetTracer('test-service');
 
-			const result = await withSpan(tracer, 'test-operation', () => 'sync-result');
+			const result = await WithSpan(tracer, 'test-operation', () => 'sync-result');
 			expect(result).toBe('sync-result');
 		});
 
 		it('should execute an async function within a span', async () => {
-			const tracer = getTracer('test-service');
+			const tracer = GetTracer('test-service');
 
-			const result = await withSpan(tracer, 'test-operation', async () => {
+			const result = await WithSpan(tracer, 'test-operation', async () => {
 				await new Promise(resolve => setTimeout(resolve, 5));
 				return 'async-result';
 			});
@@ -138,29 +138,29 @@ describe('Tracing Helpers', () => {
 		});
 
 		it('should handle errors in sync functions', async () => {
-			const tracer = getTracer('test-service');
+			const tracer = GetTracer('test-service');
 
 			await expect(
-				withSpan(tracer, 'test-operation', () => {
+				WithSpan(tracer, 'test-operation', () => {
 					throw new Error('Test error');
 				}),
 			).rejects.toThrow('Test error');
 		});
 
 		it('should handle errors in async functions', async () => {
-			const tracer = getTracer('test-service');
+			const tracer = GetTracer('test-service');
 
 			await expect(
-				withSpan(tracer, 'test-operation', async () => {
+				WithSpan(tracer, 'test-operation', async () => {
 					throw new Error('Test async error');
 				}),
 			).rejects.toThrow('Test async error');
 		});
 
 		it('should execute function with span options', async () => {
-			const tracer = getTracer('test-service');
+			const tracer = GetTracer('test-service');
 
-			const result = await withSpan(
+			const result = await WithSpan(
 				tracer,
 				'test-operation',
 				() => 'result-with-options',
@@ -172,12 +172,12 @@ describe('Tracing Helpers', () => {
 		});
 	});
 
-	describe('addAttributes', () => {
+	describe('AddAttributes', () => {
 		it('should add attributes to the active span', () => {
-			// This test verifies that addAttributes doesn't throw
+			// This test verifies that AddAttributes doesn't throw
 			// when called without an active span (graceful degradation)
 			expect(() => {
-				addAttributes({
+				AddAttributes({
 					'test.key': 'value',
 					'test.number': 42,
 					'test.boolean': true,
@@ -187,13 +187,13 @@ describe('Tracing Helpers', () => {
 
 		it('should handle empty attributes object', () => {
 			expect(() => {
-				addAttributes({});
+				AddAttributes({});
 			}).not.toThrow();
 		});
 
 		it('should handle mixed attribute types', () => {
 			expect(() => {
-				addAttributes({
+				AddAttributes({
 					'string.attr': 'test-value',
 					'number.attr': 123,
 					'bool.attr': false,
@@ -206,10 +206,10 @@ describe('Tracing Helpers', () => {
 
 	describe('integration tests', () => {
 		it('should execute nested spans correctly', async () => {
-			const tracer = getTracer('nested-test');
+			const tracer = GetTracer('nested-test');
 
-			const result = await withSpan(tracer, 'outer-span', async () => {
-				const innerResult = await withSpan(tracer, 'inner-span', async () => {
+			const result = await WithSpan(tracer, 'outer-span', async () => {
+				const innerResult = await WithSpan(tracer, 'inner-span', async () => {
 					return 'nested-result';
 				});
 				return innerResult;
@@ -219,15 +219,15 @@ describe('Tracing Helpers', () => {
 		});
 
 		it('should handle namespace changes correctly', async () => {
-			const originalTracer = getTracer('service-before');
+			const originalTracer = GetTracer('service-before');
 			expect(originalTracer).toBeDefined();
 
-			setTracerNamespace('custom');
-			const customTracer = getTracer('service-custom');
+			SetTracerNamespace('custom');
+			const customTracer = GetTracer('service-custom');
 			expect(customTracer).toBeDefined();
 
-			resetTracerNamespace();
-			const restoredTracer = getTracer('service-after');
+			ResetTracerNamespace();
+			const restoredTracer = GetTracer('service-after');
 			expect(restoredTracer).toBeDefined();
 		});
 	});

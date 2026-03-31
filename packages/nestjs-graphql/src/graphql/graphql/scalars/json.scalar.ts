@@ -32,11 +32,11 @@ export class JSONScalar implements CustomScalar<unknown, unknown> {
 			case Kind.LIST:
 				return ast.values.map((v) => this.parseLiteral(v));
 			case Kind.OBJECT: {
-				const result: Record<string, unknown> = {};
-				for (const field of ast.fields) {
-					result[field.name.value] = this.parseLiteral(field.value);
+				const Result: Record<string, unknown> = {};
+				for (const Field of ast.fields) {
+					Result[Field.name.value] = this.parseLiteral(Field.value);
 				}
-				return result;
+				return Result;
 			}
 			default:
 				return null;

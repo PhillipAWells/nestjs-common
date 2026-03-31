@@ -49,7 +49,7 @@ export interface TestModuleConfig {
  * }).compile();
  * ```
  */
-export function createTestModuleConfig(config: TestModuleConfig = {}) {
+export function CreateTestModuleConfig(config: TestModuleConfig = {}) {
 	const {
 		includeCache = true,
 		includeLogger = true,
@@ -112,8 +112,8 @@ export function createTestModuleConfig(config: TestModuleConfig = {}) {
  */
 export function TestModule(config: TestModuleConfig = {}) {
 	return function(target: any) {
-		const moduleConfig = createTestModuleConfig(config);
-		Module(moduleConfig)(target);
+		const ModuleConfig = CreateTestModuleConfig(config);
+		Module(ModuleConfig)(target);
 		return target;
 	};
 }

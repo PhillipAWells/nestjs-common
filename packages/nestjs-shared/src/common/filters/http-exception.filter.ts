@@ -63,37 +63,37 @@ export class HttpExceptionFilter implements ExceptionFilter, ILazyModuleRefServi
 
 	public catch(exception: HttpException, host: ArgumentsHost): void {
 		// Handle regular HTTP requests
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const status = exception.getStatus();
+		const Ctx = host.switchToHttp();
+		const Response = Ctx.getResponse<Response>();
+		const Status = exception.getStatus();
 
-		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
-		const isDevelopment = !isProduction;
+		const IsProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
+		const IsDevelopment = !IsProduction;
 
 		// Normalize response to object for sanitization
-		const exceptionResponse = exception.getResponse();
-		const errorObj = typeof exceptionResponse === 'string'
-			? { message: exceptionResponse, statusCode: status }
-			: exceptionResponse;
+		const ExceptionResponse = exception.getResponse();
+		const ErrorObj = typeof ExceptionResponse === 'string'
+			? { message: ExceptionResponse, statusCode: Status }
+			: ExceptionResponse;
 
 		// Sanitize error response
-		const sanitizedError = this.ErrorSanitizer.sanitizeErrorResponse(
-			errorObj as Record<string, any>,
-			isDevelopment,
+		const SanitizedError = this.ErrorSanitizer.SanitizeErrorResponse(
+			ErrorObj as Record<string, any>,
+			IsDevelopment,
 		);
 
 		// Categorize and log error
-		const errorCategory = this.ErrorCategorizer.categorizeError(exception);
+		const ErrorCategory = this.ErrorCategorizer.CategorizeError(exception);
 		this.Logger.error('HTTP Exception caught', undefined, undefined, {
 			message: exception.message,
-			status,
-			errorType: errorCategory.type,
-			retryable: errorCategory.retryable,
-			strategy: errorCategory.strategy,
-			backoffMs: errorCategory.backoffMs,
-			stack: isDevelopment ? exception.stack : undefined,
+			status: Status,
+			errorType: ErrorCategory.type,
+			retryable: ErrorCategory.retryable,
+			strategy: ErrorCategory.strategy,
+			backoffMs: ErrorCategory.backoffMs,
+			stack: IsDevelopment ? exception.stack : undefined,
 		});
 
-		response.status(status).json(sanitizedError);
+		Response.status(Status).json(SanitizedError);
 	}
 }

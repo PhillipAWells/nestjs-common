@@ -86,7 +86,7 @@ describe('SecurityBootstrapFactory', () => {
 			},
 		};
 		expect(() => {
-			ApplySecurityMiddleware(app, { logger: MockLogger as any });
+			ApplySecurityMiddleware(app, {});
 		}).not.toThrow();
 	});
 

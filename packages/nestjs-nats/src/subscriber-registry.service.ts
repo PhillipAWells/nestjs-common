@@ -47,52 +47,52 @@ export class NatsSubscriberRegistry implements OnModuleInit {
 	}
 
 	public onModuleInit(): void {
-		const wrappers: IProviderWrapper[] = [
+		const Wrappers: IProviderWrapper[] = [
 			...this.DiscoveryService.getProviders(),
 			...this.DiscoveryService.getControllers(),
 		];
 
-		for (const wrapper of wrappers) {
-			const { instance } = wrapper;
+		for (const Wrapper of Wrappers) {
+			const { instance } = Wrapper;
 			if (instance === null || instance === undefined || typeof instance !== 'object') {
 				continue;
 			}
 
-			const prototype = Object.getPrototypeOf(instance) as Record<string, unknown>;
-			const methodNames = this.MetadataScanner.getAllMethodNames(prototype);
+			const Prototype = Object.getPrototypeOf(instance) as Record<string, unknown>;
+			const MethodNames = this.MetadataScanner.getAllMethodNames(Prototype);
 
-			for (const methodName of methodNames) {
-				const handler = prototype[methodName];
-				if (typeof handler !== 'function') {
+			for (const MethodName of MethodNames) {
+				const Handler = Prototype[MethodName];
+				if (typeof Handler !== 'function') {
 					continue;
 				}
 
-				const meta = this.Reflector.get<INatsSubscribeOptions | undefined>(
+				const Meta = this.Reflector.get<INatsSubscribeOptions | undefined>(
 					NATS_SUBSCRIBE_METADATA,
-					handler as (...args: unknown[]) => unknown,
+					Handler as (...args: unknown[]) => unknown,
 				);
 
-				if (meta !== null && meta !== undefined) {
-					this.registerHandler(
+				if (Meta !== null && Meta !== undefined) {
+					this.RegisterHandler(
 						instance as Record<string, (...args: unknown[]) => unknown>,
-						methodName,
-						meta,
+						MethodName,
+						Meta,
 					);
 				}
 			}
 		}
 	}
 
-	private registerHandler(
+	private RegisterHandler(
 		instance: Record<string, (...args: unknown[]) => unknown>,
 		methodName: string,
 		options: INatsSubscribeOptions,
 	): void {
-		const boundHandler = instance[methodName].bind(instance) as (msg: Msg) => Promise<void> | void;
-		this.NatsService.subscribe(options.subject, boundHandler, {
+		const BoundHandler = instance[methodName].bind(instance) as (msg: Msg) => Promise<void> | void;
+		this.NatsService.Subscribe(options.subject, BoundHandler, {
 			queue: options.queue,
 		});
-		this.Logger.info(
+		this.Logger.Info(
 			`Registered handler "${methodName}" for NATS subject "${options.subject}"${options.queue !== undefined ? ` [queue: ${options.queue}]` : ''}`,
 		);
 	}

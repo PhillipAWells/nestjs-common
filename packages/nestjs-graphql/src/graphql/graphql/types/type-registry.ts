@@ -60,34 +60,34 @@ export const ALL_GRAPHQL_TYPES: Type<unknown>[] = [
  * @param types Types to validate are in correct order
  * @returns true if types are properly ordered
  */
-export function validateTypeRegistrationOrder(types: Type<unknown>[]): boolean {
+export function ValidateTypeRegistrationOrder(types: Type<unknown>[]): boolean {
 	// Verify base types appear before extended types
-	const baseTypeNames = new Set(BASE_GRAPHQL_TYPES.map(t => t.name));
-	const extendedTypeNames = new Set(EXTENDED_GRAPHQL_TYPES.map(t => t.name));
+	const BaseTypeNames = new Set(BASE_GRAPHQL_TYPES.map(t => t.name));
+	const ExtendedTypeNames = new Set(EXTENDED_GRAPHQL_TYPES.map(t => t.name));
 
-	let lastBaseTypeIndex = -1;
-	let firstExtendedTypeIndex = types.length;
+	let LastBaseTypeIndex = -1;
+	let FirstExtendedTypeIndex = types.length;
 
-	for (let i = 0; i < types.length; i++) {
-		const type = types[i];
-		if (!type) continue;
-		const typeName = type.name;
-		if (baseTypeNames.has(typeName)) {
-			lastBaseTypeIndex = i;
+	for (let I = 0; I < types.length; I++) {
+		const Type = types[I];
+		if (!Type) continue;
+		const TypeName = Type.name;
+		if (BaseTypeNames.has(TypeName)) {
+			LastBaseTypeIndex = I;
 		}
-		if (extendedTypeNames.has(typeName) && firstExtendedTypeIndex === types.length) {
-			firstExtendedTypeIndex = i;
+		if (ExtendedTypeNames.has(TypeName) && FirstExtendedTypeIndex === types.length) {
+			FirstExtendedTypeIndex = I;
 		}
 	}
 
 	// Base types should come before extended types
-	return lastBaseTypeIndex < firstExtendedTypeIndex;
+	return LastBaseTypeIndex < FirstExtendedTypeIndex;
 }
 
 /**
  * Get type names for logging and debugging
  */
-export function getTypeNames(): {
+export function GetTypeNames(): {
 	base: string[];
 	extended: string[];
 	all: string[];

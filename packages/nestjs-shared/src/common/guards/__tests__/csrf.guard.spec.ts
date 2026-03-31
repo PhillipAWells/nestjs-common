@@ -8,7 +8,7 @@ describe('CSRFGuard', () => {
 
 	beforeEach(() => {
 		mockCSRFService = {
-			validateToken: (_req: any) => true,
+			ValidateToken: (_req: any) => true,
 		};
 
 		const mockModuleRef = {
@@ -44,57 +44,57 @@ describe('CSRFGuard', () => {
 		it('should allow GET requests without validation', () => {
 			mockRequest.method = 'GET';
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 
 		it('should allow HEAD requests without validation', () => {
 			mockRequest.method = 'HEAD';
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 
 		it('should allow OPTIONS requests without validation', () => {
 			mockRequest.method = 'OPTIONS';
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 
 		it('should validate CSRF token for POST requests and return true when valid', () => {
-			mockCSRFService.validateToken = () => true;
+			mockCSRFService.ValidateToken = () => true;
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 
 		it('should throw ForbiddenException when CSRF token is invalid', () => {
-			mockCSRFService.validateToken = () => false;
+			mockCSRFService.ValidateToken = () => false;
 
 			expect(() => guard.canActivate(mockContext)).toThrow(ForbiddenException);
 		});
 
 		it('should validate CSRF token for PUT requests', () => {
 			mockRequest.method = 'PUT';
-			mockCSRFService.validateToken = () => true;
+			mockCSRFService.ValidateToken = () => true;
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 
 		it('should validate CSRF token for DELETE requests', () => {
 			mockRequest.method = 'DELETE';
-			mockCSRFService.validateToken = () => true;
+			mockCSRFService.ValidateToken = () => true;
 
-			const result = guard.canActivate(mockContext);
+			const Result = guard.canActivate(mockContext);
 
-			expect(result).toBe(true);
+			expect(Result).toBe(true);
 		});
 	});
 });

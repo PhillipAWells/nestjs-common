@@ -11,8 +11,19 @@ describe('ValidationService', () => {
 		mockAppLogger = {
 			createContextualLogger: () => ({
 				debug: () => {},
+				Debug: () => {},
 				error: () => {},
+				Error: () => {},
 				info: () => {},
+				Info: () => {},
+			}),
+			CreateContextualLogger: () => ({
+				debug: () => {},
+				Debug: () => {},
+				error: () => {},
+				Error: () => {},
+				info: () => {},
+				Info: () => {},
 			}),
 		} as any;
 

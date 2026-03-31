@@ -36,7 +36,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.search as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.search(params as any);
+			const result = await service.Search(params as any);
 
 			expect(mockClient.search).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -48,7 +48,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.search as any).mockRejectedValue(error);
 
-			await expect(service.search(params as any)).rejects.toThrow(
+			await expect(service.Search(params as any)).rejects.toThrow(
 				`Qdrant search failed on collection "${collectionName}": Search failed`,
 			);
 		});
@@ -61,7 +61,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.upsert as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.upsert(params as any);
+			const result = await service.Upsert(params as any);
 
 			expect(mockClient.upsert).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -73,7 +73,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.upsert as any).mockRejectedValue(error);
 
-			await expect(service.upsert(params as any)).rejects.toThrow('Upsert failed');
+			await expect(service.Upsert(params as any)).rejects.toThrow('Upsert failed');
 		});
 	});
 
@@ -84,7 +84,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.delete as any).mockResolvedValue(expectedResult as any);
 
-			const result = await service.delete(params as any);
+			const result = await service.Delete(params as any);
 
 			expect(mockClient.delete).toHaveBeenCalledWith(collectionName, params);
 			expect(result).toEqual(expectedResult);
@@ -96,7 +96,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.delete as any).mockRejectedValue(error);
 
-			await expect(service.delete(params as any)).rejects.toThrow('Delete failed');
+			await expect(service.Delete(params as any)).rejects.toThrow('Delete failed');
 		});
 	});
 
@@ -110,7 +110,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.getCollection as any).mockResolvedValue(expectedInfo as any);
 
-			const result = await service.getInfo();
+			const result = await service.GetInfo();
 
 			expect(mockClient.getCollection).toHaveBeenCalledWith(collectionName);
 			expect(result).toEqual(expectedInfo);
@@ -121,7 +121,7 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.getCollection as any).mockRejectedValue(error);
 
-			await expect(service.getInfo()).rejects.toThrow('Collection not found');
+			await expect(service.GetInfo()).rejects.toThrow('Collection not found');
 		});
 	});
 
@@ -143,10 +143,10 @@ describe('QdrantCollectionService', () => {
 
 			(mockClient.search as any).mockResolvedValue({ results: [] } as any);
 
-			await productsService.search(searchParams as any);
+			await productsService.Search(searchParams as any);
 			expect(mockClient.search).toHaveBeenCalledWith('products', searchParams);
 
-			await usersService.search(searchParams as any);
+			await usersService.Search(searchParams as any);
 			expect(mockClient.search).toHaveBeenCalledWith('users', searchParams);
 		});
 	});

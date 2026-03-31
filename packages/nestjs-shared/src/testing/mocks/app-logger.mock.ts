@@ -14,6 +14,15 @@ import type { IContextualLogger } from '../../common/interfaces/logger.interface
  */
 @Injectable()
 export class MockAppLogger implements IContextualLogger {
+	public Debug(
+		_message: string | Error,
+		_contextOrMetadata?: string | ILogMetadata,
+		_metadata?: ILogMetadata,
+	): void {
+		// No-op
+	}
+
+	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void;
 	public debug(
 		_message: string | Error,
 		_contextOrMetadata?: string | ILogMetadata,
@@ -54,6 +63,35 @@ export class MockAppLogger implements IContextualLogger {
 		_metadata?: ILogMetadata,
 	): void {
 		// No-op
+	}
+
+	public Info(
+		_message: string | Error,
+		_contextOrMetadata?: string | ILogMetadata,
+		_metadata?: ILogMetadata,
+	): void {
+		// No-op
+	}
+
+	public Warn(
+		_message: string | Error,
+		_contextOrMetadata?: string | ILogMetadata,
+		_metadata?: ILogMetadata,
+	): void {
+		// No-op
+	}
+
+	public Error(
+		_message: string | Error,
+		_traceOrContext?: string,
+		_contextOrMetadata?: string | ILogMetadata,
+		_metadata?: ILogMetadata,
+	): void {
+		// No-op
+	}
+
+	public CreateContextualLogger(_context: string): IContextualLogger {
+		return this;
 	}
 
 	public createContextualLogger(_context: string): IContextualLogger {

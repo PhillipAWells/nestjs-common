@@ -84,7 +84,7 @@ export class MetricsService {
 	 * Record CPU profiling sample
 	 * @param duration Duration of CPU sample in milliseconds
 	 */
-	public recordCPUSample(duration: number): void {
+	public RecordCPUSample(duration: number): void {
 		if (duration < 0) {
 			this.Logger.warn('Invalid CPU duration provided, ignoring sample');
 			return;
@@ -98,7 +98,7 @@ export class MetricsService {
 	 * Record memory profiling sample
 	 * @param bytes Memory allocation in bytes
 	 */
-	public recordMemorySample(bytes: number): void {
+	public RecordMemorySample(bytes: number): void {
 		if (bytes < 0) {
 			this.Logger.warn('Invalid memory allocation provided, ignoring sample');
 			return;
@@ -113,7 +113,7 @@ export class MetricsService {
 	 * @param statusCode HTTP status code
 	 * @param duration Response time in milliseconds
 	 */
-	public recordRequest(statusCode: number, duration: number): void {
+	public RecordRequest(statusCode: number, duration: number): void {
 		if (duration < 0) {
 			this.Logger.warn('Invalid request duration provided, ignoring sample');
 			return;
@@ -144,8 +144,8 @@ export class MetricsService {
 	 * console.log(`CPU time: ${metrics.cpu.duration}ms across ${metrics.cpu.samples} samples`);
 	 * ```
 	 */
-	public getMetrics(): IMetricsResponse {
-		const averageResponseTime = this.TotalRequests > 0
+	public GetMetrics(): IMetricsResponse {
+		const AverageResponseTime = this.TotalRequests > 0
 			? this.TotalResponseTime / this.TotalRequests
 			: 0;
 
@@ -164,7 +164,7 @@ export class MetricsService {
 				successful: this.SuccessfulRequests,
 				failed: this.FailedRequests,
 
-				averageResponseTime: Math.round(averageResponseTime * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION, // Round to 2 decimal places
+				averageResponseTime: Math.round(AverageResponseTime * PROFILING_RESPONSE_TIME_PRECISION) / PROFILING_RESPONSE_TIME_PRECISION, // Round to 2 decimal places
 			},
 		};
 	}
@@ -187,40 +187,40 @@ export class MetricsService {
 	 * // ...
 	 * ```
 	 */
-	public getPrometheusMetrics(): string {
-		const metrics = this.getMetrics();
+	public GetPrometheusMetrics(): string {
+		const Metrics = this.GetMetrics();
 
 		return `# HELP profiling_cpu_samples_total Total number of CPU profiling samples collected
 # TYPE profiling_cpu_samples_total counter
-profiling_cpu_samples_total ${metrics.cpu.samples}
+profiling_cpu_samples_total ${Metrics.cpu.samples}
 
 # HELP profiling_cpu_duration_total Total CPU profiling duration in milliseconds
 # TYPE profiling_cpu_duration_total counter
-profiling_cpu_duration_total ${metrics.cpu.duration}
+profiling_cpu_duration_total ${Metrics.cpu.duration}
 
 # HELP profiling_memory_samples_total Total number of memory profiling samples collected
 # TYPE profiling_memory_samples_total counter
-profiling_memory_samples_total ${metrics.memory.samples}
+profiling_memory_samples_total ${Metrics.memory.samples}
 
 # HELP profiling_memory_allocations_total Total memory allocations in bytes
 # TYPE profiling_memory_allocations_total counter
-profiling_memory_allocations_total ${metrics.memory.allocations}
+profiling_memory_allocations_total ${Metrics.memory.allocations}
 
 # HELP profiling_requests_total Total number of requests profiled
 # TYPE profiling_requests_total counter
-profiling_requests_total ${metrics.requests.total}
+profiling_requests_total ${Metrics.requests.total}
 
 # HELP profiling_requests_successful_total Total number of successful requests
 # TYPE profiling_requests_successful_total counter
-profiling_requests_successful_total ${metrics.requests.successful}
+profiling_requests_successful_total ${Metrics.requests.successful}
 
 # HELP profiling_requests_failed_total Total number of failed requests
 # TYPE profiling_requests_failed_total counter
-profiling_requests_failed_total ${metrics.requests.failed}
+profiling_requests_failed_total ${Metrics.requests.failed}
 
 # HELP profiling_requests_average_response_time_ms Average response time in milliseconds
 # TYPE profiling_requests_average_response_time_ms gauge
-profiling_requests_average_response_time_ms ${metrics.requests.averageResponseTime}
+profiling_requests_average_response_time_ms ${Metrics.requests.averageResponseTime}
 `;
 	}
 
@@ -235,7 +235,7 @@ profiling_requests_average_response_time_ms ${metrics.requests.averageResponseTi
 	 * // All metrics are now zero
 	 * ```
 	 */
-	public reset(): void {
+	public Reset(): void {
 		this.CpuSamples = 0;
 		this.TotalCpuDuration = 0;
 		this.MemorySamples = 0;

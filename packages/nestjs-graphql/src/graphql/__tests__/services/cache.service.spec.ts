@@ -41,14 +41,14 @@ describe('GraphQLCacheService', () => {
 
 	describe('generateKey', () => {
 		it('should generate key for operation without args', () => {
-			const key = service.generateKey('users');
+			const key = service.GenerateKey('users');
 
 			expect(key).toBe('graphql:users');
 		});
 
 		it('should generate key with sorted arguments', () => {
 			const args = { id: 123, name: 'test', category: 'admin' };
-			const key = service.generateKey('user', args);
+			const key = service.GenerateKey('user', args);
 
 			expect(key).toBe('graphql:user|category:"admin"|id:123|name:"test"');
 		});
@@ -56,7 +56,7 @@ describe('GraphQLCacheService', () => {
 		it('should generate key with context', () => {
 			const args = { id: 123 };
 			const context = { userId: 'user456', role: 'admin' };
-			const key = service.generateKey('user', args, context);
+			const key = service.GenerateKey('user', args, context);
 
 			expect(key).toBe('graphql:user|id:123|role:"admin"|userId:"user456"');
 		});
@@ -67,7 +67,7 @@ describe('GraphQLCacheService', () => {
 				filter: { status: 'active', type: 'premium' },
 				limit: 10,
 			};
-			const key = service.generateKey('users', args);
+			const key = service.GenerateKey('users', args);
 
 			expect(key).toContain('graphql:users');
 			expect(key).toContain('filter:');
@@ -76,7 +76,7 @@ describe('GraphQLCacheService', () => {
 		});
 
 		it('should handle empty args and context', () => {
-			const key = service.generateKey('query', {}, {});
+			const key = service.GenerateKey('query', {}, {});
 
 			expect(key).toBe('graphql:query');
 		});
@@ -88,7 +88,7 @@ describe('GraphQLCacheService', () => {
 			const value = { data: 'test' };
 			const ttl = 300000;
 
-			await service.set(key, value, ttl);
+			await service.Set(key, value, ttl);
 
 			expect(mockCacheManager.set).toHaveBeenCalledWith(key, value, ttl);
 		});
@@ -97,7 +97,7 @@ describe('GraphQLCacheService', () => {
 			const key = 'test-key';
 			const value = 'test-value';
 
-			await service.set(key, value);
+			await service.Set(key, value);
 
 			expect(mockCacheManager.set).toHaveBeenCalledWith(key, value, 300000);
 		});
@@ -108,7 +108,7 @@ describe('GraphQLCacheService', () => {
 			const key = 'test-key';
 			const value = 'test-value';
 
-			await expect(service.set(key, value)).rejects.toThrow('Cache error');
+			await expect(service.Set(key, value)).rejects.toThrow('Cache error');
 		});
 	});
 
@@ -119,7 +119,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(cachedValue);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBe(cachedValue);
 			expect(mockCacheManager.get).toHaveBeenCalledWith(key);
@@ -130,7 +130,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBeUndefined();
 		});
@@ -140,7 +140,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(undefined);
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBeUndefined();
 		});
@@ -150,7 +150,7 @@ describe('GraphQLCacheService', () => {
 
 			const key = 'error-key';
 
-			const result = await service.get(key);
+			const result = await service.Get(key);
 
 			expect(result).toBeUndefined();
 		});
@@ -159,8 +159,8 @@ describe('GraphQLCacheService', () => {
 			const key = 'test-key';
 			mockCacheManager.get.mockResolvedValue({ data: 'value' });
 
-			await service.get(key);
-			const stats = service.getStats();
+			await service.Get(key);
+			const stats = service.GetStats();
 
 			expect(stats.hits).toBe(1);
 			expect(stats.misses).toBe(0);
@@ -170,8 +170,8 @@ describe('GraphQLCacheService', () => {
 			const key = 'test-key';
 			mockCacheManager.get.mockResolvedValue(null);
 
-			await service.get(key);
-			const stats = service.getStats();
+			await service.Get(key);
+			const stats = service.GetStats();
 
 			expect(stats.hits).toBe(0);
 			expect(stats.misses).toBe(1);
@@ -186,7 +186,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(cachedValue);
 
-			const result = await service.getOrSet(key, loader);
+			const result = await service.GetOrSet(key, loader);
 
 			expect(result).toBe(cachedValue);
 			expect(loader).not.toHaveBeenCalled();
@@ -199,7 +199,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			const result = await service.getOrSet(key, loader);
+			const result = await service.GetOrSet(key, loader);
 
 			expect(result).toBe(freshValue);
 			expect(loader).toHaveBeenCalled();
@@ -214,7 +214,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			await service.getOrSet(key, loader, ttl);
+			await service.GetOrSet(key, loader, ttl);
 
 			expect(mockCacheManager.set).toHaveBeenCalledWith(key, freshValue, ttl);
 		});
@@ -225,7 +225,7 @@ describe('GraphQLCacheService', () => {
 
 			mockCacheManager.get.mockResolvedValue(null);
 
-			await expect(service.getOrSet(key, loader)).rejects.toThrow('Load error');
+			await expect(service.GetOrSet(key, loader)).rejects.toThrow('Load error');
 		});
 	});
 
@@ -233,7 +233,7 @@ describe('GraphQLCacheService', () => {
 		it('should delete value from cache', async () => {
 			const key = 'test-key';
 
-			await service.delete(key);
+			await service.Delete(key);
 
 			expect(mockCacheManager.del).toHaveBeenCalledWith(key);
 		});
@@ -243,13 +243,13 @@ describe('GraphQLCacheService', () => {
 
 			const key = 'test-key';
 
-			await expect(service.delete(key)).rejects.toThrow('Delete error');
+			await expect(service.Delete(key)).rejects.toThrow('Delete error');
 		});
 	});
 
 	describe('clear', () => {
 		it('should call clear operation', async () => {
-			await service.clear();
+			await service.Clear();
 
 			// Should not throw - implementation depends on cache store
 			expect(true).toBe(true);
@@ -260,7 +260,7 @@ describe('GraphQLCacheService', () => {
 		it('should log pattern invalidation request', async () => {
 			const pattern = 'graphql:user|id:*';
 
-			await service.invalidatePattern(pattern);
+			await service.InvalidatePattern(pattern);
 
 			// Should not throw - logs the intent
 			expect(true).toBe(true);
@@ -269,7 +269,7 @@ describe('GraphQLCacheService', () => {
 
 	describe('getStats', () => {
 		it('should return cache statistics', () => {
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			expect(stats).toHaveProperty('hits');
 			expect(stats).toHaveProperty('misses');
@@ -283,23 +283,23 @@ describe('GraphQLCacheService', () => {
 
 			// 3 hits
 			mockCacheManager.get.mockResolvedValue({ data: 'value' });
-			await service.get(key);
-			await service.get(key);
-			await service.get(key);
+			await service.Get(key);
+			await service.Get(key);
+			await service.Get(key);
 
 			// 2 misses
 			mockCacheManager.get.mockResolvedValue(null);
-			await service.get(key);
-			await service.get(key);
+			await service.Get(key);
+			await service.Get(key);
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.hits).toBe(3);
 			expect(stats.misses).toBe(2);
 			expect(stats.hitRate).toBe(60); // 3 / (3 + 2) * 100
 		});
 
 		it('should return 0 hit rate when no operations', () => {
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			expect(stats.hitRate).toBe(0);
 		});
@@ -311,15 +311,15 @@ describe('GraphQLCacheService', () => {
 
 			// Generate some stats
 			mockCacheManager.get.mockResolvedValue({ data: 'value' });
-			await service.get(key);
+			await service.Get(key);
 
-			let stats = service.getStats();
+			let stats = service.GetStats();
 			expect(stats.hits).toBe(1);
 
 			// Reset
-			service.resetStats();
+			service.ResetStats();
 
-			stats = service.getStats();
+			stats = service.GetStats();
 			expect(stats.hits).toBe(0);
 			expect(stats.misses).toBe(0);
 		});
@@ -331,7 +331,7 @@ describe('GraphQLCacheService', () => {
 			const value = { data: 'test' };
 
 			const start = performance.now();
-			await service.set(key, value, 300000);
+			await service.Set(key, value, 300000);
 			const elapsed = performance.now() - start;
 
 			expect(elapsed).toBeLessThan(5);
@@ -342,7 +342,7 @@ describe('GraphQLCacheService', () => {
 			mockCacheManager.get.mockResolvedValue({ data: 'cached' });
 
 			const start = performance.now();
-			await service.get(key);
+			await service.Get(key);
 			const elapsed = performance.now() - start;
 
 			expect(elapsed).toBeLessThan(2);
@@ -352,7 +352,7 @@ describe('GraphQLCacheService', () => {
 			const args = { id: 123, name: 'test', category: 'admin' };
 
 			const start = performance.now();
-			service.generateKey('user', args);
+			service.GenerateKey('user', args);
 			const elapsed = performance.now() - start;
 
 			expect(elapsed).toBeLessThan(1);
@@ -364,7 +364,7 @@ describe('GraphQLCacheService', () => {
 
 			const start = performance.now();
 			for (let i = 0; i < iterations; i++) {
-				await service.get(`key-${i}`);
+				await service.Get(`key-${i}`);
 			}
 			const elapsed = performance.now() - start;
 
@@ -376,10 +376,10 @@ describe('GraphQLCacheService', () => {
 			// Generate many operations
 			mockCacheManager.get.mockResolvedValue({ data: 'value' });
 			for (let i = 0; i < 10000; i++) {
-				await service.get(`key-${i}`);
+				await service.Get(`key-${i}`);
 			}
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 
 			// Stats should be minimal (just hit/miss counts)
 			expect(stats.hits + stats.misses).toBe(10000);
@@ -401,15 +401,15 @@ describe('GraphQLCacheService', () => {
 			mockCacheManager.set.mockResolvedValue(undefined);
 
 			// First call - database query
-			await service.getOrSet(`user:${userId}`, loader);
+			await service.GetOrSet(`user:${userId}`, loader);
 			expect(dbCalls).toBe(1);
 
 			// Mock cache hit on second call
 			mockCacheManager.get.mockResolvedValue(userData);
-			await service.getOrSet(`user:${userId}`, loader);
+			await service.GetOrSet(`user:${userId}`, loader);
 			expect(dbCalls).toBe(1); // Should not increment
 
-			const stats = service.getStats();
+			const stats = service.GetStats();
 			expect(stats.hits).toBeGreaterThan(0);
 		});
 
@@ -428,7 +428,7 @@ describe('GraphQLCacheService', () => {
 
 			const loader = vi.fn().mockResolvedValue(listData);
 
-			const result = await service.getOrSet(listKey, loader, 600000); // 10 minutes
+			const result = await service.GetOrSet(listKey, loader, 600000); // 10 minutes
 
 			expect(result).toBe(listData);
 			expect(mockCacheManager.set).toHaveBeenCalledWith(listKey, listData, 600000);
@@ -439,19 +439,19 @@ describe('GraphQLCacheService', () => {
 
 			// Simulate 10 cache misses
 			for (let i = 0; i < 10; i++) {
-				await service.get(`key-${i}`);
+				await service.Get(`key-${i}`);
 			}
 
-			let stats = service.getStats();
+			let stats = service.GetStats();
 			expect(stats.hitRate).toBe(0);
 
 			// Now simulate hits
 			mockCacheManager.get.mockResolvedValue({ data: 'value' });
 			for (let i = 0; i < 5; i++) {
-				await service.get(`key-${i}`);
+				await service.Get(`key-${i}`);
 			}
 
-			stats = service.getStats();
+			stats = service.GetStats();
 			expect(stats.hitRate).toBeGreaterThan(0);
 			expect(stats.hitRate).toBeLessThanOrEqual(100);
 		});

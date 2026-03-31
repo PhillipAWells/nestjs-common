@@ -9,11 +9,11 @@
  * All security features are enabled by default and can be selectively disabled via options.
  */
 
-import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
 import express, { Request, Response, NextFunction } from 'express';
-import { sanitizeObject, sanitizeXss } from '../utils/sanitization.utils.js';
+import { SanitizeObject, SanitizeXss } from '../utils/sanitization.utils.js';
 
 export interface ISecurityBootstrapOptions {
 	/** List of allowed CORS origins. In development, localhost and Apollo Studio are always included. */
@@ -42,8 +42,6 @@ export interface ISecurityBootstrapOptions {
 	cspFontSrc?: string[];
 	/** Maximum request body size limit (default: '10mb'). Express format: '10mb', '100kb', etc. */
 	maxBodySize?: string;
-	/** Logger instance for middleware application logging (optional) */
-	logger?: Logger;
 }
 
 /**
@@ -99,7 +97,6 @@ export function ApplySecurityMiddleware(
 		cspStyleSrc = [],
 		cspFontSrc = [],
 		maxBodySize = '10mb',
-		logger = new Logger('SecurityBootstrap'),
 	} = options;
 
 	// Named constants for configuration
@@ -109,7 +106,6 @@ export function ApplySecurityMiddleware(
 	// Step 0: Apply request body size limits
 	app.use(express.json({ limit: maxBodySize }));
 	app.use(express.urlencoded({ extended: true, limit: maxBodySize }));
-	logger.log('Request body size limits applied');
 
 	// Step 1: Apply compression middleware
 	if (compressionEnabled) {
@@ -127,41 +123,38 @@ export function ApplySecurityMiddleware(
 				},
 			}),
 		);
-		logger.log('Compression middleware enabled for API response optimization');
 	}
 
 	// Step 2: Apply MongoDB injection prevention middleware
 	if (mongoDbInjectionPreventionEnabled) {
 		app.use((req: Request, _res: Response, next: NextFunction) => {
 			if (req.body) {
-				req.body = sanitizeObject(req.body, 0, logger);
+				req.body = SanitizeObject(req.body, 0);
 			}
 			if (req.params) {
-				req.params = sanitizeObject(req.params, 0, logger);
+				req.params = SanitizeObject(req.params, 0);
 			}
 			if (req.cookies && typeof req.cookies === 'object') {
-				req.cookies = sanitizeObject(req.cookies);
+				req.cookies = SanitizeObject(req.cookies);
 			}
 			next();
 		});
-		logger.log('MongoDB injection prevention middleware applied');
 	}
 
 	// Step 3: Apply XSS protection middleware
 	if (xssEnabled) {
 		app.use((req: Request, _res: Response, next: NextFunction) => {
 			if (req.body) {
-				req.body = sanitizeXss(req.body, logger);
+				req.body = SanitizeXss(req.body);
 			}
 			if (req.query) {
-				req.query = sanitizeXss(req.query, logger) as Record<string, string[]> | Record<string, string>;
+				req.query = SanitizeXss(req.query) as Record<string, string[]> | Record<string, string>;
 			}
 			if (req.params) {
-				req.params = sanitizeXss(req.params, logger) as Record<string, string>;
+				req.params = SanitizeXss(req.params) as Record<string, string>;
 			}
 			next();
 		});
-		logger.log('XSS sanitization middleware applied');
 	}
 
 	// Step 4: Apply Helmet.js for security headers
@@ -200,7 +193,6 @@ export function ApplySecurityMiddleware(
 				},
 			}),
 		);
-		logger.log('Helmet.js security headers applied');
 	}
 
 	// Step 5: Apply global validation pipe
@@ -211,12 +203,11 @@ export function ApplySecurityMiddleware(
 			transform: true,
 		}),
 	);
-	logger.log('Global ValidationPipe configured');
 
 	// Step 6: Enable CORS with smart origin validation
 	if (corsEnabled) {
 		// Apollo Studio origins that need access in development
-		const apolloStudioOrigins = [
+		const ApolloStudioOrigins = [
 			'https://studio.apollographql.com',
 			'https://sandbox.apollo.dev',
 		];
@@ -265,7 +256,7 @@ export function ApplySecurityMiddleware(
 				}
 
 				// In development, allow Apollo Studio origins
-				if (environment === 'development' && apolloStudioOrigins.includes(origin)) {
+				if (environment === 'development' && ApolloStudioOrigins.includes(origin)) {
 					callback(null, true);
 					return;
 				}
@@ -285,10 +276,5 @@ export function ApplySecurityMiddleware(
 			exposedHeaders: ['X-Total-Count', 'X-Page-Number'],
 			maxAge: 3600,
 		});
-		logger.log(
-			corsOrigins.length > 0
-				? `CORS configured for environment: ${environment}, Allowed origins: ${corsOrigins.join(', ')}`
-				: `CORS configured for environment: ${environment}, Using smart origin validation`,
-		);
 	}
 }

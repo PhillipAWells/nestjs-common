@@ -3,7 +3,7 @@ import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import Keyv from 'keyv';
 import RedisStore from '@keyv/redis';
 import { CacheService } from './cache.service.js';
-import { getRedisConnectionOptions } from './redis.config.js';
+import { GetRedisConnectionOptions } from './redis.config.js';
 import { CommonModule, CACHE_PROVIDER, AppLogger } from '@pawells/nestjs-shared/common';
 import type { ICacheModuleAsyncOptions } from './cache.interfaces.js';
 
@@ -18,8 +18,8 @@ const CACHE_DEFAULT_TTL_MS = 3_600_000;
  * storage management, TTL support, and metrics tracking. Requires Redis
  * connection configuration via environment variables (REDIS_HOST, REDIS_PORT, etc.).
  *
- * Use {@link CacheModule.forRoot} for standard configuration or
- * {@link CacheModule.forRootAsync} for dynamic configuration via factories.
+ * Use {@link CacheModule.ForRoot} for standard configuration or
+ * {@link CacheModule.ForRootAsync} for dynamic configuration via factories.
  *
  * @example
  * ```typescript
@@ -38,36 +38,36 @@ const CACHE_DEFAULT_TTL_MS = 3_600_000;
 @Global()
 @Module({})
 export class CacheModule {
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: CacheModule,
 			imports: [
 				CommonModule,
 				NestCacheModule.registerAsync({
 					useFactory: (appLogger: AppLogger) => {
-						const logger = appLogger.createContextualLogger('CacheModuleFactory');
+						const Logger = appLogger.createContextualLogger('CacheModuleFactory');
 						try {
-							const redisOptions = getRedisConnectionOptions();
-							logger.info('Redis connection initialized', JSON.stringify({
-								host: redisOptions.host,
-								port: redisOptions.port,
-								database: redisOptions.db,
-								keyPrefix: redisOptions.keyPrefix,
+							const RedisOptions = GetRedisConnectionOptions();
+							Logger.info('Redis connection initialized', JSON.stringify({
+								host: RedisOptions.host,
+								port: RedisOptions.port,
+								database: RedisOptions.db,
+								keyPrefix: RedisOptions.keyPrefix,
 							}));
 
 							// Create Keyv with RedisStore for cache-manager v7 compatibility
 							// RedisStore accepts connection URI or options
-							const store = new Keyv({
-								store: new RedisStore(`redis://${redisOptions.host}:${redisOptions.port}/${redisOptions.db ?? 0}`),
-								namespace: redisOptions.keyPrefix,
+							const Store = new Keyv({
+								store: new RedisStore(`redis://${RedisOptions.host}:${RedisOptions.port}/${RedisOptions.db ?? 0}`),
+								namespace: RedisOptions.keyPrefix,
 							});
 
 							return {
-								store,
-								ttl: redisOptions.ttl ?? CACHE_DEFAULT_TTL_MS,
+								store: Store,
+								ttl: RedisOptions.ttl ?? CACHE_DEFAULT_TTL_MS,
 							} as any;
 						} catch (error) {
-							logger.error('Failed to initialize Redis cache store', JSON.stringify({
+							Logger.error('Failed to initialize Redis cache store', JSON.stringify({
 								error: (error as Error).message,
 							}));
 							throw error; // Fail fast instead of falling back to memory
@@ -95,8 +95,8 @@ export class CacheModule {
 	 * @param options Async configuration options
 	 * @returns Dynamic module configuration
 	 */
-	public static forRootAsync(options: ICacheModuleAsyncOptions): DynamicModule {
-		const providers: Provider[] = [
+	public static ForRootAsync(options: ICacheModuleAsyncOptions): DynamicModule {
+		const Providers: Provider[] = [
 			CacheService,
 			{
 				provide: CACHE_PROVIDER,
@@ -115,7 +115,7 @@ export class CacheModule {
 				}),
 				...(options.imports ?? []),
 			],
-			providers,
+			providers: Providers,
 			exports: [CacheService, NestCacheModule, CACHE_PROVIDER],
 		};
 	}

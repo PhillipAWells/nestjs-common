@@ -62,7 +62,7 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: PrometheusModule,
 		};
@@ -92,7 +92,7 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	 * ```
 	 */
 	public onModuleInit(): void {
-		this.Registry.registerExporter(this.Exporter);
+		this.Registry.RegisterExporter(this.Exporter);
 	}
 
 	/**
@@ -109,6 +109,6 @@ export class PrometheusModule implements OnModuleInit, OnApplicationShutdown {
 	 * ```
 	 */
 	public async onApplicationShutdown(): Promise<void> {
-		await this.Exporter.shutdown();
+		await this.Exporter.Shutdown();
 	}
 }

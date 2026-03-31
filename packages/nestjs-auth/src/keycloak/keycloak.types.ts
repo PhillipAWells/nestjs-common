@@ -68,7 +68,7 @@ export interface IKeycloakUser {
  * const guestUser = createMockKeycloakUser({ id: 'guest-id', clientRoles: [] });
  * ```
  */
-export function createMockKeycloakUser(overrides: Partial<IKeycloakUser> = {}): IKeycloakUser {
+export function CreateMockKeycloakUser(overrides: Partial<IKeycloakUser> = {}): IKeycloakUser {
 	return {
 		id: 'test-user-id',
 		email: 'test@example.com',

@@ -19,11 +19,11 @@ import {
  */
 class TestService extends BaseService {
 	public testRequireScope(scope: TKeycloakAdminScope): void {
-		this.requireScope(scope);
+		this.RequireScope(scope);
 	}
 
 	public testHandleError(error: unknown): never {
-		return this.handleError(error);
+		return this.HandleError(error);
 	}
 }
 

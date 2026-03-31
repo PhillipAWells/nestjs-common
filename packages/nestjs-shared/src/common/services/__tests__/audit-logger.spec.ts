@@ -10,9 +10,15 @@ describe('AuditLoggerService', () => {
 	beforeEach(() => {
 		mockLogger = {
 			info() {},
+			Info() {},
 			warn() {},
+			Warn() {},
 			error() {},
+			Error() {},
 			createContextualLogger() {
+				return mockLogger;
+			},
+			CreateContextualLogger() {
 				return mockLogger;
 			},
 		};
@@ -31,7 +37,7 @@ describe('AuditLoggerService', () => {
 				calls.push(args);
 			};
 
-			service.logAuthenticationAttempt('test@example.com', true, '192.168.1.1');
+			service.LogAuthenticationAttempt('test@example.com', true, '192.168.1.1');
 
 			expect(calls.length).toBeGreaterThan(0);
 			expect(calls[0][0]).toContain('Authentication SUCCESS');
@@ -43,7 +49,7 @@ describe('AuditLoggerService', () => {
 				calls.push(args);
 			};
 
-			service.logAuthenticationAttempt('test@example.com', false, '192.168.1.1', 'Invalid credentials');
+			service.LogAuthenticationAttempt('test@example.com', false, '192.168.1.1', 'Invalid credentials');
 
 			expect(calls.length).toBeGreaterThan(0);
 			expect(calls[0][0]).toContain('Authentication FAILURE');
@@ -57,7 +63,7 @@ describe('AuditLoggerService', () => {
 				calls.push(args);
 			};
 
-			service.logTokenRevocation('user-123', 'IUser logout');
+			service.LogTokenRevocation('user-123', 'IUser logout');
 
 			expect(calls.length).toBeGreaterThan(0);
 			expect(calls[0][0]).toContain('Token REVOCATION');
@@ -71,7 +77,7 @@ describe('AuditLoggerService', () => {
 				calls.push(args);
 			};
 
-			service.logCsrfViolation('192.168.1.1', '/api/login');
+			service.LogCsrfViolation('192.168.1.1', '/api/login');
 
 			expect(calls.length).toBeGreaterThan(0);
 			expect(calls[0][0]).toContain('CSRF VIOLATION');

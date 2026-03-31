@@ -60,7 +60,7 @@ export class MetricsModule {
 	 * Configure metrics module for root application
 	 * Enables HTTP metrics collection and /metrics endpoint
 	 */
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: MetricsModule,
 		};
@@ -69,7 +69,7 @@ export class MetricsModule {
 	/**
 	 * Configure metrics module with async options
 	 */
-	public static forRootAsync(options: IMetricsModuleAsyncOptions): DynamicModule {
+	public static ForRootAsync(options: IMetricsModuleAsyncOptions): DynamicModule {
 		return {
 			module: MetricsModule,
 			imports: options.imports,

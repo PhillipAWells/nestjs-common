@@ -48,7 +48,7 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			expect(mockMeter.createCounter).toHaveBeenCalledWith(
 				'test_counter',
@@ -66,7 +66,7 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			expect(mockMeter.createHistogram).toHaveBeenCalledWith(
 				'test_histogram',
@@ -84,7 +84,7 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			expect(mockMeter.createUpDownCounter).toHaveBeenCalledWith(
 				'test_gauge',
@@ -102,7 +102,7 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			expect(mockMeter.createUpDownCounter).toHaveBeenCalledWith(
 				'test_updown',
@@ -120,10 +120,10 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 			mockMeter.createCounter.mockClear();
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			expect(mockMeter.createCounter).not.toHaveBeenCalled();
 		});
@@ -138,8 +138,8 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
-			exporter.onMetricRecorded({
+			exporter.OnDescriptorRegistered(descriptor);
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 5,
 				labels: { method: 'GET', status: '200' },
@@ -160,8 +160,8 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
-			exporter.onMetricRecorded({
+			exporter.OnDescriptorRegistered(descriptor);
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 0.25,
 				labels: {},
@@ -179,7 +179,7 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 5,
 				labels: {},
@@ -199,8 +199,8 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
-			exporter.onMetricRecorded({
+			exporter.OnDescriptorRegistered(descriptor);
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 3,
 				labels: {},
@@ -218,10 +218,10 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
 			// First recording
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 10,
 				labels: { instance: 'server1' },
@@ -231,7 +231,7 @@ describe('OpenTelemetryExporter', () => {
 			mockUpDownCounter.add.mockClear();
 
 			// Second recording - should compute delta
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 15,
 				labels: { instance: 'server1' },
@@ -251,16 +251,16 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
+			exporter.OnDescriptorRegistered(descriptor);
 
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 10,
 				labels: { instance: 'server1' },
 				timestamp: Date.now(),
 			});
 
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 20,
 				labels: { instance: 'server2' },
@@ -269,7 +269,7 @@ describe('OpenTelemetryExporter', () => {
 
 			mockUpDownCounter.add.mockClear();
 
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 25,
 				labels: { instance: 'server2' },
@@ -291,11 +291,11 @@ describe('OpenTelemetryExporter', () => {
 				labelNames: [],
 			};
 
-			exporter.onDescriptorRegistered(descriptor);
-			exporter.shutdown();
+			exporter.OnDescriptorRegistered(descriptor);
+			exporter.Shutdown();
 
 			// After shutdown, attempting to record should do nothing
-			exporter.onMetricRecorded({
+			exporter.OnMetricRecorded({
 				descriptor,
 				value: 5,
 				labels: {},

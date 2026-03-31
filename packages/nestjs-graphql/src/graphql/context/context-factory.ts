@@ -3,6 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
+import type { IContextualLogger } from '@pawells/nestjs-shared/common';
 import { IGraphQLContext, IWebSocketContext, IContextFactoryOptions } from './graphql-context.interface.js';
 import type { IWebSocketConnection } from '../graphql/types/graphql-safety.types.js';
 
@@ -21,7 +22,7 @@ export class GraphQLContextFactory {
 		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLContextFactory.name);
 	}
 
@@ -37,32 +38,32 @@ export class GraphQLContextFactory {
 	 * @param options - Factory options
 	 * @returns Promise<IGraphQLContext> - Configured context
 	 */
-	public async createHttpContext(
+	public async CreateHttpContext(
 		req: Request,
 		res: Response,
 		options: IContextFactoryOptions = {},
 	): Promise<IGraphQLContext> {
-		const requestId = this.generateRequestId(options);
-		const startTime = new Date();
+		const RequestId = this.GenerateRequestId(options);
+		const StartTime = new Date();
 
-		const context: IGraphQLContext = {
+		const Context: IGraphQLContext = {
 			req,
 			res,
-			requestId,
-			startTime,
+			requestId: RequestId,
+			startTime: StartTime,
 		};
 
 		// Add user information if available
 		if ((req as any).user) {
-			(context as any).user = (req as any).user;
+			(Context as any).user = (req as any).user;
 		}
 
 		// Apply context enhancers
-		await this.applyContextEnhancers(context, options);
+		await this.ApplyContextEnhancers(Context, options);
 
-		this.Logger?.debug(`Created HTTP GraphQL context: ${requestId}`);
+		this.Logger?.debug(`Created HTTP GraphQL context: ${RequestId}`);
 
-		return context;
+		return Context;
 	}
 
 	/**
@@ -72,21 +73,21 @@ export class GraphQLContextFactory {
 	 * @param options - Factory options
 	 * @returns Promise<IWebSocketContext> - Configured WebSocket context
 	 */
-	public async createWebSocketContext(
+	public async CreateWebSocketContext(
 		connection: IWebSocketConnection,
 		options: IContextFactoryOptions = {},
 	): Promise<IWebSocketContext> {
-		const requestId = this.generateRequestId(options);
-		const startTime = new Date();
+		const RequestId = this.GenerateRequestId(options);
+		const StartTime = new Date();
 
-		const req = connection.request ?? ({} as Request);
-		const res = {} as Response; // WebSocket doesn't have a response object
+		const Req = connection.request ?? ({} as Request);
+		const Res = {} as Response; // WebSocket doesn't have a response object
 
-		const context: IWebSocketContext = {
-			req,
-			res,
-			requestId,
-			startTime,
+		const Context: IWebSocketContext = {
+			req: Req,
+			res: Res,
+			requestId: RequestId,
+			startTime: StartTime,
 			connection: {
 				id: connection.id ?? randomUUID(),
 				connectedAt: new Date(),
@@ -96,21 +97,21 @@ export class GraphQLContextFactory {
 
 		// Add user information if available
 		if (connection.user) {
-			context.user = connection.user;
+			Context.user = connection.user;
 		}
 
 		// Apply context enhancers
-		await this.applyContextEnhancers(context, options);
+		await this.ApplyContextEnhancers(Context, options);
 
-		this.Logger?.debug(`Created WebSocket GraphQL context: ${requestId}`);
+		this.Logger?.debug(`Created WebSocket GraphQL context: ${RequestId}`);
 
-		return context;
+		return Context;
 	}
 
 	/**
 	 * Generates a unique request ID
 	 */
-	private generateRequestId(options: IContextFactoryOptions): string {
+	private GenerateRequestId(options: IContextFactoryOptions): string {
 		if (options.requestIdGenerator) {
 			return options.requestIdGenerator();
 		}
@@ -121,7 +122,7 @@ export class GraphQLContextFactory {
 	/**
 	 * Applies context enhancers to the context
 	 */
-	private async applyContextEnhancers(
+	private async ApplyContextEnhancers(
 		context: IGraphQLContext,
 		options: IContextFactoryOptions,
 	): Promise<void> {
@@ -129,9 +130,9 @@ export class GraphQLContextFactory {
 			return;
 		}
 
-		for (const enhancer of options.contextEnhancers) {
+		for (const Enhancer of options.contextEnhancers) {
 			try {
-				await enhancer(context);
+				await Enhancer(context);
 			} catch (error) {
 				this.Logger?.error(
 					`Context enhancer failed: ${getErrorMessage(error)}`,
@@ -147,18 +148,18 @@ export class GraphQLContextFactory {
 	 * @param options - Default factory options
 	 * @returns Configured factory functions
 	 */
-	public static createFactory(options: IContextFactoryOptions = {}): {
+	public static CreateFactory(options: IContextFactoryOptions = {}): {
 		createHttpContext: (req: Request, res: Response) => Promise<IGraphQLContext>;
 		createWebSocketContext: (connection: IWebSocketConnection) => Promise<IGraphQLContext>;
 	} {
-		const factory = new GraphQLContextFactory(undefined);
+		const Factory = new GraphQLContextFactory(undefined);
 
 		return {
 			createHttpContext: (req: Request, res: Response): Promise<IGraphQLContext> =>
-				factory.createHttpContext(req, res, options),
+				Factory.CreateHttpContext(req, res, options),
 
 			createWebSocketContext: (connection: IWebSocketConnection): Promise<IGraphQLContext> =>
-				factory.createWebSocketContext(connection, options),
+				Factory.CreateWebSocketContext(connection, options),
 		};
 	}
 }

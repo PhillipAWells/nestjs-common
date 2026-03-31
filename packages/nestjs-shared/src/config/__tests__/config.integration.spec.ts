@@ -11,13 +11,27 @@ describe('Config Integration', () => {
 	let validationService: ValidationService;
 
 	beforeEach(() => {
+		const mockContextualLogger = {
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
+		};
 		const mockAppLogger = {
-			createContextualLogger: vi.fn().mockReturnValue({
-				debug: vi.fn(),
-				warn: vi.fn(),
-				error: vi.fn(),
-				info: vi.fn(),
-			}),
+			CreateContextualLogger: vi.fn().mockReturnValue(mockContextualLogger),
+			createContextualLogger: vi.fn().mockReturnValue(mockContextualLogger),
+			Debug: vi.fn(),
+			debug: vi.fn(),
+			Info: vi.fn(),
+			info: vi.fn(),
+			Warn: vi.fn(),
+			warn: vi.fn(),
+			Error: vi.fn(),
+			error: vi.fn(),
 		} as any;
 		// Direct instantiation instead of TestingModule
 		const configData = {
@@ -31,11 +45,11 @@ describe('Config Integration', () => {
 				return (configData as any)[key] ?? defaultValue;
 			},
 			getOrThrow: (key: string) => {
-				const value = (configData as any)[key];
-				if (value === undefined) {
+				const Value = (configData as any)[key];
+				if (Value === undefined) {
 					throw new Error(`Configuration key not found: ${key}`);
 				}
-				return value;
+				return Value;
 			},
 		} as any;
 		const mockModuleRef = {
@@ -57,18 +71,18 @@ describe('Config Integration', () => {
 	});
 
 	it('should get string values from loaded config', () => {
-		const nodeEnv = configService.getString('nodeEnv');
+		const nodeEnv = configService.GetString('nodeEnv');
 		expect(nodeEnv).toBe('test');
 
-		const corsOrigin = configService.getString('corsOrigin');
+		const corsOrigin = configService.GetString('corsOrigin');
 		expect(corsOrigin).toBe('http://localhost:3000');
 	});
 
 	it('should get number values from loaded config', () => {
-		const port = configService.getNumber('port');
+		const port = configService.GetNumber('port');
 		expect(port).toBe(3000);
 
-		const maxFileSize = configService.getNumber('maxFileSize');
+		const maxFileSize = configService.GetNumber('maxFileSize');
 		expect(maxFileSize).toBe(10485760);
 	});
 

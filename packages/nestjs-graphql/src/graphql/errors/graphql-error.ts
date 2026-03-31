@@ -37,7 +37,7 @@ export class GraphqlError extends GraphQLError {
 		const { code = 'INTERNAL_SERVER_ERROR', statusCode = HTTP_STATUS_INTERNAL_SERVER_ERROR, context, originalError } = options;
 
 		// Create extensions with error details
-		const extensions = {
+		const Extensions = {
 			code,
 			statusCode,
 			context: context ?? {},
@@ -49,7 +49,7 @@ export class GraphqlError extends GraphQLError {
 		};
 
 		super(message, {
-			extensions,
+			extensions: Extensions,
 			originalError,
 		});
 	}
@@ -59,7 +59,7 @@ export class GraphqlError extends GraphQLError {
 	 *
 	 * @returns string - The error code
 	 */
-	public get code(): string {
+	public get Code(): string {
 		return (this.extensions as any)?.code ?? 'INTERNAL_SERVER_ERROR';
 	}
 
@@ -68,7 +68,7 @@ export class GraphqlError extends GraphQLError {
 	 *
 	 * @returns number - The HTTP status code
 	 */
-	public get statusCode(): number {
+	public get StatusCode(): number {
 		return (this.extensions as any)?.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR;
 	}
 
@@ -77,7 +77,7 @@ export class GraphqlError extends GraphQLError {
 	 *
 	 * @returns Record<string, any> - The error context
 	 */
-	public get context(): Record<string, any> {
+	public get Context(): Record<string, any> {
 		return (this.extensions as any)?.context ?? {};
 	}
 }

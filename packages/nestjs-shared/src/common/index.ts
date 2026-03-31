@@ -58,9 +58,9 @@ export type { IRateLimitConfig, IRateLimitDescriptor } from './factories/rate-li
 // Utils - Lazy Module Ref Pattern
 export * from './utils/lazy-getter.types.js';
 export { LazyModuleRefBase } from './utils/lazy-getter.types.js';
-export { escapeNewlines, sanitizeObject, sanitizeXss, MAX_SANITIZE_DEPTH } from './utils/sanitization.utils.js';
-export { getErrorStack, getErrorMessage } from './utils/error.utils.js';
-export { IAsyncModuleOptions, createAsyncOptionsProvider, createAsyncProviders } from './utils/module.utils.js';
+export { EscapeNewlines as escapeNewlines, SanitizeObject as sanitizeObject, SanitizeXss as sanitizeXss, MAX_SANITIZE_DEPTH } from './utils/sanitization.utils.js';
+export { GetErrorStack as getErrorStack, GetErrorMessage as getErrorMessage } from './utils/error.utils.js';
+export { IAsyncModuleOptions, CreateAsyncOptionsProvider as createAsyncOptionsProvider, CreateAsyncProviders as createAsyncProviders } from './utils/module.utils.js';
 
 // Constants
 export * from './constants/http-status.constants.js';

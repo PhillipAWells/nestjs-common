@@ -5,7 +5,7 @@
  *
  * @param error Any caught value (ideally an Error, but can be anything)
  */
-export function getErrorStack(error: unknown): string {
+export function GetErrorStack(error: unknown): string {
 	if (error instanceof Error) {
 		return error.stack ?? error.message;
 	}
@@ -18,7 +18,7 @@ export function getErrorStack(error: unknown): string {
  *
  * @param error Any caught value (ideally an Error, but can be anything)
  */
-export function getErrorMessage(error: unknown): string {
+export function GetErrorMessage(error: unknown): string {
 	if (error instanceof Error) {
 		return error.message;
 	}

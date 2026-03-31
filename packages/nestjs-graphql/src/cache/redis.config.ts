@@ -78,9 +78,9 @@ export interface IRedisConnectionOptions {
  * });
  * ```
  */
-export function validateRedisConfig(config: Record<string, any>): Record<string, any> {
+export function ValidateRedisConfig(config: Record<string, any>): Record<string, any> {
 	// Allow undefined values - they will use defaults
-	const schema = Joi.object({
+	const Schema = Joi.object({
 		REDIS_HOST: Joi.string().hostname().default('localhost'),
 		REDIS_PORT: Joi.number().integer().min(1).max(REDIS_MAX_PORT).default(REDIS_DEFAULT_PORT),
 		REDIS_PASSWORD: Joi.string().allow('').min(REDIS_MIN_PASSWORD_LENGTH).default(''),
@@ -94,7 +94,7 @@ export function validateRedisConfig(config: Record<string, any>): Record<string,
 		REDIS_KEY_PREFIX: Joi.string().allow('').default(REDIS_DEFAULT_KEY_PREFIX),
 	});
 
-	const { error, value } = schema.validate(config, { allowUnknown: true });
+	const { error, value } = Schema.validate(config, { allowUnknown: true });
 	if (error) {
 		throw new Error(`Redis configuration validation failed: ${error.message}`);
 	}
@@ -105,9 +105,9 @@ export function validateRedisConfig(config: Record<string, any>): Record<string,
  * Get Redis configuration from environment variables with defaults
  * @returns IRedisConfig object
  */
-export function getRedisConfig(): IRedisConfig {
+export function GetRedisConfig(): IRedisConfig {
 	// Validate environment variables - Joi will handle optional fields properly
-	const envVars: Record<string, any> = {
+	const EnvVars: Record<string, any> = {
 		REDIS_HOST: process.env['REDIS_HOST'],
 		REDIS_PORT: process.env['REDIS_PORT'],
 		REDIS_PASSWORD: process.env['REDIS_PASSWORD'],
@@ -121,7 +121,7 @@ export function getRedisConfig(): IRedisConfig {
 		REDIS_KEY_PREFIX: process.env['REDIS_KEY_PREFIX'],
 	};
 
-	validateRedisConfig(envVars);
+	ValidateRedisConfig(EnvVars);
 
 	return {
 		host: process.env['REDIS_HOST'] ?? 'localhost',
@@ -133,8 +133,8 @@ export function getRedisConfig(): IRedisConfig {
 		maxRetriesPerRequest: parseInt(process.env['REDIS_MAX_RETRIES'] ?? `${REDIS_DEFAULT_MAX_RETRIES}`, 10),
 		lazyConnect: process.env['REDIS_LAZY_CONNECT'] === 'true',
 		reconnectOnError: (err: Error) => {
-			const targetErrors = ['READONLY', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'];
-			return targetErrors.some(errorType => err.message.includes(errorType));
+			const TargetErrors = ['READONLY', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'];
+			return TargetErrors.some(errorType => err.message.includes(errorType));
 		},
 		connectTimeout: parseInt(process.env['REDIS_CONNECT_TIMEOUT'] ?? `${REDIS_DEFAULT_CONNECT_TIMEOUT}`, 10),
 		commandTimeout: parseInt(process.env['REDIS_COMMAND_TIMEOUT'] ?? `${REDIS_DEFAULT_COMMAND_TIMEOUT}`, 10),
@@ -147,10 +147,10 @@ export function getRedisConfig(): IRedisConfig {
  * Get Redis connection options for cache-manager-redis-store
  * @returns IRedisConnectionOptions object
  */
-export function getRedisConnectionOptions(): IRedisConnectionOptions {
-	const config = getRedisConfig();
+export function GetRedisConnectionOptions(): IRedisConnectionOptions {
+	const Config = GetRedisConfig();
 	return {
-		...config,
+		...Config,
 		ttl: parseInt(process.env['REDIS_CACHE_TTL'] ?? '3600', 10),
 	};
 }
@@ -160,7 +160,7 @@ export function getRedisConnectionOptions(): IRedisConnectionOptions {
  * @param config IRedisConfig
  * @returns RedisOptions
  */
-export function createRedisOptions(config: IRedisConfig): RedisOptions {
+export function CreateRedisOptions(config: IRedisConfig): RedisOptions {
 	return {
 		host: config.host,
 		port: config.port,

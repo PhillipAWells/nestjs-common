@@ -4,6 +4,7 @@ import { GraphQLSchema } from 'graphql';
 import type { IGraphQLConfigOptions } from './graphql-config.interface.js';
 import { Traced } from '@pawells/nestjs-open-telemetry';
 import { AppLogger } from '@pawells/nestjs-shared/common';
+import type { IContextualLogger } from '@pawells/nestjs-shared/common';
 import { GraphQLErrorCode } from './error-codes.js';
 
 /**
@@ -19,7 +20,7 @@ export class GraphQLService {
 		return this.ModuleRef?.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		return this.AppLogger?.createContextualLogger(GraphQLService.name);
 	}
 
@@ -35,7 +36,7 @@ export class GraphQLService {
     * @throws Error if schema is invalid
     */
 	@Traced({ name: 'graphql.validateSchema' })
-	public validateSchema(schema: GraphQLSchema): void {
+	public ValidateSchema(schema: GraphQLSchema): void {
 		if (!schema) {
 			throw new Error('GraphQL schema is required');
 		}
@@ -53,7 +54,7 @@ export class GraphQLService {
    * Get the current GraphQL schema
    * @returns The GraphQL schema or null if not set
    */
-	public getSchema(): GraphQLSchema | null {
+	public GetSchema(): GraphQLSchema | null {
 		return this.Schema;
 	}
 
@@ -64,32 +65,32 @@ export class GraphQLService {
     * @returns Formatted error
     */
 	@Traced({ name: 'graphql.formatError' })
-	public formatError(error: Error | Record<string, unknown>, config?: IGraphQLConfigOptions): Record<string, unknown> {
-		const errorRecord = error as Record<string, unknown>;
-		let message: string;
+	public FormatError(error: Error | Record<string, unknown>, config?: IGraphQLConfigOptions): Record<string, unknown> {
+		const ErrorRecord = error as Record<string, unknown>;
+		let ErrorMessage: string;
 		if (error instanceof Error) {
-			message = error.message;
+			ErrorMessage = error.message;
 		} else {
-			message = (errorRecord['message'] as string | undefined) ?? 'Unknown error';
+			ErrorMessage = (ErrorRecord['message'] as string | undefined) ?? 'Unknown error';
 		}
-		const extensions = error instanceof Error ? {} : (errorRecord['extensions'] as Record<string, unknown> ?? {});
+		const Extensions = error instanceof Error ? {} : (ErrorRecord['extensions'] as Record<string, unknown> ?? {});
 
-		const formattedError: Record<string, unknown> = {
-			message,
+		const FormattedError: Record<string, unknown> = {
+			message: ErrorMessage,
 			extensions: {
-				code: this.mapErrorToCode(error),
-				...extensions,
+				code: this.MapErrorToCode(error),
+				...Extensions,
 			},
 		};
 
 		// Include stack trace in development mode or if explicitly configured
-		const isDevelopment = process.env['NODE_ENV'] === 'development';
-		if ((isDevelopment || config?.errorHandling?.includeStackTrace) && (error instanceof Error) && error.stack) {
-			const ext = formattedError['extensions'] as Record<string, unknown>;
-			ext['stack'] = error.stack;
+		const IsDevelopment = process.env['NODE_ENV'] === 'development';
+		if ((IsDevelopment || config?.errorHandling?.includeStackTrace) && (error instanceof Error) && error.stack) {
+			const Ext = FormattedError['extensions'] as Record<string, unknown>;
+			Ext['stack'] = error.stack;
 		}
 
-		return formattedError;
+		return FormattedError;
 	}
 
 	/**
@@ -97,23 +98,23 @@ export class GraphQLService {
    * @param error The error to map
    * @returns Error code string
    */
-	private mapErrorToCode(error: Error | Record<string, unknown>): GraphQLErrorCode {
-		const errorRecord = error as Record<string, unknown>;
-		const errorMessage = error instanceof Error
+	private MapErrorToCode(error: Error | Record<string, unknown>): GraphQLErrorCode {
+		const ErrorRecord = error as Record<string, unknown>;
+		const ErrorMessage = error instanceof Error
 			? error.message.toLowerCase()
-			: String(errorRecord['message'] ?? '').toLowerCase();
+			: String(ErrorRecord['message'] ?? '').toLowerCase();
 
 		// Default error codes mapping
-		if (errorMessage.includes('validation')) {
+		if (ErrorMessage.includes('validation')) {
 			return GraphQLErrorCode.VALIDATION_ERROR;
 		}
-		if (errorMessage.includes('authentication')) {
+		if (ErrorMessage.includes('authentication')) {
 			return GraphQLErrorCode.UNAUTHENTICATED;
 		}
-		if (errorMessage.includes('authorization')) {
+		if (ErrorMessage.includes('authorization')) {
 			return GraphQLErrorCode.FORBIDDEN;
 		}
-		if (errorMessage.includes('not found')) {
+		if (ErrorMessage.includes('not found')) {
 			return GraphQLErrorCode.NOT_FOUND;
 		}
 
@@ -126,12 +127,12 @@ export class GraphQLService {
    * @param timestamp Timestamp
    * @returns Base64 encoded cursor
    */
-	public createCursor(id: string, timestamp?: number): string {
-		const cursorData = {
+	public CreateCursor(id: string, timestamp?: number): string {
+		const CursorData = {
 			id,
 			timestamp: timestamp ?? Date.now(),
 		};
-		return Buffer.from(JSON.stringify(cursorData)).toString('base64');
+		return Buffer.from(JSON.stringify(CursorData)).toString('base64');
 	}
 
 	/**
@@ -139,10 +140,10 @@ export class GraphQLService {
    * @param cursor Base64 encoded cursor
    * @returns Decoded cursor data
    */
-	public decodeCursor(cursor: string): { id: string; timestamp: number } {
+	public DecodeCursor(cursor: string): { id: string; timestamp: number } {
 		try {
-			const decoded = Buffer.from(cursor, 'base64').toString('utf-8');
-			return JSON.parse(decoded);
+			const Decoded = Buffer.from(cursor, 'base64').toString('utf-8');
+			return JSON.parse(Decoded);
 		} catch {
 			throw new Error('Invalid cursor format');
 		}
@@ -155,7 +156,7 @@ export class GraphQLService {
    * @param after Cursor to start after
    * @returns Paginated result with edges and page info
    */
-	public paginateItems<T extends { id: string; createdAt?: Date }>(
+	public PaginateItems<T extends { id: string; createdAt?: Date }>(
 		items: T[],
 		first?: number,
 		after?: string,
@@ -168,32 +169,32 @@ export class GraphQLService {
 			endCursor?: string;
 		};
 	} {
-		let startIndex = 0;
+		let StartIndex = 0;
 
 		if (after) {
-			const afterData = this.decodeCursor(after);
-			const afterIndex = items.findIndex(item => item.id === afterData.id);
-			if (afterIndex !== -1) {
-				startIndex = afterIndex + 1;
+			const AfterData = this.DecodeCursor(after);
+			const AfterIndex = items.findIndex(item => item.id === AfterData.id);
+			if (AfterIndex !== -1) {
+				StartIndex = AfterIndex + 1;
 			}
 		}
 
-		const endIndex = first ? startIndex + first : items.length;
-		const paginatedItems = items.slice(startIndex, endIndex);
+		const EndIndex = first ? StartIndex + first : items.length;
+		const PaginatedItems = items.slice(StartIndex, EndIndex);
 
-		const edges = paginatedItems.map(item => ({
-			cursor: this.createCursor(item.id, item.createdAt ? item.createdAt.getTime() : undefined),
+		const Edges = PaginatedItems.map(item => ({
+			cursor: this.CreateCursor(item.id, item.createdAt ? item.createdAt.getTime() : undefined),
 			node: item,
 		}));
 
 		return {
-			edges,
+			edges: Edges,
 			pageInfo: {
-				hasNextPage: endIndex < items.length,
-				hasPreviousPage: startIndex > 0,
-				...(edges.length > 0 ? {
-					startCursor: edges[0]?.cursor,
-					endCursor: edges[edges.length - 1]?.cursor,
+				hasNextPage: EndIndex < items.length,
+				hasPreviousPage: StartIndex > 0,
+				...(Edges.length > 0 ? {
+					startCursor: Edges[0]?.cursor,
+					endCursor: Edges[Edges.length - 1]?.cursor,
 				} : {}),
 			},
 		};

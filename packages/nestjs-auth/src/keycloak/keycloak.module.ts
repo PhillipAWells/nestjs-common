@@ -42,24 +42,24 @@ export class KeycloakModule {
 	 * @param options - Configuration options for the Keycloak module
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
 	 */
-	public static forRoot(options: IKeycloakModuleOptions): DynamicModule {
-		const isOffline = options.validationMode === 'offline';
-		const providers = [
+	public static ForRoot(options: IKeycloakModuleOptions): DynamicModule {
+		const IsOffline = options.validationMode === 'offline';
+		const Providers = [
 			{
 				provide: KEYCLOAK_MODULE_OPTIONS,
 				useValue: options,
 			},
 			KeycloakTokenValidationService,
-			...(isOffline ? [JwksCacheService] : []),
+			...(IsOffline ? [JwksCacheService] : []),
 		];
 
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({})],
-			providers,
+			providers: Providers,
 			exports: [
 				KeycloakTokenValidationService,
-				...(isOffline ? [JwksCacheService] : []),
+				...(IsOffline ? [JwksCacheService] : []),
 				KEYCLOAK_MODULE_OPTIONS,
 			],
 		};
@@ -79,7 +79,7 @@ export class KeycloakModule {
 	 *   Note: JwksCacheService is always provided in async mode (validationMode is not known at
 	 *   module definition time). In online mode, it initializes but skips the JWKS fetch.
 	 */
-	public static forRootAsync(options: IKeycloakModuleAsyncOptions): DynamicModule {
+	public static ForRootAsync(options: IKeycloakModuleAsyncOptions): DynamicModule {
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({}), ...(options.imports ?? [])],

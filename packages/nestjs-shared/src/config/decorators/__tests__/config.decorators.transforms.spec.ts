@@ -29,7 +29,7 @@ describe('Config Decorators - Transform Functions', () => {
 
 		it('should work with different default types', () => {
 			expect(ConfigValue('port', 3000)).toBeDefined();
-			expect(ConfigValue('debug', true)).toBeDefined();
+			expect(ConfigValue('Debug()', true)).toBeDefined();
 			expect(ConfigValue('name', 'app')).toBeDefined();
 			expect(ConfigValue('items', [])).toBeDefined();
 			expect(ConfigValue('config', {})).toBeDefined();

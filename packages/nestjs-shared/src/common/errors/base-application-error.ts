@@ -76,7 +76,7 @@ export class BaseApplicationError extends Error {
 	 *
 	 * @example
 	 * ```typescript
-	 * const error = new BaseApplicationError('Test error');
+	 * const Err = new BaseApplicationError('Test error');
 	 * console.log(error.toJSON());
 	 * // {
 	 * //   name: 'BaseApplicationError',
@@ -88,7 +88,7 @@ export class BaseApplicationError extends Error {
 	 * // }
 	 * ```
 	 */
-	public toJSON(): Record<string, any> {
+	public ToJSON(): Record<string, any> {
 		return {
 			name: this.name,
 			message: this.message,
@@ -110,14 +110,14 @@ export class BaseApplicationError extends Error {
 	 *
 	 * @example
 	 * ```typescript
-	 * const error = new BaseApplicationError('IUser error', { code: 'USER_ERROR' });
+	 * const Err = new BaseApplicationError('IUser error', { code: 'USER_ERROR' });
 	 * const errorWithContext = error.withContext({ userId: '123', action: 'login' });
 	 * // errorWithContext is a new instance but still instanceof BaseApplicationError
 	 * // errorWithContext.context = { userId: '123', action: 'login' }
 	 * ```
 	 */
-	public withContext(additionalContext: Record<string, any>): this {
-		const mergedContext = { ...this.Context, ...additionalContext };
+	public WithContext(additionalContext: Record<string, any>): this {
+		const MergedContext = { ...this.Context, ...additionalContext };
 		const Constructor = this.constructor as new (
 			message: string,
 			options: { code?: string; statusCode?: number; context?: Record<string, any> }
@@ -126,7 +126,7 @@ export class BaseApplicationError extends Error {
 		return new Constructor(this.message, {
 			code: this.Code,
 			statusCode: this.StatusCode,
-			context: mergedContext,
+			context: MergedContext,
 		});
 	}
 
@@ -138,12 +138,12 @@ export class BaseApplicationError extends Error {
 	 *
 	 * @example
 	 * ```typescript
-	 * const error = new BaseApplicationError('Generic error');
+	 * const Err = new BaseApplicationError('Generic error');
 	 * const specificError = error.withMessage('IUser not found');
 	 * // specificError.message = 'IUser not found'
 	 * ```
 	 */
-	public withMessage(newMessage: string): this {
+	public WithMessage(newMessage: string): this {
 		const Constructor = this.constructor as new (
 			message: string,
 			options: { code?: string; statusCode?: number; context?: Record<string, any> }

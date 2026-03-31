@@ -22,9 +22,9 @@ export class KeycloakClientError extends BaseApplicationError {
 		response?: unknown,
 		cause?: Error,
 	) {
-		const errorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
+		const ErrorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
 		super(message, {
-			code: errorCode,
+			code: ErrorCode,
 			statusCode: statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
 			context: { response, cause },
 		});

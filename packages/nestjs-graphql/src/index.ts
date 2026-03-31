@@ -58,7 +58,7 @@ export type {
 } from './cache/interceptors/base-cache.interceptor.js';
 
 // Configuration
-export { getRedisConfig, getRedisConnectionOptions, createRedisOptions } from './cache/redis.config.js';
+export { GetRedisConfig as getRedisConfig, GetRedisConnectionOptions as getRedisConnectionOptions, CreateRedisOptions as createRedisOptions } from './cache/redis.config.js';
 export type { IRedisConfig, IRedisConnectionOptions } from './cache/redis.config.js';
 
 // Types

@@ -7,7 +7,7 @@ declare global {
 
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 
 const MS_PER_SECOND = 1000;
@@ -62,32 +62,32 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
 
 	// eslint-disable-next-line require-await
 	public async increment(key: string, windowMs: number): Promise<number> {
-		const now = Date.now();
-		const entry = this.Storage.get(key);
+		const Now = Date.now();
+		const Entry = this.Storage.get(key);
 
-		if (!entry || now > entry.resetTime) {
+		if (!Entry || Now > Entry.resetTime) {
 			// Create new entry
-			const resetTime = now + windowMs;
-			this.Storage.set(key, { count: 1, resetTime });
+			const ResetTime = Now + windowMs;
+			this.Storage.set(key, { count: 1, resetTime: ResetTime });
 			return 1;
 		} else {
 			// Increment existing entry
-			entry.count++;
-			this.Storage.set(key, entry);
-			return entry.count;
+			Entry.count++;
+			this.Storage.set(key, Entry);
+			return Entry.count;
 		}
 	}
 
 	// eslint-disable-next-line require-await
 	public async get(key: string): Promise<number> {
-		const entry = this.Storage.get(key);
-		const now = Date.now();
+		const Entry = this.Storage.get(key);
+		const Now = Date.now();
 
-		if (!entry || now > entry.resetTime) {
+		if (!Entry || Now > Entry.resetTime) {
 			return 0;
 		}
 
-		return entry.count;
+		return Entry.count;
 	}
 
 	// eslint-disable-next-line require-await
@@ -97,10 +97,10 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
 
 	// eslint-disable-next-line require-await
 	public async cleanup(): Promise<void> {
-		const now = Date.now();
-		for (const [key, entry] of this.Storage.entries()) {
-			if (now > entry.resetTime) {
-				this.Storage.delete(key);
+		const Now = Date.now();
+		for (const [Key, Entry] of this.Storage.entries()) {
+			if (Now > Entry.resetTime) {
+				this.Storage.delete(Key);
 			}
 		}
 	}
@@ -133,7 +133,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(RateLimitService.name);
 	}
 
@@ -166,7 +166,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	public onModuleInit(): void {
 		// Start cleanup interval to remove expired entries
 		this.CleanupInterval = setInterval(async () => {
-			await this.cleanup();
+			await this.Cleanup();
 		}, CLEANUP_INTERVAL_MS); // Clean up every minute
 
 		this.Logger.info('Rate limit service initialized');
@@ -187,72 +187,72 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 * @returns Promise<IRateLimitResult> - Rate limit check result
 	 */
 	// eslint-disable-next-line require-await
-	public async checkLimit(clientId: string, operation?: string): Promise<IRateLimitResult> {
-		const config = operation ? this.getConfigForOperation(operation) : this.DefaultConfig;
+	public async CheckLimit(clientId: string, operation?: string): Promise<IRateLimitResult> {
+		const Config = operation ? this.GetConfigForOperation(operation) : this.DefaultConfig;
 
 		// Use storage backend if available, otherwise fall back to in-memory
 		const { Storage } = this;
 		if (Storage) {
-			return this.checkLimitWithStorage(clientId, config, Storage);
+			return this.CheckLimitWithStorage(clientId, Config, Storage);
 		} else {
-			return this.checkLimitInMemory(clientId, config);
+			return this.CheckLimitInMemory(clientId, Config);
 		}
 	}
 
 	/**
 	 * Check rate limit using storage backend
 	 */
-	private async checkLimitWithStorage(clientId: string, config: IRateLimitConfig, storage: IRateLimitStorage): Promise<IRateLimitResult> {
+	private async CheckLimitWithStorage(clientId: string, config: IRateLimitConfig, storage: IRateLimitStorage): Promise<IRateLimitResult> {
 		try {
-			const current = await storage.increment(clientId, config.windowMs);
-			const remaining = Math.max(0, config.maxRequests - current);
-			const allowed = current <= config.maxRequests;
+			const Current = await storage.increment(clientId, config.windowMs);
+			const Remaining = Math.max(0, config.maxRequests - Current);
+			const Allowed = Current <= config.maxRequests;
 
 			return {
-				allowed,
-				remaining,
+				allowed: Allowed,
+				remaining: Remaining,
 				limit: config.maxRequests,
 				resetTime: Date.now() + config.windowMs,
-				current,
+				current: Current,
 			};
 		} catch (error) {
 			this.Logger.error(`Storage rate limit check failed for ${clientId}:`, getErrorMessage(error));
 			// Fall back to in-memory on storage error
-			return this.checkLimitInMemory(clientId, config);
+			return this.CheckLimitInMemory(clientId, config);
 		}
 	}
 
 	/**
 	 * Check rate limit using in-memory storage (legacy implementation)
 	 */
-	private checkLimitInMemory(clientId: string, config: IRateLimitConfig): IRateLimitResult {
-		const now = Date.now();
+	private CheckLimitInMemory(clientId: string, config: IRateLimitConfig): IRateLimitResult {
+		const Now = Date.now();
 
-		let entry = this.Store.get(clientId);
+		let Entry = this.Store.get(clientId);
 
-		if (!entry || now > entry.resetTime) {
+		if (!Entry || Now > Entry.resetTime) {
 			// Create new entry or reset expired entry
-			entry = {
+			Entry = {
 				count: 0,
-				resetTime: now + config.windowMs,
+				resetTime: Now + config.windowMs,
 			};
 		}
 
-		const allowed = entry.count < config.maxRequests;
+		const Allowed = Entry.count < config.maxRequests;
 
-		if (allowed) {
-			entry.count++;
-			this.Store.set(clientId, entry);
+		if (Allowed) {
+			Entry.count++;
+			this.Store.set(clientId, Entry);
 		}
 
-		const remaining = Math.max(0, config.maxRequests - entry.count);
+		const Remaining = Math.max(0, config.maxRequests - Entry.count);
 
 		return {
-			allowed,
-			remaining,
+			allowed: Allowed,
+			remaining: Remaining,
 			limit: config.maxRequests,
-			resetTime: entry.resetTime,
-			current: entry.count,
+			resetTime: Entry.resetTime,
+			current: Entry.count,
 		};
 	}
 
@@ -262,7 +262,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 * @param operation - Operation name (e.g., 'query', 'mutation')
 	 * @param config - Rate limit configuration
 	 */
-	public setOperationConfig(operation: string, config: IRateLimitConfig): void {
+	public SetOperationConfig(operation: string, config: IRateLimitConfig): void {
 		this.OperationConfigs.set(operation, config);
 		this.Logger.info(`Set custom rate limit for operation '${operation}': ${config.maxRequests} requests per ${config.windowMs}ms`);
 	}
@@ -273,7 +273,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 * @param operation - Operation name
 	 * @returns IRateLimitConfig - Configuration for the operation
 	 */
-	private getConfigForOperation(operation: string): IRateLimitConfig {
+	private GetConfigForOperation(operation: string): IRateLimitConfig {
 		return this.OperationConfigs.get(operation) ?? this.DefaultConfig;
 	}
 
@@ -282,7 +282,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 *
 	 * @param clientId - Client identifier to reset
 	 */
-	public async resetLimit(clientId: string): Promise<void> {
+	public async ResetLimit(clientId: string): Promise<void> {
 		this.Store.delete(clientId);
 		// Also reset in storage backend if available
 		if (this.Storage) {
@@ -302,21 +302,21 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 * @param operation - Optional operation name
 	 * @returns IRateLimitResult | null - Current status or null if no record
 	 */
-	public async getStatus(clientId: string, operation?: string): Promise<IRateLimitResult | null> {
-		const config = operation ? this.getConfigForOperation(operation) : this.DefaultConfig;
+	public async GetStatus(clientId: string, operation?: string): Promise<IRateLimitResult | null> {
+		const Config = operation ? this.GetConfigForOperation(operation) : this.DefaultConfig;
 
 		// Check storage backend first if available
 		if (this.Storage) {
 			try {
-				const count = await this.Storage.get(clientId);
-				if (count > 0) {
-					const remaining = Math.max(0, config.maxRequests - count);
+				const Count = await this.Storage.get(clientId);
+				if (Count > 0) {
+					const Remaining = Math.max(0, Config.maxRequests - Count);
 					return {
-						allowed: count < config.maxRequests,
-						remaining,
-						limit: config.maxRequests,
-						resetTime: Date.now() + config.windowMs,
-						current: count,
+						allowed: Count < Config.maxRequests,
+						remaining: Remaining,
+						limit: Config.maxRequests,
+						resetTime: Date.now() + Config.windowMs,
+						current: Count,
 					};
 				}
 			} catch (error) {
@@ -326,27 +326,27 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		}
 
 		// Fall back to in-memory store
-		const entry = this.Store.get(clientId);
+		const Entry = this.Store.get(clientId);
 
-		if (!entry) {
+		if (!Entry) {
 			return null;
 		}
 
-		const now = Date.now();
-		const remaining = Math.max(0, config.maxRequests - entry.count);
+		const Now = Date.now();
+		const Remaining = Math.max(0, Config.maxRequests - Entry.count);
 
 		return {
-			allowed: entry.count < config.maxRequests && now <= entry.resetTime,
-			remaining,
-			limit: config.maxRequests,
-			resetTime: entry.resetTime,
+			allowed: Entry.count < Config.maxRequests && Now <= Entry.resetTime,
+			remaining: Remaining,
+			limit: Config.maxRequests,
+			resetTime: Entry.resetTime,
 		};
 	}
 
 	/**
 	 * Cleans up expired rate limit entries
 	 */
-	private async cleanup(): Promise<void> {
+	private async Cleanup(): Promise<void> {
 		// Clean up storage backend if available
 		const { Storage } = this;
 		if (Storage) {
@@ -358,18 +358,18 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		}
 
 		// Clean up in-memory store
-		const now = Date.now();
-		let cleaned = 0;
+		const Now = Date.now();
+		let Cleaned = 0;
 
-		for (const [clientId, entry] of this.Store.entries()) {
-			if (now > entry.resetTime) {
-				this.Store.delete(clientId);
-				cleaned++;
+		for (const [ClientId, Entry] of this.Store.entries()) {
+			if (Now > Entry.resetTime) {
+				this.Store.delete(ClientId);
+				Cleaned++;
 			}
 		}
 
-		if (cleaned > 0) {
-			this.Logger.debug(`Cleaned up ${cleaned} expired rate limit entries`);
+		if (Cleaned > 0) {
+			this.Logger.debug(`Cleaned up ${Cleaned} expired rate limit entries`);
 		}
 	}
 
@@ -378,7 +378,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 *
 	 * @returns Object with store statistics
 	 */
-	public getStats(): { totalEntries: number; operationConfigs: number } {
+	public GetStats(): { totalEntries: number; operationConfigs: number } {
 		return {
 			totalEntries: this.Store.size,
 			operationConfigs: this.OperationConfigs.size,

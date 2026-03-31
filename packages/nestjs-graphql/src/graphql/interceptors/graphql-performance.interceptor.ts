@@ -4,7 +4,7 @@ import type { ExecutionContext, CallHandler } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import { ProfileMethod } from '@pawells/nestjs-pyroscope';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger } from '@pawells/nestjs-shared/common';
 import { SLOW_OPERATION_THRESHOLD_MS, PERFORMANCE_WARNING_THRESHOLD_MS } from '../constants/performance.constants.js';
 
@@ -31,7 +31,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, ILazyModu
 		return this.Module.get(AppLogger, { strict: false });
 	}
 
-	private get Logger(): AppLogger {
+	private get Logger(): IContextualLogger {
 		return this.AppLogger.createContextualLogger(GraphQLPerformanceInterceptor.name);
 	}
 
@@ -52,32 +52,32 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, ILazyModu
 	 */
 	@ProfileMethod({ tags: { operation: 'graphql_intercept' } })
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-		const startTime = Date.now();
+		const StartTime = Date.now();
 
 		// Extract GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const info = gqlContext.getInfo();
+		const GqlContext = GqlExecutionContext.create(context);
+		const Info = GqlContext.getInfo();
 
 		// Extract operation details
-		const operationName = info?.operation?.name?.value ?? 'Anonymous';
-		const operationType = info?.operation?.operation ?? 'unknown';
-		const fieldName = info?.fieldName ?? 'unknown';
+		const OperationName = Info?.operation?.name?.value ?? 'Anonymous';
+		const OperationType = Info?.operation?.operation ?? 'unknown';
+		const FieldName = Info?.fieldName ?? 'unknown';
 
 		return next.handle().pipe(
 			tap({
 				next: () => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 
 					// Log performance metrics
-					this.logPerformance(operationType, operationName, fieldName, duration);
+					this.LogPerformance(OperationType, OperationName, FieldName, Duration);
 
 					// Check for slow operations
-					this.checkSlowOperation(operationType, operationName, fieldName, duration);
+					this.CheckSlowOperation(OperationType, OperationName, FieldName, Duration);
 				},
 				error: () => {
-					const duration = Date.now() - startTime;
+					const Duration = Date.now() - StartTime;
 					this.Logger?.warn(
-						`GraphQL ${operationType} failed after ${duration}ms: ${operationName}.${fieldName}`,
+						`GraphQL ${OperationType} failed after ${Duration}ms: ${OperationName}.${FieldName}`,
 					);
 				},
 			}),
@@ -92,7 +92,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, ILazyModu
 	 * @param fieldName - The field name
 	 * @param duration - Execution duration in milliseconds
 	 */
-	private logPerformance(
+	private LogPerformance(
 		operationType: string,
 		operationName: string,
 		fieldName: string,
@@ -115,7 +115,7 @@ export class GraphQLPerformanceInterceptor implements NestInterceptor, ILazyModu
 	 * @param fieldName - The field name
 	 * @param duration - Execution duration in milliseconds
 	 */
-	private checkSlowOperation(
+	private CheckSlowOperation(
 		operationType: string,
 		operationName: string,
 		fieldName: string,

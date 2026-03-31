@@ -5,15 +5,15 @@ import { OTEL_NAMESPACE } from './constants.js';
 /**
  * Current namespace for tracer names (configurable, defaults to OTEL_NAMESPACE)
  */
-let currentNamespace = OTEL_NAMESPACE;
+let CurrentNamespace = OTEL_NAMESPACE;
 
 /**
  * Set the namespace for tracer names (internal use)
  * @internal
  * @private
  */
-export function setTracerNamespace(namespace: string): void {
-	currentNamespace = namespace;
+export function SetTracerNamespace(namespace: string): void {
+	CurrentNamespace = namespace;
 }
 
 /**
@@ -31,17 +31,17 @@ export function setTracerNamespace(namespace: string): void {
  *
  * @example
  * ```typescript
- * const tracer = getTracer('user-service', '1.2.0');
+ * const tracer = GetTracer('user-service', '1.2.0');
  * // Tracer name becomes 'pawells.user-service'
  * const span = tracer.startSpan('getUserById');
  * // ... do work
  * span.end();
  * ```
  */
-export function getTracer(name: string, version = '1.0.0'): Tracer {
+export function GetTracer(name: string, version = '1.0.0'): Tracer {
 	// Prefix with namespace if one is configured
-	const tracerName = currentNamespace ? `${currentNamespace}.${name}` : name;
-	return trace.getTracer(tracerName, version);
+	const TracerName = CurrentNamespace ? `${CurrentNamespace}.${name}` : name;
+	return trace.getTracer(TracerName, version);
 }
 
 /**
@@ -58,8 +58,8 @@ export function getTracer(name: string, version = '1.0.0'): Tracer {
  *
  * @example
  * ```typescript
- * const tracer = getTracer('user-service');
- * const { span, ctx } = createSpan(tracer, 'getUserById', {
+ * const tracer = GetTracer('user-service');
+ * const { span, ctx } = CreateSpan(tracer, 'getUserById', {
  *   attributes: { 'user.id': '123' }
  * });
  *
@@ -71,15 +71,15 @@ export function getTracer(name: string, version = '1.0.0'): Tracer {
  * span.end();
  * ```
  */
-export function createSpan(
+export function CreateSpan(
 	tracer: Tracer,
 	name: string,
 	options?: SpanOptions,
 	makeActive = true,
 ): { span: Span; ctx: Context } {
-	const span = tracer.startSpan(name, options);
-	const ctx = makeActive ? trace.setSpan(context.active(), span) : context.active();
-	return { span, ctx };
+	const Span = tracer.startSpan(name, options);
+	const Ctx = makeActive ? trace.setSpan(context.active(), Span) : context.active();
+	return { span: Span, ctx: Ctx };
 }
 
 /**
@@ -96,9 +96,9 @@ export function createSpan(
  *
  * @example
  * ```typescript
- * const tracer = getTracer('user-service');
+ * const tracer = GetTracer('user-service');
  *
- * const user = await withSpan(tracer, 'getUserById', async () => {
+ * const user = await WithSpan(tracer, 'getUserById', async () => {
  *   const user = await db.findUser(userId);
  *   return user;
  * }, {
@@ -106,25 +106,25 @@ export function createSpan(
  * });
  * ```
  */
-export async function withSpan<T>(
+export async function WithSpan<T>(
 	tracer: Tracer,
 	name: string,
 	fn: () => T | Promise<T>,
 	options?: SpanOptions,
 ): Promise<T> {
-	const { span, ctx } = createSpan(tracer, name, options);
+	const { span, ctx } = CreateSpan(tracer, name, options);
 	try {
-		const result = await context.with(ctx, async () => {
-			const value = fn();
+		const Result = await context.with(ctx, async () => {
+			const Value = fn();
 			// eslint-disable-next-line @typescript-eslint/return-await
-			return value instanceof Promise ? await value : value;
+			return Value instanceof Promise ? await Value : Value;
 		});
 		span.setStatus({ code: SpanStatusCode.OK });
-		return result;
+		return Result;
 	} catch (error) {
 		span.recordException(error as Error);
-		const message = getErrorMessage(error);
-		span.setStatus({ code: SpanStatusCode.ERROR, message });
+		const Message = getErrorMessage(error);
+		span.setStatus({ code: SpanStatusCode.ERROR, message: Message });
 		throw error;
 	} finally {
 		span.end();
@@ -146,24 +146,24 @@ export async function withSpan<T>(
  *
  * @example
  * ```typescript
- * addAttributes({
+ * AddAttributes({
  *   'user.id': userId,
  *   'user.role': 'admin',
  *   'request.method': 'POST'
  * });
  * ```
  */
-export function addAttributes(
+export function AddAttributes(
 	attributes: Record<string, string | number | boolean>,
 	ctx?: Context,
 ): void {
-	const activeContext = ctx ?? context.active();
-	const span = trace.getSpan(activeContext);
-	if (!span) {
+	const ActiveContext = ctx ?? context.active();
+	const Span = trace.getSpan(ActiveContext);
+	if (!Span) {
 		return;
 	}
 	Object.entries(attributes).forEach(([key, value]) => {
-		span.setAttribute(key, value);
+		Span.setAttribute(key, value);
 	});
 }
 
@@ -173,6 +173,6 @@ export function addAttributes(
  * @internal
  * @private
  */
-export function resetTracerNamespace(): void {
-	currentNamespace = OTEL_NAMESPACE;
+export function ResetTracerNamespace(): void {
+	CurrentNamespace = OTEL_NAMESPACE;
 }

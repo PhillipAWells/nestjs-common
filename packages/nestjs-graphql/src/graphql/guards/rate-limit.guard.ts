@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import type { ILazyModuleRefService } from '@pawells/nestjs-shared/common';
+import type { ILazyModuleRefService, IContextualLogger } from '@pawells/nestjs-shared/common';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { RateLimitService } from '../services/rate-limit.service.js';
 
@@ -34,7 +34,7 @@ export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService
 		}
 	}
 
-	private get Logger(): AppLogger | undefined {
+	private get Logger(): IContextualLogger | undefined {
 		try {
 			return this.AppLogger?.createContextualLogger(GraphQLRateLimitGuard.name);
 		} catch {
@@ -58,37 +58,37 @@ export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService
 	 */
 	public async canActivate(context: ExecutionContext): Promise<boolean> {
 		// Extract GraphQL context
-		const gqlContext = GqlExecutionContext.create(context);
-		const request = gqlContext.getContext().req;
+		const GqlContext = GqlExecutionContext.create(context);
+		const Request = GqlContext.getContext().req;
 
 		// Get client identifier (user ID or IP address)
-		const clientId = this.getClientIdentifier(request);
+		const ClientId = this.GetClientIdentifier(Request);
 
 		try {
 			// Check rate limit
-			const result = await this.RateLimitService.checkLimit(clientId);
+			const Result = await this.RateLimitService.CheckLimit(ClientId);
 
-			if (!result.allowed) {
+			if (!Result.allowed) {
 				this.Logger?.warn(
-					`Rate limit exceeded for client ${clientId}. Reset in ${result.resetTime - Date.now()}ms`,
+					`Rate limit exceeded for client ${ClientId}. Reset in ${Result.resetTime - Date.now()}ms`,
 				);
 
 				throw new HttpException(
 					{
 						message: 'Rate limit exceeded',
-						resetTime: new Date(result.resetTime),
-						retryAfter: Math.ceil((result.resetTime - Date.now()) / MS_PER_SECOND),
+						resetTime: new Date(Result.resetTime),
+						retryAfter: Math.ceil((Result.resetTime - Date.now()) / MS_PER_SECOND),
 					},
 					HttpStatus.TOO_MANY_REQUESTS,
 				);
 			}
 
 			// Add rate limit headers to response
-			const response = gqlContext.getContext().res;
-			if (response) {
-				response.setHeader('X-RateLimit-Limit', result.limit);
-				response.setHeader('X-RateLimit-Remaining', result.remaining);
-				response.setHeader('X-RateLimit-Reset', new Date(result.resetTime).toISOString());
+			const Response = GqlContext.getContext().res;
+			if (Response) {
+				Response.setHeader('X-RateLimit-Limit', Result.limit);
+				Response.setHeader('X-RateLimit-Remaining', Result.remaining);
+				Response.setHeader('X-RateLimit-Reset', new Date(Result.resetTime).toISOString());
 			}
 
 			return true;
@@ -97,7 +97,7 @@ export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService
 				throw error;
 			}
 
-			this.Logger?.error(`Rate limit check failed for client ${clientId}: ${getErrorMessage(error)}`);
+			this.Logger?.error(`Rate limit check failed for client ${ClientId}: ${getErrorMessage(error)}`);
 			throw new HttpException('Rate limit service unavailable', HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
@@ -108,7 +108,7 @@ export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService
 	 * @param request - The HTTP request object
 	 * @returns string - Client identifier
 	 */
-	private getClientIdentifier(request: any): string {
+	private GetClientIdentifier(request: any): string {
 		// Prefer user ID if authenticated
 		if (request.user?.id) {
 			return `user:${request.user.id}`;
@@ -119,11 +119,11 @@ export class GraphQLRateLimitGuard implements CanActivate, ILazyModuleRefService
 		}
 
 		// Fall back to IP address
-		const ip: string =
+		const Ip: string =
 			request.ip ??
 			request.headers?.['x-forwarded-for']?.toString().split(',')[0]?.trim() ??
 			'unknown';
 
-		return `ip:${ip}`;
+		return `ip:${Ip}`;
 	}
 }

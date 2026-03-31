@@ -4,7 +4,7 @@ import { GraphQLModule } from '../graphql/graphql.module.js';
 describe('GraphQLModule', () => {
 	describe('forRoot', () => {
 		it('should return a dynamic module configuration', () => {
-			const module = GraphQLModule.forRoot();
+			const module = GraphQLModule.ForRoot();
 
 			expect(module).toBeDefined();
 			expect(module.module).toBe(GraphQLModule);
@@ -13,7 +13,7 @@ describe('GraphQLModule', () => {
 		});
 
 		it('should include GraphQLService in providers and exports', () => {
-			const module = GraphQLModule.forRoot();
+			const module = GraphQLModule.ForRoot();
 
 			expect(module.providers).toContain(GraphQLService);
 			expect(module.exports).toContain(GraphQLService);
@@ -26,7 +26,7 @@ describe('GraphQLModule', () => {
 				introspection: false,
 			};
 
-			const module = GraphQLModule.forRoot(options);
+			const module = GraphQLModule.ForRoot(options);
 
 			expect(module).toBeDefined();
 			expect(module.imports).toBeDefined();
@@ -35,7 +35,7 @@ describe('GraphQLModule', () => {
 
 	describe('forRootAsync', () => {
 		it('should return a dynamic module configuration for async setup', () => {
-			const module = GraphQLModule.forRootAsync({
+			const module = GraphQLModule.ForRootAsync({
 				useFactory: () => ({
 					autoSchemaFile: './test-schema.gql',
 					playground: true,
@@ -50,7 +50,7 @@ describe('GraphQLModule', () => {
 		});
 
 		it('should include GraphQLService in providers and exports for async config', () => {
-			const module = GraphQLModule.forRootAsync({
+			const module = GraphQLModule.ForRootAsync({
 				useFactory: () => ({}) as any,
 				inject: [],
 			});

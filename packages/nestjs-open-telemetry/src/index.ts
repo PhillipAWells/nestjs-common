@@ -5,7 +5,7 @@
  *
  * This package provides:
  * - **@Traced decorator** — Automatically wrap methods in distributed tracing spans with error handling
- * - **Manual span helpers** — Low-level control over span creation and context management via `getTracer`, `createSpan`, `withSpan`
+ * - **Manual span helpers** — Low-level control over span creation and context management via `GetTracer`, `CreateSpan`, `WithSpan`
  * - **HTTP metrics** — Record request duration, status codes, and body sizes following OpenTelemetry semantic conventions
  * - **Logger adapter** — Inject trace context (trace_id, span_id) into all logs automatically
  *
@@ -46,15 +46,15 @@ export type { Span, SpanContext, Attributes } from '@opentelemetry/api';
 
 // Re-export commonly used helpers from lib
 export {
-	getTracer,
-	createSpan,
-	withSpan,
-	addAttributes,
-	setTracerNamespace,
-	resetTracerNamespace,
+	GetTracer,
+	CreateSpan,
+	WithSpan,
+	AddAttributes,
+	SetTracerNamespace,
+	ResetTracerNamespace,
 } from './lib/tracing.js';
 export {
-	recordHttpMetrics,
-	trackActiveRequests,
-	resetHttpMetrics,
+	RecordHttpMetrics as recordHttpMetrics,
+	TrackActiveRequests as trackActiveRequests,
+	ResetHttpMetrics as resetHttpMetrics,
 } from './lib/metrics.js';

@@ -71,7 +71,7 @@ describe('NatsService', () => {
 		});
 
 		it('should mark the connection as established', () => {
-			expect(service.isConnected()).toBe(true);
+			expect(service.IsConnected()).toBe(true);
 		});
 	});
 
@@ -92,33 +92,33 @@ describe('NatsService', () => {
 
 	describe('isConnected', () => {
 		it('should return true when connected and not draining', () => {
-			expect(service.isConnected()).toBe(true);
+			expect(service.IsConnected()).toBe(true);
 		});
 
 		it('should return false when the connection is closed', () => {
 			mockConnection.isClosed.mockReturnValue(true);
-			expect(service.isConnected()).toBe(false);
+			expect(service.IsConnected()).toBe(false);
 		});
 
 		it('should return false when the connection is draining', () => {
 			mockConnection.isDraining.mockReturnValue(true);
-			expect(service.isConnected()).toBe(false);
+			expect(service.IsConnected()).toBe(false);
 		});
 
 		it('should return false before onModuleInit is called', () => {
 			const uninitializedService = new NatsService(mockOptions);
-			expect(uninitializedService.isConnected()).toBe(false);
+			expect(uninitializedService.IsConnected()).toBe(false);
 		});
 	});
 
 	describe('getConnection', () => {
 		it('should return the raw NatsConnection', () => {
-			expect(service.getConnection()).toBe(mockConnection);
+			expect(service.GetConnection()).toBe(mockConnection);
 		});
 
 		it('should throw if the connection is not established', () => {
 			const uninitializedService = new NatsService(mockOptions);
-			expect(() => uninitializedService.getConnection()).toThrow(
+			expect(() => uninitializedService.GetConnection()).toThrow(
 				'NATS connection is not established or is draining',
 			);
 		});
@@ -126,31 +126,31 @@ describe('NatsService', () => {
 
 	describe('publish', () => {
 		it('should publish a string message to a subject', () => {
-			service.publish('test.subject', 'hello world');
+			service.Publish('test.subject', 'hello world');
 			expect(mockConnection.publish).toHaveBeenCalledWith('test.subject', 'hello world', undefined);
 		});
 
 		it('should publish without a payload', () => {
-			service.publish('test.subject');
+			service.Publish('test.subject');
 			expect(mockConnection.publish).toHaveBeenCalledWith('test.subject', undefined, undefined);
 		});
 
 		it('should pass through publish options', () => {
 			const opts = { reply: 'reply.inbox' };
-			service.publish('test.subject', 'data', opts);
+			service.Publish('test.subject', 'data', opts);
 			expect(mockConnection.publish).toHaveBeenCalledWith('test.subject', 'data', opts);
 		});
 
 		it('should throw if the connection is not established', () => {
 			const uninitializedService = new NatsService(mockOptions);
-			expect(() => uninitializedService.publish('test.subject', 'data')).toThrow(
+			expect(() => uninitializedService.Publish('test.subject', 'data')).toThrow(
 				'NATS connection is not established or is draining',
 			);
 		});
 
 		it('should throw if the connection is draining', () => {
 			mockConnection.isDraining.mockReturnValue(true);
-			expect(() => service.publish('test.subject', 'data')).toThrow(
+			expect(() => service.Publish('test.subject', 'data')).toThrow(
 				'NATS connection is not established or is draining',
 			);
 		});
@@ -159,7 +159,7 @@ describe('NatsService', () => {
 	describe('publishJson', () => {
 		it('should serialize data as JSON and publish to the subject', () => {
 			const data = { id: 1, name: 'order' };
-			service.publishJson('orders.created', data);
+			service.PublishJson('orders.created', data);
 			expect(mockConnection.publish).toHaveBeenCalledWith(
 				'orders.created',
 				JSON.stringify(data),
@@ -171,14 +171,14 @@ describe('NatsService', () => {
 	describe('subscribe', () => {
 		it('should subscribe to a subject and return the subscription', () => {
 			const handler = vi.fn();
-			const sub = service.subscribe('test.subject', handler);
+			const sub = service.Subscribe('test.subject', handler);
 			expect(mockConnection.subscribe).toHaveBeenCalledWith('test.subject', undefined);
 			expect(sub).toBe(mockSubscription);
 		});
 
 		it('should subscribe with a queue group', () => {
 			const handler = vi.fn();
-			service.subscribe('test.subject', handler, { queue: 'worker-pool' });
+			service.Subscribe('test.subject', handler, { queue: 'worker-pool' });
 			expect(mockConnection.subscribe).toHaveBeenCalledWith('test.subject', { queue: 'worker-pool' });
 		});
 
@@ -193,7 +193,7 @@ describe('NatsService', () => {
 				unsubscribe: vi.fn(),
 			});
 
-			service.subscribe('test.subject', handler);
+			service.Subscribe('test.subject', handler);
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setTimeout(resolve, 10));
@@ -204,7 +204,7 @@ describe('NatsService', () => {
 		it('should log handler errors without crashing the subscription', async () => {
 			const error = new Error('Handler error');
 			const handler = vi.fn().mockRejectedValue(error);
-			const loggerErrorSpy = vi.spyOn(service['Logger'], 'error');
+			const loggerErrorSpy = vi.spyOn(service['Logger'], 'Error');
 
 			mockConnection.subscribe.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
@@ -213,7 +213,7 @@ describe('NatsService', () => {
 				unsubscribe: vi.fn(),
 			});
 
-			service.subscribe('test.subject', handler);
+			service.Subscribe('test.subject', handler);
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setTimeout(resolve, 10));
@@ -231,7 +231,7 @@ describe('NatsService', () => {
 			const mockReply = { json: vi.fn().mockReturnValue({ ok: true }) };
 			mockConnection.request.mockResolvedValue(mockReply);
 
-			const reply = await service.request('user.get', JSON.stringify({ id: 42 }));
+			const reply = await service.Request('user.get', JSON.stringify({ id: 42 }));
 			expect(mockConnection.request).toHaveBeenCalledWith(
 				'user.get',
 				JSON.stringify({ id: 42 }),
@@ -246,7 +246,7 @@ describe('NatsService', () => {
 			const mockReply = { json: vi.fn().mockReturnValue({ name: 'Alice' }) };
 			mockConnection.request.mockResolvedValue(mockReply);
 
-			const result = await service.requestJson<{ id: number }, { name: string }>(
+			const result = await service.RequestJson<{ id: number }, { name: string }>(
 				'user.get',
 				{ id: 1 },
 			);
@@ -258,7 +258,7 @@ describe('NatsService', () => {
 		it('should return a JetStream client for the connection', () => {
 			const mockJs = { publish: vi.fn() };
 			(createJetStream as Mock).mockReturnValue(mockJs);
-			expect(service.jetstream()).toBe(mockJs);
+			expect(service.Jetstream()).toBe(mockJs);
 			expect(createJetStream).toHaveBeenCalledWith(mockConnection);
 		});
 	});
@@ -267,7 +267,7 @@ describe('NatsService', () => {
 		it('should return a JetStreamManager for the connection', async () => {
 			const mockJsm = { streams: { add: vi.fn() } };
 			(createJetStreamManager as Mock).mockResolvedValue(mockJsm);
-			await expect(service.jetstreamManager()).resolves.toBe(mockJsm);
+			await expect(service.JetstreamManager()).resolves.toBe(mockJsm);
 			expect(createJetStreamManager).toHaveBeenCalledWith(mockConnection);
 		});
 	});
@@ -283,8 +283,8 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['Connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
-			newService['monitorStatus']();
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'Warn');
+			newService['MonitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));
@@ -303,8 +303,8 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['Connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
-			newService['monitorStatus']();
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'Warn');
+			newService['MonitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));
@@ -323,8 +323,8 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['Connection'] = mockConnection as unknown as NatsConnection;
-			const loggerInfoSpy = vi.spyOn(newService['Logger'], 'info');
-			newService['monitorStatus']();
+			const loggerInfoSpy = vi.spyOn(newService['Logger'], 'Info');
+			newService['MonitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));
@@ -344,8 +344,8 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['Connection'] = mockConnection as unknown as NatsConnection;
-			const loggerErrorSpy = vi.spyOn(newService['Logger'], 'error');
-			newService['monitorStatus']();
+			const loggerErrorSpy = vi.spyOn(newService['Logger'], 'Error');
+			newService['MonitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));
@@ -364,8 +364,8 @@ describe('NatsService', () => {
 
 			const newService = new NatsService(mockOptions);
 			newService['Connection'] = mockConnection as unknown as NatsConnection;
-			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'warn');
-			newService['monitorStatus']();
+			const loggerWarnSpy = vi.spyOn(newService['Logger'], 'Warn');
+			newService['MonitorStatus']();
 
 			// Give the async iterator time to process
 			await new Promise(resolve => setImmediate(resolve));

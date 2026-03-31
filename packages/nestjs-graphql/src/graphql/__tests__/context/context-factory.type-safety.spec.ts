@@ -36,7 +36,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 	describe('createHttpContext', () => {
 		it('should create properly typed context with user information', async () => {
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 			);
@@ -57,7 +57,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should create context without user when user is not present', async () => {
 			const reqWithoutUser = { ...mockReq, user: undefined };
 
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				reqWithoutUser as Request,
 				mockRes as Response,
 			);
@@ -69,7 +69,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		});
 
 		it('should include request ID in context', async () => {
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 			);
@@ -83,7 +83,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		it('should include start time in context', async () => {
 			const beforeTime = Date.now();
 
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 			);
@@ -101,7 +101,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 				ctx.custom = 'enhanced-value';
 			});
 
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 				{ contextEnhancers: [enhancer] },
@@ -117,7 +117,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 			const customId = 'custom-request-id-123';
 			const requestIdGenerator = vi.fn(() => customId);
 
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 				{ requestIdGenerator },
@@ -143,7 +143,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 				params: { channelId: 'channel-1' },
 			};
 
-			const context = await factory.createWebSocketContext(mockConnection as any);
+			const context = await factory.CreateWebSocketContext(mockConnection as any);
 
 			const typedContext: IGraphQLContextExtended = context;
 
@@ -159,7 +159,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 				request: mockReq,
 			};
 
-			const context = await factory.createWebSocketContext(minimalConnection as any);
+			const context = await factory.CreateWebSocketContext(minimalConnection as any);
 
 			const typedContext: IGraphQLContextExtended = context;
 
@@ -170,7 +170,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 
 	describe('Type validation at compile time', () => {
 		it('should satisfy GraphQL context interface requirements', async () => {
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 			);
@@ -183,7 +183,7 @@ describe('GraphQLContextFactory - Type Safety', () => {
 		});
 
 		it('should allow accessing user properties with type safety', async () => {
-			const context = await factory.createHttpContext(
+			const context = await factory.CreateHttpContext(
 				mockReq as Request,
 				mockRes as Response,
 			);

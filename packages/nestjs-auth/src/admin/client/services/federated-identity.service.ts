@@ -47,14 +47,14 @@ export class FederatedIdentityService extends BaseService {
 	 * // ]
 	 * ```
 	 */
-	public async list(userId: string): Promise<IFederatedIdentityLink[]> {
-		this.requireScope('federated-identity:read');
+	public async List(userId: string): Promise<IFederatedIdentityLink[]> {
+		this.RequireScope('federated-identity:read');
 		try {
-			return (await this.withRetry(() =>
+			return (await this.WithRetry(() =>
 				this.AdminClient.users.listFederatedIdentities({ id: userId }),
 			)) as IFederatedIdentityLink[];
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
@@ -67,7 +67,7 @@ export class FederatedIdentityService extends BaseService {
 	 * Throws `ConflictError` if a link with the same provider and user ID already exists.
 	 *
 	 * Note: This method requires both `federated-identity:write` and `federated-identity:read` scopes.
-	 * The read scope is needed for the internal check performed by {@link list}.
+	 * The read scope is needed for the internal check performed by {@link List}.
 	 *
 	 * @param userId - The Keycloak user ID to link to
 	 * @param provider - The identity provider name (e.g., 'github', 'google', 'keycloak-oidc')
@@ -82,26 +82,26 @@ export class FederatedIdentityService extends BaseService {
 	 * });
 	 * ```
 	 */
-	public async link(
+	public async Link(
 		userId: string,
 		provider: string,
 		link: Omit<IFederatedIdentityLink, 'identityProvider'>,
 	): Promise<void> {
-		this.requireScope('federated-identity:write');
+		this.RequireScope('federated-identity:write');
 		try {
 			// Check for existing link with same provider and userId to prevent Keycloak #34608
-			const existingLinks = await this.list(userId);
-			const conflictingLink = existingLinks.find(
+			const ExistingLinks = await this.List(userId);
+			const ConflictingLink = ExistingLinks.find(
 				(l) => l.identityProvider === provider && l.userId === link.userId,
 			);
 
-			if (conflictingLink) {
+			if (ConflictingLink) {
 				throw new ConflictError(
 					`Federated identity link already exists: provider=${provider}, userId=${link.userId}`,
 				);
 			}
 
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.users.addToFederatedIdentity({
 					id: userId,
 					federatedIdentityId: provider,
@@ -113,7 +113,7 @@ export class FederatedIdentityService extends BaseService {
 				}),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
@@ -131,14 +131,14 @@ export class FederatedIdentityService extends BaseService {
 	 * await this.federatedIdentity.unlink('user-123', 'github');
 	 * ```
 	 */
-	public async unlink(userId: string, provider: string): Promise<void> {
-		this.requireScope('federated-identity:write');
+	public async Unlink(userId: string, provider: string): Promise<void> {
+		this.RequireScope('federated-identity:write');
 		try {
-			await this.withRetry(() =>
+			await this.WithRetry(() =>
 				this.AdminClient.users.delFromFederatedIdentity({ id: userId, federatedIdentityId: provider }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

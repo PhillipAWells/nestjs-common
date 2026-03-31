@@ -1,5 +1,5 @@
 import { GraphQLErrorCode, IGraphQLErrorInput } from '../../graphql/types/graphql-safety.types.js';
-import { createGraphQLError, GRAPHQL_ERROR_CONFIGS } from '../../errors/graphql-error-factory.js';
+import { CreateGraphQLError, GRAPHQL_ERROR_CONFIGS } from '../../errors/graphql-error-factory.js';
 
 describe('GraphQL Error Factory - Type Safety', () => {
 	describe('GraphQLErrorCode enum', () => {
@@ -47,7 +47,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create validation error with proper types', () => {
-			const IValidationError = createGraphQLError(
+			const IValidationError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
@@ -63,7 +63,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create authentication error with proper types', () => {
-			const AuthError = createGraphQLError(
+			const AuthError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED,
 			);
 
@@ -75,7 +75,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create forbidden error with proper types', () => {
-			const ForbiddenError = createGraphQLError(
+			const ForbiddenError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.FORBIDDEN,
 			);
 
@@ -90,7 +90,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create rate limit error with proper types', () => {
-			const RateLimitError = createGraphQLError(
+			const RateLimitError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.RATE_LIMIT_EXCEEDED,
 			);
 
@@ -132,7 +132,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 	describe('Error with method chaining and type safety', () => {
 		it('should create error with context and maintain types', () => {
-			const IValidationError = createGraphQLError(
+			const IValidationError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.VALIDATION_ERROR,
 			);
 
@@ -145,7 +145,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should create error with new message and maintain types', () => {
-			const NotFoundError = createGraphQLError(
+			const NotFoundError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.NOT_FOUND,
 			);
 
@@ -160,7 +160,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 	describe('Formatted error response typing', () => {
 		it('should produce properly typed formatted error', () => {
-			const UnauthorizedError = createGraphQLError(
+			const UnauthorizedError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.UNAUTHENTICATED,
 			);
 
@@ -178,7 +178,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 		});
 
 		it('should properly type error extensions', () => {
-			const ConflictError = createGraphQLError(
+			const ConflictError = CreateGraphQLError(
 				GRAPHQL_ERROR_CONFIGS.CONFLICT,
 			);
 

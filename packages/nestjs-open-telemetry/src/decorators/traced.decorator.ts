@@ -17,30 +17,30 @@ const MAX_ARRAY_LENGTH_FOR_LOGGING = 5;
 
 export interface ITracedOptions {
 	/**
-   * Custom span name (defaults to ClassName.methodName)
-   */
+	   * Custom span name (defaults to ClassName.methodName)
+	   */
 	name?: string;
 
 	/**
-   * Span kind (defaults to INTERNAL)
-   */
+	   * Span kind (defaults to INTERNAL)
+	   */
 	kind?: SpanKind;
 
 	/**
-   * Additional span attributes
-   */
+	   * Additional span attributes
+	   */
 	attributes?: Record<string, string | number | boolean>;
 
 	/**
-   * Whether to capture method arguments as attributes (default: true)
-   * Arguments longer than 100 chars or complex objects are omitted for security/size
-   */
+	   * Whether to capture method arguments as attributes (default: true)
+	   * Arguments longer than 100 chars or complex objects are omitted for security/size
+	   */
 	captureArgs?: boolean;
 
 	/**
-   * Whether to capture method return value as attribute (default: false)
-   * Return values longer than 100 chars or complex objects are omitted for security/size
-   */
+	   * Whether to capture method return value as attribute (default: false)
+	   * Return values longer than 100 chars or complex objects are omitted for security/size
+	   */
 	captureReturn?: boolean;
 }
 
@@ -106,97 +106,97 @@ export function Traced(options: ITracedOptions = {}) {
 		if (!descriptor) {
 			return descriptor;
 		}
-		const originalMethod = descriptor.value as (...args: unknown[]) => unknown;
-		const className = (target as { constructor: { name: string } }).constructor.name;
-		const methodName = String(propertyKey);
+		const OriginalMethod = descriptor.value as (...args: unknown[]) => unknown;
+		const ClassName = (target as { constructor: { name: string } }).constructor.name;
+		const MethodName = String(propertyKey);
 
 		// Determine span name
-		const spanName = options.name ?? `${className}.${methodName}`;
+		const SpanName = options.name ?? `${ClassName}.${MethodName}`;
 
 		// Determine tracer name (use class name)
-		const tracerName = `${OTEL_NAMESPACE}.${className}`;
+		const TracerName = `${OTEL_NAMESPACE}.${ClassName}`;
 
 		// Replace method with traced version that preserves sync/async signatures
 		descriptor.value = function(...args: unknown[]): unknown {
-			const tracer = trace.getTracer(tracerName, '1.0.0');
-			const span = tracer.startSpan(spanName, {
+			const Tracer = trace.getTracer(TracerName, '1.0.0');
+			const Span = Tracer.startSpan(SpanName, {
 				kind: options.kind ?? SpanKind.INTERNAL,
 			});
 
 			// Set base attributes
-			const spanAttributes: Record<string, string | number | boolean> = {
-				'code.function': methodName,
-				'code.namespace': className,
+			const SpanAttributes: Record<string, string | number | boolean> = {
+				'code.function': MethodName,
+				'code.namespace': ClassName,
 				'method.args_count': args.length,
-				...(options.attributes ? castAttributesToValidTypes(options.attributes) : {}),
+				...(options.attributes ? CastAttributesToValidTypes(options.attributes) : {}),
 			};
 
 			// Capture method arguments if enabled (default: true)
 			if (options.captureArgs !== false) {
 				args.forEach((arg, index) => {
-					const attrValue = sanitizeArgument(arg);
-					if (attrValue !== null) {
-						spanAttributes[`method.arg.${index}`] = attrValue;
+					const AttrValue = SanitizeArgument(arg);
+					if (AttrValue !== null) {
+						SpanAttributes[`method.arg.${index}`] = AttrValue;
 					}
 				});
 			}
 
 			// Set all attributes
-			Object.entries(spanAttributes).forEach(([key, value]) => {
-				span.setAttribute(key, value);
+			Object.entries(SpanAttributes).forEach(([key, value]) => {
+				Span.setAttribute(key, value);
 			});
 
 			// Execute method within span context
-			const ctx = trace.setSpan(context.active(), span);
+			const Ctx = trace.setSpan(context.active(), Span);
 
 			try {
-				const result = context.with(ctx, () => originalMethod.apply(this, args));
+				const Result = context.with(Ctx, () => OriginalMethod.apply(this, args));
 
 				// Check if result is a Promise (async method)
-				if (result instanceof Promise) {
-					// Async path: Chain promise handlers wrapped in context.with(ctx, ...)
+				if (Result instanceof Promise) {
+					// Async path: Chain promise handlers wrapped in context.with(Ctx, ...)
 					// so that span attribute writes and any child spans created inside
 					// the handlers run within the correct active span context.
-					return result.then(
-						(value) => context.with(ctx, () => {
+					return Result.then(
+						(value) => context.with(Ctx, () => {
 							try {
 								// Capture return value if enabled (default: false)
 								if (options.captureReturn === true) {
-									const returnValue = sanitizeArgument(value);
-									if (returnValue !== null) {
-										span.setAttribute('method.return', returnValue);
+									const ReturnValue = SanitizeArgument(value);
+									if (ReturnValue !== null) {
+										Span.setAttribute('method.return', ReturnValue);
 									} else {
-										span.setAttribute('method.return_type', typeof value);
+										Span.setAttribute('method.return_type', typeof value);
 									}
 								}
 
 								// Set success status
-								span.setStatus({ code: SpanStatusCode.OK });
+								Span.setStatus({ code: SpanStatusCode.OK });
 							} finally {
-								span.end();
+								Span.end();
 							}
 
 							return value;
 						}),
-						(error) => context.with(ctx, () => {
+						(error) => context.with(Ctx, () => {
 							try {
 								// Record exception and set error status
-								const errorInstance = error instanceof Error ? error : new Error(String(error));
-								span.recordException(errorInstance);
-								const message = getErrorMessage(error);
-								span.setStatus({ code: SpanStatusCode.ERROR, message });
+								const ErrorInstance = error instanceof Error ? error : new Error(String(error));
+								Span.recordException(ErrorInstance);
+								const Message = getErrorMessage(error);
+								Span.setStatus({ code: SpanStatusCode.ERROR, message: Message });
 
 								// Add error attributes
 								if (error instanceof Error) {
-									span.setAttribute('error.type', error.name);
-									span.setAttribute('error.message', error.message);
-									const stack = getErrorStack(error);
-									if (stack) {
-										span.setAttribute('error.stack', truncateString(stack, TRUNCATE_STACK_LENGTH));
+									Span.setAttribute('error.type', error.name);
+									Span.setAttribute('error.message', error.message);
+									const Stack = getErrorStack(error);
+									if (Stack) {
+										Span.setAttribute('error.stack', TruncateString(Stack, TRUNCATE_STACK_LENGTH));
 									}
 								}
 							} finally {
-								span.end();
+								Span.end();
 							}
 							throw error;
 						}),
@@ -206,46 +206,46 @@ export function Traced(options: ITracedOptions = {}) {
 					try {
 						// Capture return value if enabled (default: false)
 						if (options.captureReturn === true) {
-							const returnValue = sanitizeArgument(result);
-							if (returnValue !== null) {
-								span.setAttribute('method.return', returnValue);
+							const ReturnValue = SanitizeArgument(Result);
+							if (ReturnValue !== null) {
+								Span.setAttribute('method.return', ReturnValue);
 							} else {
-								span.setAttribute('method.return_type', typeof result);
+								Span.setAttribute('method.return_type', typeof Result);
 							}
 						}
 
 						// Set success status
-						span.setStatus({ code: SpanStatusCode.OK });
+						Span.setStatus({ code: SpanStatusCode.OK });
 					} finally {
-						span.end();
+						Span.end();
 					}
 
-					return result;
+					return Result;
 				}
 			} catch (error) {
 				// Record exception and set error status (for sync errors only)
 				try {
-					const errorInstance = error instanceof Error ? error : new Error(String(error));
-					span.recordException(errorInstance);
-					const message = getErrorMessage(error);
-					span.setStatus({ code: SpanStatusCode.ERROR, message });
+					const ErrorInstance = error instanceof Error ? error : new Error(String(error));
+					Span.recordException(ErrorInstance);
+					const Message = getErrorMessage(error);
+					Span.setStatus({ code: SpanStatusCode.ERROR, message: Message });
 
 					// Add error attributes
 					if (error instanceof Error) {
-						span.setAttribute('error.type', error.name);
-						span.setAttribute('error.message', error.message);
-						const stack = getErrorStack(error);
-						if (stack) {
-							span.setAttribute('error.stack', truncateString(stack, TRUNCATE_STACK_LENGTH));
+						Span.setAttribute('error.type', error.name);
+						Span.setAttribute('error.message', error.message);
+						const Stack = getErrorStack(error);
+						if (Stack) {
+							Span.setAttribute('error.stack', TruncateString(Stack, TRUNCATE_STACK_LENGTH));
 						}
 					}
 				} finally {
-					span.end();
+					Span.end();
 				}
 				throw error;
 			}
 		};
-		Object.defineProperty(descriptor.value, 'name', { value: methodName, configurable: true });
+		Object.defineProperty(descriptor.value, 'name', { value: MethodName, configurable: true });
 
 		return descriptor;
 	};
@@ -261,25 +261,25 @@ export function Traced(options: ITracedOptions = {}) {
  * @param attributes - Original attributes (may contain any types)
  * @returns Attributes cast to valid OTel types
  */
-function castAttributesToValidTypes(
+function CastAttributesToValidTypes(
 	attributes: Record<string, unknown>,
 ): Record<string, string | number | boolean> {
-	const result: Record<string, string | number | boolean> = {};
+	const Result: Record<string, string | number | boolean> = {};
 
-	for (const [key, value] of Object.entries(attributes)) {
-		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-			result[key] = value;
-		} else if (value === null || value === undefined) {
-			result[key] = String(value);
-		} else if (typeof value === 'object') {
-			result[key] = JSON.stringify(value);
+	for (const [Key, Value] of Object.entries(attributes)) {
+		if (typeof Value === 'string' || typeof Value === 'number' || typeof Value === 'boolean') {
+			Result[Key] = Value;
+		} else if (Value === null || Value === undefined) {
+			Result[Key] = String(Value);
+		} else if (typeof Value === 'object') {
+			Result[Key] = JSON.stringify(Value);
 		} else {
 			// Functions, symbols, etc.
-			result[key] = String(value);
+			Result[Key] = String(Value);
 		}
 	}
 
-	return result;
+	return Result;
 }
 
 /**
@@ -297,11 +297,11 @@ function castAttributesToValidTypes(
  * @param value - String value to check for PII
  * @returns String with PII redacted
  */
-function detectAndRedactPII(
+function DetectAndRedactPII(
 	value: string,
 ): string {
 	// PII detection patterns with labels
-	const patterns = [
+	const Patterns = [
 		{
 			type: 'email',
 			regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gu,
@@ -324,21 +324,21 @@ function detectAndRedactPII(
 		},
 	];
 
-	let sanitized = value;
+	let Sanitized = value;
 
-	for (const pattern of patterns) {
-		if (pattern.type === 'creditCard') {
+	for (const Pattern of Patterns) {
+		if (Pattern.type === 'creditCard') {
 			// For credit cards, validate with Luhn algorithm before redacting
-			sanitized = sanitized.replace(pattern.regex, (match) => {
-				return isValidCreditCard(match) ? `[REDACTED_${pattern.label}]` : match;
+			Sanitized = Sanitized.replace(Pattern.regex, (match) => {
+				return IsValidCreditCard(match) ? `[REDACTED_${Pattern.label}]` : match;
 			});
 		} else {
 			// For other PII types, redact directly
-			sanitized = sanitized.replace(pattern.regex, `[REDACTED_${pattern.label}]`);
+			Sanitized = Sanitized.replace(Pattern.regex, `[REDACTED_${Pattern.label}]`);
 		}
 	}
 
-	return sanitized;
+	return Sanitized;
 }
 
 /**
@@ -351,43 +351,43 @@ function detectAndRedactPII(
  * @param num - Credit card number string (may contain spaces or hyphens)
  * @returns True if the number passes Luhn validation, false otherwise
  */
-function isValidCreditCard(
+function IsValidCreditCard(
 	num: string,
 ): boolean {
 	// Extract digits only
-	const digits = num.replace(/\D/g, '');
+	const Digits = num.replace(/\D/g, '');
 
 	// Credit card numbers are typically 13-19 digits
-	if (digits.length < MIN_CREDIT_CARD_DIGITS || digits.length > MAX_CREDIT_CARD_DIGITS) {
+	if (Digits.length < MIN_CREDIT_CARD_DIGITS || Digits.length > MAX_CREDIT_CARD_DIGITS) {
 		return false;
 	}
 
 	// Luhn algorithm implementation
-	let sum = 0;
-	let isEven = false;
+	let Sum = 0;
+	let IsEven = false;
 
 	// Process digits from right to left
-	for (let i = digits.length - 1; i >= 0; i--) {
-		const digitChar = digits[i];
-		if (!digitChar) {
+	for (let I = Digits.length - 1; I >= 0; I--) {
+		const DigitChar = Digits[I];
+		if (!DigitChar) {
 			return false;
 		}
-		let digit = parseInt(digitChar, 10);
+		let Digit = parseInt(DigitChar, 10);
 
-		if (isEven) {
-			digit *= 2;
+		if (IsEven) {
+			Digit *= 2;
 			// If result is > 9, subtract 9 (equivalent to adding digits)
-			if (digit > CREDIT_CARD_DOUBLE_DIGIT_LIMIT) {
-				digit -= CREDIT_CARD_ADJUSTMENT;
+			if (Digit > CREDIT_CARD_DOUBLE_DIGIT_LIMIT) {
+				Digit -= CREDIT_CARD_ADJUSTMENT;
 			}
 		}
 
-		sum += digit;
-		isEven = !isEven;
+		Sum += Digit;
+		IsEven = !IsEven;
 	}
 
 	// Valid if sum is divisible by 10
-	return sum % LUHN_MODULO === 0;
+	return Sum % LUHN_MODULO === 0;
 }
 
 /**
@@ -401,14 +401,14 @@ function isValidCreditCard(
  * @param arg - Argument to sanitize
  * @returns Sanitized value or null
  */
-function sanitizeArgument(
+function SanitizeArgument(
 	arg: unknown,
 ): string | number | boolean | null {
 	// Handle primitives
 	if (typeof arg === 'string') {
 		// Detect and redact PII, then truncate
-		const redacted = detectAndRedactPII(arg);
-		return truncateString(redacted, TRUNCATE_ARGS_LENGTH);
+		const Redacted = DetectAndRedactPII(arg);
+		return TruncateString(Redacted, TRUNCATE_ARGS_LENGTH);
 	}
 
 	if (typeof arg === 'number') {
@@ -435,13 +435,13 @@ function sanitizeArgument(
 		}
 		if (arg.length <= MAX_ARRAY_LENGTH_FOR_LOGGING && (arg as unknown[]).every(item => typeof item === 'string' || typeof item === 'number')) {
 			// Sanitize array items for PII before serializing
-			const sanitizedArray = (arg as (string | number)[]).map(item => {
+			const SanitizedArray = (arg as (string | number)[]).map(item => {
 				if (typeof item === 'string') {
-					return detectAndRedactPII(item);
+					return DetectAndRedactPII(item);
 				}
 				return item;
 			});
-			return JSON.stringify(sanitizedArray);
+			return JSON.stringify(SanitizedArray);
 		}
 		return `Array(${(arg as unknown[]).length})`;
 	}
@@ -463,7 +463,7 @@ function sanitizeArgument(
  * @param maxLength - Maximum length
  * @returns Truncated string
  */
-function truncateString(
+function TruncateString(
 	str: string,
 	maxLength: number,
 ): string {

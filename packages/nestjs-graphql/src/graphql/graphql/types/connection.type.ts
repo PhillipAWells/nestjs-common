@@ -68,9 +68,9 @@ export class CursorUtils {
    * @param timestamp Timestamp
    * @returns Base64 encoded cursor
    */
-	public static encodeCursor(id: string, timestamp: number): string {
-		const data = JSON.stringify({ id, timestamp });
-		return Buffer.from(data).toString('base64');
+	public static EncodeCursor(id: string, timestamp: number): string {
+		const Data = JSON.stringify({ id, timestamp });
+		return Buffer.from(Data).toString('base64');
 	}
 
 	/**
@@ -78,10 +78,10 @@ export class CursorUtils {
    * @param cursor Base64 encoded cursor
    * @returns Decoded cursor data
    */
-	public static decodeCursor(cursor: string): { id: string; timestamp: number } {
+	public static DecodeCursor(cursor: string): { id: string; timestamp: number } {
 		try {
-			const data = Buffer.from(cursor, 'base64').toString('utf-8');
-			return JSON.parse(data);
+			const Data = Buffer.from(cursor, 'base64').toString('utf-8');
+			return JSON.parse(Data);
 		} catch {
 			throw new Error('Invalid cursor format');
 		}
@@ -92,8 +92,8 @@ export class CursorUtils {
    * @param entity Entity with id and optional createdAt
    * @returns Base64 encoded cursor
    */
-	public static createCursor(entity: { id: string; createdAt?: Date }): string {
-		const timestamp = entity.createdAt ? entity.createdAt.getTime() : Date.now();
-		return this.encodeCursor(entity.id, timestamp);
+	public static CreateCursor(entity: { id: string; createdAt?: Date }): string {
+		const Timestamp = entity.createdAt ? entity.createdAt.getTime() : Date.now();
+		return this.EncodeCursor(entity.id, Timestamp);
 	}
 }

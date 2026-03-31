@@ -12,7 +12,7 @@ describe('BsonSerializationService', () => {
 
 	describe('isAvailable', () => {
 		it('should return true if bson package is installed', () => {
-			const available = service.isAvailable();
+			const available = service.IsAvailable();
 			// bson is a dev dependency, so it should be available in tests
 			expect(typeof available).toBe('boolean');
 		});
@@ -65,7 +65,7 @@ describe('BsonSerializationService', () => {
 		it('should deserialize BSON buffer back to object', async () => {
 			const original = { hello: 'world', number: 42 };
 			const buffer = await service.serialize(original);
-			const deserialized = await service.deserialize(buffer);
+			const deserialized = await service.Deserialize(buffer);
 
 			expect(deserialized).toEqual(original);
 		});
@@ -79,7 +79,7 @@ describe('BsonSerializationService', () => {
 				active: true,
 			};
 			const buffer = await service.serialize(original);
-			const deserialized = await service.deserialize(buffer);
+			const deserialized = await service.Deserialize(buffer);
 
 			expect(deserialized).toEqual(original);
 		});
@@ -90,7 +90,7 @@ describe('BsonSerializationService', () => {
 				names: ['Alice', 'Bob'],
 			};
 			const buffer = await service.serialize(original);
-			const deserialized = await service.deserialize(buffer);
+			const deserialized = await service.Deserialize(buffer);
 
 			expect(deserialized).toEqual(original);
 		});
@@ -103,7 +103,7 @@ describe('BsonSerializationService', () => {
 			};
 
 			const buffer = await service.serialize(original);
-			const deserialized = await service.deserialize(buffer);
+			const deserialized = await service.Deserialize(buffer);
 
 			expect(deserialized).toEqual(original);
 		});
@@ -113,7 +113,7 @@ describe('BsonSerializationService', () => {
 		it('should throw error for invalid buffer in deserialize', async () => {
 			const invalidBuffer = Buffer.from([0x00, 0x01, 0x02]);
 
-			await expect(service.deserialize(invalidBuffer)).rejects.toThrow();
+			await expect(service.Deserialize(invalidBuffer)).rejects.toThrow();
 		});
 	});
 });

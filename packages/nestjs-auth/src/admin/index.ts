@@ -2,7 +2,7 @@ export { KeycloakAdminModule } from './keycloak-admin.module.js';
 export { KeycloakAdminService } from './services/keycloak-admin.service.js';
 export { KeycloakHealthIndicator } from './health/keycloak.health.js';
 export type { IKeycloakAdminConfig } from './config/keycloak.config.js';
-export { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
+export { KeycloakAdminDefaults, ValidateKeycloakAdminConfig as validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
 export { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './keycloak.constants.js';
 
 // Keycloak Admin Permission Scopes

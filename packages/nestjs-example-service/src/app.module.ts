@@ -44,11 +44,11 @@ import { ItemsModule } from './items/items.module.js';
 		// ── 3. Observability ──────────────────────────────────────────────────
 		// Both exporters call InstrumentationRegistry.registerExporter() in their
 		// onModuleInit hook.  CommonModule (above) provides InstrumentationRegistry.
-		OpenTelemetryModule.forRoot(),
-		PrometheusModule.forRoot(),
+		OpenTelemetryModule.ForRoot(),
+		PrometheusModule.ForRoot(),
 
 		// ── 4. Profiling ──────────────────────────────────────────────────────
-		PyroscopeModule.forRoot({
+		PyroscopeModule.ForRoot({
 			config: {
 				enabled: process.env['NODE_ENV'] === 'production',
 				serverAddress: process.env['PYROSCOPE_SERVER_URL'] ?? 'http://localhost:4040',
@@ -63,7 +63,7 @@ import { ItemsModule } from './items/items.module.js';
 		// ── 5. Vector DB ──────────────────────────────────────────────────────
 		// forRoot registers as global by default — QdrantService is available
 		// in every module without explicit imports.
-		QdrantModule.forRoot({
+		QdrantModule.ForRoot({
 			url: process.env['QDRANT_URL'] ?? 'http://localhost:6333',
 			apiKey: process.env['QDRANT_API_KEY'],
 			checkCompatibility: false,
@@ -73,7 +73,7 @@ import { ItemsModule } from './items/items.module.js';
 		// KeycloakModule handles JWT token validation via Keycloak's token
 		// introspection endpoint. Requires KEYCLOAK_SERVER_URL, KEYCLOAK_REALM,
 		// KEYCLOAK_CLIENT_ID, and KEYCLOAK_CLIENT_SECRET to be set.
-		KeycloakModule.forRoot({
+		KeycloakModule.ForRoot({
 			authServerUrl: process.env['KEYCLOAK_SERVER_URL'] ?? 'http://localhost:8080',
 			realm: process.env['KEYCLOAK_REALM'] ?? 'master',
 			clientId: process.env['KEYCLOAK_CLIENT_ID'] ?? '',
@@ -85,7 +85,7 @@ import { ItemsModule } from './items/items.module.js';
 		// Provides KeycloakAdminService for user/role/group management via the
 		// Keycloak Admin REST API.  Set KEYCLOAK_ENABLED=true and supply
 		// credentials to activate.
-		KeycloakAdminModule.forRoot({
+		KeycloakAdminModule.ForRoot({
 			enabled: process.env['KEYCLOAK_ENABLED'] === 'true',
 			baseUrl: process.env['KEYCLOAK_SERVER_URL'] ?? 'http://localhost:8080',
 			realmName: process.env['KEYCLOAK_REALM'] ?? 'master',

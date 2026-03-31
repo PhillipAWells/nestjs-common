@@ -8,7 +8,7 @@ import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak/keycloak.constants.js';
 describe('KeycloakTestingModule', () => {
 	it('provides MockKeycloakTokenValidationService under its own token', async () => {
 		const moduleRef = await Test.createTestingModule({
-			imports: [KeycloakTestingModule.forRoot()],
+			imports: [KeycloakTestingModule.ForRoot()],
 		}).compile();
 
 		const mock = moduleRef.get(MockKeycloakTokenValidationService);
@@ -17,7 +17,7 @@ describe('KeycloakTestingModule', () => {
 
 	it('provides MockKeycloakTokenValidationService under KeycloakTokenValidationService token', async () => {
 		const moduleRef = await Test.createTestingModule({
-			imports: [KeycloakTestingModule.forRoot()],
+			imports: [KeycloakTestingModule.ForRoot()],
 		}).compile();
 
 		const service = moduleRef.get(KeycloakTokenValidationService);
@@ -26,7 +26,7 @@ describe('KeycloakTestingModule', () => {
 
 	it('provides KEYCLOAK_MODULE_OPTIONS with default stub values', async () => {
 		const moduleRef = await Test.createTestingModule({
-			imports: [KeycloakTestingModule.forRoot()],
+			imports: [KeycloakTestingModule.ForRoot()],
 		}).compile();
 
 		const opts = moduleRef.get(KEYCLOAK_MODULE_OPTIONS);
@@ -37,7 +37,7 @@ describe('KeycloakTestingModule', () => {
 
 	it('accepts keycloakOptions overrides', async () => {
 		const moduleRef = await Test.createTestingModule({
-			imports: [KeycloakTestingModule.forRoot({
+			imports: [KeycloakTestingModule.ForRoot({
 				keycloakOptions: { clientId: 'my-service', realm: 'production' },
 			})],
 		}).compile();
@@ -49,7 +49,7 @@ describe('KeycloakTestingModule', () => {
 
 	it('MockKeycloakTokenValidationService and KeycloakTokenValidationService resolve to same instance', async () => {
 		const moduleRef = await Test.createTestingModule({
-			imports: [KeycloakTestingModule.forRoot()],
+			imports: [KeycloakTestingModule.ForRoot()],
 		}).compile();
 
 		const mock = moduleRef.get(MockKeycloakTokenValidationService);

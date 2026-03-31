@@ -62,11 +62,11 @@ export class MockKeycloakTokenValidationService {
 	private ExtractResult: IKeycloakUser = DEFAULT_USER;
 
 	// eslint-disable-next-line require-await
-	public async validateToken(_token: string): Promise<ITokenValidationResult> {
+	public async ValidateToken(_token: string): Promise<ITokenValidationResult> {
 		return this.ValidateResult;
 	}
 
-	public extractUser(_claims: IKeycloakTokenClaims): IKeycloakUser {
+	public ExtractUser(_claims: IKeycloakTokenClaims): IKeycloakUser {
 		return this.ExtractResult;
 	}
 
@@ -74,7 +74,7 @@ export class MockKeycloakTokenValidationService {
 	 * Override the result returned by validateToken() for subsequent calls.
 	 * @param result - The ITokenValidationResult to return
 	 */
-	public setValidateTokenResult(result: ITokenValidationResult): void {
+	public SetValidateTokenResult(result: ITokenValidationResult): void {
 		this.ValidateResult = result;
 	}
 
@@ -82,14 +82,14 @@ export class MockKeycloakTokenValidationService {
 	 * Override the result returned by extractUser() for subsequent calls.
 	 * @param user - The IKeycloakUser to return
 	 */
-	public setExtractUserResult(user: IKeycloakUser): void {
+	public SetExtractUserResult(user: IKeycloakUser): void {
 		this.ExtractResult = user;
 	}
 
 	/**
 	 * Reset validateToken and extractUser results to their defaults.
 	 */
-	public reset(): void {
+	public Reset(): void {
 		this.ValidateResult = { valid: true, claims: DEFAULT_CLAIMS };
 		this.ExtractResult = DEFAULT_USER;
 	}
