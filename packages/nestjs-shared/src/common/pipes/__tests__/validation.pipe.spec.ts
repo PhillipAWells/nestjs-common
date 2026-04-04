@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ValidationPipe } from '../validation.pipe.js';
 import { ValidationError } from 'class-validator';
 

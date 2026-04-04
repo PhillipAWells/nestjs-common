@@ -1,6 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { vi as jest } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
 	DetectContextType,
 	ExtractRequestFromContext,
@@ -10,22 +10,22 @@ import {
 
 function makeHttpCtx(request: any): ExecutionContext {
 	return {
-		getType: jest.fn().mockReturnValue('http'),
-		switchToHttp: jest.fn().mockReturnValue({
+		getType: vi.fn().mockReturnValue('http'),
+		switchToHttp: vi.fn().mockReturnValue({
 			getRequest: () => request,
 		}),
-		switchToWs: jest.fn(),
+		switchToWs: vi.fn(),
 	} as unknown as ExecutionContext;
 }
 
 function makeGraphQLCtx(req: any): ExecutionContext {
 	const ctx = {
-		getType: jest.fn().mockReturnValue('graphql'),
-		switchToHttp: jest.fn(),
-		switchToWs: jest.fn(),
+		getType: vi.fn().mockReturnValue('graphql'),
+		switchToHttp: vi.fn(),
+		switchToWs: vi.fn(),
 	} as unknown as ExecutionContext;
 
-	jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
+	vi.spyOn(GqlExecutionContext, 'create').mockReturnValue({
 		getContext: () => ({ req }),
 	} as any);
 
@@ -34,9 +34,9 @@ function makeGraphQLCtx(req: any): ExecutionContext {
 
 function makeWsCtx(client: any): ExecutionContext {
 	return {
-		getType: jest.fn().mockReturnValue('ws'),
-		switchToHttp: jest.fn(),
-		switchToWs: jest.fn().mockReturnValue({
+		getType: vi.fn().mockReturnValue('ws'),
+		switchToHttp: vi.fn(),
+		switchToWs: vi.fn().mockReturnValue({
 			getClient: () => client,
 		}),
 	} as unknown as ExecutionContext;
@@ -46,7 +46,7 @@ describe('Context Utils', () => {
 	describe('detectContextType', () => {
 		it('should detect HTTP context', () => {
 			const mockHttpCtx = {
-				getType: jest.fn().mockReturnValue('http'),
+				getType: vi.fn().mockReturnValue('http'),
 			} as unknown as ExecutionContext;
 
 			const result = DetectContextType(mockHttpCtx);
@@ -55,7 +55,7 @@ describe('Context Utils', () => {
 
 		it('should detect GraphQL context', () => {
 			const mockGraphQLCtx = {
-				getType: jest.fn().mockReturnValue('graphql'),
+				getType: vi.fn().mockReturnValue('graphql'),
 			} as unknown as ExecutionContext;
 
 			const result = DetectContextType(mockGraphQLCtx);
@@ -64,7 +64,7 @@ describe('Context Utils', () => {
 
 		it('should detect WebSocket context', () => {
 			const mockWsCtx = {
-				getType: jest.fn().mockReturnValue('ws'),
+				getType: vi.fn().mockReturnValue('ws'),
 			} as unknown as ExecutionContext;
 
 			const result = DetectContextType(mockWsCtx);
@@ -73,7 +73,7 @@ describe('Context Utils', () => {
 
 		it('should default to http for unknown context type', () => {
 			const mockUnknownCtx = {
-				getType: jest.fn().mockReturnValue('unknown'),
+				getType: vi.fn().mockReturnValue('unknown'),
 			} as unknown as ExecutionContext;
 
 			// The new implementation falls back to 'http' instead of throwing

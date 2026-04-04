@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AuditLoggerService, IAuditLogEntry } from '../audit-logger.service.js';
 
 describe('AuditLoggerService', () => {

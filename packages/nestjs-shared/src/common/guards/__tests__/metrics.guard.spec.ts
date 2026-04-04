@@ -1,7 +1,7 @@
 import { MetricsGuard } from '../metrics.guard.js';
 import { ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '../../../config/config.service.js';
-import { vi } from 'vitest';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 function makeGuard(mockConfigService: any): MetricsGuard {
 	const mockModuleRef = {

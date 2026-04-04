@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 import { ConfigService } from '../config.service.js';

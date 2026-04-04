@@ -2,6 +2,7 @@
  * Qdrant Module Tests
  */
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';

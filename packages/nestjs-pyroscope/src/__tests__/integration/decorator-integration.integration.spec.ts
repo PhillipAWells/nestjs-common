@@ -1,3 +1,4 @@
+import { describe, it, expect, afterEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Injectable, Controller, Get } from '@nestjs/common';
 import { PyroscopeModule } from '../../module.js';

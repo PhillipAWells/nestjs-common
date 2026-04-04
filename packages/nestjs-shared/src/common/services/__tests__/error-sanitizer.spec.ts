@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ErrorSanitizerService } from '../error-sanitizer.service.js';
 
 describe('ErrorSanitizerService', () => {

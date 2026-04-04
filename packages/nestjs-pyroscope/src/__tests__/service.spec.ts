@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from '../service.js';

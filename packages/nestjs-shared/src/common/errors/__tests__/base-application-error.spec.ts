@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { BaseApplicationError } from '../base-application-error.js';
 
 describe('BaseApplicationError', () => {

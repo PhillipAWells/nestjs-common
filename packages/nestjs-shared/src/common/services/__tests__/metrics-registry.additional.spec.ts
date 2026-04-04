@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MetricsRegistryService } from '../metrics-registry.service.js';
 import { register } from 'prom-client';
 

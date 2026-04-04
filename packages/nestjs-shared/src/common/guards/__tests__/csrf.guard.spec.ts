@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { CSRFGuard } from '../csrf.guard.js';
 import { ForbiddenException } from '@nestjs/common';
 import { CSRFService } from '../../services/csrf.service.js';

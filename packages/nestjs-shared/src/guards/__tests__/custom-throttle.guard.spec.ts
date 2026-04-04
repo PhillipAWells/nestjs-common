@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { CustomThrottleGuard } from '../custom-throttle.guard.js';
 
 describe('CustomThrottleGuard', () => {

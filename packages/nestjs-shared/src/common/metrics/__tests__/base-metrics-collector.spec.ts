@@ -1,4 +1,5 @@
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { register } from 'prom-client';
 import { MetricsRegistryService } from '../../services/metrics-registry.service.js';
 import { BaseMetricsCollector } from '../base-metrics-collector.js';

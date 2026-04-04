@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ExecutionContext, CallHandler, HttpException } from '@nestjs/common';
 import { HTTPInstrumentationInterceptor } from '../http-instrumentation.interceptor.js';
 import { of, throwError } from 'rxjs';

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Profile, ProfileMethod, ProfileAsync } from '../profile.decorator.js';
 
 describe('Profile Decorators', () => {

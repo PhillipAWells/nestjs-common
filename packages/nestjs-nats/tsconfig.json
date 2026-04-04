@@ -6,7 +6,6 @@
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"types": [
-			"vitest/globals",
 			"node"
 		]
 	},

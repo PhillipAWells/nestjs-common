@@ -1,4 +1,5 @@
 
+import { describe, it, expect } from 'vitest';
 import { CreateRateLimitConfig, IRateLimitConfig } from '../rate-limit-config.factory.js';
 
 describe('RateLimitConfigFactory', () => {
