@@ -20,47 +20,44 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Set a cache value with optional TTL
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
-	public set(key: string, value: any, ttlSeconds?: number): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		const expiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
-		this.Store.set(key, { value, expiresAt });
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public Set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+		const ExpiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
+		this.Store.set(key, { value, expiresAt: ExpiresAt });
 		return Promise.resolve();
 	}
 
 	/**
 	 * Get a cache value
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
-	public get(key: string): Promise<any> {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		const entry = this.Store.get(key);
-		if (!entry) {
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public Get(key: string): Promise<any> {
+		const Entry = this.Store.get(key);
+		if (!Entry) {
 			return Promise.resolve(null);
 		}
 
 		// Check expiration
-		if (entry.expiresAt && Date.now() > entry.expiresAt) {
+		if (Entry.expiresAt && Date.now() > Entry.expiresAt) {
 			this.Store.delete(key);
 			return Promise.resolve(null);
 		}
 
-		return Promise.resolve(entry.value);
+		return Promise.resolve(Entry.value);
 	}
 
 	/**
 	 * Check if a key exists in cache
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
-	public exists(key: string): Promise<boolean> {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		const entry = this.Store.get(key);
-		if (!entry) {
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public Exists(key: string): Promise<boolean> {
+		const Entry = this.Store.get(key);
+		if (!Entry) {
 			return Promise.resolve(false);
 		}
 
 		// Check expiration
-		if (entry.expiresAt && Date.now() > entry.expiresAt) {
+		if (Entry.expiresAt && Date.now() > Entry.expiresAt) {
 			this.Store.delete(key);
 			return Promise.resolve(false);
 		}
@@ -71,8 +68,8 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Delete a cache value
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
-	public del(key: string): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public Del(key: string): Promise<void> {
 		this.Store.delete(key);
 		return Promise.resolve();
 	}
@@ -80,8 +77,8 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Clear all cache values
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
-	public clear(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	public Clear(): Promise<void> {
 		this.Store.clear();
 		return Promise.resolve();
 	}
