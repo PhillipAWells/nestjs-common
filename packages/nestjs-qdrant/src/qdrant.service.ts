@@ -3,12 +3,49 @@
  * Provides access to the Qdrant client for vector search operations
  */
 
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { AppLogger, BadRequestError, InternalServerError } from '@pawells/nestjs-shared/common';
 import { MAX_COLLECTION_NAME_LENGTH, QDRANT_CLIENT_TOKEN } from './qdrant.constants.js';
 import { QdrantCollectionService } from './qdrant-collection.service.js';
+
+/**
+ * HTTP status code for bad request.
+ * @internal
+ */
+const BAD_REQUEST_STATUS = 400;
+
+/**
+ * HTTP status code for internal server error.
+ * @internal
+ */
+const INTERNAL_SERVER_ERROR_STATUS = 500;
+
+/**
+ * Custom error class for bad request scenarios.
+ * @internal
+ */
+class BadRequestError extends Error {
+	public readonly StatusCode = BAD_REQUEST_STATUS;
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'BadRequestError';
+	}
+}
+
+/**
+ * Custom error class for internal server errors.
+ * @internal
+ */
+class InternalServerError extends Error {
+	public readonly StatusCode = INTERNAL_SERVER_ERROR_STATUS;
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'InternalServerError';
+	}
+}
 
 /**
  * Injectable service that wraps the Qdrant client.
@@ -37,10 +74,11 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
 export class QdrantService implements OnModuleDestroy {
 	private readonly ModuleRef: ModuleRef;
 
-	private readonly Logger = new AppLogger(undefined, QdrantService.name);
+	private readonly Logger: any;
 
 	constructor(moduleRef: ModuleRef) {
 		this.ModuleRef = moduleRef;
+		this.Logger = new Logger(QdrantService.name);
 		this.Logger.debug('Qdrant service initialized');
 	}
 

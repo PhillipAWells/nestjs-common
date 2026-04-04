@@ -3,12 +3,56 @@
  * Integrates Qdrant vector database client with NestJS dependency injection
  */
 
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { createAsyncProviders } from '@pawells/nestjs-shared/common';
 import { GetQdrantClientToken, GetQdrantModuleOptionsToken } from './qdrant.constants.js';
 import type { IQdrantModuleAsyncOptions, TQdrantModuleOptions, IQdrantOptionsFactory } from './qdrant.interfaces.js';
 import { QdrantService } from './qdrant.service.js';
+
+/**
+ * Helper to create async providers for dynamic module configuration.
+ * Supports useFactory, useClass, and useExisting configuration patterns.
+ * @internal
+ */
+function CreateAsyncProviders(
+	options: IQdrantModuleAsyncOptions,
+	token: symbol | string,
+): Array<Provider> {
+	if (options.useFactory) {
+		return [
+			{
+				provide: token,
+				useFactory: options.useFactory,
+				inject: options.inject ?? [],
+			},
+		];
+	}
+
+	if (options.useClass) {
+		return [
+			options.useClass,
+			{
+				provide: token,
+				// eslint-disable-next-line require-await
+				useFactory: async (factory: IQdrantOptionsFactory) => factory.createQdrantOptions(),
+				inject: [options.useClass],
+			},
+		];
+	}
+
+	if (options.useExisting) {
+		return [
+			{
+				provide: token,
+				// eslint-disable-next-line require-await
+				useFactory: async (factory: IQdrantOptionsFactory) => factory.createQdrantOptions(),
+				inject: [options.useExisting],
+			},
+		];
+	}
+
+	throw new Error('Invalid async module options: must specify useFactory, useClass, or useExisting.');
+}
 
 /**
  * Qdrant NestJS Module
@@ -135,13 +179,7 @@ export class QdrantModule {
 		// Internal token for raw (unsanitized) options — includes apiKey for client creation
 		const RawOptionsToken = Symbol('QDRANT_RAW_OPTIONS');
 
-		const RawProviders = createAsyncProviders(
-			options,
-			RawOptionsToken,
-			(factory: IQdrantOptionsFactory): TQdrantModuleOptions | Promise<TQdrantModuleOptions> => {
-				return factory.createQdrantOptions();
-			},
-		);
+		const RawProviders = CreateAsyncProviders(options, RawOptionsToken);
 
 		return {
 			module: QdrantModule,

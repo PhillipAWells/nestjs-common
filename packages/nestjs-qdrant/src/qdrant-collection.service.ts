@@ -3,8 +3,41 @@
  * Provides collection-scoped access to Qdrant operations
  */
 
+import { Logger as NestLogger } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { AppLogger, InternalServerError, getErrorMessage } from '@pawells/nestjs-shared/common';
+
+/**
+ * HTTP status code for internal server error.
+ * @internal
+ */
+const INTERNAL_SERVER_ERROR_STATUS = 500;
+
+/**
+ * Custom error class for internal server errors.
+ * @internal
+ */
+class InternalServerError extends Error {
+	public readonly StatusCode = INTERNAL_SERVER_ERROR_STATUS;
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'InternalServerError';
+	}
+}
+
+/**
+ * Extract error message from various error types.
+ * @internal
+ */
+function GetErrorMessage(error: unknown): string {
+	if (error instanceof Error) {
+		return error.message;
+	}
+	if (typeof error === 'string') {
+		return error;
+	}
+	return String(error);
+}
 
 /**
  * Non-injectable service that wraps a QdrantClient and pre-binds a collection name.
@@ -37,11 +70,12 @@ export class QdrantCollectionService {
 
 	public readonly CollectionName: string;
 
-	private readonly Logger = new AppLogger(undefined, QdrantCollectionService.name);
+	private readonly Logger: any;
 
 	constructor(client: QdrantClient, collectionName: string) {
 		this.Client = client;
 		this.CollectionName = collectionName;
+		this.Logger = new NestLogger(QdrantCollectionService.name);
 	}
 
 	/**
@@ -73,7 +107,7 @@ export class QdrantCollectionService {
 			this.Logger.debug(`Searching collection "${this.CollectionName}"`);
 			return await this.Client.search(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${GetErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -109,7 +143,7 @@ export class QdrantCollectionService {
 			this.Logger.debug(`Upserting points to collection "${this.CollectionName}"`);
 			return await this.Client.upsert(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${GetErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -143,7 +177,7 @@ export class QdrantCollectionService {
 			this.Logger.debug(`Deleting points from collection "${this.CollectionName}"`);
 			return await this.Client.delete(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${GetErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -168,7 +202,7 @@ export class QdrantCollectionService {
 			this.Logger.debug(`Retrieving info for collection "${this.CollectionName}"`);
 			return await this.Client.getCollection(this.CollectionName);
 		} catch (error) {
-			const ErrorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${GetErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
