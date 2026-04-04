@@ -40,7 +40,6 @@ NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cach
 |---|---|
 | `nestjs-shared` | Foundation: filters, guards, interceptors, logging, CSRF, error handling, config, metrics, lazy loading |
 | `nestjs-auth` | Keycloak integration library — token validation, admin API, guards, and federated identity; depends on `nestjs-shared` |
-| `nestjs-graphql` | GraphQL module with Redis cache, DataLoaders, subscriptions; depends on `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope` |
 | `nestjs-open-telemetry` | OTel tracing and metrics integration; depends on `nestjs-shared` |
 | `nestjs-prometheus` | Prometheus `/metrics` endpoint; depends on `nestjs-shared` |
 | `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors (standalone, no cross-package deps) |
@@ -70,7 +69,6 @@ Most modules use Joi-validated config with service-specific interfaces. Environm
 
 ### Security Defaults
 - **Token validation** (`nestjs-auth`): Defaults to online introspection via Keycloak's `/token/introspect` endpoint — active session check on every request. Offline JWKS validation is opt-in for services that accept the revocation risk window.
-- **WebSocket auth** (`nestjs-graphql`): Requires `JwtService` for cryptographic token signature verification. Without it, all WebSocket authentications fail.
 - **CSRF** (`nestjs-shared`): Per-IP token generation is serialized with a 30-second timeout (HTTP 503 on timeout). Maps are cleared on module destroy.
 - **CORS** (`nestjs-shared`): Localhost origin matching uses strict regex (`/^http:\/\/localhost(?::\d+)?$/`) to prevent subdomain bypass (e.g., `localhost.evil.com`).
 - **HTTP metrics** (`nestjs-shared`): Dynamic path segments (UUIDs, ObjectIDs, numeric IDs) are normalized to `:id` to prevent unbounded metric cardinality.

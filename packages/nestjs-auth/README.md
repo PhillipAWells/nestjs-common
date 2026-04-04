@@ -594,7 +594,6 @@ This is the client whose credentials you provide to `KeycloakAdminModule`.
 ## Related Packages
 
 - **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** — Foundation: filters, guards, interceptors, logging, CSRF, error handling
-- **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** — GraphQL module with Redis subscriptions, DataLoaders, and WebSocket auth
 - **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** — OpenTelemetry tracing and metrics integration
 
 ## License

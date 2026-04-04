@@ -56,27 +56,6 @@ yarn add @pawells/nestjs-auth
 
 ---
 
-### GraphQL
-
-#### [@pawells/nestjs-graphql](packages/nestjs-graphql)
-GraphQL module with Redis-backed subscriptions, DataLoaders, caching, and WebSocket authentication.
-
-**Depends on:** `nestjs-shared`, `nestjs-open-telemetry`, `nestjs-pyroscope`
-
-```bash
-yarn add @pawells/nestjs-graphql
-```
-
-**Key Features:**
-- Apollo Server integration with NestJS
-- DataLoaders for N+1 query prevention
-- Redis-backed subscriptions
-- WebSocket authentication (requires `JwtService`)
-- Query complexity analysis
-- Integration with `nestjs-auth` decorators
-
----
-
 ### Observability
 
 #### [@pawells/nestjs-open-telemetry](packages/nestjs-open-telemetry)
@@ -190,23 +169,6 @@ import { KeycloakModule, JwtAuthGuard } from '@pawells/nestjs-auth';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-  ],
-})
-export class AppModule {}
-```
-
-### With GraphQL
-
-```typescript
-import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@pawells/nestjs-graphql';
-
-@Module({
-  imports: [
-    GraphQLModule.forRoot({
-      autoSchemaFile: true,
-      subscriptions: { redis: 'redis://localhost:6379' },
-    }),
   ],
 })
 export class AppModule {}
