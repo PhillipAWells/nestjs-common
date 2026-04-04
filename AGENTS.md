@@ -44,8 +44,9 @@ NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cach
 | `nestjs-prometheus` | Prometheus `/metrics` endpoint; depends on `nestjs-shared` |
 | `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors; depends on `nestjs-shared` |
 | `nestjs-qdrant` | Qdrant vector database module; depends on `nestjs-shared` |
+| `nestjs-nats` | NATS messaging wrapper (standalone, no cross-package deps) |
 
-`nestjs-shared` is the foundation — all packages depend on it directly or transitively.
+`nestjs-shared` is the foundation — most packages depend on it directly or transitively. `nestjs-nats` is standalone.
 
 ## Architecture Patterns
 
