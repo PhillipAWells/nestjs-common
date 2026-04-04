@@ -36,6 +36,7 @@
     "rxjs": "^7.8.2"
   },
   "dependencies": {
+    "@pawells/nestjs-shared": "workspace:*",
     "@pyroscope/nodejs": "^0.4.11"
   },
   "engines": {
