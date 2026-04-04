@@ -5,11 +5,16 @@
 	"projectType": "application",
 	"targets": {
 		"build": {
-			"executor": "@nx/js:tsc",
+			"executor": "@nx/webpack:webpack",
 			"options": {
 				"main": "{projectRoot}/src/main.ts",
 				"outputPath": "{projectRoot}/build",
 				"tsConfig": "{projectRoot}/tsconfig.build.json",
+				"webpackConfig": "{projectRoot}/webpack.config.js",
+				"target": "node",
+				"compiler": "swc",
+				"outputHashing": "none",
+				"optimization": false,
 				"generatePackageJson": true
 			},
 			"outputs": ["{projectRoot}/build"]

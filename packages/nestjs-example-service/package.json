@@ -4,9 +4,8 @@
   "private": true,
   "version": "1.1.2",
   "description": "Example NestJS service demonstrating usage of all @pawells/nestjs-* packages. Not published.",
-  "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "nx build nestjs-example-service",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
