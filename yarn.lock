@@ -2785,7 +2785,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:>=11.1.17, @nestjs/common@npm:^11.1.17":
+"@nestjs/common@npm:^11.1.17":
   version: 11.1.17
   resolution: "@nestjs/common@npm:11.1.17"
   dependencies:
@@ -2808,7 +2808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/config@npm:>=4.0.3, @nestjs/config@npm:^4.0.3":
+"@nestjs/config@npm:^4.0.3":
   version: 4.0.3
   resolution: "@nestjs/config@npm:4.0.3"
   dependencies:
@@ -2822,7 +2822,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:>=11.1.17, @nestjs/core@npm:^11.1.17":
+"@nestjs/core@npm:^11.1.17":
   version: 11.1.17
   resolution: "@nestjs/core@npm:11.1.17"
   dependencies:
@@ -2889,7 +2889,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/jwt@npm:>=11.0.2, @nestjs/jwt@npm:^11.0.2":
+"@nestjs/jwt@npm:^11.0.2":
   version: 11.0.2
   resolution: "@nestjs/jwt@npm:11.0.2"
   dependencies:
@@ -2930,16 +2930,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/passport@npm:>=11.0.5, @nestjs/passport@npm:^11.0.5":
-  version: 11.0.5
-  resolution: "@nestjs/passport@npm:11.0.5"
-  peerDependencies:
-    "@nestjs/common": ^10.0.0 || ^11.0.0
-    passport: ^0.5.0 || ^0.6.0 || ^0.7.0
-  checksum: 10c0/24175f6791abf02b70c3c0705ce56fefd3981fdece0da7e58325f790ce71aa6932b31a87a2ceaa52b6d9d8edab3a7c049f6081e4b4d59bcdfcaa00383b64ae02
-  languageName: node
-  linkType: hard
-
 "@nestjs/platform-express@npm:^11.1.17":
   version: 11.1.17
   resolution: "@nestjs/platform-express@npm:11.1.17"
@@ -2971,7 +2961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/terminus@npm:>=11.1.1, @nestjs/terminus@npm:^11.1.1":
+"@nestjs/terminus@npm:^11.1.1":
   version: 11.1.1
   resolution: "@nestjs/terminus@npm:11.1.1"
   dependencies:
@@ -3045,7 +3035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/throttler@npm:>=6.5.0, @nestjs/throttler@npm:^6.5.0":
+"@nestjs/throttler@npm:^6.5.0":
   version: 6.5.0
   resolution: "@nestjs/throttler@npm:6.5.0"
   peerDependencies:
@@ -3670,17 +3660,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:>=1.9.1, @opentelemetry/api@npm:^1.9.1":
-  version: 1.9.1
-  resolution: "@opentelemetry/api@npm:1.9.1"
-  checksum: 10c0/c608485fc8b5a91e1f7e05e843b45b509307456b31cd2ad365933d90813e40ebfedf179f1451c762037e82d7c76aa8500e95d2da3609f640a1206cde5322cd14
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/api@npm:^1.4.0":
   version: 1.9.0
   resolution: "@opentelemetry/api@npm:1.9.0"
   checksum: 10c0/9aae2fe6e8a3a3eeb6c1fdef78e1939cf05a0f37f8a4fae4d6bf2e09eb1e06f966ece85805626e01ba5fab48072b94f19b835449e58b6d26720ee19a58298add
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/api@npm:^1.9.1":
+  version: 1.9.1
+  resolution: "@opentelemetry/api@npm:1.9.1"
+  checksum: 10c0/c608485fc8b5a91e1f7e05e843b45b509307456b31cd2ad365933d90813e40ebfedf179f1451c762037e82d7c76aa8500e95d2da3609f640a1206cde5322cd14
   languageName: node
   linkType: hard
 
@@ -4068,7 +4058,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pawells/nestjs-auth@workspace:*, @pawells/nestjs-auth@workspace:packages/nestjs-auth":
+"@pawells/nestjs-auth@workspace:packages/nestjs-auth":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-auth@workspace:packages/nestjs-auth"
   dependencies:
@@ -4132,7 +4122,6 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/jwt": "npm:^11.0.2"
     "@nestjs/mongoose": "npm:^11.0.4"
-    "@nestjs/passport": "npm:^11.0.5"
     "@nestjs/platform-express": "npm:^11.1.17"
     "@nestjs/terminus": "npm:^11.1.1"
     "@nestjs/testing": "npm:^11.1.17"
@@ -4186,8 +4175,6 @@ __metadata:
     jwk-to-pem: "npm:^2.0.7"
     mongoose: "npm:^9.3.3"
     nx: "npm:~22.6.3"
-    passport: "npm:^0.7.0"
-    passport-jwt: "npm:^4.0.1"
     passport-oauth2: "npm:^1.8.0"
     passport-openidconnect: "npm:^0.1.2"
     prom-client: "npm:^15.1.3"
@@ -4246,7 +4233,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-open-telemetry@workspace:*, @pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
+"@pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-open-telemetry@workspace:packages/nestjs-open-telemetry"
   dependencies:
@@ -4287,7 +4274,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-prometheus@workspace:*, @pawells/nestjs-prometheus@workspace:packages/nestjs-prometheus":
+"@pawells/nestjs-prometheus@workspace:packages/nestjs-prometheus":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-prometheus@workspace:packages/nestjs-prometheus"
   dependencies:
@@ -4327,7 +4314,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-pyroscope@workspace:*, @pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
+"@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
@@ -4346,7 +4333,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-qdrant@workspace:*, @pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant":
+"@pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-qdrant@workspace:packages/nestjs-qdrant"
   dependencies:
@@ -4627,7 +4614,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@qdrant/js-client-rest@npm:>=1.17.0, @qdrant/js-client-rest@npm:^1.17.0":
+"@qdrant/js-client-rest@npm:^1.17.0":
   version: 1.17.0
   resolution: "@qdrant/js-client-rest@npm:1.17.0"
   dependencies:
@@ -8025,14 +8012,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-transformer@npm:>=0.5.1, class-transformer@npm:^0.5.1":
+"class-transformer@npm:^0.5.1":
   version: 0.5.1
   resolution: "class-transformer@npm:0.5.1"
   checksum: 10c0/19809914e51c6db42c036166839906420bb60367df14e15f49c45c8c1231bf25ae661ebe94736ee29cc688b77101ef851a8acca299375cc52fc141b64acde18a
   languageName: node
   linkType: hard
 
-"class-validator@npm:>=0.15.1, class-validator@npm:^0.15.1":
+"class-validator@npm:^0.15.1":
   version: 0.15.1
   resolution: "class-validator@npm:0.15.1"
   dependencies:
@@ -8216,7 +8203,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compression@npm:>=1.8.1, compression@npm:^1.8.1":
+"compression@npm:^1.8.1":
   version: 1.8.1
   resolution: "compression@npm:1.8.1"
   dependencies:
@@ -8464,7 +8451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csrf-csrf@npm:>=4.0.3, csrf-csrf@npm:^4.0.3":
+"csrf-csrf@npm:^4.0.3":
   version: 4.0.3
   resolution: "csrf-csrf@npm:4.0.3"
   dependencies:
@@ -9718,7 +9705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:5.2.1, express@npm:>=5.2.1, express@npm:^5.2.1":
+"express@npm:5.2.1, express@npm:^5.2.1":
   version: 5.2.1
   resolution: "express@npm:5.2.1"
   dependencies:
@@ -10644,7 +10631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"helmet@npm:>=8.1.0, helmet@npm:^8.1.0":
+"helmet@npm:^8.1.0":
   version: 8.1.0
   resolution: "helmet@npm:8.1.0"
   checksum: 10c0/94d3a7ebc88dbda1421635bdf33f00724adb5252269e93c5ab296ec0db11336d01265659ad3739ab1a1e881fb23a686ff7e788aac6a5fb929285134f157df763
@@ -11949,7 +11936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"joi@npm:>=18.1.2, joi@npm:^18.1.2":
+"joi@npm:^18.1.2":
   version: 18.1.2
   resolution: "joi@npm:18.1.2"
   dependencies:
@@ -12092,7 +12079,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:9.0.3, jsonwebtoken@npm:^9.0.0":
+"jsonwebtoken@npm:9.0.3":
   version: 9.0.3
   resolution: "jsonwebtoken@npm:9.0.3"
   dependencies:
@@ -13227,41 +13214,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nestjs-example-service@workspace:packages/nestjs-example-service":
-  version: 0.0.0-use.local
-  resolution: "nestjs-example-service@workspace:packages/nestjs-example-service"
-  dependencies:
-    "@nestjs/common": "npm:>=11.1.17"
-    "@nestjs/config": "npm:>=4.0.3"
-    "@nestjs/core": "npm:>=11.1.17"
-    "@nestjs/jwt": "npm:>=11.0.2"
-    "@nestjs/passport": "npm:>=11.0.5"
-    "@nestjs/terminus": "npm:>=11.1.1"
-    "@nestjs/throttler": "npm:>=6.5.0"
-    "@opentelemetry/api": "npm:>=1.9.1"
-    "@pawells/nestjs-auth": "workspace:*"
-    "@pawells/nestjs-open-telemetry": "workspace:*"
-    "@pawells/nestjs-prometheus": "workspace:*"
-    "@pawells/nestjs-pyroscope": "workspace:*"
-    "@pawells/nestjs-qdrant": "workspace:*"
-    "@pawells/nestjs-shared": "workspace:*"
-    "@qdrant/js-client-rest": "npm:>=1.17.0"
-    class-transformer: "npm:>=0.5.1"
-    class-validator: "npm:>=0.15.1"
-    compression: "npm:>=1.8.1"
-    csrf-csrf: "npm:>=4.0.3"
-    express: "npm:>=5.2.1"
-    helmet: "npm:>=8.1.0"
-    joi: "npm:>=18.1.2"
-    passport: "npm:^0.7.0"
-    prom-client: "npm:>=15.1.3"
-    reflect-metadata: "npm:^0.2.2"
-    rxjs: "npm:>=7.8.2"
-    typescript: "npm:^6.0.2"
-    xss: "npm:>=1.0.15"
-  languageName: unknown
-  linkType: soft
-
 "no-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "no-case@npm:3.0.4"
@@ -14001,16 +13953,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-jwt@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "passport-jwt@npm:4.0.1"
-  dependencies:
-    jsonwebtoken: "npm:^9.0.0"
-    passport-strategy: "npm:^1.0.0"
-  checksum: 10c0/d7e2b472d399f596a1db31310f8e63d10777ab7468b9a378c964156e5f0a772598b007417356ead578cfdaf60dc2bba39a55f0033ca865186fdb2a2b198e2e7e
-  languageName: node
-  linkType: hard
-
 "passport-oauth2@npm:^1.8.0":
   version: 1.8.0
   resolution: "passport-oauth2@npm:1.8.0"
@@ -14034,21 +13976,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-strategy@npm:1.x.x, passport-strategy@npm:^1.0.0":
+"passport-strategy@npm:1.x.x":
   version: 1.0.0
   resolution: "passport-strategy@npm:1.0.0"
   checksum: 10c0/cf4cd32e1bf2538a239651581292fbb91ccc83973cde47089f00d2014c24bed63d3e65af21da8ddef649a8896e089eb9c3ac9ca639f36c797654ae9ee4ed65e1
-  languageName: node
-  linkType: hard
-
-"passport@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "passport@npm:0.7.0"
-  dependencies:
-    passport-strategy: "npm:1.x.x"
-    pause: "npm:0.0.1"
-    utils-merge: "npm:^1.0.1"
-  checksum: 10c0/08c940b86e4adbfe43e753f8097300a5a9d1ce9a3aa002d7b12d27770943a1a87202c54597c0f04dbfd4117d67de76303433577512fc19c7e364fec37b0d3fc5
   languageName: node
   linkType: hard
 
@@ -14132,13 +14063,6 @@ __metadata:
   version: 2.0.3
   resolution: "pathe@npm:2.0.3"
   checksum: 10c0/c118dc5a8b5c4166011b2b70608762e260085180bb9e33e80a50dcdb1e78c010b1624f4280c492c92b05fc276715a4c357d1f9edc570f8f1b3d90b6839ebaca1
-  languageName: node
-  linkType: hard
-
-"pause@npm:0.0.1":
-  version: 0.0.1
-  resolution: "pause@npm:0.0.1"
-  checksum: 10c0/f362655dfa7f44b946302c5a033148852ed5d05f744bd848b1c7eae6a543f743e79c7751ee896ba519fd802affdf239a358bb2ea5ca1b1c1e4e916279f83ab75
   languageName: node
   linkType: hard
 
@@ -14730,7 +14654,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prom-client@npm:>=15.1.3, prom-client@npm:^15.1.3":
+"prom-client@npm:^15.1.3":
   version: 15.1.3
   resolution: "prom-client@npm:15.1.3"
   dependencies:
@@ -15351,7 +15275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:>=7.8.2, rxjs@npm:^7.4.0, rxjs@npm:^7.8.0, rxjs@npm:^7.8.2":
+"rxjs@npm:^7.4.0, rxjs@npm:^7.8.0, rxjs@npm:^7.8.2":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -17309,7 +17233,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x, utils-merge@npm:^1.0.1":
+"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
@@ -17935,7 +17859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xss@npm:>=1.0.15, xss@npm:^1.0.15":
+"xss@npm:^1.0.15":
   version: 1.0.15
   resolution: "xss@npm:1.0.15"
   dependencies:
