@@ -124,10 +124,8 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	private get Logger(): AppLogger {
-		if (!this._Logger) {
-			// Fallback: create a new AppLogger if none was provided
-			this._Logger = new AppLogger();
-		}
+		// Fallback: create a new AppLogger if none was provided
+		this._Logger ??= new AppLogger();
 		return this._Logger;
 	}
 

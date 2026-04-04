@@ -20,8 +20,9 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Set a cache value with optional TTL
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
 	public set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const expiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
 		this.Store.set(key, { value, expiresAt });
 		return Promise.resolve();
@@ -30,8 +31,9 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Get a cache value
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
 	public get(key: string): Promise<any> {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const entry = this.Store.get(key);
 		if (!entry) {
 			return Promise.resolve(null);
@@ -49,8 +51,9 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Check if a key exists in cache
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
 	public exists(key: string): Promise<boolean> {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const entry = this.Store.get(key);
 		if (!entry) {
 			return Promise.resolve(false);
@@ -68,7 +71,7 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Delete a cache value
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
 	public del(key: string): Promise<void> {
 		this.Store.delete(key);
 		return Promise.resolve();
@@ -77,7 +80,7 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Clear all cache values
 	 */
-	// eslint-disable-next-line @typescript-eslint/promise-function-async
+	// eslint-disable-next-line @typescript-eslint/promise-function-async, @typescript-eslint/naming-convention
 	public clear(): Promise<void> {
 		this.Store.clear();
 		return Promise.resolve();
@@ -86,6 +89,7 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Helper: Get cache statistics for testing
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public getStats(): { size: number; keys: string[] } {
 		return {
 			size: this.Store.size,
@@ -96,6 +100,7 @@ export class MockCacheProvider implements ICacheProvider {
 	/**
 	 * Helper: Manually expire all entries (for testing)
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public expireAll(): void {
 		this.Store.forEach(entry => {
 			entry.expiresAt = Date.now() - 1; // Already expired

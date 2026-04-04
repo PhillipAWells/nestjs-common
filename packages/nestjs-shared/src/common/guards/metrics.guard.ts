@@ -50,7 +50,7 @@ export class MetricsGuard implements CanActivate, ILazyModuleRefService {
 	}
 
 	private get MetricsApiKey(): string | undefined {
-		return this.Config.get('METRICS_API_KEY');
+		return this.Config.Get('METRICS_API_KEY');
 	}
 
 	/**

@@ -151,21 +151,4 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	public onModuleDestroy(): void {
 		this._ContextualLogger = undefined;
 	}
-
-	// Backwards compatibility aliases
-	public get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
-		return this.Get(propertyPath, defaultValue);
-	}
-
-	public getOrThrow<T = any>(propertyPath: string): T {
-		return this.GetOrThrow(propertyPath);
-	}
-
-	public getString(propertyPath: string, defaultValue?: string): string | undefined {
-		return this.GetString(propertyPath, defaultValue);
-	}
-
-	public getNumber(propertyPath: string, defaultValue?: number): number | undefined {
-		return this.GetNumber(propertyPath, defaultValue);
-	}
 }

@@ -22,7 +22,9 @@ export class MockAppLogger implements IContextualLogger {
 		// No-op
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(
 		_message: string | Error,
 		_contextOrMetadata?: string | ILogMetadata,
@@ -31,6 +33,7 @@ export class MockAppLogger implements IContextualLogger {
 		// No-op
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public info(
 		_message: string | Error,
 		_contextOrMetadata?: string | ILogMetadata,
@@ -39,6 +42,7 @@ export class MockAppLogger implements IContextualLogger {
 		// No-op
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(
 		_message: string | Error,
 		_contextOrMetadata?: string | ILogMetadata,
@@ -47,6 +51,7 @@ export class MockAppLogger implements IContextualLogger {
 		// No-op
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(
 		_message: string | Error,
 		_traceOrContext?: string,
@@ -56,6 +61,7 @@ export class MockAppLogger implements IContextualLogger {
 		// No-op
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public fatal(
 		_message: string | Error,
 		_traceOrContext?: string,
@@ -94,6 +100,7 @@ export class MockAppLogger implements IContextualLogger {
 		return this;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public createContextualLogger(_context: string): IContextualLogger {
 		return this;
 	}

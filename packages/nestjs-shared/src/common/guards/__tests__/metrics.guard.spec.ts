@@ -36,7 +36,7 @@ describe('MetricsGuard', () => {
 	describe('guard instantiation', () => {
 		it('should be defined', () => {
 			const mockConfigService = {
-				get: () => undefined,
+				Get: () => undefined,
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -46,7 +46,7 @@ describe('MetricsGuard', () => {
 
 		it('should implement CanActivate', () => {
 			const mockConfigService = {
-				get: () => undefined,
+				Get: () => undefined,
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -56,7 +56,7 @@ describe('MetricsGuard', () => {
 
 		it('should read METRICS_API_KEY from ConfigService', () => {
 			const mockConfigService = {
-				get: vi.fn().mockReturnValue('test-key-123'),
+				Get: vi.fn().mockReturnValue('test-key-123'),
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -65,14 +65,14 @@ describe('MetricsGuard', () => {
 			mockRequest.headers = { authorization: 'Bearer test-key-123' };
 			guard.canActivate(mockContext);
 
-			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
+			expect(mockConfigService.Get).toHaveBeenCalledWith('METRICS_API_KEY');
 		});
 	});
 
 	describe('backward compatibility - no API key configured', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => undefined,
+				Get: () => undefined,
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -115,7 +115,7 @@ describe('MetricsGuard', () => {
 	describe('API key validation - Bearer token', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => 'secret-api-key',
+				Get: () => 'secret-api-key',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -167,7 +167,7 @@ describe('MetricsGuard', () => {
 	describe('API key validation - X-API-Key header', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => 'secret-api-key',
+				Get: () => 'secret-api-key',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -206,7 +206,7 @@ describe('MetricsGuard', () => {
 	describe('priority and fallback', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => 'secret-api-key',
+				Get: () => 'secret-api-key',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -243,7 +243,7 @@ describe('MetricsGuard', () => {
 	describe('error handling', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => 'secret-api-key',
+				Get: () => 'secret-api-key',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -280,7 +280,7 @@ describe('MetricsGuard', () => {
 	describe('special cases', () => {
 		beforeEach(() => {
 			const mockConfigService = {
-				get: () => 'secret-api-key',
+				Get: () => 'secret-api-key',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -304,7 +304,7 @@ describe('MetricsGuard', () => {
 
 		it('should handle special characters in API key', () => {
 			const mockConfigService = {
-				get: () => 'key-with-special-chars_123',
+				Get: () => 'key-with-special-chars_123',
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -331,7 +331,7 @@ describe('MetricsGuard', () => {
 			mockRequest.query = {};
 
 			const mockConfigService = {
-				get: () => undefined,
+				Get: () => undefined,
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -345,7 +345,7 @@ describe('MetricsGuard', () => {
 	describe('integration with ConfigService', () => {
 		it('should read API key from ConfigService during canActivate', () => {
 			const mockConfigService = {
-				get: vi.fn().mockReturnValue('configured-key'),
+				Get: vi.fn().mockReturnValue('configured-key'),
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -353,12 +353,12 @@ describe('MetricsGuard', () => {
 			mockRequest.headers = { authorization: 'Bearer configured-key' };
 			guard.canActivate(mockContext);
 
-			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
+			expect(mockConfigService.Get).toHaveBeenCalledWith('METRICS_API_KEY');
 		});
 
 		it('should read API key on each canActivate call', () => {
 			const mockConfigService = {
-				get: vi.fn().mockReturnValue('configured-key'),
+				Get: vi.fn().mockReturnValue('configured-key'),
 			};
 
 			guard = makeGuard(mockConfigService);
@@ -370,8 +370,8 @@ describe('MetricsGuard', () => {
 			guard.canActivate(mockContext);
 
 			// The key is read lazily (not cached) — called at least once per canActivate
-			expect(mockConfigService.get).toHaveBeenCalledWith('METRICS_API_KEY');
-			expect(mockConfigService.get.mock.calls.length).toBeGreaterThanOrEqual(2);
+			expect(mockConfigService.Get).toHaveBeenCalledWith('METRICS_API_KEY');
+			expect(mockConfigService.Get.mock.calls.length).toBeGreaterThanOrEqual(2);
 		});
 	});
 });

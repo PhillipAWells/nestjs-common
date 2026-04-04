@@ -309,9 +309,13 @@ export class AppLogger implements IContextualLogger {
 	 * Log debug message (implements IContextualLogger interface)
 	 * Delegates to Debug method for PascalCase consistency
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(message: string | Error, options: ILogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
 		return this.Debug(message, contextOrMetadata as any, metadata);
 	}
@@ -321,6 +325,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public info(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log info message
@@ -328,13 +333,16 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public info(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log info message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public info(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public info(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
 		if (this.ShouldLog(LogLevel.INFO)) {
 			let Ctx = this.Context;
@@ -370,6 +378,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log warning message
@@ -377,13 +386,16 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log warning message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
 		if (this.ShouldLog(LogLevel.WARN)) {
 			let Ctx = this.Context;
@@ -419,6 +431,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message or Error object
 	 * @param options - Optional context/trace/metadata options
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log error message
@@ -427,6 +440,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(message: string | Error, trace?: string, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log error message
@@ -434,7 +448,9 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
 		if (this.ShouldLog(LogLevel.ERROR)) {
 			let Ctx = this.Context;
@@ -483,6 +499,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message or Error object
 	 * @param options - Optional context/trace/metadata options
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public fatal(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log fatal message
@@ -491,6 +508,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public fatal(message: string | Error, trace?: string, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log fatal message
@@ -498,7 +516,9 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public fatal(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public fatal(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
 		if (this.ShouldLog(LogLevel.FATAL)) {
 			let Ctx = this.Context;
@@ -552,6 +572,7 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Context string
 	 * @returns New AppLogger instance with context
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public createContextualLogger(context: string): IContextualLogger {
 		return this.CreateContextualLogger(context);
 	}
