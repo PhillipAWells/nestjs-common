@@ -48,7 +48,7 @@ export class ItemsService {
 			.Collection(ItemsService.COLLECTION)
 			.Search({ vector, limit, with_payload: true });
 
-		return Results.map((r) => ({
+		return Results.map((r: any) => ({
 			id: String(r.id),
 			name: String(r.payload?.['name'] ?? ''),
 		}));

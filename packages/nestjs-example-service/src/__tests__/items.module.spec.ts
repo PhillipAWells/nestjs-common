@@ -89,8 +89,8 @@ describe('ItemsModule (integration)', () => {
 			];
 
 			const mockCollectionService = qdrantService.Collection('items');
-			vi.spyOn(mockCollectionService, 'Search').mockResolvedValue(fakeResults as any);
-			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
+			vi.spyOn(mockCollectionService, 'Search' as any).mockResolvedValue(fakeResults as any);
+			vi.spyOn(qdrantService, 'Collection' as any).mockReturnValue(mockCollectionService);
 
 			const results = await itemsService.FindSimilar([0.1, 0.2, 0.3], 2);
 
@@ -105,9 +105,9 @@ describe('ItemsModule (integration)', () => {
 		it('should call QdrantClient.upsert with the correct point payload', async () => {
 			const mockCollectionService = qdrantService.Collection('items');
 			const upsertSpy = vi
-				.spyOn(mockCollectionService, 'Upsert')
+				.spyOn(mockCollectionService, 'Upsert' as any)
 				.mockResolvedValue({ status: 'ok', result: { operation_id: 1 } } as any);
-			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
+			vi.spyOn(qdrantService, 'Collection' as any).mockReturnValue(mockCollectionService);
 
 			await itemsService.UpsertItem({ id: 'item-3', name: 'Gamma', vector: [0.4, 0.5] });
 
@@ -123,9 +123,9 @@ describe('ItemsModule (integration)', () => {
 		it('should call QdrantClient.delete with the item id', async () => {
 			const mockCollectionService = qdrantService.Collection('items');
 			const deleteSpy = vi
-				.spyOn(mockCollectionService, 'Delete')
+				.spyOn(mockCollectionService, 'Delete' as any)
 				.mockResolvedValue({ status: 'ok', result: { operation_id: 2 } } as any);
-			vi.spyOn(qdrantService, 'Collection').mockReturnValue(mockCollectionService);
+			vi.spyOn(qdrantService, 'Collection' as any).mockReturnValue(mockCollectionService);
 
 			await itemsService.DeleteItem('item-3');
 
