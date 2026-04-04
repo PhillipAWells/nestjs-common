@@ -1,10 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
 	METRICS_STATUS_OK,
 	METRICS_STATUS_CLIENT_ERROR_MIN,
 	PROFILING_RESPONSE_TIME_PRECISION,
 } from '../constants/profiling.constants.js';
-import { AppLogger } from '@pawells/nestjs-shared/common';
+
+/**
+ * Minimal logger implementation for standalone package.
+ * Uses NestJS Logger static methods without requiring external dependencies.
+ */
+class SimpleLogger {
+	private readonly Context: string;
+
+	private constructor(context: string) {
+		this.Context = context;
+	}
+
+	public static Create(context: string): SimpleLogger {
+		return new SimpleLogger(context);
+	}
+
+	public Debug(message: string, meta?: unknown): void {
+		Logger.debug(message, meta, this.Context);
+	}
+
+	public Warn(message: string, meta?: unknown): void {
+		Logger.warn(message, meta, this.Context);
+	}
+}
 
 /**
  * Metrics response interface for profiling data.
@@ -57,7 +80,7 @@ export interface IMetricsResponse {
  */
 @Injectable()
 export class MetricsService {
-	private readonly Logger = new AppLogger(undefined, MetricsService.name);
+	private readonly Logger = SimpleLogger.Create(MetricsService.name);
 
 	// CPU metrics
 	private CpuSamples = 0;
@@ -86,7 +109,7 @@ export class MetricsService {
 	 */
 	public RecordCPUSample(duration: number): void {
 		if (duration < 0) {
-			this.Logger.warn('Invalid CPU duration provided, ignoring sample');
+			this.Logger.Warn('Invalid CPU duration provided, ignoring sample');
 			return;
 		}
 
@@ -100,7 +123,7 @@ export class MetricsService {
 	 */
 	public RecordMemorySample(bytes: number): void {
 		if (bytes < 0) {
-			this.Logger.warn('Invalid memory allocation provided, ignoring sample');
+			this.Logger.Warn('Invalid memory allocation provided, ignoring sample');
 			return;
 		}
 
@@ -115,7 +138,7 @@ export class MetricsService {
 	 */
 	public RecordRequest(statusCode: number, duration: number): void {
 		if (duration < 0) {
-			this.Logger.warn('Invalid request duration provided, ignoring sample');
+			this.Logger.Warn('Invalid request duration provided, ignoring sample');
 			return;
 		}
 
@@ -245,6 +268,6 @@ profiling_requests_average_response_time_ms ${Metrics.requests.averageResponseTi
 		this.FailedRequests = 0;
 		this.TotalResponseTime = 0;
 
-		this.Logger.debug('All profiling metrics have been reset');
+		this.Logger.Debug('All profiling metrics have been reset');
 	}
 }
