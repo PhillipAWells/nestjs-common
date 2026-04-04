@@ -42,10 +42,10 @@ NX caches `build`, `test`, `lint`, and `typecheck` targets. Pass `--skip-nx-cach
 | `nestjs-auth` | Keycloak integration library — token validation, admin API, guards, and federated identity; depends on `nestjs-shared` |
 | `nestjs-open-telemetry` | OTel tracing and metrics integration; depends on `nestjs-shared` |
 | `nestjs-prometheus` | Prometheus `/metrics` endpoint; depends on `nestjs-shared` |
-| `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors (standalone, no cross-package deps) |
-| `nestjs-qdrant` | Qdrant vector database module (standalone, no cross-package deps) |
+| `nestjs-pyroscope` | Pyroscope profiling decorators and interceptors; depends on `nestjs-shared` |
+| `nestjs-qdrant` | Qdrant vector database module; depends on `nestjs-shared` |
 
-`nestjs-shared` is the foundation — most packages depend on it directly or transitively. `nestjs-pyroscope` and `nestjs-qdrant` are standalone.
+`nestjs-shared` is the foundation — all packages depend on it directly or transitively.
 
 ## Architecture Patterns
 
