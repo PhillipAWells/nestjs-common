@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { InitializeOpenTelemetry, ShutdownOpenTelemetry, IsInitialized } from '../helpers/otel-setup.js';
 import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
 import { GetTracer, SetTracerNamespace, ResetTracerNamespace, CreateSpan, WithSpan, AddAttributes } from '../../lib/tracing.js';
@@ -26,7 +27,7 @@ describe('Tracing Helpers', () => {
 		try {
 			await InitializeOpenTelemetry(testConfig);
 		} catch (error) {
-			console.debug('OpenTelemetry initialization skipped for tests:', error instanceof Error ? error.message : String(error));
+			console.debug('OpenTelemetry initialization skipped for tests:', getErrorMessage(error));
 		}
 	});
 
