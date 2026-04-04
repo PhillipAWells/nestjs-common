@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest';
 import { Injectable } from '@nestjs/common';
 import { SpanKind } from '@opentelemetry/api';
+import { getErrorMessage } from '@pawells/nestjs-shared/common';
 import { InitializeOpenTelemetry, ShutdownOpenTelemetry, IsInitialized } from '../helpers/otel-setup.js';
 import type { OpenTelemetryConfig } from '../helpers/otel-setup.js';
 import { Traced } from '../../decorators/traced.decorator.js';
@@ -90,7 +91,7 @@ describe('@Traced Decorator', () => {
 		} catch (error) {
 			// Gracefully handle initialization errors in tests
 			// The decorators still work without initialization
-			console.debug('OpenTelemetry initialization skipped for tests:', error instanceof Error ? error.message : String(error));
+			console.debug('OpenTelemetry initialization skipped for tests:', getErrorMessage(error));
 		}
 	});
 
@@ -501,8 +502,11 @@ describe('@Traced Decorator', () => {
 
 		it('should handle sync custom error subclass', () => {
 			class CustomError extends Error {
-				constructor(public Code: number) {
+				public Code: number;
+
+				constructor(code: number) {
 					super('Custom error occurred');
+					this.Code = code;
 				}
 			}
 
@@ -520,8 +524,11 @@ describe('@Traced Decorator', () => {
 
 		it('should handle async custom error subclass', async () => {
 			class CustomError extends Error {
-				constructor(public Code: number) {
+				public Code: number;
+
+				constructor(code: number) {
 					super('Async custom error');
+					this.Code = code;
 				}
 			}
 
