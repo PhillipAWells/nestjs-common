@@ -10,12 +10,7 @@
  *  4. Profiling         — PyroscopeModule; global by default.
  *  5. Persistence       — QdrantModule; global by default.
  *  6. Auth              — AuthModule depends on JwtModule + CommonModule.
- *                         Import after CacheModule (from nestjs-graphql) when
- *                         token blacklisting via Redis is required.
- *  7. GraphQL           — GraphQLModule registers Apollo + subscriptions.
- *                         Import BEFORE AuthModule if token blacklisting is
- *                         needed (provides CacheModule used by TokenBlacklistService).
- *  8. Feature modules   — Application-specific modules that consume the above.
+ *  7. Feature modules   — Application-specific modules that consume the above.
  */
 
 import { Module } from '@nestjs/common';
@@ -96,17 +91,7 @@ import { ItemsModule } from './items/items.module.js';
 			},
 		}),
 
-		// ── 8. GraphQL (optional) ─────────────────────────────────────────────
-		// Uncomment to enable Apollo Server with auto-generated schema.
-		// Import BEFORE AuthModule when token blacklisting via Redis is needed.
-		//
-		// GraphQLModule.forRoot({
-		//   autoSchemaFile: './schema.gql',
-		//   playground: process.env['NODE_ENV'] !== 'production',
-		//   introspection: true,
-		// }),
-
-		// ── 9. Feature modules ────────────────────────────────────────────────
+		// ── 8. Feature modules ────────────────────────────────────────────────
 		ItemsModule,
 	],
 })

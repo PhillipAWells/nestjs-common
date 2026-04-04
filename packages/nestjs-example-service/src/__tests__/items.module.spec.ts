@@ -22,7 +22,6 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { QdrantModule, QdrantService } from '@pawells/nestjs-qdrant';
 import { ItemsModule } from '../items/items.module.js';
 import { ItemsService } from '../items/items.service.js';
-import { ItemsResolver } from '../items/items.resolver.js';
 
 /**
  * Build a mock ModuleRef from a compiled TestingModule.
@@ -56,8 +55,6 @@ describe('ItemsModule (integration)', () => {
 				ItemsModule,
 			],
 		})
-			.overrideProvider(ItemsResolver)
-			.useValue({})
 			.compile();
 
 		qdrantService = module.get(QdrantService);
