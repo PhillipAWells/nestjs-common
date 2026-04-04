@@ -39,10 +39,10 @@ export interface IRateLimitConfig {
  * Storage backend interface for rate limiting
  */
 export interface IRateLimitStorage {
-	increment(key: string, windowMs: number): Promise<number>;
-	get(key: string): Promise<number>;
-	reset(key: string): Promise<void>;
-	cleanup(): Promise<void>;
+	Increment(key: string, windowMs: number): Promise<number>;
+	Get(key: string): Promise<number>;
+	Reset(key: string): Promise<void>;
+	Cleanup(): Promise<void>;
 }
 
 /**
@@ -61,7 +61,7 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
 	private readonly Storage = new Map<string, { count: number; resetTime: number }>();
 
 	// eslint-disable-next-line require-await
-	public async increment(key: string, windowMs: number): Promise<number> {
+	public async Increment(key: string, windowMs: number): Promise<number> {
 		const Now = Date.now();
 		const Entry = this.Storage.get(key);
 
@@ -79,7 +79,7 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
 	}
 
 	// eslint-disable-next-line require-await
-	public async get(key: string): Promise<number> {
+	public async Get(key: string): Promise<number> {
 		const Entry = this.Storage.get(key);
 		const Now = Date.now();
 
@@ -91,12 +91,12 @@ export class MemoryRateLimitStorage implements IRateLimitStorage {
 	}
 
 	// eslint-disable-next-line require-await
-	public async reset(key: string): Promise<void> {
+	public async Reset(key: string): Promise<void> {
 		this.Storage.delete(key);
 	}
 
 	// eslint-disable-next-line require-await
-	public async cleanup(): Promise<void> {
+	public async Cleanup(): Promise<void> {
 		const Now = Date.now();
 		for (const [Key, Entry] of this.Storage.entries()) {
 			if (Now > Entry.resetTime) {
@@ -204,7 +204,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 	 */
 	private async CheckLimitWithStorage(clientId: string, config: IRateLimitConfig, storage: IRateLimitStorage): Promise<IRateLimitResult> {
 		try {
-			const Current = await storage.increment(clientId, config.windowMs);
+			const Current = await storage.Increment(clientId, config.windowMs);
 			const Remaining = Math.max(0, config.maxRequests - Current);
 			const Allowed = Current <= config.maxRequests;
 
@@ -287,7 +287,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		// Also reset in storage backend if available
 		if (this.Storage) {
 			try {
-				await this.Storage.reset(clientId);
+				await this.Storage.Reset(clientId);
 			} catch (error) {
 				this.Logger.error(`Failed to reset rate limit in storage for ${clientId}:`, getErrorMessage(error));
 			}
@@ -308,7 +308,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		// Check storage backend first if available
 		if (this.Storage) {
 			try {
-				const Count = await this.Storage.get(clientId);
+				const Count = await this.Storage.Get(clientId);
 				if (Count > 0) {
 					const Remaining = Math.max(0, Config.maxRequests - Count);
 					return {
@@ -351,7 +351,7 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy, ILazyMod
 		const { Storage } = this;
 		if (Storage) {
 			try {
-				await Storage.cleanup();
+				await Storage.Cleanup();
 			} catch (error) {
 				this.Logger.error('Storage cleanup failed:', getErrorMessage(error));
 			}

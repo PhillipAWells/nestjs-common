@@ -96,8 +96,8 @@ describe('Config Integration', () => {
 			logLevel: 'info',
 		};
 
-		const _schema = validationService.createValidationSchema({
-			port: validationService.createValidationSchema({
+		const _schema = validationService.CreateValidationSchema({
+			port: validationService.CreateValidationSchema({
 				port: 'number',
 			}).keys({
 				port: Joi.number().integer().min(1).max(65535),

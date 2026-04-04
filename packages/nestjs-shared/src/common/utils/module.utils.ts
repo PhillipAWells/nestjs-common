@@ -34,8 +34,8 @@ export function CreateAsyncOptionsProvider<T, F>(
 			inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
 		};
 	}
-	const factoryToken = options.useExisting ?? options.useClass;
-	if (factoryToken === undefined) {
+	const FactoryToken = options.useExisting ?? options.useClass;
+	if (FactoryToken === undefined) {
 		throw new Error(
 			'Invalid async module options: must specify useFactory, useClass, or useExisting.',
 		);
@@ -43,7 +43,7 @@ export function CreateAsyncOptionsProvider<T, F>(
 	return {
 		provide: token,
 		useFactory: factoryFn,
-		inject: [factoryToken],
+		inject: [FactoryToken],
 	};
 }
 

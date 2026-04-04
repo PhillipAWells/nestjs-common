@@ -130,19 +130,19 @@ describe('ConfigService', () => {
 
 	describe('get', () => {
 		it('should return value when key exists', () => {
-			const Result = service.get('test-key');
+			const Result = service.Get('test-key');
 
 			expect(Result).toBe('test-value');
 		});
 
 		it('should return default when key does not exist', () => {
-			const Result = service.get('non-existent', 'default');
+			const Result = service.Get('non-existent', 'default');
 
 			expect(Result).toBe('default');
 		});
 
 		it('should return undefined when key does not exist and no default provided', () => {
-			const Result = service.get('non-existent');
+			const Result = service.Get('non-existent');
 
 			expect(Result).toBeUndefined();
 		});
@@ -246,7 +246,7 @@ describe('ConfigService', () => {
 
 			const freshService = new ConfigService(freshMockModuleRef);
 
-			const Logger = freshService.Logger;
+			const { Logger } = freshService;
 
 			expect(Logger).toBeDefined();
 			expect(typeof Logger.Debug).toBe('function');

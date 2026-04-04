@@ -58,9 +58,9 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 
 	public get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
-			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			if (baseLogger) {
-				this._ContextualLogger = baseLogger.CreateContextualLogger(ConfigService.name);
+			const BaseLogger = this.Module.get(AppLogger, { strict: false });
+			if (BaseLogger) {
+				this._ContextualLogger = BaseLogger.CreateContextualLogger(ConfigService.name);
 			}
 		}
 		return this._ContextualLogger ?? this.Module.get(AppLogger);
@@ -81,32 +81,32 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 
 		try {
 			// Basic validation - check required fields
-			const requiredFields = Object.keys(schema).filter(key => schema[key].required);
-			const optionalFields = Object.keys(schema).filter(key => !schema[key].required);
-			const missingFields = requiredFields.filter(field => this.get(field) === undefined);
+			const RequiredFields = Object.keys(schema).filter(key => schema[key].required);
+			const OptionalFields = Object.keys(schema).filter(key => !schema[key].required);
+			const MissingFields = RequiredFields.filter(field => this.Get(field) === undefined);
 
-			if (missingFields.length > 0) {
-				const durationMs = Date.now() - StartTime;
+			if (MissingFields.length > 0) {
+				const DurationMs = Date.now() - StartTime;
 				this.Logger.error('Configuration validation failed', undefined, undefined, {
-					missingFields,
-					requiredFields: requiredFields.length,
-					durationMs,
+					missingFields: MissingFields,
+					requiredFields: RequiredFields.length,
+					durationMs: DurationMs,
 				});
-				throw new Error(`Missing required configuration fields: ${missingFields.join(', ')}`);
+				throw new Error(`Missing required configuration fields: ${MissingFields.join(', ')}`);
 			}
 
-			const durationMs = Date.now() - StartTime;
+			const DurationMs = Date.now() - StartTime;
 			this.Logger.info('Configuration validation successful', {
 				validatedFields: Object.keys(schema).length,
-				requiredFields: requiredFields.length,
-				optionalFields: optionalFields.length,
-				durationMs,
+				requiredFields: RequiredFields.length,
+				optionalFields: OptionalFields.length,
+				durationMs: DurationMs,
 			});
 		} catch (error) {
-			const durationMs = Date.now() - StartTime;
+			const DurationMs = Date.now() - StartTime;
 			this.Logger.error('Configuration validation error', undefined, undefined, {
 				error: getErrorMessage(error),
-				durationMs,
+				durationMs: DurationMs,
 			});
 			throw error;
 		}
@@ -115,7 +115,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	/**
 	 * Get configuration value
 	 */
-	public get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
+	public Get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
 		return this.NestConfig.get(propertyPath, defaultValue);
 	}
 
@@ -130,7 +130,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	 * Get configuration value as string
 	 */
 	public GetString(propertyPath: string, defaultValue?: string): string | undefined {
-		const Value = this.get(propertyPath, defaultValue);
+		const Value = this.Get(propertyPath, defaultValue);
 		if (Value === undefined) return undefined;
 		return String(Value);
 	}
@@ -139,10 +139,10 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	 * Get configuration value as number
 	 */
 	public GetNumber(propertyPath: string, defaultValue?: number): number | undefined {
-		const Value = this.get(propertyPath, defaultValue);
+		const Value = this.Get(propertyPath, defaultValue);
 		if (Value === undefined) return undefined;
-		const num = Number(Value);
-		return isNaN(num) ? undefined : num;
+		const Num = Number(Value);
+		return isNaN(Num) ? undefined : Num;
 	}
 
 	/**
@@ -150,5 +150,22 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 	 */
 	public onModuleDestroy(): void {
 		this._ContextualLogger = undefined;
+	}
+
+	// Backwards compatibility aliases
+	public get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
+		return this.Get(propertyPath, defaultValue);
+	}
+
+	public getOrThrow<T = any>(propertyPath: string): T {
+		return this.GetOrThrow(propertyPath);
+	}
+
+	public getString(propertyPath: string, defaultValue?: string): string | undefined {
+		return this.GetString(propertyPath, defaultValue);
+	}
+
+	public getNumber(propertyPath: string, defaultValue?: number): number | undefined {
+		return this.GetNumber(propertyPath, defaultValue);
 	}
 }

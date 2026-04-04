@@ -68,9 +68,9 @@ describe('createGraphQLError', () => {
 			const error = new TestError();
 
 			expect(error).toBeInstanceOf(TestError);
-			expect((error as any).toPlainObject).toBeDefined();
-			expect((error as any).withContext).toBeDefined();
-			expect((error as any).withMessage).toBeDefined();
+			expect((error as any).ToPlainObject).toBeDefined();
+			expect((error as any).WithContext).toBeDefined();
+			expect((error as any).WithMessage).toBeDefined();
 		});
 
 		it('should include GraphQL extensions', () => {
@@ -92,7 +92,7 @@ describe('createGraphQLError', () => {
 		});
 	});
 
-	describe('toPlainObject', () => {
+	describe('ToPlainObject', () => {
 		it('should serialize error to plain object', () => {
 			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
@@ -102,7 +102,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const error = new TestError('Custom message', { userId: '123' });
-			const plain = (error as any).toPlainObject();
+			const plain = (error as any).ToPlainObject();
 
 			expect(plain).toEqual({
 				name: 'TEST_ERRORError',
@@ -116,7 +116,7 @@ describe('createGraphQLError', () => {
 		});
 	});
 
-	describe('withContext', () => {
+	describe('WithContext', () => {
 		it('should create new error with merged context', () => {
 			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
@@ -126,7 +126,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const originalError = new TestError('Test error', { userId: '123' });
-			const newError = (originalError as any).withContext({ action: 'login' });
+			const newError = (originalError as any).WithContext({ action: 'login' });
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('Test error');
@@ -134,7 +134,7 @@ describe('createGraphQLError', () => {
 		});
 	});
 
-	describe('withMessage', () => {
+	describe('WithMessage', () => {
 		it('should create new error with different message', () => {
 			const TestError = CreateGraphQLError({
 				code: 'TEST_ERROR',
@@ -144,7 +144,7 @@ describe('createGraphQLError', () => {
 			});
 
 			const originalError = new TestError('Original message');
-			const newError = (originalError as any).withMessage('New message');
+			const newError = (originalError as any).WithMessage('New message');
 
 			expect(newError.message).toBe('New message');
 			expect(newError.Code).toBe('TEST_ERROR');

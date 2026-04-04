@@ -413,15 +413,15 @@ export class InstrumentationRegistry implements OnModuleInit, ILazyModuleRefServ
 	 */
 	public async Shutdown(): Promise<void> {
 		const ShutdownPromises = this.Exporters
-			.map((Exporter) => {
+			.map((exporter) => {
 				try {
-					const Result = Exporter.shutdown?.();
+					const Result = exporter.shutdown?.();
 					if (Result instanceof Promise) {
 						return Result;
 					}
 				} catch (error) {
 					this.Logger.error('Error during exporter shutdown', 'InstrumentationRegistry', {
-						exporterIndex: this.Exporters.indexOf(Exporter),
+						exporterIndex: this.Exporters.indexOf(exporter),
 						error: GetErrorMessage(error),
 					});
 				}

@@ -30,16 +30,16 @@ export class CustomThrottleGuard extends ThrottlerGuard {
 	protected override async getTracker(req: Record<string, unknown>): Promise<string> {
 		// Prefer the direct TCP connection address (not spoofable via headers)
 		// req.socket.remoteAddress is the actual connecting IP regardless of proxies
-		const directIp =
+		const DirectIp =
 			(req['socket'] as { remoteAddress?: string } | undefined)?.remoteAddress ??
 			(req['connection'] as { remoteAddress?: string } | undefined)?.remoteAddress;
 
-		if (directIp) return directIp;
+		if (DirectIp) return DirectIp;
 
 		// Fall back to req.ip only when direct address is unavailable (e.g., test environment)
 		// NOTE: req.ip may be influenced by X-Forwarded-For in proxy setups.
 		// Ensure express trust proxy is configured correctly if behind a trusted reverse proxy.
-		const ip = req['ip'] as string | undefined;
-		return ip ?? 'unknown';
+		const Ip = req['ip'] as string | undefined;
+		return Ip ?? 'unknown';
 	}
 }

@@ -125,8 +125,8 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	public RecordHttpRequest(method: string, route: string, statusCode: number, duration: number, size?: number): void {
 		if (!this.Enabled || !this.HttpRequestDuration || !this.HttpRequestTotal) return;
 
-		const statusClass = statusCode >= HTTP_STATUS_CODE_500 ? '5xx' : statusCode >= HTTP_STATUS_CODE_400 ? '4xx' : '2xx';
-		const Labels = { method, route, status_code: statusCode.toString(), status_class: statusClass };
+		const StatusClass = statusCode >= HTTP_STATUS_CODE_500 ? '5xx' : statusCode >= HTTP_STATUS_CODE_400 ? '4xx' : '2xx';
+		const Labels = { method, route, status_code: statusCode.toString(), status_class: StatusClass };
 
 		this.HttpRequestDuration.observe(Labels, duration / MILLISECONDS_TO_SECONDS); // Convert to seconds
 		this.HttpRequestTotal.inc(Labels);
@@ -142,15 +142,15 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	public RecordCounter(name: string, value: number = 1, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
-			const counter = this.Registry.getSingleMetric(name) as Counter<string> | undefined;
-			if (counter) {
-				counter.inc(labels, value);
+			const Counter = this.Registry.getSingleMetric(name) as Counter<string> | undefined;
+			if (Counter) {
+				Counter.inc(labels, value);
 			} else {
 				this.Logger.warn(`Counter metric '${name}' not found in registry`);
 			}
 		} catch (error) {
-			const errorMsg = GetErrorMessage(error);
-			this.Logger.error(`Failed to record counter '${name}': ${errorMsg}`);
+			const ErrorMsg = GetErrorMessage(error);
+			this.Logger.error(`Failed to record counter '${name}': ${ErrorMsg}`);
 		}
 	}
 
@@ -160,9 +160,9 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	public RecordGauge(name: string, value: number, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
-			const gauge = this.Registry.getSingleMetric(name) as Gauge<string> | undefined;
-			if (gauge) {
-				gauge.set(labels, value);
+			const Gauge = this.Registry.getSingleMetric(name) as Gauge<string> | undefined;
+			if (Gauge) {
+				Gauge.set(labels, value);
 			} else {
 				this.Logger.warn(`Gauge metric '${name}' not found in registry`);
 			}
@@ -177,9 +177,9 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	public RecordHistogram(name: string, value: number, labels: Record<string, string | number> = {}): void {
 		if (!this.Enabled) return;
 		try {
-			const histogram = this.Registry.getSingleMetric(name) as Histogram<string> | undefined;
-			if (histogram) {
-				histogram.observe(labels, value);
+			const Histogram = this.Registry.getSingleMetric(name) as Histogram<string> | undefined;
+			if (Histogram) {
+				Histogram.observe(labels, value);
 			} else {
 				this.Logger.warn(`Histogram metric '${name}' not found in registry`);
 			}
@@ -192,35 +192,35 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 	 * Create and register a new counter metric
 	 */
 	public CreateCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
-		const counter = new Counter({
+		const CounterInstance = new Counter({
 			name,
 			help,
 			labelNames,
 			registers: [this.Registry],
 		});
 		this.Logger.info(`Created counter metric: ${name}`);
-		return counter;
+		return CounterInstance;
 	}
 
 	/**
 	 * Create and register a new gauge metric
 	 */
 	public CreateGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
-		const gauge = new Gauge({
+		const GaugeInstance = new Gauge({
 			name,
 			help,
 			labelNames,
 			registers: [this.Registry],
 		});
 		this.Logger.info(`Created gauge metric: ${name}`);
-		return gauge;
+		return GaugeInstance;
 	}
 
 	/**
 	 * Create and register a new histogram metric
 	 */
 	public CreateHistogram(name: string, help: string, labelNames: string[] = [], buckets?: number[]): Histogram<string> {
-		const config: { name: string; help: string; labelNames: string[]; registers: Registry[]; buckets?: number[] } = {
+		const Config: { name: string; help: string; labelNames: string[]; registers: Registry[]; buckets?: number[] } = {
 			name,
 			help,
 			labelNames,
@@ -228,12 +228,12 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 		};
 
 		if (buckets !== undefined) {
-			config.buckets = buckets;
+			Config.buckets = buckets;
 		}
 
-		const histogram = new Histogram(config);
+		const HistogramInstance = new Histogram(Config);
 		this.Logger.info(`Created histogram metric: ${name}`);
-		return histogram;
+		return HistogramInstance;
 	}
 
 	/**

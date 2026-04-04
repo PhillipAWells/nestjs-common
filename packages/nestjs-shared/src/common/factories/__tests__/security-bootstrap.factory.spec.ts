@@ -77,7 +77,7 @@ describe('SecurityBootstrapFactory', () => {
 	});
 
 	it('should allow custom logger', () => {
-		const MockLogger = {
+		const _MockLogger = {
 			log: (_message: string, ..._args: any[]) => {
 				// Mock logger
 			},

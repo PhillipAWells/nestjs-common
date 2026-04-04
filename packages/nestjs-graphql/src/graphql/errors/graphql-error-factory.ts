@@ -31,9 +31,9 @@ export interface IGeneratedGraphQLErrorInstance extends GraphQLError {
 	readonly Code: string;
 	readonly Context: Record<string, unknown>;
 	readonly Timestamp: Date;
-	toPlainObject(): Record<string, unknown>;
-	withContext(additionalContext: Record<string, unknown>): this;
-	withMessage(newMessage: string): this;
+	ToPlainObject(): Record<string, unknown>;
+	WithContext(additionalContext: Record<string, unknown>): this;
+	WithMessage(newMessage: string): this;
 }
 
 /**
@@ -114,7 +114,7 @@ export function CreateGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraph
 		 *
 		 * @returns A plain object representation of the error
 		 */
-		public toPlainObject(): Record<string, unknown> {
+		public ToPlainObject(): Record<string, unknown> {
 			return {
 				name: this.name,
 				message: this.message,
@@ -132,7 +132,7 @@ export function CreateGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraph
 		 * @param additionalContext - Additional context to merge
 		 * @returns A new error instance with the merged context
 		 */
-		public withContext(additionalContext: Record<string, unknown>): this {
+		public WithContext(additionalContext: Record<string, unknown>): this {
 			const MergedContext = { ...this.Context, ...additionalContext };
 			const Constructor = this.constructor as new (message?: string, context?: Record<string, unknown>) => this;
 
@@ -145,7 +145,7 @@ export function CreateGraphQLError(config: IGraphQLErrorConfig): TGeneratedGraph
 		 * @param newMessage - The new error message
 		 * @returns A new error instance with the updated message
 		 */
-		public withMessage(newMessage: string): this {
+		public WithMessage(newMessage: string): this {
 			const Constructor = this.constructor as new (message?: string, context?: Record<string, unknown>) => this;
 
 			return new Constructor(newMessage, this.Context);

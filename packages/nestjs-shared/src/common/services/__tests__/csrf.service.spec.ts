@@ -673,7 +673,7 @@ describe('CSRFService', () => {
 			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(true);
 
 			// Call prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Old entry should be deleted
 			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(false);
@@ -692,7 +692,7 @@ describe('CSRFService', () => {
 			expect(internalService.IpLocks.has('lock-prune-ip')).toBe(true);
 
 			// Prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Both should be deleted
 			expect(internalService.TokenGenTimestamps.has('lock-prune-ip')).toBe(false);
@@ -707,7 +707,7 @@ describe('CSRFService', () => {
 			internalService.TokenGenTimestamps.set('recent-ip', [recentTime]);
 
 			// Call prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Recent entry should still exist
 			expect(internalService.TokenGenTimestamps.has('recent-ip')).toBe(true);

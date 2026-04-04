@@ -137,7 +137,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			);
 
 			const error = new IValidationError('Invalid input');
-			const errorWithContext = error.withContext({ field: 'name' });
+			const errorWithContext = error.WithContext({ field: 'name' });
 
 			expect(errorWithContext.message).toBe('Invalid input');
 			expect(errorWithContext.Context.field).toBe('name');
@@ -150,7 +150,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 			);
 
 			const error = new NotFoundError('IUser not found', { userId: '123' });
-			const errorWithNewMessage = error.withMessage('Resource does not exist');
+			const errorWithNewMessage = error.WithMessage('Resource does not exist');
 
 			expect(errorWithNewMessage.message).toBe('Resource does not exist');
 			expect(errorWithNewMessage.Context.userId).toBe('123');
@@ -166,7 +166,7 @@ describe('GraphQL Error Factory - Type Safety', () => {
 
 			const error = new UnauthorizedError('Invalid credentials');
 
-			const plainObject = error.toPlainObject();
+			const plainObject = error.ToPlainObject();
 
 			expect(plainObject).toHaveProperty('name');
 			expect(plainObject).toHaveProperty('message');

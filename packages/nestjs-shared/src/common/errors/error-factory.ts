@@ -67,11 +67,6 @@ export function CreateError(config: IErrorConfig): typeof BaseApplicationError {
 }
 
 /**
- * Backward compatibility alias for CreateError
- */
-export const createError = CreateError;
-
-/**
  * Error configurations for all standard HTTP error types
  */
 export const ERROR_CONFIGS = {

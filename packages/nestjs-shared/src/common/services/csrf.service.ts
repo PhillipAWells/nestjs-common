@@ -136,8 +136,8 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * at application bootstrap time
 	 */
 	public onModuleInit(): void {
-		const csrfSecret = this.ConfigService?.get<string>('CSRF_SECRET') ?? process.env['CSRF_SECRET'];
-		if (!csrfSecret) {
+		const CsrfSecret = this.ConfigService?.get<string>('CSRF_SECRET') ?? process.env['CSRF_SECRET'];
+		if (!CsrfSecret) {
 			throw new Error(
 				'CSRF_SECRET environment variable is required but not set. ' +
 			'Set it in your .env file or as an environment variable before starting the application.',
@@ -145,16 +145,16 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		// Validate CSRF_SECRET entropy
-		if (csrfSecret.length < CSRFService.MIN_SECRET_LENGTH) {
+		if (CsrfSecret.length < CSRFService.MIN_SECRET_LENGTH) {
 			throw new Error(
 				`CSRF_SECRET must be at least ${CSRFService.MIN_SECRET_LENGTH} characters long for adequate entropy. ` +
-			`Current length: ${csrfSecret.length}. ` +
+			`Current length: ${CsrfSecret.length}. ` +
 			'Generate a cryptographically secure value with: openssl rand -base64 32',
 			);
 		}
 
 		// Check for obviously weak patterns as secondary check
-		if (this.isWeakSecret(csrfSecret)) {
+		if (this.IsWeakSecret(CsrfSecret)) {
 			throw new Error(
 				'CSRF_SECRET contains obviously weak pattern. ' +
 			'Must have a mix of different characters, not repeated or common strings. ' +
@@ -163,11 +163,11 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		// Validate entropy (primary check)
-		const entropy = this.calculateEntropy(csrfSecret);
+		const Entropy = this.CalculateEntropy(CsrfSecret);
 		const MIN_ENTROPY = 4.0;
-		if (entropy < MIN_ENTROPY) {
+		if (Entropy < MIN_ENTROPY) {
 			throw new Error(
-				`CSRF_SECRET entropy is insufficient (${entropy.toFixed(2)} bits/char). ` +
+				`CSRF_SECRET entropy is insufficient (${Entropy.toFixed(2)} bits/char). ` +
 			`Minimum required: ${MIN_ENTROPY} bits/char. ` +
 			'Generate a cryptographically secure value with: openssl rand -base64 32',
 			);
@@ -175,8 +175,8 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 
 		// Initialize CSRF protection now that we know the secret is available and valid
 		this.CsrfProtection = doubleCsrf({
-			getSecret: () => csrfSecret,
-			getSessionIdentifier: (req) => this.getSessionIdentifier(req),
+			getSecret: () => CsrfSecret,
+			getSessionIdentifier: (req) => this.GetSessionIdentifier(req),
 			cookieName: '__Host-psifi.x-csrf-token',
 			cookieOptions: {
 				httpOnly: true,
@@ -187,11 +187,11 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		});
 
 		// Check for trust proxy misconfiguration at boot time
-		this.validateTrustProxyConfiguration();
+		this.ValidateTrustProxyConfiguration();
 
 		// Prune old token generation timestamps more frequently to prevent unbounded growth
 		// More aggressive pruning than 5 minutes to handle high-traffic scenarios
-		this.PruneIntervalHandle = setInterval(() => this.pruneTokenTimestamps(), CSRFService.TIMESTAMP_PRUNING_INTERVAL_MS);
+		this.PruneIntervalHandle = setInterval(() => this.PruneTokenTimestamps(), CSRFService.TIMESTAMP_PRUNING_INTERVAL_MS);
 	}
 
 	/**
@@ -213,7 +213,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * - If trustProxy=false but X-Forwarded-For is present: may miss real client IP
 	 * - If trustProxy=true but X-Forwarded-For is absent: proxy may not be configured correctly
 	 */
-	private validateTrustProxyConfiguration(): void {
+	private ValidateTrustProxyConfiguration(): void {
 		// Check direction 1: trustProxy=false but service is likely behind a proxy
 		// We detect this by checking if the NODE_ENV and common proxy environments are misconfigured.
 		// Note: We do NOT call extractClientIp here to avoid spurious "X-Forwarded-For detected" warnings
@@ -226,10 +226,10 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 
 		// Check direction 2: trustProxy=true but X-Forwarded-For absent (reverse proxy may not be configured)
 		// Use a sample request without X-Forwarded-For to detect this early
-		const sampleRequestWithoutHeader = { headers: {}, socket: { remoteAddress: '127.0.0.1' } } as unknown as Request;
-		const extractedIpWithoutHeader = this.extractClientIp(sampleRequestWithoutHeader);
+		const SampleRequestWithoutHeader = { headers: {}, socket: { remoteAddress: '127.0.0.1' } } as unknown as Request;
+		const ExtractedIpWithoutHeader = this.ExtractClientIp(SampleRequestWithoutHeader);
 
-		if (extractedIpWithoutHeader === undefined || extractedIpWithoutHeader === null) {
+		if (ExtractedIpWithoutHeader === undefined || ExtractedIpWithoutHeader === null) {
 			this.Logger.warn(
 				'Trust proxy is enabled but X-Forwarded-For header is not present in sample request. ' +
 				'Your reverse proxy may not be configured to set X-Forwarded-For correctly. ' +
@@ -250,23 +250,23 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @param str - Input string to analyze
 	 * @returns Entropy in bits per character
 	 */
-	private calculateEntropy(str: string): number {
-		const freq = new Map<string, number>();
-		for (const char of str) {
-			freq.set(char, (freq.get(char) ?? 0) + 1);
+	private CalculateEntropy(str: string): number {
+		const Freq = new Map<string, number>();
+		for (const Char of str) {
+			Freq.set(Char, (Freq.get(Char) ?? 0) + 1);
 		}
-		let entropy = 0;
-		for (const count of freq.values()) {
-			const p = count / str.length;
-			entropy -= p * Math.log2(p);
+		let Entropy = 0;
+		for (const Count of Freq.values()) {
+			const P = Count / str.length;
+			Entropy -= P * Math.log2(P);
 		}
-		return entropy;
+		return Entropy;
 	}
 
 	/**
 	 * Check if the secret contains obviously weak patterns
 	 */
-	private isWeakSecret(secret: string): boolean {
+	private IsWeakSecret(secret: string): boolean {
 		// Check if all characters are the same (e.g., 'aaaaa...')
 		if (/^(.)\1+$/.test(secret)) {
 			return true;
@@ -279,9 +279,9 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		// Check for common weak strings (case-insensitive)
-		const lowerSecret = secret.toLowerCase();
-		const weakPatterns = ['password', 'secret', '12345678', 'qwerty', '00000000', '11111111', '88888888', '99999999'];
-		if (weakPatterns.some(pattern => lowerSecret.includes(pattern))) {
+		const LowerSecret = secret.toLowerCase();
+		const WeakPatterns = ['password', 'secret', '12345678', 'qwerty', '00000000', '11111111', '88888888', '99999999'];
+		if (WeakPatterns.some(pattern => LowerSecret.includes(pattern))) {
 			return true;
 		}
 
@@ -294,12 +294,12 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @param req - Express request object
 	 * @returns Session identifier
 	 */
-	private getSessionIdentifier(req: unknown): string {
-		const sessionId = (req as { session?: { id?: string } }).session?.id;
-		if (sessionId) return sessionId;
+	private GetSessionIdentifier(req: unknown): string {
+		const SessionId = (req as { session?: { id?: string } }).session?.id;
+		if (SessionId) return SessionId;
 
-		const ip = this.extractClientIp(req as Request);
-		if (!ip) {
+		const Ip = this.ExtractClientIp(req as Request);
+		if (!Ip) {
 			// Log warning — do not silently fall through to 'unknown'
 			this.Logger.warn(
 				'CSRF session identifier unavailable: no session and no IP. ' +
@@ -308,7 +308,7 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			// Use fixed fallback bucket so all anonymous requests share the same rate limit
 			return 'anon';
 		}
-		return ip;
+		return Ip;
 	}
 
 	/**
@@ -323,21 +323,21 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @param req - Express request object
 	 * @returns Client IP address or null if unavailable
 	 */
-	private extractClientIp(req: Request): string | null {
+	private ExtractClientIp(req: Request): string | null {
 		// If trustProxy is enabled, use X-Forwarded-For header (first IP only)
 		if (this.TrustProxy) {
-			const forwardedFor = req.headers['x-forwarded-for'];
-			if (forwardedFor) {
+			const ForwardedFor = req.headers['x-forwarded-for'];
+			if (ForwardedFor) {
 				// X-Forwarded-For can contain multiple IPs: client, proxy1, proxy2...
 				// We only trust the first one (the original client)
-				const firstIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor.split(',')[0];
-				return firstIp?.trim() ?? null;
+				const FirstIp = Array.isArray(ForwardedFor) ? ForwardedFor[0] : ForwardedFor.split(',')[0];
+				return FirstIp?.trim() ?? null;
 			}
 		} else {
 			// Warn if X-Forwarded-For is present but trustProxy is false
 			// This may indicate a misconfiguration where the service is behind a reverse proxy
-			const forwardedFor = req.headers['x-forwarded-for'];
-			if (forwardedFor) {
+			const ForwardedFor = req.headers['x-forwarded-for'];
+			if (ForwardedFor) {
 				this.Logger.warn(
 					'X-Forwarded-For header detected but trustProxy is false. ' +
 					'If this service is behind a reverse proxy (nginx, Apache, load balancer, etc.), ' +
@@ -356,18 +356,18 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * Removes entries older than 60 seconds and cleans up idle IPs from both
 	 * tokenGenTimestamps and ipLocks to prevent memory accumulation.
 	 */
-	private pruneTokenTimestamps(): void {
-		const now = Date.now();
+	private PruneTokenTimestamps(): void {
+		const Now = Date.now();
 		const TIMESTAMP_TTL = 60_000; // 60 seconds
 
-		for (const [ip, timestamps] of this.TokenGenTimestamps.entries()) {
-			const recentTimestamps = timestamps.filter(ts => now - ts < TIMESTAMP_TTL);
-			if (recentTimestamps.length === 0) {
-				this.TokenGenTimestamps.delete(ip);
+		for (const [Ip, Timestamps] of this.TokenGenTimestamps.entries()) {
+			const RecentTimestamps = Timestamps.filter(ts => Now - ts < TIMESTAMP_TTL);
+			if (RecentTimestamps.length === 0) {
+				this.TokenGenTimestamps.delete(Ip);
 				// Clean up corresponding ipLocks entry when IP has no timestamps
-				this.IpLocks.delete(ip);
+				this.IpLocks.delete(Ip);
 			} else {
-				this.TokenGenTimestamps.set(ip, recentTimestamps);
+				this.TokenGenTimestamps.set(Ip, RecentTimestamps);
 			}
 		}
 	}
@@ -389,16 +389,16 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
 
-		const ip = this.extractClientIp(req) ?? 'unknown';
+		const Ip = this.ExtractClientIp(req) ?? 'unknown';
 
 		// Serialize rate-limit check + token generation per IP to prevent race conditions
 		// Chain this request's work after any pending work for the same IP
-		const pendingWork = this.IpLocks.get(ip) ?? Promise.resolve();
+		const PendingWork = this.IpLocks.get(Ip) ?? Promise.resolve();
 
 		// Wrap with a timeout to prevent indefinite waits in the queue
-		const currentWork = pendingWork.then(() => {
+		const CurrentWork = PendingWork.then(() => {
 			return new Promise<string>((resolve, reject) => {
-				const timer = setTimeout(() => {
+				const Timer = setTimeout(() => {
 					reject(new HttpException(
 						'CSRF token generation timed out waiting in queue',
 						HttpStatus.SERVICE_UNAVAILABLE,
@@ -406,27 +406,27 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 				}, CSRFService.IP_LOCK_TIMEOUT_MS);
 
 				try {
-					const token = this.performRateLimitedTokenGeneration(req, res);
-					clearTimeout(timer);
-					resolve(token);
-				} catch (err) {
-					clearTimeout(timer);
-					reject(err);
+					const Token = this.PerformRateLimitedTokenGeneration(req, res);
+					clearTimeout(Timer);
+					resolve(Token);
+				} catch (Err) {
+					clearTimeout(Timer);
+					reject(Err);
 				}
 			});
 		});
 
-		this.IpLocks.set(ip, currentWork);
+		this.IpLocks.set(Ip, CurrentWork);
 
 		// Clean up the lock after this work completes (only if no new work queued)
-		currentWork.finally(() => {
-			if (this.IpLocks.get(ip) === currentWork) {
-				this.IpLocks.delete(ip);
+		CurrentWork.finally(() => {
+			if (this.IpLocks.get(Ip) === CurrentWork) {
+				this.IpLocks.delete(Ip);
 			}
 		});
 
 		// eslint-disable-next-line @typescript-eslint/return-await
-		return await currentWork;
+		return await CurrentWork;
 	}
 
 	/**
@@ -437,36 +437,36 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 	 * @returns CSRF token
 	 * @throws HttpException with 429 status if rate limit exceeded
 	 */
-	private performRateLimitedTokenGeneration(req: Request, res: Response): string {
+	private PerformRateLimitedTokenGeneration(req: Request, res: Response): string {
 		// Check per-IP rate limit
-		const ip = this.extractClientIp(req) ?? 'unknown';
-		const now = Date.now();
+		const Ip = this.ExtractClientIp(req) ?? 'unknown';
+		const Now = Date.now();
 
 		// Check if map is approaching capacity (at 80% threshold with 20% safety margin)
 		// This safety margin prevents race conditions where concurrent requests might insert
 		// new IPs between the pruning step and the final capacity check.
-		 
-		const capacityThreshold = CSRFService.MAX_TRACKED_IPS * CSRFService.CAPACITY_THRESHOLD_PERCENT;
-		if (this.TokenGenTimestamps.size >= capacityThreshold) {
+
+		const CapacityThreshold = CSRFService.MAX_TRACKED_IPS * CSRFService.CAPACITY_THRESHOLD_PERCENT;
+		if (this.TokenGenTimestamps.size >= CapacityThreshold) {
 			this.CapacityThresholdCrossedCount++;
 			// eslint-disable-next-line no-magic-numbers
-			const capacityPercent = (this.TokenGenTimestamps.size / CSRFService.MAX_TRACKED_IPS * 100).toFixed(1);
+			const CapacityPercent = (this.TokenGenTimestamps.size / CSRFService.MAX_TRACKED_IPS * 100).toFixed(1);
 			this.Logger.warn(
-				`CSRF token generation approaching capacity (${capacityPercent}% of ${CSRFService.MAX_TRACKED_IPS} max IPs). ` +
+				`CSRF token generation approaching capacity (${CapacityPercent}% of ${CSRFService.MAX_TRACKED_IPS} max IPs). ` +
 				`Threshold crossed ${this.CapacityThresholdCrossedCount} times.`,
 			);
 
 			if (!this._IsPruning) {
 				this._IsPruning = true;
-				this.pruneTokenTimestamps();
+				this.PruneTokenTimestamps();
 				this._IsPruning = false;
 			}
 			// Check again after pruning
 			if (this.TokenGenTimestamps.size >= CSRFService.MAX_TRACKED_IPS) {
 				// eslint-disable-next-line no-magic-numbers
-				const finalCapacityPercent = (this.TokenGenTimestamps.size / CSRFService.MAX_TRACKED_IPS * 100).toFixed(1);
+				const FinalCapacityPercent = (this.TokenGenTimestamps.size / CSRFService.MAX_TRACKED_IPS * 100).toFixed(1);
 				this.Logger.error(
-					`CSRF service at maximum capacity (${finalCapacityPercent}% of ${CSRFService.MAX_TRACKED_IPS} max IPs). ` +
+					`CSRF service at maximum capacity (${FinalCapacityPercent}% of ${CSRFService.MAX_TRACKED_IPS} max IPs). ` +
 					'Token generation rejected.',
 				);
 				throw new HttpException(
@@ -476,12 +476,12 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 			}
 		}
 
-		let timestamps = this.TokenGenTimestamps.get(ip) ?? [];
+		let Timestamps = this.TokenGenTimestamps.get(Ip) ?? [];
 		// Filter to only timestamps within the last 60 seconds
-		timestamps = timestamps.filter(ts => now - ts < CSRFService.RATE_LIMIT_WINDOW_MS);
+		Timestamps = Timestamps.filter(ts => Now - ts < CSRFService.RATE_LIMIT_WINDOW_MS);
 
-		if (timestamps.length >= CSRFService.RATE_LIMIT_COUNT) {
-			this.Logger.warn(`CSRF token rate limit exceeded for IP: ${EscapeNewlines(ip)}`);
+		if (Timestamps.length >= CSRFService.RATE_LIMIT_COUNT) {
+			this.Logger.warn(`CSRF token rate limit exceeded for IP: ${EscapeNewlines(Ip)}`);
 			throw new HttpException(
 				'Rate limit exceeded for CSRF token generation',
 				HttpStatus.TOO_MANY_REQUESTS,
@@ -489,17 +489,17 @@ export class CSRFService implements OnModuleInit, OnModuleDestroy {
 		}
 
 		// Record this generation
-		timestamps.push(now);
-		this.TokenGenTimestamps.set(ip, timestamps);
+		Timestamps.push(Now);
+		this.TokenGenTimestamps.set(Ip, Timestamps);
 
 		// Generate and return the token
 		// csrfProtection is guaranteed non-null: generateToken (our caller) checks it,
 		// and performRateLimitedTokenGeneration is only called from generateToken's chain.
-		const protection = this.CsrfProtection;
-		if (!protection) {
+		const Protection = this.CsrfProtection;
+		if (!Protection) {
 			throw new Error('CSRFService not initialized — call onModuleInit() first');
 		}
-		return protection.generateCsrfToken(req, res);
+		return Protection.generateCsrfToken(req, res);
 	}
 
 	/**

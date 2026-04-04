@@ -105,8 +105,8 @@ export class HttpClientService implements ILazyModuleRefService {
 
 	public get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
-			this._ContextualLogger = baseLogger.CreateContextualLogger(HttpClientService.name);
+			const BaseLogger = this.Module.get(AppLogger);
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(HttpClientService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -117,92 +117,92 @@ export class HttpClientService implements ILazyModuleRefService {
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
 	public Request<T = Record<string, unknown>>(options: IHttpRequestOptions): Promise<IHttpResponse<T>> {
-		const { method, url: requestUrl, headers, data, timeout = GetHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
+		const { method, url: RequestUrl, headers, data, timeout = GetHttpClientTimeout(), correlationId, rejectUnauthorized = true, ca } = options;
 		const StartTime = Date.now();
 		const MAX_PAYLOAD_SIZE = 10_485_760; // 10MB in bytes
 
-		const safeUrl = this.sanitizeUrl(requestUrl);
+		const SafeUrl = this.SanitizeUrl(RequestUrl);
 
 		this.Logger.Debug('Making HTTP request', JSON.stringify({
 			method,
-			url: safeUrl,
-			headers: this.sanitizeHeaders(headers),
+			url: SafeUrl,
+			headers: this.SanitizeHeaders(headers),
 			hasData: !!data,
 			timeout,
 			correlationId: correlationId ?? 'unknown',
 		}));
 
 		return new Promise((resolve, reject) => {
-			const parsedUrl = new URL(requestUrl); // Use raw URL for actual request
-			const isHttps = parsedUrl.protocol === 'https:';
-			const client = isHttps ? https : http;
+			const ParsedUrl = new URL(RequestUrl); // Use raw URL for actual request
+			const IsHttps = ParsedUrl.protocol === 'https:';
+			const Client = IsHttps ? https : http;
 
-			const requestOptions: any = {
-				hostname: parsedUrl.hostname,
-				port: parsedUrl.port || undefined,
-				path: parsedUrl.pathname + parsedUrl.search,
+			const RequestOptions: any = {
+				hostname: ParsedUrl.hostname,
+				port: ParsedUrl.port || undefined,
+				path: ParsedUrl.pathname + ParsedUrl.search,
 				method,
 				headers: headers ?? {},
 				timeout,
 			};
 
 			// Add SSL/TLS options for HTTPS requests
-			if (isHttps) {
-				requestOptions.rejectUnauthorized = rejectUnauthorized;
+			if (IsHttps) {
+				RequestOptions.rejectUnauthorized = rejectUnauthorized;
 				if (ca) {
-					requestOptions.ca = ca;
+					RequestOptions.ca = ca;
 				}
 			}
 
-			const req = client.request(requestOptions, (res) => {
-				const chunks: Buffer[] = [];
-				let totalSize = 0;
+			const Req = Client.request(RequestOptions, (res) => {
+				const Chunks: Buffer[] = [];
+				let TotalSize = 0;
 
 				res.on('data', (chunk: Buffer) => {
-					totalSize += chunk.length;
-					if (totalSize > MAX_PAYLOAD_SIZE) {
+					TotalSize += chunk.length;
+					if (TotalSize > MAX_PAYLOAD_SIZE) {
 						const Duration = Date.now() - StartTime;
-						req.destroy();
-						const error = new Error('Payload too large');
+						Req.destroy();
+						const PayloadError = new Error('Payload too large');
 						this.Logger.error('HTTP response payload exceeded size limit', JSON.stringify({
 							method,
-							url: safeUrl,
+							url: SafeUrl,
 							maxSize: MAX_PAYLOAD_SIZE,
-							actualSize: totalSize,
+							actualSize: TotalSize,
 							durationMs: Duration,
 							correlationId: correlationId ?? 'unknown',
 						}));
-						reject(error);
+						reject(PayloadError);
 						return;
 					}
-					chunks.push(chunk);
+					Chunks.push(chunk);
 				});
 
-				res.on('error', (error) => {
+				res.on('error', (err) => {
 					const Duration = Date.now() - StartTime;
 					this.Logger.error('HTTP response error', JSON.stringify({
 						method,
-						url: safeUrl,
-						error: error.message,
+						url: SafeUrl,
+						error: err.message,
 						durationMs: Duration,
 						correlationId: correlationId ?? 'unknown',
 					}));
-					reject(error);
+					reject(err);
 				});
 
 				res.on('end', () => {
 					const Duration = Date.now() - StartTime;
 
 					try {
-						const body = Buffer.concat(chunks).toString('utf-8');
+						const Body = Buffer.concat(Chunks).toString('utf-8');
 
 						// Validate payload size before parsing JSON
-						if (body.length > MAX_PAYLOAD_SIZE) {
+						if (Body.length > MAX_PAYLOAD_SIZE) {
 							this.Logger.error('HTTP response payload exceeded size limit', JSON.stringify({
 								method,
-								url: safeUrl,
+								url: SafeUrl,
 								maxSize: MAX_PAYLOAD_SIZE,
-								actualSize: body.length,
+								actualSize: Body.length,
 								durationMs: Duration,
 								correlationId: correlationId ?? 'unknown',
 							}));
@@ -211,68 +211,68 @@ export class HttpClientService implements ILazyModuleRefService {
 						}
 
 						// Validate content-type before parsing JSON
-						const contentType = res.headers['content-type'] ?? '';
-						let parsedData: any = null;
+						const ContentType = res.headers['content-type'] ?? '';
+						let ParsedData: any = null;
 
-						if (body) {
-							if (contentType.includes('application/json')) {
-								parsedData = JSON.parse(body);
-							} else if (contentType.includes('text/')) {
-								parsedData = body;
+						if (Body) {
+							if (ContentType.includes('application/json')) {
+								ParsedData = JSON.parse(Body);
+							} else if (ContentType.includes('text/')) {
+								ParsedData = Body;
 							} else {
 								// For other content types, return raw body
-								parsedData = body;
+								ParsedData = Body;
 							}
 						}
 
 						this.Logger.info('HTTP request successful', JSON.stringify({
 							method,
-							url: safeUrl,
+							url: SafeUrl,
 							statusCode: res.statusCode,
 							durationMs: Duration,
-							responseSize: body.length,
+							responseSize: Body.length,
 							correlationId: correlationId ?? 'unknown',
 						}));
 
 						resolve({
-							data: parsedData,
+							data: ParsedData,
 							status: res.statusCode ?? HTTP_STATUS_OK,
 							statusText: res.statusMessage ?? 'OK',
 							headers: res.headers as Record<string, string>,
 							duration: Duration,
 						});
-					} catch (error) {
+					} catch (Error) {
 						this.Logger.error('HTTP response parsing failed', JSON.stringify({
 							method,
-							url: safeUrl,
+							url: SafeUrl,
 							statusCode: res.statusCode,
-							error: (error as Error).message,
+							error: (Error as Error).message,
 							durationMs: Duration,
 							correlationId: correlationId ?? 'unknown',
 						}));
-						reject(error);
+						reject(Error);
 					}
 				});
 			});
 
-			req.on('error', (error) => {
+			Req.on('error', (err) => {
 				const Duration = Date.now() - StartTime;
 				this.Logger.error('HTTP request failed', JSON.stringify({
 					method,
-					url: safeUrl,
-					error: error.message,
+					url: SafeUrl,
+					error: err.message,
 					durationMs: Duration,
 					correlationId: correlationId ?? 'unknown',
 				}));
-				reject(error);
+				reject(err);
 			});
 
-			req.on('timeout', () => {
+			Req.on('timeout', () => {
 				const Duration = Date.now() - StartTime;
-				req.destroy();
+				Req.destroy();
 				this.Logger.warn('HTTP request timeout', JSON.stringify({
 					method,
-					url: safeUrl,
+					url: SafeUrl,
 					timeout,
 					durationMs: Duration,
 					correlationId: correlationId ?? 'unknown',
@@ -281,11 +281,11 @@ export class HttpClientService implements ILazyModuleRefService {
 			});
 
 			if (data) {
-				const bodyData = typeof data === 'string' ? data : JSON.stringify(data);
-				req.write(bodyData);
+				const BodyData = typeof data === 'string' ? data : JSON.stringify(data);
+				Req.write(BodyData);
 			}
 
-			req.end();
+			Req.end();
 		});
 	}
 
@@ -312,13 +312,13 @@ export class HttpClientService implements ILazyModuleRefService {
 	/**
 	 * Sanitize a URL to remove embedded credentials (e.g., https://user:pass@host/)
 	 */
-	private sanitizeUrl(url: string): string {
+	private SanitizeUrl(url: string): string {
 		try {
-			const parsed = new URL(url);
-			if (parsed.username || parsed.password) {
-				parsed.username = '[REDACTED]';
-				parsed.password = '[REDACTED]';
-				return parsed.toString();
+			const Parsed = new URL(url);
+			if (Parsed.username || Parsed.password) {
+				Parsed.username = '[REDACTED]';
+				Parsed.password = '[REDACTED]';
+				return Parsed.toString();
 			}
 			return url;
 		} catch {
@@ -330,7 +330,7 @@ export class HttpClientService implements ILazyModuleRefService {
 	 * Redacts sensitive headers (authorization, cookies, API keys, CSRF tokens)
 	 * before logging.
 	 */
-	private sanitizeHeaders(headers?: Record<string, string>): Record<string, string> | undefined {
+	private SanitizeHeaders(headers?: Record<string, string>): Record<string, string> | undefined {
 		if (!headers) return undefined;
 
 		const SensitiveHeaders = [
@@ -345,9 +345,9 @@ export class HttpClientService implements ILazyModuleRefService {
 		const Sanitized = { ...headers };
 
 		// Replace sensitive headers with redacted value (case-insensitive)
-		for (const [key] of Object.entries(Sanitized)) {
-			if (SensitiveHeaders.includes(key.toLowerCase())) {
-				Sanitized[key] = '[REDACTED]';
+		for (const [Key] of Object.entries(Sanitized)) {
+			if (SensitiveHeaders.includes(Key.toLowerCase())) {
+				Sanitized[Key] = '[REDACTED]';
 			}
 		}
 

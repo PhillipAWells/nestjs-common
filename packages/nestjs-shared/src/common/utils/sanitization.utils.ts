@@ -79,31 +79,31 @@ export function SanitizeObject(value: any, depth: number = 0, logger?: IContextu
 			return value.map(item => SanitizeObject(item, depth + 1, logger));
 		}
 
-		const sanitized: any = {};
-		for (const [key, val] of Object.entries(value)) {
+		const Sanitized: any = {};
+		for (const [Key, Val] of Object.entries(value)) {
 			// Sanitize keys to prevent MongoDB operator injection
 			// MongoDB operators start with '$', and command expressions with 'eval', 'function', etc.
 			// Replace dangerous key patterns: $ at start, eval, function in keys
-			let sanitizedKey = key;
+			let SanitizedKey = Key;
 
 			// Prevent MongoDB operators (e.g., $where, $regex, etc.)
-			if (sanitizedKey.startsWith('$')) {
-				sanitizedKey = '_' + sanitizedKey.slice(1);
+			if (SanitizedKey.startsWith('$')) {
+				SanitizedKey = '_' + SanitizedKey.slice(1);
 			}
 
 			// Prevent arbitrary code execution patterns in key names
-			const dangerousKeyPatterns = ['eval', 'function', '__proto__', 'constructor', 'prototype'];
-			for (const pattern of dangerousKeyPatterns) {
-				if (sanitizedKey.toLowerCase().includes(pattern)) {
-					sanitizedKey = sanitizedKey.replace(new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '_redacted_');
+			const DangerousKeyPatterns = ['eval', 'function', '__proto__', 'constructor', 'prototype'];
+			for (const Pattern of DangerousKeyPatterns) {
+				if (SanitizedKey.toLowerCase().includes(Pattern)) {
+					SanitizedKey = SanitizedKey.replace(new RegExp(Pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '_redacted_');
 				}
 			}
 
 			// Recursively sanitize nested objects/arrays, but preserve string values
-			sanitized[sanitizedKey] = typeof val === 'object' ? SanitizeObject(val, depth + 1, logger) : val;
+			Sanitized[SanitizedKey] = typeof Val === 'object' ? SanitizeObject(Val, depth + 1, logger) : Val;
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	return value;
@@ -126,12 +126,12 @@ export function SanitizeXss(value: unknown, logger?: IContextualLogger): unknown
 		// Removes common XSS patterns: script tags, event handlers, dangerous protocols
 		// Static import ensures dependency is resolved at module load time and fails fast if missing
 
-		let sanitized = value;
+		let Sanitized = value;
 
 		try {
 			// xss is statically imported at module top to ensure TypeScript and bundlers
 			// can properly resolve the dependency at build time
-			sanitized = xss(sanitized);
+			Sanitized = xss(Sanitized);
 		} catch (error) {
 			if (logger) {
 				logger.warn(`XSS sanitization (xss library) failed: ${GetErrorMessage(error)}`);
@@ -139,11 +139,11 @@ export function SanitizeXss(value: unknown, logger?: IContextualLogger): unknown
 		}
 
 		// Final protocol stripping as defense-in-depth
-		sanitized = sanitized
+		Sanitized = Sanitized
 			.replace(/javascript:/gi, '')
 			.replace(/vbscript:/gi, '');
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	if (Array.isArray(value)) {

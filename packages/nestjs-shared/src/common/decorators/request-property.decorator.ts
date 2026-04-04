@@ -6,7 +6,7 @@ import { GetErrorMessage } from '../utils/error.utils.js';
 // Logger instance for decorator warnings
 // Note: We can't use AppLogger directly here since decorators don't have DI context
 // Instead, we use a Logger instance from @nestjs/common
-const LoggerInstance = new Logger('RequestPropertyDecorator');
+const _LoggerInstance = new Logger('RequestPropertyDecorator');
 let AppLoggerInstance: AppLogger | undefined;
 
 /**

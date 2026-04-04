@@ -21,8 +21,8 @@ export class ValidationService implements ILazyModuleRefService {
 
 	private get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
-			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			this._ContextualLogger = baseLogger.CreateContextualLogger(ValidationService.name);
+			const BaseLogger = this.Module.get(AppLogger, { strict: false });
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(ValidationService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -32,11 +32,11 @@ export class ValidationService implements ILazyModuleRefService {
 	 * @param schema - Joi schema definition object with validation rules
 	 * @returns Compiled Joi ObjectSchema ready for validation
 	 */
-	public createValidationSchema(schema: IConfigSchema): Joi.ObjectSchema {
+	public CreateValidationSchema(schema: IConfigSchema): Joi.ObjectSchema {
 		this.Logger.Debug('Creating validation schema');
-		const joiSchema = Joi.object(schema);
+		const JoiSchema = Joi.object(schema);
 		this.Logger.Debug('Validation schema created successfully');
-		return joiSchema;
+		return JoiSchema;
 	}
 
 	/**
@@ -45,7 +45,7 @@ export class ValidationService implements ILazyModuleRefService {
 	 * @param schema - Joi validation schema
 	 * @returns IValidationResult with isValid flag and optional errors array
 	 */
-	public validateConfig(config: any, schema: Joi.ObjectSchema): IValidationResult {
+	public ValidateConfig(config: any, schema: Joi.ObjectSchema): IValidationResult {
 		this.Logger.Debug('Starting configuration validation');
 		const { error } = schema.validate(config, {
 			allowUnknown: true,
@@ -123,33 +123,33 @@ export function CreateStringSchema(options: {
 	default?: string;
 	description?: string;
 } = {}): Joi.StringSchema {
-	let schema = Joi.string();
+	let Schema = Joi.string();
 
 	if (options.min !== undefined) {
-		schema = schema.min(options.min);
+		Schema = Schema.min(options.min);
 	}
 
 	if (options.max !== undefined) {
-		schema = schema.max(options.max);
+		Schema = Schema.max(options.max);
 	}
 
 	if (options.pattern) {
-		schema = schema.pattern(options.pattern);
+		Schema = Schema.pattern(options.pattern);
 	}
 
 	if (options.required) {
-		schema = schema.required();
+		Schema = Schema.required();
 	}
 
 	if (options.default !== undefined) {
-		schema = schema.default(options.default);
+		Schema = Schema.default(options.default);
 	}
 
 	if (options.description) {
-		schema = schema.description(options.description);
+		Schema = Schema.description(options.description);
 	}
 
-	return schema;
+	return Schema;
 }
 
 /**
@@ -172,33 +172,33 @@ export function CreateNumberSchema(options: {
 	default?: number;
 	description?: string;
 } = {}): Joi.NumberSchema {
-	let schema = Joi.number();
+	let Schema = Joi.number();
 
 	if (options.integer) {
-		schema = schema.integer();
+		Schema = Schema.integer();
 	}
 
 	if (options.min !== undefined) {
-		schema = schema.min(options.min);
+		Schema = Schema.min(options.min);
 	}
 
 	if (options.max !== undefined) {
-		schema = schema.max(options.max);
+		Schema = Schema.max(options.max);
 	}
 
 	if (options.required) {
-		schema = schema.required();
+		Schema = Schema.required();
 	}
 
 	if (options.default !== undefined) {
-		schema = schema.default(options.default);
+		Schema = Schema.default(options.default);
 	}
 
 	if (options.description) {
-		schema = schema.description(options.description);
+		Schema = Schema.description(options.description);
 	}
 
-	return schema;
+	return Schema;
 }
 
 /**
@@ -215,21 +215,21 @@ export function CreateBooleanSchema(options: {
 	default?: boolean;
 	description?: string;
 } = {}): Joi.BooleanSchema {
-	let schema = Joi.boolean();
+	let Schema = Joi.boolean();
 
 	if (options.required) {
-		schema = schema.required();
+		Schema = Schema.required();
 	}
 
 	if (options.default !== undefined) {
-		schema = schema.default(options.default);
+		Schema = Schema.default(options.default);
 	}
 
 	if (options.description) {
-		schema = schema.description(options.description);
+		Schema = Schema.description(options.description);
 	}
 
-	return schema;
+	return Schema;
 }
 
 /**
@@ -246,21 +246,21 @@ export function CreateUriSchema(options: {
 	default?: string;
 	description?: string;
 } = {}): Joi.StringSchema {
-	let schema = Joi.string().uri();
+	let Schema = Joi.string().uri();
 
 	if (options.required) {
-		schema = schema.required();
+		Schema = Schema.required();
 	}
 
 	if (options.default !== undefined) {
-		schema = schema.default(options.default);
+		Schema = Schema.default(options.default);
 	}
 
 	if (options.description) {
-		schema = schema.description(options.description);
+		Schema = Schema.description(options.description);
 	}
 
-	return schema;
+	return Schema;
 }
 
 /**

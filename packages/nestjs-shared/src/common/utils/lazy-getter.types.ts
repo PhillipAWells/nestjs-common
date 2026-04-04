@@ -137,15 +137,15 @@ export interface IOptionalGetterConfig {
 export function CreateMemoizedLazyGetter<T>(
 	getterFn: () => T,
 ): () => T {
-	let cached: T | undefined;
-	let initialized = false;
+	let Cached: T | undefined;
+	let Initialized = false;
 
 	return () => {
-		if (!initialized) {
-			cached = getterFn();
-			initialized = true;
+		if (!Initialized) {
+			Cached = getterFn();
+			Initialized = true;
 		}
-		return cached as T;
+		return Cached as T;
 	};
 }
 
@@ -227,9 +227,9 @@ export const LazyGetterNamingConventions = {
 /**
  * Backwards compatibility aliases - exported functions use PascalCase per project conventions
  */
-export const createMemoizedLazyGetter = CreateMemoizedLazyGetter;
-export const createOptionalLazyGetter = CreateOptionalLazyGetter;
-export const isLazyModuleRefService = IsLazyModuleRefService;
+export const CreateMemoizedLazyGetterAlias = CreateMemoizedLazyGetter;
+export const CreateOptionalLazyGetterAlias = CreateOptionalLazyGetter;
+export const IsLazyModuleRefServiceAlias = IsLazyModuleRefService;
 
 /**
  * Abstract base class for NestJS services using the lazy ModuleRef pattern.

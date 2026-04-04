@@ -1,9 +1,9 @@
-import { createError, ERROR_CONFIGS, type TErrorType } from '../error-factory.js';
+import { CreateError, ERROR_CONFIGS, type TErrorType } from '../error-factory.js';
 
-describe('createError', () => {
+describe('CreateError', () => {
 	describe('factory function', () => {
 		it('should create error class with correct properties', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -18,7 +18,7 @@ describe('createError', () => {
 		});
 
 		it('should create error class with custom message', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -31,7 +31,7 @@ describe('createError', () => {
 		});
 
 		it('should create error class with context', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -44,7 +44,7 @@ describe('createError', () => {
 		});
 
 		it('should set correct class name', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -54,7 +54,7 @@ describe('createError', () => {
 		});
 
 		it('should use custom name if provided', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -65,7 +65,7 @@ describe('createError', () => {
 		});
 
 		it('should inherit from BaseApplicationError', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',

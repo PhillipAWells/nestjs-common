@@ -52,16 +52,16 @@ export function EnvVar<T = string>(key: string, defaultValue?: T): any {
 		defaultValue,
 		transform: (value: T) => {
 			// Get from process.env
-			const envValue = process.env[key];
-			if (envValue !== undefined) {
+			const EnvValue = process.env[key];
+			if (EnvValue !== undefined) {
 				// Basic type conversion for common types
 				if (typeof defaultValue === 'number') {
-					return Number(envValue);
+					return Number(EnvValue);
 				}
 				if (typeof defaultValue === 'boolean') {
-					return envValue.toLowerCase() === 'true';
+					return EnvValue.toLowerCase() === 'true';
 				}
-				return envValue;
+				return EnvValue;
 			}
 			return value ?? defaultValue;
 		},

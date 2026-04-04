@@ -111,7 +111,7 @@ export class BaseApplicationError extends Error {
 	 * @example
 	 * ```typescript
 	 * const Err = new BaseApplicationError('IUser error', { code: 'USER_ERROR' });
-	 * const errorWithContext = error.withContext({ userId: '123', action: 'login' });
+	 * const errorWithContext = error.WithContext({ userId: '123', action: 'login' });
 	 * // errorWithContext is a new instance but still instanceof BaseApplicationError
 	 * // errorWithContext.context = { userId: '123', action: 'login' }
 	 * ```
@@ -139,7 +139,7 @@ export class BaseApplicationError extends Error {
 	 * @example
 	 * ```typescript
 	 * const Err = new BaseApplicationError('Generic error');
-	 * const specificError = error.withMessage('IUser not found');
+	 * const specificError = error.WithMessage('IUser not found');
 	 * // specificError.message = 'IUser not found'
 	 * ```
 	 */

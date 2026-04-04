@@ -69,7 +69,7 @@ describe('ErrorSanitizerService', () => {
 		});
 	});
 
-	describe('sanitizeContext', () => {
+	describe('SanitizeContext', () => {
 		it('should redact sensitive fields', () => {
 			const context = {
 				userId: '123',
@@ -77,7 +77,7 @@ describe('ErrorSanitizerService', () => {
 				apiKey: 'sk_live_abc123',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.userId).toBe('123');
 			expect(sanitized.password).toBe('***REDACTED***');
 			expect(sanitized.apiKey).toBe('***REDACTED***');
@@ -93,7 +93,7 @@ describe('ErrorSanitizerService', () => {
 			// Create circular reference
 			context.nested.parent = context;
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.userId).toBe('123');
 			expect(sanitized.nested.value).toBe('test');
 			expect(sanitized.nested.parent).toBe('[CIRCULAR_REF]');
@@ -110,7 +110,7 @@ describe('ErrorSanitizerService', () => {
 			};
 			context.nested.self = context.nested;
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.userId).toBe('123');
 			expect(sanitized.nested.a).toBe('value_a');
 			expect(sanitized.nested.b).toBe('value_b');
@@ -123,7 +123,7 @@ describe('ErrorSanitizerService', () => {
 			};
 			context.items.push(context);
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.items[0]).toBe(1);
 			expect(sanitized.items[1]).toBe(2);
 			expect(sanitized.items[2]).toBe('test');
@@ -147,7 +147,7 @@ describe('ErrorSanitizerService', () => {
 				},
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.level1.level2.level3.level4.level5).toBe('[MAX_DEPTH]');
 		});
 
@@ -159,7 +159,7 @@ describe('ErrorSanitizerService', () => {
 				},
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.nested.message).toContain('[FILE]');
 			expect(sanitized.nested.email).toContain('[EMAIL]');
 		});
@@ -175,7 +175,7 @@ describe('ErrorSanitizerService', () => {
 				},
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.user).toBe('john');
 			expect(sanitized.nested.config.password).toBe('***REDACTED***');
 			expect(sanitized.nested.config.apiKey).toBe('***REDACTED***');

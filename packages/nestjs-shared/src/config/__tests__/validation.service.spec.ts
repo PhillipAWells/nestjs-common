@@ -48,7 +48,7 @@ describe('ValidationService', () => {
 				host: Joi.string().hostname(),
 			};
 
-			const result = service.createValidationSchema(schemaConfig);
+			const result = service.CreateValidationSchema(schemaConfig);
 
 			expect(result).toBeDefined();
 			expect(typeof result.validate).toBe('function');
@@ -67,7 +67,7 @@ describe('ValidationService', () => {
 				host: 'localhost',
 			};
 
-			const result = service.validateConfig(validConfig, schema);
+			const result = service.ValidateConfig(validConfig, schema);
 
 			expect(result.isValid).toBe(true);
 			expect(result.errors).toBeUndefined();
@@ -84,7 +84,7 @@ describe('ValidationService', () => {
 				host: 123,
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -102,7 +102,7 @@ describe('ValidationService', () => {
 				// missing required host field
 			};
 
-			const result = service.validateConfig(incompleteConfig, schema);
+			const result = service.ValidateConfig(incompleteConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -118,7 +118,7 @@ describe('ValidationService', () => {
 				environment: 'testing', // invalid enum value
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -135,7 +135,7 @@ describe('ValidationService', () => {
 				timeout: -100, // below min
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -153,7 +153,7 @@ describe('ValidationService', () => {
 				apiEndpoint: 'ftp://invalid-scheme.com',
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -168,7 +168,7 @@ describe('ValidationService', () => {
 				webhookUrl: 'not-a-url',
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -187,7 +187,7 @@ describe('ValidationService', () => {
 				anotherExtra: 123,
 			};
 
-			const result = service.validateConfig(configWithExtra, schema);
+			const result = service.ValidateConfig(configWithExtra, schema);
 
 			expect(result.isValid).toBe(true);
 		});
@@ -195,7 +195,7 @@ describe('ValidationService', () => {
 		it('should handle empty object validation', () => {
 			const schema = Joi.object({});
 
-			const result = service.validateConfig({}, schema);
+			const result = service.ValidateConfig({}, schema);
 
 			expect(result.isValid).toBe(true);
 		});
@@ -211,7 +211,7 @@ describe('ValidationService', () => {
 				host: undefined,
 			};
 
-			const result = service.validateConfig(config, schema);
+			const result = service.ValidateConfig(config, schema);
 
 			expect(result.isValid).toBe(true);
 		});
@@ -225,7 +225,7 @@ describe('ValidationService', () => {
 				port: 'invalid-port',
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -248,7 +248,7 @@ describe('ValidationService', () => {
 				},
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -261,7 +261,7 @@ describe('ValidationService', () => {
 				port: Joi.number().required(),
 			};
 
-			const result = service.createValidationSchema(schemaConfig);
+			const result = service.CreateValidationSchema(schemaConfig);
 
 			expect(result).toBeDefined();
 			expect(typeof result.validate).toBe('function');
@@ -272,8 +272,8 @@ describe('ValidationService', () => {
 				port: Joi.number().required(),
 			});
 
-			const validResult = service.validateConfig({ port: 3000 }, schema);
-			const invalidResult = service.validateConfig({ port: 'invalid' }, schema);
+			const validResult = service.ValidateConfig({ port: 3000 }, schema);
+			const invalidResult = service.ValidateConfig({ port: 'invalid' }, schema);
 
 			expect(validResult.isValid).toBe(true);
 			expect(invalidResult.isValid).toBe(false);
@@ -287,8 +287,8 @@ describe('ValidationService', () => {
 			const validConfig = { port: 3000 };
 			const invalidConfig = { port: 'invalid' };
 
-			const validResult = service.validateConfig(validConfig, schema);
-			const invalidResult = service.validateConfig(invalidConfig, schema);
+			const validResult = service.ValidateConfig(validConfig, schema);
+			const invalidResult = service.ValidateConfig(invalidConfig, schema);
 
 			expect(validResult.isValid).toBe(true);
 			expect(invalidResult.isValid).toBe(false);
@@ -309,7 +309,7 @@ describe('ValidationService', () => {
 				timeout: -100,
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -327,7 +327,7 @@ describe('ValidationService', () => {
 				port: 3000,
 			};
 
-			const result = service.validateConfig(incompleteConfig, schema);
+			const result = service.ValidateConfig(incompleteConfig, schema);
 
 			expect(result.isValid).toBe(false);
 			expect(result.errors).toBeDefined();
@@ -345,7 +345,7 @@ describe('ValidationService', () => {
 				allowedHosts: ['localhost', 'example.com'],
 			};
 
-			const result = service.validateConfig(validConfig, schema);
+			const result = service.ValidateConfig(validConfig, schema);
 
 			expect(result.isValid).toBe(true);
 		});
@@ -359,7 +359,7 @@ describe('ValidationService', () => {
 				allowedHosts: ['localhost', 123, 'example.com'],
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 		});
@@ -375,7 +375,7 @@ describe('ValidationService', () => {
 				secure: false,
 			};
 
-			const result = service.validateConfig(validConfig, schema);
+			const result = service.ValidateConfig(validConfig, schema);
 
 			expect(result.isValid).toBe(true);
 		});
@@ -389,7 +389,7 @@ describe('ValidationService', () => {
 				debug: 1,
 			};
 
-			const result = service.validateConfig(invalidConfig, schema);
+			const result = service.ValidateConfig(invalidConfig, schema);
 
 			expect(result.isValid).toBe(false);
 		});

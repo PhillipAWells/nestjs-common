@@ -73,8 +73,8 @@ export class HealthCheckService implements ILazyModuleRefService {
 
 	private get Logger(): AppLogger {
 		if (!this._ContextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
-			this._ContextualLogger = baseLogger.CreateContextualLogger(HealthCheckService.name);
+			const BaseLogger = this.Module.get(AppLogger);
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(HealthCheckService.name);
 		}
 		return this._ContextualLogger;
 	}
@@ -89,21 +89,21 @@ export class HealthCheckService implements ILazyModuleRefService {
 	public GetHealth(serviceName?: string, version?: string): IHealthCheck {
 		this.Logger.Debug('Health check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.OK,
 			timestamp: new Date().toISOString(),
 		};
 
 		if (serviceName) {
-			response.service = serviceName;
+			Response.service = serviceName;
 		}
 
 		if (version) {
-			response.version = version;
+			Response.version = version;
 		}
 
-		this.Logger.Debug(`Health check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Health check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 
 	/**
@@ -115,14 +115,14 @@ export class HealthCheckService implements ILazyModuleRefService {
 	public GetReadiness(checks?: Record<string, string>): IHealthCheck {
 		this.Logger.Debug('Readiness check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.READY,
 			timestamp: new Date().toISOString(),
 			checks: checks ?? {},
 		};
 
-		this.Logger.Debug(`Readiness check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Readiness check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 
 	/**
@@ -133,12 +133,12 @@ export class HealthCheckService implements ILazyModuleRefService {
 	public GetLiveness(): IHealthCheck {
 		this.Logger.Debug('Liveness check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.ALIVE,
 			timestamp: new Date().toISOString(),
 		};
 
-		this.Logger.Debug(`Liveness check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Liveness check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 }

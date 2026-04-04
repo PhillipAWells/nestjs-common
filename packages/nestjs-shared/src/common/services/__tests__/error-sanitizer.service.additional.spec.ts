@@ -36,7 +36,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				publicData: 'public',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.customSecret).toBe('***REDACTED***');
 			expect(sanitized.internalKey).toBe('***REDACTED***');
 			expect(sanitized.publicData).toBe('public');
@@ -54,7 +54,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				customField: 'additional_sensitive',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.password).toBe('***REDACTED***');
 			expect(sanitized.token).toBe('***REDACTED***');
 			expect(sanitized.customField).toBe('***REDACTED***');
@@ -71,7 +71,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				publicData: 'public',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.password).toBe('***REDACTED***');
 			expect(sanitized.publicData).toBe('public');
 		});
@@ -88,7 +88,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				CustomSecret: 'value3',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// All variations should be redacted since match is case-insensitive
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
@@ -285,7 +285,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				},
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.user.id).toBe('123');
 			expect(sanitized.publicData).toBe('ok');
 			expect(Array.isArray(sanitized.items)).toBe(true);
@@ -299,7 +299,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				'API_KEY': 'value4',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// All variations should be redacted
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
@@ -316,7 +316,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				current = current.next;
 			}
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized).toBeDefined();
 		});
 	});
@@ -421,7 +421,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				token: 'value',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
 					expect(v).toBe('***REDACTED***');
@@ -437,7 +437,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				tokenValue: 'token',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// Fields containing sensitive keywords should be redacted
 			expect(sanitized.userPassword).toBe('***REDACTED***');
 			expect(sanitized.myApiKey).toBe('***REDACTED***');
