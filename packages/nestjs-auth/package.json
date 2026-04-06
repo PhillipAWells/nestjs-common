@@ -54,7 +54,7 @@
     }
   },
   "dependencies": {
-    "@pawells/nestjs-shared": "^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.17",
