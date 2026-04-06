@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
 import { HealthController } from '../health.controller.js';
 import { PyroscopeService } from '../../service.js';
@@ -8,8 +8,8 @@ import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
 describe('HealthController', () => {
 	let controller: HealthController;
-	let mockPyroscopeService: { getHealth: ReturnType<typeof vi.fn>; isEnabled: ReturnType<typeof vi.fn> };
-	let mockMetricsService: { getMetrics: ReturnType<typeof vi.fn>; getPrometheusMetrics: ReturnType<typeof vi.fn> };
+	let mockPyroscopeService: { GetHealth: ReturnType<typeof vi.fn>; IsEnabled: ReturnType<typeof vi.fn> };
+	let mockMetricsService: { GetMetrics: ReturnType<typeof vi.fn>; GetPrometheusMetrics: ReturnType<typeof vi.fn> };
 	let mockConfig: IPyroscopeConfig;
 
 	beforeEach(() => {
@@ -21,13 +21,13 @@ describe('HealthController', () => {
 		};
 
 		mockPyroscopeService = {
-			getHealth: vi.fn(),
-			isEnabled: vi.fn().mockReturnValue(true),
+			GetHealth: vi.fn(),
+			IsEnabled: vi.fn().mockReturnValue(true),
 		} as any;
 
 		mockMetricsService = {
-			getMetrics: vi.fn(),
-			getPrometheusMetrics: vi.fn(),
+			GetMetrics: vi.fn(),
+			GetPrometheusMetrics: vi.fn(),
 		} as any;
 
 		const mockModuleRef = {
@@ -48,7 +48,7 @@ describe('HealthController', () => {
 
 	describe('getHealth', () => {
 		it('should return healthy status when profiling is initialized', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -60,14 +60,14 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 10, duration: 100 },
 				memory: { samples: 5, allocations: 1024 },
 				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('healthy');
 			expect(health.pyroscope.connected).toBe(true);
@@ -79,7 +79,7 @@ describe('HealthController', () => {
 		});
 
 		it('should return unhealthy when enabled but not initialized', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'unhealthy',
 				details: {
 					enabled: true,
@@ -87,21 +87,21 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('unhealthy');
 			expect(health.pyroscope.connected).toBe(false);
 		});
 
 		it('should return degraded when too many active profiles', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -111,21 +111,21 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 100, duration: 1000 },
 				memory: { samples: 50, allocations: 10240 },
 				requests: { total: 150, successful: 140, failed: 10, averageResponseTime: 50 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('degraded');
 			expect(health.profiling.activeProfiles).toBe(150);
 		});
 
 		it('should include timestamp and uptime', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -135,7 +135,7 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
@@ -143,7 +143,7 @@ describe('HealthController', () => {
 			});
 
 			const before = Date.now();
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 			const after = Date.now();
 
 			expect(health.timestamp).toBeGreaterThanOrEqual(before);
@@ -153,7 +153,7 @@ describe('HealthController', () => {
 		});
 
 		it('should handle missing server details gracefully', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -163,14 +163,14 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.pyroscope.serverAddress).toBe('');
 			expect(health.pyroscope.applicationName).toBe('');
@@ -179,7 +179,7 @@ describe('HealthController', () => {
 		it('should use metrics timestamp for last update', () => {
 			const metricsTimestamp = Date.now();
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -189,14 +189,14 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: metricsTimestamp,
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.pyroscope.lastUpdate).toBe(metricsTimestamp);
 		});
@@ -211,12 +211,12 @@ describe('HealthController', () => {
 				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50.5 },
 			};
 
-			mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
+			mockMetricsService.GetMetrics.mockReturnValue(mockMetrics);
 
-			const metrics = controller.getMetrics();
+			const metrics = controller.GetMetrics();
 
 			expect(metrics).toEqual(mockMetrics);
-			expect(mockMetricsService.getMetrics).toHaveBeenCalled();
+			expect(mockMetricsService.GetMetrics).toHaveBeenCalled();
 		});
 
 		it('should return empty metrics when no data collected', () => {
@@ -227,9 +227,9 @@ describe('HealthController', () => {
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			};
 
-			mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
+			mockMetricsService.GetMetrics.mockReturnValue(mockMetrics);
 
-			const metrics = controller.getMetrics();
+			const metrics = controller.GetMetrics();
 
 			expect(metrics.cpu.samples).toBe(0);
 			expect(metrics.memory.samples).toBe(0);
@@ -246,7 +246,7 @@ describe('HealthController', () => {
 				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50 },
 			};
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -258,9 +258,9 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
+			mockMetricsService.GetMetrics.mockReturnValue(mockMetrics);
 
-			const status = controller.getStatus();
+			const status = controller.GetStatus();
 
 			expect(status).toHaveProperty('health');
 			expect(status).toHaveProperty('metrics');
@@ -269,7 +269,7 @@ describe('HealthController', () => {
 		});
 
 		it('should reflect degraded health in combined status', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -279,20 +279,20 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const status = controller.getStatus();
+			const status = controller.GetStatus();
 
 			expect(status.health.status).toBe('degraded');
 		});
 
 		it('should include complete health and metrics data', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -304,14 +304,14 @@ describe('HealthController', () => {
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 25, duration: 250 },
 				memory: { samples: 12, allocations: 2048 },
 				requests: { total: 30, successful: 28, failed: 2, averageResponseTime: 75.25 },
 			});
 
-			const status = controller.getStatus();
+			const status = controller.GetStatus();
 
 			expect(status.health.pyroscope.serverAddress).toBe('http://pyroscope.example.com');
 			expect(status.health.pyroscope.applicationName).toBe('prod-app');
@@ -328,12 +328,12 @@ describe('HealthController', () => {
 # TYPE profiling_cpu_samples_total counter
 profiling_cpu_samples_total 10`;
 
-			mockMetricsService.getPrometheusMetrics.mockReturnValue(prometheusOutput);
+			mockMetricsService.GetPrometheusMetrics.mockReturnValue(prometheusOutput);
 
-			const result = controller.getPrometheusMetrics();
+			const result = controller.GetPrometheusMetrics();
 
 			expect(result).toBe(prometheusOutput);
-			expect(mockMetricsService.getPrometheusMetrics).toHaveBeenCalled();
+			expect(mockMetricsService.GetPrometheusMetrics).toHaveBeenCalled();
 		});
 
 		it('should return empty metrics in Prometheus format', () => {
@@ -341,17 +341,17 @@ profiling_cpu_samples_total 10`;
 # TYPE profiling_cpu_samples_total counter
 profiling_cpu_samples_total 0`;
 
-			mockMetricsService.getPrometheusMetrics.mockReturnValue(prometheusOutput);
+			mockMetricsService.GetPrometheusMetrics.mockReturnValue(prometheusOutput);
 
-			const result = controller.getPrometheusMetrics();
+			const result = controller.GetPrometheusMetrics();
 
 			expect(result).toContain('profiling_cpu_samples_total 0');
 		});
 
 		it('should return string format for Prometheus scraping', () => {
-			mockMetricsService.getPrometheusMetrics.mockReturnValue('metrics_output');
+			mockMetricsService.GetPrometheusMetrics.mockReturnValue('metrics_output');
 
-			const result = controller.getPrometheusMetrics();
+			const result = controller.GetPrometheusMetrics();
 
 			expect(typeof result).toBe('string');
 		});
@@ -359,7 +359,7 @@ profiling_cpu_samples_total 0`;
 
 	describe('threshold boundary conditions', () => {
 		it('should handle activeProfiles exactly at threshold', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -369,20 +369,20 @@ profiling_cpu_samples_total 0`;
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('healthy'); // At threshold, not over
 		});
 
 		it('should handle activeProfiles just over threshold', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -392,14 +392,14 @@ profiling_cpu_samples_total 0`;
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('degraded');
 		});
@@ -407,7 +407,7 @@ profiling_cpu_samples_total 0`;
 		it('should use default threshold when config value is undefined', () => {
 			mockConfig.degradedActiveProfilesThreshold = undefined;
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -417,14 +417,14 @@ profiling_cpu_samples_total 0`;
 				},
 			});
 
-			mockMetricsService.getMetrics.mockReturnValue({
+			mockMetricsService.GetMetrics.mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			});
 
-			const health = controller.getHealth();
+			const health = controller.GetHealth();
 
 			expect(health.status).toBe('healthy');
 		});

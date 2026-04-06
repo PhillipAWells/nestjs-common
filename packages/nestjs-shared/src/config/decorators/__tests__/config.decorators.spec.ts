@@ -38,7 +38,7 @@ describe('Config Decorators', () => {
 
 		it('should work with various default types', () => {
 			expect(ConfigValue('port', 3000)).toBeDefined();
-			expect(ConfigValue('debug', true)).toBeDefined();
+			expect(ConfigValue('Debug()', true)).toBeDefined();
 			expect(ConfigValue('timeout', 5000.5)).toBeDefined();
 			expect(ConfigValue('name', 'default')).toBeDefined();
 			expect(ConfigValue('items', [])).toBeDefined();
@@ -253,7 +253,7 @@ describe('Config Decorators', () => {
 		});
 
 		it('should handle boolean defaults', () => {
-			expect(ConfigValue('debug', true)).toBeDefined();
+			expect(ConfigValue('Debug()', true)).toBeDefined();
 			expect(ConfigValue('secure', false)).toBeDefined();
 		});
 
@@ -353,7 +353,7 @@ describe('Config Decorators', () => {
 
 		it('should support environment-based configuration', () => {
 			const env = EnvVar('NODE_ENV', 'development');
-			const logLevel = EnvVar('LOG_LEVEL', 'info');
+			const logLevel = EnvVar('LOG_LEVEL', 'Info()');
 			const port = EnvVar('PORT', 3000);
 			expect(env).toBeDefined();
 			expect(logLevel).toBeDefined();
@@ -515,7 +515,7 @@ describe('Config Decorators', () => {
 		});
 
 		it('should work with boolean default', () => {
-			const deco = ConfigValue('app.debug', true);
+			const deco = ConfigValue('app.Debug()', true);
 			expect(deco).toBeDefined();
 		});
 
@@ -618,7 +618,7 @@ describe('Config Decorators', () => {
 		});
 
 		it('should support logging configuration', () => {
-			const logLevel = EnvVar('LOG_LEVEL', 'info');
+			const logLevel = EnvVar('LOG_LEVEL', 'Info()');
 			const logFormat = EnvVar('LOG_FORMAT', 'json');
 			expect(logLevel).toBeDefined();
 			expect(logFormat).toBeDefined();

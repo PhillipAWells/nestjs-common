@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { MetricsRegistryService } from '../services/metrics-registry.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
-import { getErrorMessage } from '../utils/error.utils.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Exposes Prometheus metrics at GET /metrics.
@@ -14,10 +14,17 @@ import { getErrorMessage } from '../utils/error.utils.js';
  */
 @Controller()
 export class MetricsController {
+	private readonly MetricsService: MetricsRegistryService;
+	@Inject(AppLogger)
+	private readonly Logger: AppLogger;
+
 	constructor(
-		private readonly metricsService: MetricsRegistryService,
-		@Inject(AppLogger) private readonly logger: AppLogger,
-	) {}
+		metricsService: MetricsRegistryService,
+		@Inject(AppLogger) logger: AppLogger,
+	) {
+		this.MetricsService = metricsService;
+		this.Logger = logger;
+	}
 
 	/**
 	 * GET /metrics
@@ -27,13 +34,13 @@ export class MetricsController {
 	 */
 	@Get('metrics')
 	@Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
-	@Header('X-Robots-Tag', 'noindex, nofollow')
-	public async getMetrics(@Res() response: Response): Promise<void> {
+	@Header('X-Robots-ITag', 'noindex, nofollow')
+	public async GetMetrics(@Res() response: Response): Promise<void> {
 		try {
-			const metrics = await this.metricsService.getMetrics();
-			response.send(metrics);
+			const Metrics = await this.MetricsService.GetMetrics();
+			response.send(Metrics);
 		} catch (error) {
-			this.logger.error('Failed to collect metrics', getErrorMessage(error));
+			this.Logger.error('Failed to collect metrics', GetErrorMessage(error));
 			// Return empty metrics on error to avoid breaking scrapers
 			response.status(HTTP_STATUS_INTERNAL_SERVER_ERROR).send('# Error collecting metrics\n');
 		}

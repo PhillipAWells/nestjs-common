@@ -2,7 +2,7 @@ import { SetMetadata } from '@nestjs/common';
 import { NATS_SUBSCRIBE_METADATA } from '../nats.constants.js';
 
 /** Options carried by the @Subscribe decorator. */
-export interface NatsSubscribeOptions {
+export interface INatsSubscribeOptions {
 	/** The NATS subject to subscribe to. Supports wildcards (* and >). */
 	subject: string;
 	/** Optional queue group name for load-balanced message delivery. */
@@ -22,7 +22,7 @@ export interface NatsSubscribeOptions {
  * export class OrderHandler {
  *   @Subscribe('orders.created')
  *   async onOrderCreated(msg: Msg): Promise<void> {
- *     const order = msg.json<Order>();
+ *     const order = msg.json<IOrder>();
  *     // handle order...
  *   }
  *
@@ -32,7 +32,7 @@ export interface NatsSubscribeOptions {
  * ```
  */
 export const Subscribe = (subject: string, queue?: string): MethodDecorator =>
-	SetMetadata<typeof NATS_SUBSCRIBE_METADATA, NatsSubscribeOptions>(
+	SetMetadata<typeof NATS_SUBSCRIBE_METADATA, INatsSubscribeOptions>(
 		NATS_SUBSCRIBE_METADATA,
 		{ subject, queue },
 	);

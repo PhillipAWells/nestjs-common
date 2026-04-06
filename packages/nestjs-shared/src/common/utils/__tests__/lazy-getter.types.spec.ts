@@ -4,13 +4,13 @@ import {
 	CreateMemoizedLazyGetter,
 	CreateOptionalLazyGetter,
 	IsLazyModuleRefService,
-	type LazyGetter,
-	type OptionalLazyGetter,
-	type TokenLazyGetter,
-	type LazyModuleRefService,
+	type TLazyGetter,
+	type TOptionalLazyGetter,
+	type TTokenLazyGetter,
+	type ILazyModuleRefService,
 } from '../lazy-getter.types.js';
 
-describe('LazyGetter Utilities', () => {
+describe('TLazyGetter Utilities', () => {
 	let mockModuleRef: ModuleRef;
 
 	beforeEach(() => {
@@ -27,7 +27,7 @@ describe('LazyGetter Utilities', () => {
 	describe('CreateMemoizedLazyGetter', () => {
 		it('should cache the result on first call', () => {
 			const callCount = { count: 0 };
-			const getter: LazyGetter<{ count: number }> = () => {
+			const getter: TLazyGetter<{ count: number }> = () => {
 				callCount.count++;
 				return { value: 'test' } as any;
 			};
@@ -47,7 +47,7 @@ describe('LazyGetter Utilities', () => {
 		});
 
 		it('should handle null/undefined cached values correctly', () => {
-			const getter: LazyGetter<undefined> = () => undefined;
+			const getter: TLazyGetter<undefined> = () => undefined;
 			const memoizedGetter = CreateMemoizedLazyGetter(getter);
 
 			const result1 = memoizedGetter();
@@ -126,8 +126,8 @@ describe('LazyGetter Utilities', () => {
 
 			// The function checks if Module is instanceof ModuleRef
 			// Since our mock is not a real ModuleRef, this should return falsy
-			const result = IsLazyModuleRefService(validService);
-			expect(typeof result === 'boolean' || result === undefined).toBe(true);
+			const Result = IsLazyModuleRefService(validService);
+			expect(typeof Result === 'boolean' || Result === undefined).toBe(true);
 		});
 
 		it('should return falsy for null', () => {
@@ -155,30 +155,30 @@ describe('LazyGetter Utilities', () => {
 	});
 
 	describe('Type Definitions', () => {
-		it('should support LazyGetter type', () => {
-			const getter: LazyGetter<string> = () => 'value';
-			const result = getter();
-			expect(typeof result).toBe('string');
+		it('should support TLazyGetter type', () => {
+			const getter: TLazyGetter<string> = () => 'value';
+			const Result = getter();
+			expect(typeof Result).toBe('string');
 		});
 
-		it('should support OptionalLazyGetter type', () => {
-			const getter: OptionalLazyGetter<string> = () => 'value';
-			const result = getter();
-			expect(typeof result === 'string' || result === undefined).toBe(true);
+		it('should support TOptionalLazyGetter type', () => {
+			const getter: TOptionalLazyGetter<string> = () => 'value';
+			const Result = getter();
+			expect(typeof Result === 'string' || Result === undefined).toBe(true);
 		});
 
-		it('should support TokenLazyGetter type', () => {
+		it('should support TTokenLazyGetter type', () => {
 			const mockModule = {
 				get: (token: string) => ({ token }),
 			} as any;
 
-			const getter: TokenLazyGetter<any> = (token: string) => mockModule.get(token);
-			const result = getter('test-token');
-			expect(result).toEqual({ token: 'test-token' });
+			const getter: TTokenLazyGetter<any> = (token: string) => mockModule.get(token);
+			const Result = getter('test-token');
+			expect(Result).toEqual({ token: 'test-token' });
 		});
 
-		it('should support LazyModuleRefService interface', () => {
-			const service: LazyModuleRefService = {
+		it('should support ILazyModuleRefService interface', () => {
+			const service: ILazyModuleRefService = {
 				Module: mockModuleRef,
 			};
 
@@ -201,7 +201,7 @@ describe('LazyGetter Utilities', () => {
 				},
 			} as any;
 
-			class LazyService implements LazyModuleRefService {
+			class LazyService implements ILazyModuleRefService {
 				constructor(public readonly Module: ModuleRef) {}
 
 				private _service?: { method: () => string };
@@ -227,11 +227,11 @@ describe('LazyGetter Utilities', () => {
 			class LazyService {
 				private optionalService?: { name: string };
 
-				constructor(private readonly moduleRef: ModuleRef) {}
+				constructor(private readonly ModuleRef: ModuleRef) {}
 
 				get OptionalFeature() {
 					this.optionalService ??= CreateOptionalLazyGetter(
-						this.moduleRef,
+						this.ModuleRef,
 						'OptionalFeature',
 						{ strict: false },
 					);

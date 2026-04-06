@@ -3,12 +3,31 @@
  * Provides access to the Qdrant client for vector search operations
  */
 
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { AppLogger, BadRequestError, InternalServerError } from '@pawells/nestjs-shared/common';
+import { AppLogger } from '@pawells/nestjs-shared/common';
 import { MAX_COLLECTION_NAME_LENGTH, QDRANT_CLIENT_TOKEN } from './qdrant.constants.js';
 import { QdrantCollectionService } from './qdrant-collection.service.js';
+
+/**
+ * HTTP status code for internal server error.
+ * @internal
+ */
+const INTERNAL_SERVER_ERROR_STATUS = 500;
+
+/**
+ * Custom error class for internal server errors.
+ * @internal
+ */
+class InternalServerError extends Error {
+	public readonly StatusCode = INTERNAL_SERVER_ERROR_STATUS;
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'InternalServerError';
+	}
+}
 
 /**
  * Injectable service that wraps the Qdrant client.
@@ -35,22 +54,23 @@ import { QdrantCollectionService } from './qdrant-collection.service.js';
  */
 @Injectable()
 export class QdrantService implements OnModuleDestroy {
-	private readonly moduleRef: ModuleRef;
+	private readonly ModuleRef: ModuleRef;
 
-	private readonly logger = new AppLogger(undefined, QdrantService.name);
+	private readonly Logger: AppLogger;
 
 	constructor(moduleRef: ModuleRef) {
-		this.moduleRef = moduleRef;
-		this.logger.debug('Qdrant service initialized');
+		this.ModuleRef = moduleRef;
+		this.Logger = new AppLogger(undefined, QdrantService.name);
+		this.Logger.debug('Qdrant service initialized');
 	}
 
-	private get client(): QdrantClient {
-		const clientInstance = this.moduleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
-		if (!clientInstance) {
-			this.logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
+	private get Client(): QdrantClient {
+		const ClientInstance = this.ModuleRef.get<QdrantClient>(QDRANT_CLIENT_TOKEN, { strict: false });
+		if (!ClientInstance) {
+			this.Logger.error('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 			throw new InternalServerError('Qdrant client is not initialized. Ensure QdrantModule is properly configured.');
 		}
-		return clientInstance;
+		return ClientInstance;
 	}
 
 	/**
@@ -68,8 +88,8 @@ export class QdrantService implements OnModuleDestroy {
 	 * });
 	 * ```
 	 */
-	public getClient(): QdrantClient {
-		return this.client;
+	public GetClient(): QdrantClient {
+		return this.Client;
 	}
 
 	/**
@@ -94,17 +114,17 @@ export class QdrantService implements OnModuleDestroy {
 	 * });
 	 * ```
 	 */
-	public collection(collectionName: string): QdrantCollectionService {
-		const isValidCollectionName =
+	public Collection(collectionName: string): QdrantCollectionService {
+		const IsValidCollectionName =
 			collectionName &&
-			collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
-			/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
+		collectionName.length <= MAX_COLLECTION_NAME_LENGTH &&
+		/^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$/.test(collectionName);
 
-		if (!isValidCollectionName) {
-			throw new BadRequestError(`Invalid collection name: "${collectionName}"`);
+		if (!IsValidCollectionName) {
+			throw new BadRequestException(`Invalid collection name: "${collectionName}"`);
 		}
 
-		return new QdrantCollectionService(this.client, collectionName);
+		return new QdrantCollectionService(this.Client, collectionName);
 	}
 
 	/**

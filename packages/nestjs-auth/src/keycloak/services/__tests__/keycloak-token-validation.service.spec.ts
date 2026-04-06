@@ -4,15 +4,15 @@ import { JwtService } from '@nestjs/jwt';
 import { KeycloakTokenValidationService } from '../keycloak-token-validation.service.js';
 import { KEYCLOAK_MODULE_OPTIONS } from '../../keycloak.constants.js';
 import { JwksCacheService } from '../jwks-cache.service.js';
-import type { KeycloakModuleOptions, KeycloakTokenClaims } from '../../keycloak.types.js';
+import type { IKeycloakModuleOptions, IKeycloakTokenClaims } from '../../keycloak.types.js';
 
 describe('KeycloakTokenValidationService', () => {
 	let service: KeycloakTokenValidationService;
 	let mockJwtService: Partial<JwtService>;
 	let mockJwksCacheService: Partial<JwksCacheService>;
-	let options: KeycloakModuleOptions;
+	let options: IKeycloakModuleOptions;
 
-	const createTestClaims = (): KeycloakTokenClaims => ({
+	const createTestClaims = (): IKeycloakTokenClaims => ({
 		sub: 'user-123',
 		email: 'user@example.com',
 		preferred_username: 'john_doe',
@@ -36,7 +36,7 @@ describe('KeycloakTokenValidationService', () => {
 		};
 
 		mockJwksCacheService = {
-			getKey: vi.fn(),
+			GetKey: vi.fn(),
 		};
 
 		options = {
@@ -89,7 +89,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
-			const result = await service.validateToken('valid.token.here');
+			const result = await service.ValidateToken('valid.token.here');
 
 			expect(result.valid).toBe(true);
 			expect(result.error).toBeUndefined();
@@ -105,7 +105,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
-			const result = await service.validateToken('invalid.token');
+			const result = await service.ValidateToken('invalid.token');
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('token_inactive');
@@ -122,7 +122,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
-			const result = await service.validateToken('token.with.wrong.audience');
+			const result = await service.ValidateToken('token.with.wrong.audience');
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('invalid_audience');
@@ -136,7 +136,7 @@ describe('KeycloakTokenValidationService', () => {
 
 			global.fetch = vi.fn().mockResolvedValue(mockResponse);
 
-			const result = await service.validateToken('token');
+			const result = await service.ValidateToken('token');
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('introspection_failed');
@@ -147,7 +147,7 @@ describe('KeycloakTokenValidationService', () => {
 		let offlineService: KeycloakTokenValidationService;
 
 		beforeEach(() => {
-			const offlineOptions: KeycloakModuleOptions = {
+			const offlineOptions: IKeycloakModuleOptions = {
 				authServerUrl: 'http://keycloak:8080',
 				realm: 'myrealm',
 				clientId: 'my-client',
@@ -172,11 +172,11 @@ describe('KeycloakTokenValidationService', () => {
 				payload: claims,
 			});
 
-			(mockJwksCacheService.getKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
+			(mockJwksCacheService.GetKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
 
 			(mockJwtService.verify as Mock).mockReturnValue(claims);
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(true);
 			expect(result.claims).toEqual(claims);
@@ -193,11 +193,11 @@ describe('KeycloakTokenValidationService', () => {
 				payload: expiredClaims,
 			});
 
-			(mockJwksCacheService.getKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
+			(mockJwksCacheService.GetKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
 
 			(mockJwtService.verify as Mock).mockReturnValue(expiredClaims);
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('token_expired');
@@ -214,11 +214,11 @@ describe('KeycloakTokenValidationService', () => {
 				payload: badClaims,
 			});
 
-			(mockJwksCacheService.getKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
+			(mockJwksCacheService.GetKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
 
 			(mockJwtService.verify as Mock).mockReturnValue(badClaims);
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('invalid_issuer');
@@ -235,11 +235,11 @@ describe('KeycloakTokenValidationService', () => {
 				payload: badClaims,
 			});
 
-			(mockJwksCacheService.getKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
+			(mockJwksCacheService.GetKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
 
 			(mockJwtService.verify as Mock).mockReturnValue(badClaims);
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('invalid_audience');
@@ -253,13 +253,13 @@ describe('KeycloakTokenValidationService', () => {
 				payload: createTestClaims(),
 			});
 
-			(mockJwksCacheService.getKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
+			(mockJwksCacheService.GetKey as Mock).mockResolvedValue('-----BEGIN PUBLIC KEY-----...');
 
 			(mockJwtService.verify as Mock).mockImplementation(() => {
 				throw new Error('Invalid signature');
 			});
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('jwt_verification_failed');
@@ -273,7 +273,7 @@ describe('KeycloakTokenValidationService', () => {
 				payload: createTestClaims(),
 			});
 
-			const result = await offlineService.validateToken(token);
+			const result = await offlineService.ValidateToken(token);
 
 			expect(result.valid).toBe(false);
 			expect(result.error).toBe('missing_kid');
@@ -284,7 +284,7 @@ describe('KeycloakTokenValidationService', () => {
 		it('should extract user from token claims', () => {
 			const claims = createTestClaims();
 
-			const user = service.extractUser(claims);
+			const user = service.ExtractUser(claims);
 
 			expect(user.id).toBe('user-123');
 			expect(user.email).toBe('user@example.com');
@@ -298,7 +298,7 @@ describe('KeycloakTokenValidationService', () => {
 			const claims = createTestClaims();
 			claims.realm_access = undefined;
 
-			const user = service.extractUser(claims);
+			const user = service.ExtractUser(claims);
 
 			expect(user.realmRoles).toEqual([]);
 		});
@@ -307,7 +307,7 @@ describe('KeycloakTokenValidationService', () => {
 			const claims = createTestClaims();
 			claims.resource_access = undefined;
 
-			const user = service.extractUser(claims);
+			const user = service.ExtractUser(claims);
 
 			expect(user.clientRoles).toEqual([]);
 		});

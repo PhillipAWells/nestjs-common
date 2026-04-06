@@ -793,7 +793,6 @@ export class PaymentService {
 ## Related Packages
 
 - **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - Keycloak integration: token validation, guards, decorators, Admin API client
-- **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** - GraphQL with caching and subscriptions
 - **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - OpenTelemetry tracing
 - **[@pawells/nestjs-prometheus](https://www.npmjs.com/package/@pawells/nestjs-prometheus)** - Prometheus metrics exporter
 

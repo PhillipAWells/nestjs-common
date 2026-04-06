@@ -24,33 +24,33 @@ describe('CSRFService', () => {
 	});
 
 	it('should have generateToken method', () => {
-		expect(service.generateToken).toBeDefined();
-		expect(typeof service.generateToken).toBe('function');
+		expect(service.GenerateToken).toBeDefined();
+		expect(typeof service.GenerateToken).toBe('function');
 	});
 
 	it('should have validateToken method', () => {
-		expect(service.validateToken).toBeDefined();
-		expect(typeof service.validateToken).toBe('function');
+		expect(service.ValidateToken).toBeDefined();
+		expect(typeof service.ValidateToken).toBe('function');
 	});
 
 	it('should have getMiddleware method', () => {
-		expect(service.getMiddleware).toBeDefined();
-		expect(typeof service.getMiddleware).toBe('function');
+		expect(service.GetMiddleware).toBeDefined();
+		expect(typeof service.GetMiddleware).toBe('function');
 	});
 
 	describe('Middleware Integration', () => {
 		it('should return middleware function from getMiddleware', () => {
-			const middleware = service.getMiddleware();
+			const Middleware = service.GetMiddleware();
 
-			expect(middleware).toBeDefined();
-			expect(typeof middleware).toBe('function');
+			expect(Middleware).toBeDefined();
+			expect(typeof Middleware).toBe('function');
 		});
 
 		it('should return callable middleware', () => {
-			const middleware = service.getMiddleware();
+			const Middleware = service.GetMiddleware();
 
 			// Middleware should be a function
-			expect(middleware.constructor.name === 'Function' || middleware.constructor.name === 'AsyncFunction').toBe(true);
+			expect(Middleware.constructor.name === 'Function' || Middleware.constructor.name === 'AsyncFunction').toBe(true);
 		});
 	});
 
@@ -71,7 +71,7 @@ describe('CSRFService', () => {
 			prodService.onModuleInit(); // Initialize CSRF protection
 
 			expect(prodService).toBeDefined();
-			expect(prodService.getMiddleware).toBeDefined();
+			expect(prodService.GetMiddleware).toBeDefined();
 
 			// Restore env
 			process.env['NODE_ENV'] = originalEnv;
@@ -91,7 +91,7 @@ describe('CSRFService', () => {
 			process.env['CSRF_SECRET'] = originalSecret;
 		});
 
-		it('should throw error when CSRF_SECRET is missing', () => {
+		it('should throw Error() when CSRF_SECRET is missing', () => {
 			const originalSecret = process.env['CSRF_SECRET'];
 			delete process.env['CSRF_SECRET'];
 
@@ -109,21 +109,21 @@ describe('CSRFService', () => {
 
 	describe('Service Methods', () => {
 		it('should have all required public methods', () => {
-			expect(service.generateToken).toBeDefined();
-			expect(service.validateToken).toBeDefined();
-			expect(service.getMiddleware).toBeDefined();
+			expect(service.GenerateToken).toBeDefined();
+			expect(service.ValidateToken).toBeDefined();
+			expect(service.GetMiddleware).toBeDefined();
 		});
 
 		it('should have generateToken as function', () => {
-			expect(typeof service.generateToken).toBe('function');
+			expect(typeof service.GenerateToken).toBe('function');
 		});
 
 		it('should have validateToken as function', () => {
-			expect(typeof service.validateToken).toBe('function');
+			expect(typeof service.ValidateToken).toBe('function');
 		});
 
 		it('should have getMiddleware as function', () => {
-			expect(typeof service.getMiddleware).toBe('function');
+			expect(typeof service.GetMiddleware).toBe('function');
 		});
 	});
 
@@ -167,7 +167,7 @@ describe('CSRFService', () => {
 	});
 
 	describe('CSRF_SECRET Entropy Validation', () => {
-		it('should throw error when secret is too short', () => {
+		it('should throw Error() when secret is too short', () => {
 			const originalSecret = process.env['CSRF_SECRET'];
 			process.env['CSRF_SECRET'] = 'short'; // Less than 32 characters
 
@@ -353,12 +353,12 @@ describe('CSRFService', () => {
 	});
 
 	describe('Token Generation and Validation', () => {
-		it('should throw error when generateToken called before onModuleInit', async () => {
+		it('should throw Error() when generateToken called before onModuleInit', async () => {
 			const unInitializedService = new CSRFService();
 			const mockReq = { ip: '127.0.0.1' } as unknown as Request;
 			const mockRes = {} as unknown as Response;
 
-			await expect(unInitializedService.generateToken(mockReq, mockRes))
+			await expect(unInitializedService.GenerateToken(mockReq, mockRes))
 				.rejects.toThrow('CSRFService not initialized');
 		});
 
@@ -367,45 +367,45 @@ describe('CSRFService', () => {
 			const mockReq = {} as unknown as Request;
 
 			expect(() => {
-				unInitializedService.validateToken(mockReq);
+				unInitializedService.ValidateToken(mockReq);
 			}).toThrow('CSRFService not initialized');
 		});
 
 		it('should return false when validateToken fails for invalid token', () => {
 			const mockReq = { headers: {}, session: { id: 'test' } } as unknown as Request;
 
-			const result = service.validateToken(mockReq);
+			const Result = service.ValidateToken(mockReq);
 
-			expect(result).toBe(false);
+			expect(Result).toBe(false);
 		});
 
 		it('should return false for token validation with undefined request', () => {
 			const mockReq = undefined as any;
 
-			const result = service.validateToken(mockReq);
+			const Result = service.ValidateToken(mockReq);
 
-			expect(result).toBe(false);
+			expect(Result).toBe(false);
 		});
 	});
 
 	describe('Token Refresh', () => {
-		it('should throw error when refreshToken called before onModuleInit', () => {
+		it('should throw Error() when refreshToken called before onModuleInit', () => {
 			const unInitializedService = new CSRFService();
 			const mockReq = { ip: '127.0.0.1' } as unknown as Request;
 			const mockRes = {} as unknown as Response;
 
 			expect(() => {
-				unInitializedService.refreshToken(mockReq, mockRes);
+				unInitializedService.RefreshToken(mockReq, mockRes);
 			}).toThrow('CSRFService not initialized');
 		});
 	});
 
 	describe('Middleware Access', () => {
-		it('should throw error when getMiddleware called before onModuleInit', () => {
+		it('should throw Error() when getMiddleware called before onModuleInit', () => {
 			const unInitializedService = new CSRFService();
 
 			expect(() => {
-				unInitializedService.getMiddleware();
+				unInitializedService.GetMiddleware();
 			}).toThrow('CSRFService not initialized');
 		});
 	});
@@ -473,7 +473,7 @@ describe('CSRFService', () => {
 	});
 
 	describe('Session identifier edge cases', () => {
-		it('should log warning when no session and no IP available', () => {
+		it('should log Warn()ing when no session and no IP available', () => {
 			// We need to test this through rate limiting which captures the identifier
 			// Create a service with modified timestamp tracking to test fallback identifier
 			const unInitService = new CSRFService();
@@ -518,8 +518,8 @@ describe('CSRFService', () => {
 
 	describe('Rate limiting edge cases', () => {
 		it('should have generateToken method available', () => {
-			expect(service.generateToken).toBeDefined();
-			expect(typeof service.generateToken).toBe('function');
+			expect(service.GenerateToken).toBeDefined();
+			expect(typeof service.GenerateToken).toBe('function');
 		});
 	});
 
@@ -527,26 +527,26 @@ describe('CSRFService', () => {
 		it('should track capacity threshold crossings with counter', () => {
 			// Verify the service has capacity tracking in place
 			const internalService = service as any;
-			expect(internalService.capacityThresholdCrossedCount).toBeDefined();
-			expect(typeof internalService.capacityThresholdCrossedCount).toBe('number');
+			expect(internalService.CapacityThresholdCrossedCount).toBeDefined();
+			expect(typeof internalService.CapacityThresholdCrossedCount).toBe('number');
 		});
 
 		it('should have necessary data structures for rate limiting', () => {
-			// Verify tokenGenTimestamps and ipLocks are initialized
+			// Verify TokenGenTimestamps and IpLocks are initialized
 			const internalService = service as any;
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 	});
 
 	describe('Trust proxy configuration validation', () => {
-		it('should initialize trust proxy configuration without error', () => {
+		it('should initialize trust proxy configuration without Error()', () => {
 			// Create a service with trustProxy=true
 			const trustedService = new CSRFService(undefined, { trustProxy: true });
 
 			// Initialize the service (which runs validateTrustProxyConfiguration)
 			process.env['CSRF_SECRET'] = 'KxP9mQ2wL4nR7vF8jB0cH3sT5dY6uG1d';
-			// Should not throw - validates and logs warnings
+			// Should not throw - validates and logs Warn()ings
 			expect(() => trustedService.onModuleInit()).not.toThrow();
 
 			process.env['CSRF_SECRET'] = 'KxP9mQ2wL4nR7vF8jB0cH3sT5dY6uG1a';
@@ -572,8 +572,8 @@ describe('CSRFService', () => {
 			const internalService = service as any;
 
 			// Verify rate limit tracking is initialized
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 
 		it('should track timestamps for rate limiting', async () => {
@@ -592,12 +592,12 @@ describe('CSRFService', () => {
 
 			// Generate 5 tokens
 			for (let i = 0; i < 5; i++) {
-				const result = await service.generateToken(mockReq, mockRes);
-				expect(result).toBeDefined();
+				const Result = await service.GenerateToken(mockReq, mockRes);
+				expect(Result).toBeDefined();
 			}
 
 			// Verify timestamps were recorded
-			const timestamps = internalService.tokenGenTimestamps.get('192.168.1.222');
+			const timestamps = internalService.TokenGenTimestamps.get('192.168.1.222');
 			expect(timestamps).toBeDefined();
 			expect(timestamps.length).toBe(5);
 		});
@@ -607,10 +607,10 @@ describe('CSRFService', () => {
 
 			// Clear any existing rate limit data for this IP
 			const testIp = '192.168.1.333';
-			internalService.tokenGenTimestamps.delete(testIp);
+			internalService.TokenGenTimestamps.delete(testIp);
 
 			// Verify starting state
-			expect(internalService.tokenGenTimestamps.has(testIp)).toBe(false);
+			expect(internalService.TokenGenTimestamps.has(testIp)).toBe(false);
 		});
 	});
 
@@ -619,44 +619,44 @@ describe('CSRFService', () => {
 			const internalService = service as any;
 
 			// Verify capacity tracking exists
-			expect(internalService.capacityThresholdCrossedCount).toBeDefined();
-			expect(typeof internalService.capacityThresholdCrossedCount).toBe('number');
+			expect(internalService.CapacityThresholdCrossedCount).toBeDefined();
+			expect(typeof internalService.CapacityThresholdCrossedCount).toBe('number');
 		});
 
-		it('should maintain tokenGenTimestamps map', () => {
+		it('should maintain TokenGenTimestamps map', () => {
 			const internalService = service as any;
 
 			// Verify the tracking map is initialized
-			expect(internalService.tokenGenTimestamps instanceof Map).toBe(true);
-			expect(internalService.ipLocks instanceof Map).toBe(true);
+			expect(internalService.TokenGenTimestamps instanceof Map).toBe(true);
+			expect(internalService.IpLocks instanceof Map).toBe(true);
 		});
 
 		it('should handle capacity thresholds correctly', () => {
 			const internalService = service as any;
 
 			// Add some test entries
-			internalService.tokenGenTimestamps.set('test-capacity-ip', [Date.now()]);
+			internalService.TokenGenTimestamps.set('test-capacity-ip', [Date.now()]);
 
 			// Verify they exist
-			expect(internalService.tokenGenTimestamps.has('test-capacity-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('test-capacity-ip')).toBe(true);
 
 			// Clean up
-			internalService.tokenGenTimestamps.delete('test-capacity-ip');
+			internalService.TokenGenTimestamps.delete('test-capacity-ip');
 		});
 	});
 
 	describe('Trust Proxy Configuration', () => {
-		it('should warn when trustProxy=false but X-Forwarded-For present', () => {
+		it('should Warn() when trustProxy=false but X-Forwarded-For present', () => {
 			const service2 = new CSRFService(undefined, { trustProxy: false });
 			process.env['CSRF_SECRET'] = 'KxP9mQ2wL4nR7vF8jB0cH3sT5dY6uG1b';
-			// Should not throw - just log warnings
+			// Should not throw - just log Warn()ings
 			expect(() => service2.onModuleInit()).not.toThrow();
 		});
 
-		it('should warn when trustProxy=true but X-Forwarded-For not present', () => {
+		it('should Warn() when trustProxy=true but X-Forwarded-For not present', () => {
 			const service2 = new CSRFService(undefined, { trustProxy: true });
 			process.env['CSRF_SECRET'] = 'KxP9mQ2wL4nR7vF8jB0cH3sT5dY6uG1c';
-			// Should not throw - just log warnings
+			// Should not throw - just log Warn()ings
 			expect(() => service2.onModuleInit()).not.toThrow();
 		});
 	});
@@ -667,36 +667,36 @@ describe('CSRFService', () => {
 
 			// Manually add old timestamps
 			const oldTime = Date.now() - 61_000;
-			internalService.tokenGenTimestamps.set('prune-test-ip', [oldTime]);
+			internalService.TokenGenTimestamps.set('prune-test-ip', [oldTime]);
 
 			// Verify it exists
-			expect(internalService.tokenGenTimestamps.has('prune-test-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(true);
 
 			// Call prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Old entry should be deleted
-			expect(internalService.tokenGenTimestamps.has('prune-test-ip')).toBe(false);
+			expect(internalService.TokenGenTimestamps.has('prune-test-ip')).toBe(false);
 		});
 
-		it('should clean up ipLocks when pruning', () => {
+		it('should clean up IpLocks when pruning', () => {
 			const internalService = service as any;
 
 			// Manually add a lock and old timestamp
 			const oldTime = Date.now() - 61_000;
-			internalService.tokenGenTimestamps.set('lock-prune-ip', [oldTime]);
-			internalService.ipLocks.set('lock-prune-ip', Promise.resolve());
+			internalService.TokenGenTimestamps.set('lock-prune-ip', [oldTime]);
+			internalService.IpLocks.set('lock-prune-ip', Promise.resolve());
 
 			// Verify both exist
-			expect(internalService.tokenGenTimestamps.has('lock-prune-ip')).toBe(true);
-			expect(internalService.ipLocks.has('lock-prune-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('lock-prune-ip')).toBe(true);
+			expect(internalService.IpLocks.has('lock-prune-ip')).toBe(true);
 
 			// Prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Both should be deleted
-			expect(internalService.tokenGenTimestamps.has('lock-prune-ip')).toBe(false);
-			expect(internalService.ipLocks.has('lock-prune-ip')).toBe(false);
+			expect(internalService.TokenGenTimestamps.has('lock-prune-ip')).toBe(false);
+			expect(internalService.IpLocks.has('lock-prune-ip')).toBe(false);
 		});
 
 		it('should preserve recent timestamps', () => {
@@ -704,16 +704,16 @@ describe('CSRFService', () => {
 
 			// Add recent timestamp
 			const recentTime = Date.now() - 30_000; // 30 seconds ago
-			internalService.tokenGenTimestamps.set('recent-ip', [recentTime]);
+			internalService.TokenGenTimestamps.set('recent-ip', [recentTime]);
 
 			// Call prune
-			internalService.pruneTokenTimestamps();
+			internalService.PruneTokenTimestamps();
 
 			// Recent entry should still exist
-			expect(internalService.tokenGenTimestamps.has('recent-ip')).toBe(true);
+			expect(internalService.TokenGenTimestamps.has('recent-ip')).toBe(true);
 
 			// Clean up
-			internalService.tokenGenTimestamps.delete('recent-ip');
+			internalService.TokenGenTimestamps.delete('recent-ip');
 		});
 	});
 });

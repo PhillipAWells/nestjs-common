@@ -12,7 +12,7 @@ const JITTER_FACTOR = 0.2;
 /**
  * Retry configuration options
  */
-export interface RetryConfig {
+export interface IRetryConfig {
 	/**
 	 * Maximum number of retry attempts
 	 * @default 3
@@ -52,7 +52,7 @@ export interface RetryConfig {
 /**
  * Default retry configuration
  */
-const DEFAULT_RETRY_CONFIG: Required<Omit<RetryConfig, 'logger'>> = {
+const DEFAULT_RETRY_CONFIG: Required<Omit<IRetryConfig, 'logger'>> = {
 	maxRetries: 3,
 	initialDelay: 1000,
 	maxDelay: 30000,
@@ -63,7 +63,7 @@ const DEFAULT_RETRY_CONFIG: Required<Omit<RetryConfig, 'logger'>> = {
 /**
  * Determine if an error is retryable
  */
-function isRetryableError(error: unknown, retryableStatuses: number[]): boolean {
+function IsRetryableError(error: unknown, retryableStatuses: number[]): boolean {
 	if (error instanceof TimeoutError || error instanceof RateLimitError || error instanceof NetworkError) {
 		return true;
 	}
@@ -79,26 +79,26 @@ function isRetryableError(error: unknown, retryableStatuses: number[]): boolean 
 /**
  * Calculate delay with exponential backoff and jitter
  */
-function calculateDelay(
+function CalculateDelay(
 	attempt: number,
 	initialDelay: number,
 	maxDelay: number,
 	backoffMultiplier: number,
 ): number {
-	const exponentialDelay = initialDelay * Math.pow(backoffMultiplier, attempt);
-	const delayWithCap = Math.min(exponentialDelay, maxDelay);
+	const ExponentialDelay = initialDelay * Math.pow(backoffMultiplier, attempt);
+	const DelayWithCap = Math.min(ExponentialDelay, maxDelay);
 
 	// Add jitter (±20%)
-	const jitter = delayWithCap * JITTER_FACTOR * (Math.random() * 2 - 1);
-	return Math.floor(delayWithCap + jitter);
+	const Jitter = DelayWithCap * JITTER_FACTOR * (Math.random() * 2 - 1);
+	return Math.floor(DelayWithCap + Jitter);
 }
 
 /**
  * Execute a function with retry logic
  */
-export async function withRetry<T>(
+export async function WithRetry<T>(
 	fn: () => Promise<T>,
-	config: RetryConfig = {},
+	config: IRetryConfig = {},
 ): Promise<T> {
 	const {
 		maxRetries,
@@ -108,37 +108,37 @@ export async function withRetry<T>(
 		retryableStatuses,
 	} = { ...DEFAULT_RETRY_CONFIG, ...config };
 
-	let lastError: Error | undefined;
+	let LastError: Error | undefined;
 
-	for (let attempt = 0; attempt <= maxRetries; attempt++) {
+	for (let Attempt = 0; Attempt <= maxRetries; Attempt++) {
 		try {
 			return await fn();
 		} catch (error) {
-			lastError = error instanceof Error ? error : new Error(String(error));
+			LastError = error instanceof Error ? error : new Error(String(error));
 
 			// Don't retry on last attempt
-			if (attempt === maxRetries) {
+			if (Attempt === maxRetries) {
 				break;
 			}
 
 			// Check if error is retryable
-			if (!isRetryableError(error, retryableStatuses)) {
+			if (!IsRetryableError(error, retryableStatuses)) {
 				throw error;
 			}
 
 			// Calculate delay and wait
-			const delay = calculateDelay(attempt, initialDelay, maxDelay, backoffMultiplier);
+			const Delay = CalculateDelay(Attempt, initialDelay, maxDelay, backoffMultiplier);
 
 			if (config.logger) {
 				config.logger.warn(
-					`Retrying after ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
-					{ error: lastError.message },
+					`Retrying after ${Delay}ms (attempt ${Attempt + 1}/${maxRetries})`,
+					{ error: LastError.message },
 				);
 			}
 
-			await new Promise(resolve => setTimeout(resolve, delay));
+			await new Promise(resolve => setTimeout(resolve, Delay));
 		}
 	}
 
-	throw lastError ?? new Error('Max retries exceeded');
+	throw LastError ?? new Error('Max retries exceeded');
 }

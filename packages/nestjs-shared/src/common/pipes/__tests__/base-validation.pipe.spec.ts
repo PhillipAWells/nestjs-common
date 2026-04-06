@@ -16,11 +16,15 @@ vi.mock('class-transformer', () => ({
 
 // Concrete implementation for testing
 class TestValidationPipe extends BaseValidationPipe {
-	public formatValidationErrors(errors: ValidationError[]): any {
+	public FormatValidationErrors(errors: ValidationError[]): any {
 		return errors.map(error => ({
 			field: error.property,
 			message: Object.values(error.constraints ?? {}).join(', '),
 		}));
+	}
+
+	public formatValidationErrors(errors: ValidationError[]): any {
+		return this.FormatValidationErrors(errors);
 	}
 }
 
@@ -46,9 +50,9 @@ describe('BaseValidationPipe', () => {
 			metadata = {
 				type: 'body',
 				metatype: class TestDto {
-					public name: string = '';
+					public Name: string = '';
 
-					public email: string = '';
+					public Email: string = '';
 				},
 				data: '',
 			};
@@ -109,29 +113,29 @@ describe('BaseValidationPipe', () => {
 
 	describe('shouldValidate', () => {
 		it('should return false for primitive types', () => {
-			expect((pipe as any).shouldValidate(String)).toBe(false);
-			expect((pipe as any).shouldValidate(Boolean)).toBe(false);
-			expect((pipe as any).shouldValidate(Number)).toBe(false);
-			expect((pipe as any).shouldValidate(Array)).toBe(false);
-			expect((pipe as any).shouldValidate(Object)).toBe(false);
+			expect((pipe as any).ShouldValidate(String)).toBe(false);
+			expect((pipe as any).ShouldValidate(Boolean)).toBe(false);
+			expect((pipe as any).ShouldValidate(Number)).toBe(false);
+			expect((pipe as any).ShouldValidate(Array)).toBe(false);
+			expect((pipe as any).ShouldValidate(Object)).toBe(false);
 		});
 
 		it('should return true for custom classes', () => {
 			class CustomClass {}
-			expect((pipe as any).shouldValidate(CustomClass)).toBe(true);
+			expect((pipe as any).ShouldValidate(CustomClass)).toBe(true);
 		});
 	});
 
 	describe('getValidationOptions', () => {
 		it('should return empty object by default', () => {
-			const options = (pipe as any).getValidationOptions();
+			const options = (pipe as any).GetValidationOptions();
 			expect(options).toEqual({});
 		});
 	});
 
 	describe('getTransformOptions', () => {
 		it('should return empty object by default', () => {
-			const options = (pipe as any).getTransformOptions();
+			const options = (pipe as any).GetTransformOptions();
 			expect(options).toEqual({});
 		});
 	});
@@ -139,7 +143,7 @@ describe('BaseValidationPipe', () => {
 	describe('handleValidationErrors', () => {
 		it('should not throw by default', () => {
 			const errors: ValidationError[] = [];
-			expect(() => (pipe as any).handleValidationErrors(errors)).not.toThrow();
+			expect(() => (pipe as any).HandleValidationErrors(errors)).not.toThrow();
 		});
 	});
 
@@ -155,7 +159,7 @@ describe('BaseValidationPipe', () => {
 				} as ValidationError,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				{

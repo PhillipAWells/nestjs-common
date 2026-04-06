@@ -125,17 +125,26 @@ describe('HttpClientService', () => {
 
 		contextualLogger = {
 			debug: vi.fn(),
+			Debug: vi.fn(),
 			info: vi.fn(),
+			Info: vi.fn(),
 			error: vi.fn(),
+			Error: vi.fn(),
 			warn: vi.fn(),
+			Warn: vi.fn(),
 		};
 
 		mockLogger = {
 			createContextualLogger: vi.fn(() => contextualLogger),
+			CreateContextualLogger: vi.fn(() => contextualLogger),
 			debug: vi.fn(),
+			Debug: vi.fn(),
 			info: vi.fn(),
+			Info: vi.fn(),
 			error: vi.fn(),
+			Error: vi.fn(),
 			warn: vi.fn(),
+			Warn: vi.fn(),
 		};
 
 		mockModuleRef = {
@@ -155,34 +164,34 @@ describe('HttpClientService', () => {
 		});
 
 		it('should have request method', () => {
-			expect(typeof service.request).toBe('function');
+			expect(typeof service.Request).toBe('function');
 		});
 
 		it('should have get shortcut method', () => {
-			expect(typeof service.get).toBe('function');
+			expect(typeof service.Get).toBe('function');
 		});
 
 		it('should have post shortcut method', () => {
-			expect(typeof service.post).toBe('function');
+			expect(typeof service.Post).toBe('function');
 		});
 
 		it('should have put shortcut method', () => {
-			expect(typeof service.put).toBe('function');
+			expect(typeof service.Put).toBe('function');
 		});
 
 		it('should have delete shortcut method', () => {
-			expect(typeof service.delete).toBe('function');
+			expect(typeof service.Delete).toBe('function');
 		});
 	});
 
 	describe('Logger lazy initialization', () => {
 		it('should lazily initialize logger on first access', () => {
-			expect(mockLogger.createContextualLogger).not.toHaveBeenCalled();
+			expect(mockLogger.CreateContextualLogger).not.toHaveBeenCalled();
 
 			const logger = service.Logger;
 
 			expect(logger).toBeDefined();
-			expect(mockLogger.createContextualLogger).toHaveBeenCalledWith('HttpClientService');
+			expect(mockLogger.CreateContextualLogger).toHaveBeenCalledWith('HttpClientService');
 		});
 
 		it('should cache logger after first access', () => {
@@ -190,7 +199,7 @@ describe('HttpClientService', () => {
 			const logger2 = service.Logger;
 
 			expect(logger1).toBe(logger2);
-			expect(mockLogger.createContextualLogger).toHaveBeenCalledTimes(1);
+			expect(mockLogger.CreateContextualLogger).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -203,7 +212,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -224,7 +233,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(https.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'https://api.example.com/test',
 			});
@@ -250,7 +259,7 @@ describe('HttpClientService', () => {
 				'X-Custom-Header': 'custom-value',
 			};
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				headers: customHeaders,
@@ -266,7 +275,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -285,7 +294,7 @@ describe('HttpClientService', () => {
 
 			const requestBody = { name: 'test', value: 42 };
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'POST',
 				url: 'http://api.example.com/users',
 				data: requestBody,
@@ -305,7 +314,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'POST',
 				url: 'http://api.example.com/test',
 				data: 'raw string data',
@@ -321,7 +330,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'POST',
 				url: 'http://api.example.com/test',
 			});
@@ -337,7 +346,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'PUT',
 				url: 'http://api.example.com/item/1',
 				data: { name: 'updated' },
@@ -353,7 +362,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'DELETE',
 				url: 'http://api.example.com/item/1',
 			});
@@ -368,7 +377,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'PATCH',
 				url: 'http://api.example.com/item/1',
 				data: { status: 'active' },
@@ -387,7 +396,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -403,7 +412,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -419,7 +428,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -435,7 +444,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -449,7 +458,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -482,7 +491,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -507,7 +516,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/large',
 			});
@@ -530,7 +539,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -547,7 +556,7 @@ describe('HttpClientService', () => {
 
 				vi.mocked(http.request).mockImplementation(handler);
 
-				const result = await service.request({
+				const result = await service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
@@ -567,7 +576,7 @@ describe('HttpClientService', () => {
 
 				vi.mocked(http.request).mockImplementation(handler);
 
-				const result = await service.request({
+				const result = await service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
@@ -587,7 +596,7 @@ describe('HttpClientService', () => {
 
 				vi.mocked(http.request).mockImplementation(handler);
 
-				const result = await service.request({
+				const result = await service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
@@ -612,7 +621,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -631,7 +640,7 @@ describe('HttpClientService', () => {
 			vi.mocked(http.request).mockImplementation(handler);
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				}),
@@ -656,7 +665,7 @@ describe('HttpClientService', () => {
 			});
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				}),
@@ -671,7 +680,7 @@ describe('HttpClientService', () => {
 			vi.mocked(http.request).mockImplementation(handler);
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 					timeout: 5000,
@@ -691,7 +700,7 @@ describe('HttpClientService', () => {
 			vi.mocked(http.request).mockImplementation(handler);
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				}),
@@ -721,7 +730,7 @@ describe('HttpClientService', () => {
 			});
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/large',
 				}),
@@ -751,7 +760,7 @@ describe('HttpClientService', () => {
 			});
 
 			await expect(
-				service.request({
+				service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/large',
 				}),
@@ -773,7 +782,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/large',
 			});
@@ -792,7 +801,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -812,7 +821,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				timeout: customTimeout,
@@ -826,7 +835,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -846,7 +855,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'https://api.example.com/test',
 				rejectUnauthorized: false,
@@ -864,7 +873,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'https://api.example.com/test',
 			});
@@ -882,7 +891,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'https://api.example.com/test',
 				ca: caCert,
@@ -900,7 +909,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				rejectUnauthorized: false,
@@ -919,13 +928,13 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				correlationId,
 			});
 
-			expect(contextualLogger.debug).toHaveBeenCalledWith(
+			expect(contextualLogger.Debug).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.stringContaining(correlationId),
 			);
@@ -936,12 +945,12 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
 
-			expect(contextualLogger.debug).toHaveBeenCalledWith(
+			expect(contextualLogger.Debug).toHaveBeenCalledWith(
 				expect.any(String),
 				expect.stringContaining('unknown'),
 			);
@@ -957,7 +966,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			const result = await service.get('http://api.example.com/data');
+			const result = await service.Get('http://api.example.com/data');
 
 			expect(result.data).toEqual({ data: 'test' });
 		});
@@ -970,7 +979,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			const result = await service.post('http://api.example.com/items', { name: 'test' });
+			const result = await service.Post('http://api.example.com/items', { name: 'test' });
 
 			expect(result.status).toBe(201);
 		});
@@ -983,7 +992,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			const result = await service.put('http://api.example.com/items/1', { name: 'updated' });
+			const result = await service.Put('http://api.example.com/items/1', { name: 'updated' });
 
 			expect(result.data).toEqual({ updated: true });
 		});
@@ -996,7 +1005,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			const result = await service.delete('http://api.example.com/items/1');
+			const result = await service.Delete('http://api.example.com/items/1');
 
 			expect(result.data).toEqual({ deleted: true });
 		});
@@ -1012,7 +1021,7 @@ describe('HttpClientService', () => {
 
 			const customHeaders = { 'X-Custom': 'value' };
 
-			await service.get('http://api.example.com/test', { headers: customHeaders });
+			await service.Get('http://api.example.com/test', { headers: customHeaders });
 
 			expect(capturedHeaders).toEqual(expect.objectContaining(customHeaders));
 		});
@@ -1028,7 +1037,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com:8080/path/to/resource?query=value',
 			});
@@ -1047,7 +1056,7 @@ describe('HttpClientService', () => {
 				return handler(options, callback);
 			});
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'https://secure.example.com:443/api/v1/users',
 			});
@@ -1063,13 +1072,13 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				headers: { Authorization: 'Bearer token' },
 			});
 
-			expect(contextualLogger.debug).toHaveBeenCalledWith(
+			expect(contextualLogger.Debug).toHaveBeenCalledWith(
 				'Making HTTP request',
 				expect.any(String),
 			);
@@ -1080,7 +1089,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -1100,7 +1109,7 @@ describe('HttpClientService', () => {
 			vi.mocked(http.request).mockImplementation(handler);
 
 			try {
-				await service.request({
+				await service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
@@ -1122,7 +1131,7 @@ describe('HttpClientService', () => {
 			vi.mocked(http.request).mockImplementation(handler);
 
 			try {
-				await service.request({
+				await service.Request({
 					method: 'GET',
 					url: 'http://api.example.com/test',
 				});
@@ -1141,7 +1150,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				headers: {
@@ -1153,7 +1162,7 @@ describe('HttpClientService', () => {
 			});
 
 			// eslint-disable-next-line prefer-destructuring
-			const [, debugMessage] = contextualLogger.debug.mock.calls[0];
+			const [, debugMessage] = contextualLogger.Debug.mock.calls[0];
 			const loggedHeaders = JSON.parse(debugMessage).headers;
 			expect(loggedHeaders.Authorization).toBe('[REDACTED]');
 			expect(loggedHeaders['X-API-Key']).toBe('[REDACTED]');
@@ -1179,7 +1188,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -1203,7 +1212,7 @@ describe('HttpClientService', () => {
 				return mockReq;
 			});
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 			});
@@ -1216,7 +1225,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			const result = await service.request({
+			const result = await service.Request({
 				method: 'POST',
 				url: 'http://api.example.com/test',
 			});
@@ -1231,7 +1240,7 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				headers: {
@@ -1242,7 +1251,7 @@ describe('HttpClientService', () => {
 			});
 
 			// eslint-disable-next-line prefer-destructuring
-			const [, debugMessage] = contextualLogger.debug.mock.calls[0];
+			const [, debugMessage] = contextualLogger.Debug.mock.calls[0];
 			const loggedHeaders = JSON.parse(debugMessage).headers;
 			expect(loggedHeaders.authorization).toBe('[REDACTED]');
 			expect(loggedHeaders['X-API-KEY']).toBe('[REDACTED]');
@@ -1254,22 +1263,22 @@ describe('HttpClientService', () => {
 
 			vi.mocked(http.request).mockImplementation(handler);
 
-			await service.request({
+			await service.Request({
 				method: 'GET',
 				url: 'http://api.example.com/test',
 				headers: {
 					'Content-Type': 'application/json',
 					Accept: 'application/json',
-					'User-Agent': 'MyAgent/1.0',
+					'IUser-Agent': 'MyAgent/1.0',
 				},
 			});
 
 			// eslint-disable-next-line prefer-destructuring
-			const [, debugMessage] = contextualLogger.debug.mock.calls[0];
+			const [, debugMessage] = contextualLogger.Debug.mock.calls[0];
 			const loggedHeaders = JSON.parse(debugMessage).headers;
 			expect(loggedHeaders['Content-Type']).toBe('application/json');
 			expect(loggedHeaders.Accept).toBe('application/json');
-			expect(loggedHeaders['User-Agent']).toBe('MyAgent/1.0');
+			expect(loggedHeaders['IUser-Agent']).toBe('MyAgent/1.0');
 		});
 	});
 });

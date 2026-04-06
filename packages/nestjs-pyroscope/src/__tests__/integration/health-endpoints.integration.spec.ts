@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -5,8 +6,8 @@ import { PyroscopeModule } from '../../module.js';
 import { PyroscopeService } from '../../service.js';
 import { MetricsService } from '../../services/metrics.service.js';
 import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
-import type { HealthResponse } from '../../controllers/health.controller.js';
-import type { MetricsResponse } from '../../services/metrics.service.js';
+import type { IHealthResponse } from '../../controllers/health.controller.js';
+import type { IMetricsResponse } from '../../services/metrics.service.js';
 
 /**
  * Integration tests for health and metrics endpoints
@@ -37,7 +38,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/health', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -52,7 +53,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health: HealthResponse = response.body;
+			const health: IHealthResponse = response.body;
 
 			expect(health).toHaveProperty('status');
 			expect(['healthy', 'unhealthy', 'degraded']).toContain(health.status);
@@ -67,7 +68,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health: HealthResponse = response.body;
+			const health: IHealthResponse = response.body;
 
 			expect(health.pyroscope).toHaveProperty('connected');
 			expect(health.pyroscope).toHaveProperty('serverAddress');
@@ -84,7 +85,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health: HealthResponse = response.body;
+			const health: IHealthResponse = response.body;
 
 			expect(health.profiling).toHaveProperty('enabled');
 			expect(health.profiling).toHaveProperty('activeProfiles');
@@ -100,7 +101,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health: HealthResponse = response.body;
+			const health: IHealthResponse = response.body;
 
 			expect(health.uptime).toBeGreaterThanOrEqual(0);
 			expect(typeof health.timestamp).toBe('number');
@@ -111,7 +112,7 @@ describe('Health Endpoints (Integration)', () => {
 			const disabledConfig = { ...mockConfig, enabled: false };
 
 			const disabledModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: disabledConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: disabledConfig })],
 			}).compile();
 
 			const disabledApp = disabledModule.createNestApplication();
@@ -121,7 +122,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health: HealthResponse = response.body;
+			const health: IHealthResponse = response.body;
 
 			expect(health.profiling.enabled).toBe(false);
 
@@ -138,8 +139,8 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/health')
 				.expect(200);
 
-			const health1: HealthResponse = response1.body;
-			const health2: HealthResponse = response2.body;
+			const health1: IHealthResponse = response1.body;
+			const health2: IHealthResponse = response2.body;
 
 			expect(Object.keys(health1).sort()).toEqual(Object.keys(health2).sort());
 		});
@@ -148,7 +149,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/metrics', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -163,7 +164,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/metrics')
 				.expect(200);
 
-			const metrics: MetricsResponse = response.body;
+			const metrics: IMetricsResponse = response.body;
 
 			expect(metrics).toHaveProperty('timestamp');
 			expect(metrics).toHaveProperty('cpu');
@@ -176,7 +177,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/metrics')
 				.expect(200);
 
-			const metrics: MetricsResponse = response.body;
+			const metrics: IMetricsResponse = response.body;
 
 			expect(metrics.cpu).toHaveProperty('samples');
 			expect(metrics.cpu).toHaveProperty('duration');
@@ -190,7 +191,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/metrics')
 				.expect(200);
 
-			const metrics: MetricsResponse = response.body;
+			const metrics: IMetricsResponse = response.body;
 
 			expect(metrics.memory).toHaveProperty('samples');
 			expect(metrics.memory).toHaveProperty('allocations');
@@ -205,7 +206,7 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/metrics')
 				.expect(200);
 
-			const metrics: MetricsResponse = response.body;
+			const metrics: IMetricsResponse = response.body;
 
 			expect(metrics.timestamp).toBeGreaterThan(0);
 			expect(metrics.cpu.samples).toBeGreaterThanOrEqual(0);
@@ -224,8 +225,8 @@ describe('Health Endpoints (Integration)', () => {
 				.get('/profiling/metrics')
 				.expect(200);
 
-			const metrics1: MetricsResponse = response1.body;
-			const metrics2: MetricsResponse = response2.body;
+			const metrics1: IMetricsResponse = response1.body;
+			const metrics2: IMetricsResponse = response2.body;
 
 			expect(Object.keys(metrics1).sort()).toEqual(Object.keys(metrics2).sort());
 		});
@@ -234,7 +235,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/status', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -286,7 +287,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('GET /profiling/metrics/prometheus', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -352,7 +353,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('Endpoint consistency and timing', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -414,7 +415,7 @@ describe('Health Endpoints (Integration)', () => {
 	describe('Endpoint error handling and edge cases', () => {
 		beforeEach(async () => {
 			module = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			app = module.createNestApplication();
@@ -455,7 +456,7 @@ describe('Health Endpoints (Integration)', () => {
 			const configNoHealth = { ...mockConfig, enableHealthChecks: false };
 
 			const noHealthModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configNoHealth })],
+				imports: [PyroscopeModule.ForRoot({ config: configNoHealth })],
 			}).compile();
 
 			const noHealthApp = noHealthModule.createNestApplication();

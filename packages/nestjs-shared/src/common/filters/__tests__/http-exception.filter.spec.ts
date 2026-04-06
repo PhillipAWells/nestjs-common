@@ -15,15 +15,28 @@ describe('HttpExceptionFilter', () => {
 	beforeEach(() => {
 		mockLogger = {
 			debug() {},
+			Debug() {},
 			error() {},
+			Error() {},
 		};
 		mockErrorSanitizer = {
 			sanitizeErrorResponse() {
 				return { message: 'Sanitized error' };
 			},
+			SanitizeErrorResponse() {
+				return { message: 'Sanitized error' };
+			},
 		};
 		mockErrorCategorizer = {
 			categorizeError() {
+				return {
+					type: 'CLIENT_ERROR',
+					retryable: false,
+					strategy: 'NONE',
+					backoffMs: 0,
+				};
+			},
+			CategorizeError() {
 				return {
 					type: 'CLIENT_ERROR',
 					retryable: false,
@@ -146,7 +159,7 @@ describe('HttpExceptionFilter', () => {
 			mockException.getResponse = function() {
 				return complexResponse;
 			};
-			mockErrorSanitizer.sanitizeErrorResponse = function() {
+			mockErrorSanitizer.SanitizeErrorResponse = function() {
 				return {
 					message: 'Validation failed',
 					errors: ['Field is required'],

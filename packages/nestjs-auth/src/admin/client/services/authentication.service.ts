@@ -1,6 +1,6 @@
 import type {
-	AuthenticationFlowRepresentation,
-	AuthenticationExecutionInfoRepresentation,
+	IAuthenticationFlowRepresentation,
+	IAuthenticationExecutionInfoRepresentation,
 } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
@@ -31,97 +31,97 @@ export class AuthenticationService extends BaseService {
 	/**
 	 * Get all authentication flows
 	 */
-	public async getFlows(realm: string): Promise<AuthenticationFlowRepresentation[]> {
-		this.requireScope('authentication:read');
+	public async GetFlows(realm: string): Promise<IAuthenticationFlowRepresentation[]> {
+		this.RequireScope('authentication:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getFlows({ realm }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.getFlows({ realm }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get a specific authentication flow
 	 */
-	public async getFlow(realm: string, flowId: string): Promise<AuthenticationFlowRepresentation> {
-		this.requireScope('authentication:read');
+	public async GetFlow(realm: string, flowId: string): Promise<IAuthenticationFlowRepresentation> {
+		this.RequireScope('authentication:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getFlow({ realm, flowId }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.getFlow({ realm, flowId }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create an authentication flow
 	 */
-	public async createFlow(
+	public async CreateFlow(
 		realm: string,
-		flow: AuthenticationFlowRepresentation,
+		flow: IAuthenticationFlowRepresentation,
 	): Promise<void> {
-		this.requireScope('authentication:write');
+		this.RequireScope('authentication:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.createFlow({ ...flow, realm }),
+			await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.createFlow({ ...flow, realm }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete an authentication flow
 	 */
-	public async deleteFlow(realm: string, flowId: string): Promise<void> {
-		this.requireScope('authentication:write');
+	public async DeleteFlow(realm: string, flowId: string): Promise<void> {
+		this.RequireScope('authentication:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.deleteFlow({ realm, flowId }),
+			await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.deleteFlow({ realm, flowId }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get executions for a flow
 	 */
-	public async getExecutions(
+	public async GetExecutions(
 		realm: string,
 		flowAlias: string,
-	): Promise<AuthenticationExecutionInfoRepresentation[]> {
-		this.requireScope('authentication:read');
+	): Promise<IAuthenticationExecutionInfoRepresentation[]> {
+		this.RequireScope('authentication:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.authenticationManagement.getExecutions({ realm, flow: flowAlias }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.getExecutions({ realm, flow: flowAlias }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Add an execution to a flow
 	 */
-	public async createExecution(
+	public async CreateExecution(
 		realm: string,
 		flowAlias: string,
 		execution: { provider: string },
 	): Promise<void> {
-		this.requireScope('authentication:write');
+		this.RequireScope('authentication:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.authenticationManagement.addExecution(
+			await this.WithRetry(() =>
+				this.AdminClient.authenticationManagement.addExecution(
 					{ realm, flow: flowAlias },
 					execution as any,
 				),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

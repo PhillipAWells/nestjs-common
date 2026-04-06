@@ -1,4 +1,4 @@
-import type { RoleRepresentation } from '../types/index.js';
+import type { IRoleRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -21,78 +21,78 @@ export class RoleService extends BaseService {
 	/**
 	 * List all realm roles
 	 */
-	public async listRealm(realm: string): Promise<RoleRepresentation[]> {
-		this.requireScope('roles:read');
+	public async ListRealm(realm: string): Promise<IRoleRepresentation[]> {
+		this.RequireScope('roles:read');
 		try {
-			return (await this.withRetry(() => this.adminClient.roles.find({ realm }))) as any;
+			return (await this.WithRetry(() => this.AdminClient.roles.find({ realm }))) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * List client roles
 	 */
-	public async listClient(realm: string, clientId: string): Promise<RoleRepresentation[]> {
-		this.requireScope('roles:read');
+	public async ListClient(realm: string, clientId: string): Promise<IRoleRepresentation[]> {
+		this.RequireScope('roles:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.clients.listRoles({ realm, id: clientId }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.clients.listRoles({ realm, id: clientId }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get a realm role by name
 	 */
-	public async getByName(realm: string, name: string): Promise<RoleRepresentation> {
-		this.requireScope('roles:read');
+	public async GetByName(realm: string, name: string): Promise<IRoleRepresentation> {
+		this.RequireScope('roles:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.roles.findOneByName({ realm, name }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.roles.findOneByName({ realm, name }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a realm role
 	 */
-	public async create(realm: string, role: RoleRepresentation): Promise<void> {
-		this.requireScope('roles:write');
+	public async Create(realm: string, role: IRoleRepresentation): Promise<void> {
+		this.RequireScope('roles:write');
 		try {
-			await this.withRetry(() => this.adminClient.roles.create({ ...role, realm }));
+			await this.WithRetry(() => this.AdminClient.roles.create({ ...role, realm }));
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Update a realm role
 	 */
-	public async update(realm: string, name: string, role: RoleRepresentation): Promise<void> {
-		this.requireScope('roles:write');
+	public async Update(realm: string, name: string, role: IRoleRepresentation): Promise<void> {
+		this.RequireScope('roles:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.roles.updateByName({ realm, name }, role),
+			await this.WithRetry(() =>
+				this.AdminClient.roles.updateByName({ realm, name }, role),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete a realm role
 	 */
-	public async delete(realm: string, name: string): Promise<void> {
-		this.requireScope('roles:write');
+	public async Delete(realm: string, name: string): Promise<void> {
+		this.RequireScope('roles:write');
 		try {
-			await this.withRetry(() => this.adminClient.roles.delByName({ realm, name }));
+			await this.WithRetry(() => this.AdminClient.roles.delByName({ realm, name }));
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

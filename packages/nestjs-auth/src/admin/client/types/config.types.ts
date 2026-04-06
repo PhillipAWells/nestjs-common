@@ -1,10 +1,10 @@
-import type { RetryConfig } from '../utils/index.js';
+import type { IRetryConfig } from '../utils/index.js';
 import type { Logger } from '@pawells/logger';
 
 /**
  * Keycloak client configuration
  */
-export interface KeycloakClientConfig {
+export interface IKeycloakClientConfig {
 	/**
 	 * Base URL of the Keycloak server
 	 * @example 'http://localhost:8080'
@@ -20,7 +20,7 @@ export interface KeycloakClientConfig {
 	/**
 	 * Authentication credentials
 	 */
-	credentials: KeycloakCredentials;
+	credentials: TKeycloakCredentials;
 
 	/**
 	 * Request timeout in milliseconds
@@ -31,7 +31,7 @@ export interface KeycloakClientConfig {
 	/**
 	 * Retry configuration
 	 */
-	retry?: RetryConfig;
+	retry?: IRetryConfig;
 
 	/**
 	 * Logger instance for client logging
@@ -42,7 +42,7 @@ export interface KeycloakClientConfig {
 /**
  * Keycloak authentication credentials (username/password or client credentials)
  */
-export type KeycloakCredentials =
+export type TKeycloakCredentials =
 	| {
 		username: string;
 		password: string;
@@ -55,8 +55,8 @@ export type KeycloakCredentials =
 /**
  * Check if credentials are username/password
  */
-export function isPasswordCredentials(
-	credentials: KeycloakCredentials,
+export function IsPasswordCredentials(
+	credentials: TKeycloakCredentials,
 ): credentials is { username: string; password: string } {
 	return 'username' in credentials && 'password' in credentials;
 }
@@ -64,8 +64,8 @@ export function isPasswordCredentials(
 /**
  * Check if credentials are client credentials
  */
-export function isClientCredentials(
-	credentials: KeycloakCredentials,
+export function IsClientCredentials(
+	credentials: TKeycloakCredentials,
 ): credentials is { clientId: string; clientSecret: string } {
 	return 'clientId' in credentials && 'clientSecret' in credentials;
 }

@@ -5,63 +5,63 @@ import { AppLogger } from '../services/logger.service.js';
 
 @Injectable()
 export class HttpClientInterceptor implements NestInterceptor {
-	private readonly contextualLogger: AppLogger;
+	private readonly ContextualLogger: AppLogger;
 
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	constructor(logger: AppLogger) {
-		this.logger = logger;
-		this.contextualLogger = this.logger.createContextualLogger(HttpClientInterceptor.name);
+		this.Logger = logger;
+		this.ContextualLogger = this.Logger.CreateContextualLogger(HttpClientInterceptor.name);
 	}
 
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-		const request = context.switchToHttp().getRequest();
-		const startTime = Date.now();
+		const Request = context.switchToHttp().getRequest();
+		const StartTime = Date.now();
 
 		// Log outgoing request
-		this.contextualLogger.debug('HTTP request', JSON.stringify({
-			method: request.method,
-			url: request.url,
-			headers: this.sanitizeHeaders(request.headers),
-			correlationId: request.correlationId ?? 'unknown',
+		this.ContextualLogger.Debug('HTTP request', JSON.stringify({
+			method: Request.method,
+			url: Request.url,
+			headers: this.SanitizeHeaders(Request.headers),
+			correlationId: Request.correlationId ?? 'unknown',
 		}));
 
 		return next.handle().pipe(
 			tap((response) => {
-				const duration = Date.now() - startTime;
-				this.contextualLogger.info('HTTP response', JSON.stringify({
-					method: request.method,
-					url: request.url,
+				const Duration = Date.now() - StartTime;
+				this.ContextualLogger.info('HTTP response', JSON.stringify({
+					method: Request.method,
+					url: Request.url,
 					statusCode: response.statusCode ?? response.status,
-					durationMs: duration,
-					correlationId: request.correlationId ?? 'unknown',
+					durationMs: Duration,
+					correlationId: Request.correlationId ?? 'unknown',
 				}));
 			}),
 			catchError((error) => {
-				const duration = Date.now() - startTime;
-				this.contextualLogger.error('HTTP request failed', JSON.stringify({
-					method: request.method,
-					url: request.url,
+				const Duration = Date.now() - StartTime;
+				this.ContextualLogger.error('HTTP request failed', JSON.stringify({
+					method: Request.method,
+					url: Request.url,
 					statusCode: error.status ?? error.response?.status,
 					error: error.message,
-					durationMs: duration,
-					correlationId: request.correlationId ?? 'unknown',
+					durationMs: Duration,
+					correlationId: Request.correlationId ?? 'unknown',
 				}));
 				throw error;
 			}),
 		);
 	}
 
-	private sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
-		const sanitized = { ...headers };
-		const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie', 'set-cookie'];
+	private SanitizeHeaders(headers: Record<string, string>): Record<string, string> {
+		const Sanitized = { ...headers };
+		const SensitiveHeaders = ['authorization', 'x-api-key', 'cookie', 'set-cookie'];
 
-		for (const header of sensitiveHeaders) {
-			if (sanitized[header]) {
-				sanitized[header] = '[REDACTED]';
+		for (const Header of SensitiveHeaders) {
+			if (Sanitized[Header]) {
+				Sanitized[Header] = '[REDACTED]';
 			}
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 }

@@ -1,4 +1,4 @@
-export interface KeycloakModuleOptions {
+export interface IKeycloakModuleOptions {
 	/** Keycloak realm base URL — e.g. 'https://auth.example.com/realms/myrealm' */
 	authServerUrl: string;
 	/** Realm name */
@@ -22,7 +22,7 @@ export interface KeycloakModuleOptions {
 	issuer?: string;
 }
 
-export interface KeycloakTokenClaims {
+export interface IKeycloakTokenClaims {
 	sub: string;
 	iss: string;
 	aud: string | string[];
@@ -43,7 +43,7 @@ export interface KeycloakTokenClaims {
 	[key: string]: unknown;
 }
 
-export interface KeycloakUser {
+export interface IKeycloakUser {
 	/** The user's unique ID (sub claim) */
 	id: string;
 	email?: string;
@@ -57,8 +57,8 @@ export interface KeycloakUser {
 }
 
 /**
- * Create a mock KeycloakUser with sensible test defaults.
- * Override any field by passing a Partial<KeycloakUser>.
+ * Create a mock IKeycloakUser with sensible test defaults.
+ * Override any field by passing a Partial<IKeycloakUser>.
  *
  * This is a pure data factory with no side effects — safe to use in any test context.
  *
@@ -68,12 +68,12 @@ export interface KeycloakUser {
  * const guestUser = createMockKeycloakUser({ id: 'guest-id', clientRoles: [] });
  * ```
  */
-export function createMockKeycloakUser(overrides: Partial<KeycloakUser> = {}): KeycloakUser {
+export function CreateMockKeycloakUser(overrides: Partial<IKeycloakUser> = {}): IKeycloakUser {
 	return {
 		id: 'test-user-id',
 		email: 'test@example.com',
 		username: 'test-user',
-		name: 'Test User',
+		name: 'Test IUser',
 		realmRoles: [],
 		clientRoles: [],
 		...overrides,

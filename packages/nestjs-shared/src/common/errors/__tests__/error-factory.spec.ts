@@ -1,9 +1,10 @@
-import { createError, ERROR_CONFIGS, type ErrorType } from '../error-factory.js';
+import { describe, it, expect } from 'vitest';
+import { CreateError, ERROR_CONFIGS, type TErrorType } from '../error-factory.js';
 
-describe('createError', () => {
+describe('CreateError', () => {
 	describe('factory function', () => {
 		it('should create error class with correct properties', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -12,13 +13,13 @@ describe('createError', () => {
 			const error = new TestError('Test error occurred');
 
 			expect(error.message).toBe('Test error occurred');
-			expect(error.code).toBe('TEST_ERROR');
-			expect(error.statusCode).toBe(400);
-			expect(error.context).toEqual({});
+			expect(error.Code).toBe('TEST_ERROR');
+			expect(error.StatusCode).toBe(400);
+			expect(error.Context).toEqual({});
 		});
 
 		it('should create error class with custom message', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -27,11 +28,11 @@ describe('createError', () => {
 			const error = new TestError('Custom message');
 
 			expect(error.message).toBe('Custom message');
-			expect(error.code).toBe('TEST_ERROR');
+			expect(error.Code).toBe('TEST_ERROR');
 		});
 
 		it('should create error class with context', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -40,11 +41,11 @@ describe('createError', () => {
 			const context: Record<string, any> = { userId: '123' };
 			const error = new TestError('Custom message', context);
 
-			expect(error.context).toEqual(context);
+			expect(error.Context).toEqual(context);
 		});
 
 		it('should set correct class name', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -54,7 +55,7 @@ describe('createError', () => {
 		});
 
 		it('should use custom name if provided', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -65,7 +66,7 @@ describe('createError', () => {
 		});
 
 		it('should inherit from BaseApplicationError', () => {
-			const TestError = createError({
+			const TestError = CreateError({
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				defaultMessage: 'Test error occurred',
@@ -74,9 +75,9 @@ describe('createError', () => {
 			const error = new TestError('Test error occurred');
 
 			expect(error).toBeInstanceOf(TestError);
-			expect(error.toJSON).toBeDefined();
-			expect(error.withContext).toBeDefined();
-			expect(error.withMessage).toBeDefined();
+			expect(error.ToJSON).toBeDefined();
+			expect(error.WithContext).toBeDefined();
+			expect(error.WithMessage).toBeDefined();
 		});
 	});
 
@@ -120,9 +121,9 @@ describe('createError', () => {
 		});
 	});
 
-	describe('ErrorType', () => {
+	describe('TErrorType', () => {
 		it('should include all error configuration keys', () => {
-			const errorTypes: ErrorType[] = [
+			const errorTypes: TErrorType[] = [
 				'BAD_REQUEST',
 				'UNAUTHORIZED',
 				'FORBIDDEN',
@@ -146,16 +147,16 @@ describe('createError', () => {
 			const { BadRequestError, NotFoundError, InternalServerError } = await import('../index.js');
 
 			const badRequest = new BadRequestError('Bad request');
-			expect(badRequest.code).toBe('BAD_REQUEST');
-			expect(badRequest.statusCode).toBe(400);
+			expect(badRequest.Code).toBe('BAD_REQUEST');
+			expect(badRequest.StatusCode).toBe(400);
 
 			const notFound = new NotFoundError('Not found');
-			expect(notFound.code).toBe('NOT_FOUND');
-			expect(notFound.statusCode).toBe(404);
+			expect(notFound.Code).toBe('NOT_FOUND');
+			expect(notFound.StatusCode).toBe(404);
 
 			const internalError = new InternalServerError('Internal server error');
-			expect(internalError.code).toBe('INTERNAL_SERVER_ERROR');
-			expect(internalError.statusCode).toBe(500);
+			expect(internalError.Code).toBe('INTERNAL_SERVER_ERROR');
+			expect(internalError.StatusCode).toBe(500);
 		});
 	});
 });

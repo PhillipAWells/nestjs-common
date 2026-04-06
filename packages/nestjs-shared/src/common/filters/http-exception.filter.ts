@@ -9,7 +9,7 @@ import { Response } from 'express';
 import { AppLogger } from '../services/logger.service.js';
 import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
 import { ErrorCategorizerService } from '../services/error-categorizer.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Development environments where stack traces and full error details are shown
@@ -38,11 +38,11 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  * throw new BadRequestException('Invalid input'); // 400
  * throw new UnauthorizedException('Invalid token'); // 401
  * throw new ForbiddenException('Access denied'); // 403
- * throw new NotFoundException('User not found'); // 404
+ * throw new NotFoundException('IUser not found'); // 404
  * ```
  */
 @Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefService {
+export class HttpExceptionFilter implements ExceptionFilter, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -63,37 +63,37 @@ export class HttpExceptionFilter implements ExceptionFilter, LazyModuleRefServic
 
 	public catch(exception: HttpException, host: ArgumentsHost): void {
 		// Handle regular HTTP requests
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const status = exception.getStatus();
+		const Ctx = host.switchToHttp();
+		const Response = Ctx.getResponse<Response>();
+		const Status = exception.getStatus();
 
-		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
-		const isDevelopment = !isProduction;
+		const IsProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
+		const IsDevelopment = !IsProduction;
 
 		// Normalize response to object for sanitization
-		const exceptionResponse = exception.getResponse();
-		const errorObj = typeof exceptionResponse === 'string'
-			? { message: exceptionResponse, statusCode: status }
-			: exceptionResponse;
+		const ExceptionResponse = exception.getResponse();
+		const ErrorObj = typeof ExceptionResponse === 'string'
+			? { message: ExceptionResponse, statusCode: Status }
+			: ExceptionResponse;
 
 		// Sanitize error response
-		const sanitizedError = this.ErrorSanitizer.sanitizeErrorResponse(
-			errorObj as Record<string, any>,
-			isDevelopment,
+		const SanitizedError = this.ErrorSanitizer.SanitizeErrorResponse(
+			ErrorObj as Record<string, any>,
+			IsDevelopment,
 		);
 
 		// Categorize and log error
-		const errorCategory = this.ErrorCategorizer.categorizeError(exception);
+		const ErrorCategory = this.ErrorCategorizer.CategorizeError(exception);
 		this.Logger.error('HTTP Exception caught', undefined, undefined, {
 			message: exception.message,
-			status,
-			errorType: errorCategory.type,
-			retryable: errorCategory.retryable,
-			strategy: errorCategory.strategy,
-			backoffMs: errorCategory.backoffMs,
-			stack: isDevelopment ? exception.stack : undefined,
+			status: Status,
+			errorType: ErrorCategory.type,
+			retryable: ErrorCategory.retryable,
+			strategy: ErrorCategory.strategy,
+			backoffMs: ErrorCategory.backoffMs,
+			stack: IsDevelopment ? exception.stack : undefined,
 		});
 
-		response.status(status).json(sanitizedError);
+		Response.status(Status).json(SanitizedError);
 	}
 }

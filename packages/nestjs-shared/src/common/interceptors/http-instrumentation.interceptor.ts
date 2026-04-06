@@ -11,7 +11,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { performance } from 'node:perf_hooks';
 import { Request, Response } from 'express';
 import { InstrumentationRegistry } from '../registry/instrumentation-registry.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * HTTP Instrumentation Interceptor
@@ -40,7 +40,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  * ```
  */
 @Injectable()
-export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModuleRefService {
+export class HTTPInstrumentationInterceptor implements NestInterceptor, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -66,52 +66,52 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModu
 			return next.handle();
 		}
 
-		const request = context.switchToHttp().getRequest<Request>();
-		const response = context.switchToHttp().getResponse<Response>();
-		const start = performance.now();
-		const { method } = request;
-		const contentLength = this.getContentLength(request);
-		const millisecondsPerSecond = 1000;
+		const Request = context.switchToHttp().getRequest<Request>();
+		const Response = context.switchToHttp().getResponse<Response>();
+		const Start = performance.now();
+		const { method } = Request;
+		const ContentLength = this.GetContentLength(Request);
+		const MillisecondsPerSecond = 1000;
 
 		return next.handle().pipe(
 			tap(() => {
-				const route = this.getRoute(request);
-				const statusCode = String(response.statusCode);
-				const duration = (performance.now() - start) / millisecondsPerSecond; // Convert to seconds
+				const Route = this.GetRoute(Request);
+				const StatusCode = String(Response.statusCode);
+				const Duration = (performance.now() - Start) / MillisecondsPerSecond; // Convert to seconds
 
-				this.Registry.recordMetric('http_request_duration_seconds', duration, {
+				this.Registry.RecordMetric('http_request_duration_seconds', Duration, {
 					method,
-					route,
-					status_code: statusCode,
+					route: Route,
+					status_code: StatusCode,
 				});
-				this.Registry.recordMetric('http_requests_total', 1, {
+				this.Registry.RecordMetric('http_requests_total', 1, {
 					method,
-					route,
-					status_code: statusCode,
+					route: Route,
+					status_code: StatusCode,
 				});
-				if (contentLength !== undefined) {
-					this.Registry.recordMetric('http_request_size_bytes', contentLength, {
+				if (ContentLength !== undefined) {
+					this.Registry.RecordMetric('http_request_size_bytes', ContentLength, {
 						method,
-						route,
+						route: Route,
 					});
 				}
 			}),
 			catchError((err: unknown) => {
-				const route = this.getRoute(request);
-				const statusCode = err instanceof HttpException
+				const Route = this.GetRoute(Request);
+				const StatusCode = err instanceof HttpException
 					? String(err.getStatus())
 					: '500';
-				const duration = (performance.now() - start) / millisecondsPerSecond; // Convert to seconds
+				const Duration = (performance.now() - Start) / MillisecondsPerSecond; // Convert to seconds
 
-				this.Registry.recordMetric('http_request_duration_seconds', duration, {
+				this.Registry.RecordMetric('http_request_duration_seconds', Duration, {
 					method,
-					route,
-					status_code: statusCode,
+					route: Route,
+					status_code: StatusCode,
 				});
-				this.Registry.recordMetric('http_requests_total', 1, {
+				this.Registry.RecordMetric('http_requests_total', 1, {
 					method,
-					route,
-					status_code: statusCode,
+					route: Route,
+					status_code: StatusCode,
 				});
 
 				return throwError(() => err);
@@ -127,7 +127,7 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModu
 	 * @param request - The Express request object
 	 * @returns The route path or fallback value
 	 */
-	private getRoute(request: Request): string {
+	private GetRoute(request: Request): string {
 		// Try to get route from Express
 		const { route } = (request as unknown as { route?: { path?: string } });
 		if (route?.path) {
@@ -146,11 +146,11 @@ export class HTTPInstrumentationInterceptor implements NestInterceptor, LazyModu
 	 * @param request - The Express request object
 	 * @returns The content length in bytes, or undefined if not available
 	 */
-	private getContentLength(request: Request): number | undefined {
-		const contentLength = request.headers['content-length'];
-		if (contentLength) {
-			const length = parseInt(contentLength, 10);
-			return isNaN(length) ? undefined : length;
+	private GetContentLength(request: Request): number | undefined {
+		const ContentLength = request.headers['content-length'];
+		if (ContentLength) {
+			const Length = parseInt(ContentLength, 10);
+			return isNaN(Length) ? undefined : Length;
 		}
 		return undefined;
 	}

@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { createConditionalDecorator } from '@pawells/nestjs-shared/common';
-import { ContextOptions, ExtractRequestFromContext } from './context-utils.js';
+import { IContextOptions, ExtractRequestFromContext } from './context-utils.js';
 
 /**
  * Authentication Decorators for NestJS
@@ -51,7 +51,7 @@ export const PERMISSIONS_KEY = 'permissions';
  * @example GraphQL
  * ```typescript
  * @Public()
- * @Query(() => String)
+ * @Query(() => String, { name: 'GetHealth' })
  * async getHealth(): Promise<string> {
  *   return 'OK';
  * }
@@ -82,8 +82,8 @@ export const Public = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Auth()
- * @Query(() => User)
- * async getCurrentUser(@CurrentUser() user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@CurrentUser() user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -115,8 +115,8 @@ export const Auth = (): MethodDecorator => createConditionalDecorator({
  * @example GraphQL
  * ```typescript
  * @Roles('admin')
- * @Mutation(() => User)
- * async updateUser(@Args('input') input: UpdateUserInput): Promise<User> {
+ * @Mutation(() => IUser, { name: 'UpdateUser' })
+ * async updateUser(@Args('input') input: UpdateUserInput): Promise<IUser> {
  *   // Only admin users can update other users
  * }
  * ```
@@ -149,7 +149,7 @@ export const Roles = (...roles: string[]): MethodDecorator => createConditionalD
  * @example GraphQL
  * ```typescript
  * @Permissions('user.delete')
- * @Mutation(() => Boolean)
+ * @Mutation(() => Boolean, { name: 'DeleteUser' })
  * async deleteUser(@Args('id') id: string): Promise<boolean> {
  *   // Only users with 'user.delete' role can delete users
  * }
@@ -161,8 +161,8 @@ export const Permissions = (...permissions: string[]): MethodDecorator => create
 });
 
 // Re-export context utilities for convenience
-export type { ContextOptions } from './context-utils.js';
-export { detectContextType, extractRequestFromContext, extractUserFromContext, extractAuthTokenFromContext } from './context-utils.js';
+export type { IContextOptions } from './context-utils.js';
+export { DetectContextType, ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext } from './context-utils.js';
 
 /**
  * Parameter decorator to extract the current authenticated user
@@ -180,7 +180,7 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  * @example HTTP context (auto-detected)
  * ```typescript
  * @Get('profile')
- * getProfile(@CurrentUser() user: User) {
+ * getProfile(@CurrentUser() user: IUser) {
  *   return user;
  * }
  * ```
@@ -195,8 +195,8 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  *
  * @example GraphQL context (explicit)
  * ```typescript
- * @Query(() => User)
- * async getCurrentUser(@CurrentUser(undefined, { contextType: 'graphql' }) user: User): Promise<User> {
+ * @Query(() => IUser, { name: 'GetCurrentUser' })
+ * async getCurrentUser(@CurrentUser(undefined, { contextType: 'graphql' }) user: IUser): Promise<IUser> {
  *   return user;
  * }
  * ```
@@ -204,22 +204,22 @@ export { detectContextType, extractRequestFromContext, extractUserFromContext, e
  * @example Auto-detect context
  * ```typescript
  * @UseGuards(AuthGuard)
- * getData(@CurrentUser() user: User) {
+ * getData(@CurrentUser() user: IUser) {
  *   // Works in both HTTP and GraphQL contexts
  * }
  * ```
  */
-export function CurrentUser(property?: string, options?: ContextOptions): ParameterDecorator {
+export function CurrentUser(property?: string, options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
-			const request = ExtractRequestFromContext(ctx, options);
-			const user = request?.user;
+			const Request = ExtractRequestFromContext(ctx, options);
+			const User = Request?.user;
 
-			if (property !== undefined && user) {
-				return user[property];
+			if (property !== undefined && User) {
+				return User[property];
 			}
 
-			return user;
+			return User;
 		},
 	)();
 }
@@ -246,25 +246,25 @@ export function CurrentUser(property?: string, options?: ContextOptions): Parame
  *
  * @example GraphQL context (explicit)
  * ```typescript
- * @Query(() => Boolean)
+ * @Query(() => Boolean, { name: 'ValidateToken' })
  * async validateToken(@AuthToken({ contextType: 'graphql' }) token: string): Promise<boolean> {
  *   return this.authService.validateToken(token);
  * }
  * ```
  */
-export function AuthToken(options?: ContextOptions): ParameterDecorator {
+export function AuthToken(options?: IContextOptions): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext) => {
-			const request = ExtractRequestFromContext(ctx, options);
+			const Request = ExtractRequestFromContext(ctx, options);
 
-			if (!request?.headers) {
+			if (!Request?.headers) {
 				return undefined;
 			}
 
-			const authHeader = request.headers.authorization ?? request.headers.Authorization;
+			const AuthHeader = Request.headers.authorization ?? Request.headers.Authorization;
 
-			if (typeof authHeader === 'string') {
-				return authHeader.replace(/^Bearer\s+/i, '');
+			if (typeof AuthHeader === 'string') {
+				return AuthHeader.replace(/^Bearer\s+/i, '');
 			}
 
 			return undefined;

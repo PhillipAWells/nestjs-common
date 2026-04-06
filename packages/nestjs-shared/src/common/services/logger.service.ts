@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger as PawellsLogger, LogLevel as PawellsLogLevel } from '@pawells/logger';
 import { CreateJsonCircularReplacer } from '@pawells/typescript-common';
 import { trace, context } from '@opentelemetry/api';
-import { LogLevel, LogMetadata, LOG_LEVEL_FROM_STRING } from '../interfaces/log-entry.interface.js';
+import { LogLevel, ILogMetadata, LOG_LEVEL_FROM_STRING } from '../interfaces/log-entry.interface.js';
 import { IContextualLogger } from '../interfaces/logger.interface.js';
 
 import { MAX_SANITIZE_DEPTH } from '../utils/sanitization.utils.js';
@@ -12,10 +12,10 @@ import { MAX_SANITIZE_DEPTH } from '../utils/sanitization.utils.js';
  * Options object for logging methods.
  * Provides a cleaner alternative to positional parameters.
  */
-export interface LogOptions {
+export interface ILogOptions {
 	context?: string;
 	trace?: string;
-	metadata?: LogMetadata;
+	metadata?: ILogMetadata;
 }
 
 /**
@@ -29,7 +29,7 @@ export interface LogOptions {
  * @example
  * ```typescript
  * // Use flexible logging methods
- * logger.info('User logged in', 'AuthService', { userId: '123' });
+ * logger.info('IUser logged in', 'AuthService', { userId: '123' });
  * logger.error('Database error', error.stack, 'DatabaseService', { query: '...' });
  * logger.debug('Cache hit', { metadata: { key: 'users:123' } });
  * ```
@@ -37,11 +37,11 @@ export interface LogOptions {
 
 @Injectable()
 export class AppLogger implements IContextualLogger {
-	private readonly pawellsLogger: PawellsLogger;
+	private readonly PawellsLogger: PawellsLogger;
 
-	private readonly minLevel: number;
+	private readonly MinLevel: number;
 
-	private readonly serviceName: string;
+	private readonly ServiceName: string;
 
 	/**
 	 * Set of field names that contain sensitive information requiring redaction in logs.
@@ -49,7 +49,7 @@ export class AppLogger implements IContextualLogger {
 	 * Prevents leaking credentials, tokens, and other security-sensitive data into log output.
 	 * Includes passwords, API keys, tokens, and payment card information.
 	 */
-	private readonly sensitiveKeys = new Set([
+	private readonly SensitiveKeys = new Set([
 		'password', 'passwd', 'pwd',
 		'token', 'authorization', 'auth', 'authtoken', 'refreshtoken', 'accesstoken', 'bearertoken', 'sessiontoken',
 		'secret', 'api_key', 'apikey', 'apisecret', 'privatekey', 'encryptionkey',
@@ -58,20 +58,25 @@ export class AppLogger implements IContextualLogger {
 		'cookie', 'session',
 	]);
 
+	private readonly ConfigService: ConfigService | undefined;
+	private readonly Context: string;
+
 	constructor(
-		@Inject(ConfigService) @Optional() private readonly configService?: ConfigService,
-		@Optional() private readonly context: string = 'AppLogger',
+		@Inject(ConfigService) @Optional() configService?: ConfigService,
+		@Optional() context: string = 'AppLogger',
 	) {
-		this.serviceName = this.configService?.get<string>('SERVICE_NAME') ?? process.env['SERVICE_NAME'] ?? 'unknown-service';
-		this.minLevel = this.parseLogLevel();
+		this.ConfigService = configService;
+		this.Context = context;
+		this.ServiceName = this.ConfigService?.get<string>('SERVICE_NAME') ?? process.env['SERVICE_NAME'] ?? 'unknown-service';
+		this.MinLevel = this.ParseLogLevel();
 
 		// Create instance of @pawells/logger
-		const pawellsLogLevel = this.mapNestjsLogLevelToPawells(this.minLevel);
-		const logFormat = this.parseLogFormat();
-		this.pawellsLogger = new PawellsLogger({
-			service: this.serviceName,
-			level: pawellsLogLevel,
-			format: logFormat,
+		const PawellsLogLevel = this.MapNestjsLogLevelToPawells(this.MinLevel);
+		const LogFormat = this.ParseLogFormat();
+		this.PawellsLogger = new PawellsLogger({
+			service: this.ServiceName,
+			level: PawellsLogLevel,
+			format: LogFormat,
 		});
 	}
 
@@ -79,44 +84,44 @@ export class AppLogger implements IContextualLogger {
 	 * Parse LOG_LEVEL environment variable
 	 * @returns LogLevel enum value (numeric)
 	 */
-	private parseLogLevel(): number {
-		const level = (this.configService?.get<string>('LOG_LEVEL') ?? process.env['LOG_LEVEL'] ?? 'info').toLowerCase();
-		const parsedLevel = LOG_LEVEL_FROM_STRING[level];
+	private ParseLogLevel(): number {
+		const Level = (this.ConfigService?.get<string>('LOG_LEVEL') ?? process.env['LOG_LEVEL'] ?? 'info').toLowerCase();
+		const ParsedLevel = LOG_LEVEL_FROM_STRING[Level];
 
 		// Warn if the LOG_LEVEL value is invalid and log valid values
-		if (parsedLevel === undefined) {
-			const validLevels = Object.keys(LOG_LEVEL_FROM_STRING).join(', ');
-			const message = `[AppLogger] Invalid LOG_LEVEL value: "${level}". Valid values are: ${validLevels}. Falling back to "info".`;
+		if (ParsedLevel === undefined) {
+			const ValidLevels = Object.keys(LOG_LEVEL_FROM_STRING).join(', ');
+			const Message = `[AppLogger] Invalid LOG_LEVEL value: "${Level}". Valid values are: ${ValidLevels}. Falling back to "info".`;
 			try {
-				console.error(message);
+				console.error(Message);
 			} catch {
 				// Ignore console error failures silently
 			}
 			return LogLevel.INFO;
 		}
 
-		return parsedLevel;
+		return ParsedLevel;
 	}
 
 	/**
 	 * Parse LOG_FORMAT environment variable
 	 * @returns Format type ('json' | 'text'), defaults to 'json'
 	 */
-	private parseLogFormat(): 'json' | 'text' {
-		const format = (this.configService?.get<string>('LOG_FORMAT') ?? process.env['LOG_FORMAT'] ?? 'json').toLowerCase();
+	private ParseLogFormat(): 'json' | 'text' {
+		const Format = (this.ConfigService?.get<string>('LOG_FORMAT') ?? process.env['LOG_FORMAT'] ?? 'json').toLowerCase();
 
 		// Validate format is either 'json' or 'text'
-		if (format !== 'json' && format !== 'text') {
-			const message = `[AppLogger] Invalid LOG_FORMAT value: "${format}". Valid values are: json, text. Falling back to "json".`;
+		if (Format !== 'json' && Format !== 'text') {
+			const Message = `[AppLogger] Invalid LOG_FORMAT value: "${Format}". Valid values are: json, text. Falling back to "json".`;
 			try {
-				console.error(message);
+				console.error(Message);
 			} catch {
 				// Ignore console error failures silently
 			}
 			return 'json';
 		}
 
-		return format;
+		return Format;
 	}
 
 	/**
@@ -124,8 +129,8 @@ export class AppLogger implements IContextualLogger {
 	 * @param level - Numeric LogLevel from nestjs-shared
 	 * @returns String LogLevel for @pawells/logger
 	 */
-	private mapNestjsLogLevelToPawells(level: number): PawellsLogLevel {
-		const mapping: Record<number, PawellsLogLevel> = {
+	private MapNestjsLogLevelToPawells(level: number): PawellsLogLevel {
+		const Mapping: Record<number, PawellsLogLevel> = {
 			[LogLevel.DEBUG]: PawellsLogLevel.DEBUG,
 			[LogLevel.INFO]: PawellsLogLevel.INFO,
 			[LogLevel.WARN]: PawellsLogLevel.WARN,
@@ -133,7 +138,7 @@ export class AppLogger implements IContextualLogger {
 			[LogLevel.FATAL]: PawellsLogLevel.FATAL,
 			[LogLevel.SILENT]: PawellsLogLevel.SILENT,
 		};
-		return mapping[level] ?? PawellsLogLevel.INFO;
+		return Mapping[level] ?? PawellsLogLevel.INFO;
 	}
 
 	/**
@@ -141,8 +146,8 @@ export class AppLogger implements IContextualLogger {
 	 * @param level - Level to check
 	 * @returns true if level should be logged
 	 */
-	private shouldLog(level: number): boolean {
-		return level >= this.minLevel;
+	private ShouldLog(level: number): boolean {
+		return level >= this.MinLevel;
 	}
 
 	/**
@@ -150,57 +155,57 @@ export class AppLogger implements IContextualLogger {
 	 * @param metadata - Metadata to sanitize
 	 * @returns Sanitized metadata with circular references replaced by '[CIRCULAR_REF]'
 	 */
-	private sanitizeMetadata(metadata?: LogMetadata): LogMetadata | undefined {
+	private SanitizeMetadata(metadata?: ILogMetadata): ILogMetadata | undefined {
 		if (!metadata) return undefined;
 
-		const sanitized: Record<string, any> = { ...metadata };
-		const visited = new WeakSet();
+		const Sanitized: Record<string, any> = { ...metadata };
+		const Visited = new WeakSet();
 
-		const sanitize = (obj: any, depth: number = 0): any => {
+		const Sanitize = (obj: any, depth: number = 0): any => {
 			if (depth >= MAX_SANITIZE_DEPTH) return '[DEPTH_EXCEEDED]';
 			if (typeof obj !== 'object' || obj === null) return obj;
 
-			if (visited.has(obj)) {
+			if (Visited.has(obj)) {
 				return '[CIRCULAR_REF]';
 			}
-			visited.add(obj);
+			Visited.add(obj);
 
-			const result: Record<string, any> = Array.isArray(obj) ? [] : {};
-			for (const [key, value] of Object.entries(obj)) {
-				const lowerKey = key.toLowerCase();
-				const isExactMatch = this.sensitiveKeys.has(lowerKey);
+			const Result: Record<string, any> = Array.isArray(obj) ? [] : {};
+			for (const [Key, Value] of Object.entries(obj)) {
+				const LowerKey = Key.toLowerCase();
+				const IsExactMatch = this.SensitiveKeys.has(LowerKey);
 
-				if (isExactMatch) {
+				if (IsExactMatch) {
 					// Exact match: keep key, redact value
-					result[key] = '[REDACTED]';
+					Result[Key] = '[REDACTED]';
 				} else {
 					// Check if key contains any sensitive pattern
-					let containsSensitivePattern = false;
-					for (const sensitivePattern of this.sensitiveKeys) {
-						if (lowerKey.includes(sensitivePattern)) {
-							containsSensitivePattern = true;
+					let ContainsSensitivePattern = false;
+					for (const SensitivePattern of this.SensitiveKeys) {
+						if (LowerKey.includes(SensitivePattern)) {
+							ContainsSensitivePattern = true;
 							break;
 						}
 					}
 
-					if (containsSensitivePattern) {
+					if (ContainsSensitivePattern) {
 						// Contains pattern: redact the key name itself
-						result['[REDACTED_KEY]'] = '[REDACTED]';
+						Result['[REDACTED_KEY]'] = '[REDACTED]';
 					} else {
 						// Not sensitive: process normally
-						result[key] = sanitize(value, depth + 1);
+						Result[Key] = Sanitize(Value, depth + 1);
 					}
 				}
 			}
-			return result;
+			return Result;
 		};
 
 		try {
-			const stringified = JSON.stringify(sanitize(sanitized), CreateJsonCircularReplacer('[CIRCULAR_REF]'));
-			return JSON.parse(stringified);
+			const Stringified = JSON.stringify(Sanitize(Sanitized), CreateJsonCircularReplacer('[CIRCULAR_REF]'));
+			return JSON.parse(Stringified);
 		} catch {
 			// If JSON.stringify fails, return the sanitized object as-is
-			return sanitize(sanitized);
+			return Sanitize(Sanitized);
 		}
 	}
 
@@ -208,14 +213,14 @@ export class AppLogger implements IContextualLogger {
 	 * Extract OpenTelemetry trace context
 	 * @returns Object with traceId and spanId if available
 	 */
-	private extractTraceContext(): { traceId?: string; spanId?: string } {
+	private ExtractTraceContext(): { traceId?: string; spanId?: string } {
 		try {
-			const span = trace.getSpan(context.active());
-			if (span) {
-				const spanContext = span.spanContext();
+			const Span = trace.getSpan(context.active());
+			if (Span) {
+				const SpanContext = Span.spanContext();
 				return {
-					traceId: spanContext.traceId,
-					spanId: spanContext.spanId,
+					traceId: SpanContext.traceId,
+					spanId: SpanContext.spanId,
 				};
 			}
 		} catch {
@@ -227,28 +232,28 @@ export class AppLogger implements IContextualLogger {
 	/**
 	 * Build metadata with context and trace info
 	 * @param logContext - Logger context
-	 * @param metadata - User-provided metadata
+	 * @param metadata - IUser-provided metadata
 	 * @returns Combined metadata
 	 */
-	private buildMetadata(logContext: string, metadata?: LogMetadata): Record<string, unknown> {
-		const { traceId, spanId } = this.extractTraceContext();
-		const sanitized = this.sanitizeMetadata(metadata);
+	private BuildMetadata(logContext: string, metadata?: ILogMetadata): Record<string, unknown> {
+		const { traceId, spanId } = this.ExtractTraceContext();
+		const Sanitized = this.SanitizeMetadata(metadata);
 
-		const result: Record<string, unknown> = {
+		const Result: Record<string, unknown> = {
 			context: logContext,
 		};
 
-		if (sanitized) {
-			result.metadata = sanitized;
+		if (Sanitized) {
+			Result.metadata = Sanitized;
 		}
 		if (traceId) {
-			result.traceId = traceId;
+			Result.traceId = traceId;
 		}
 		if (spanId) {
-			result.spanId = spanId;
+			Result.spanId = spanId;
 		}
 
-		return result;
+		return Result;
 	}
 
 	/**
@@ -256,43 +261,43 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
-	public debug(message: string | Error, options: LogOptions): void;
+	public Debug(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log debug message
 	 * @param message - Log message
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public debug(message: string | Error, context?: string, metadata?: LogMetadata): void;
+	public Debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log debug message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
-	public debug(message: string | Error, metadata?: LogMetadata): void;
-	public debug(message: string | Error, contextOrMetadata?: string | LogMetadata | LogOptions, metadata?: LogMetadata): void {
-		if (this.shouldLog(LogLevel.DEBUG)) {
-			let ctx = this.context;
-			let meta = metadata;
+	public Debug(message: string | Error, metadata?: ILogMetadata): void;
+	public Debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.DEBUG)) {
+			let Ctx = this.Context;
+			let Meta = metadata;
 
 			// Handle options-object form
 			if (contextOrMetadata !== undefined && typeof contextOrMetadata === 'object' && !Array.isArray(contextOrMetadata) && 'context' in contextOrMetadata) {
-				const opts = contextOrMetadata as LogOptions;
-				ctx = opts.context ?? this.context;
-				meta = opts.metadata;
+				const Opts = contextOrMetadata as ILogOptions;
+				Ctx = Opts.context ?? this.Context;
+				Meta = Opts.metadata;
 			} else if (typeof contextOrMetadata === 'string') {
-				ctx = contextOrMetadata;
+				Ctx = contextOrMetadata;
 			} else if (typeof contextOrMetadata === 'object' && !('context' in contextOrMetadata)) {
-				meta = contextOrMetadata as LogMetadata;
+				Meta = contextOrMetadata as ILogMetadata;
 			}
 
-			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const Msg = message instanceof Error ? message.message : message;
+			const BuiltMetadata = this.BuildMetadata(Ctx, Meta);
 
-			void this.pawellsLogger.debug(msg, builtMetadata).catch((err: unknown) => {
-				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
+			void this.PawellsLogger.debug(Msg, BuiltMetadata).catch((err: unknown) => {
+				const FallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
 				try {
-					process.stderr.write(fallbackMsg);
+					process.stderr.write(FallbackMsg);
 				} catch {
 					// Ignore stderr write failures silently as final fallback
 				}
@@ -301,47 +306,66 @@ export class AppLogger implements IContextualLogger {
 	}
 
 	/**
+	 * Log debug message (implements IContextualLogger interface)
+	 * Delegates to Debug method for PascalCase consistency
+	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public debug(message: string | Error, options: ILogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public debug(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public debug(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public debug(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		return this.Debug(message, contextOrMetadata as any, metadata);
+	}
+
+	/**
 	 * Log info message
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
-	public info(message: string | Error, options: LogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public info(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log info message
 	 * @param message - Log message
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public info(message: string | Error, context?: string, metadata?: LogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public info(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log info message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
-	public info(message: string | Error, metadata?: LogMetadata): void;
-	public info(message: string | Error, contextOrMetadata?: string | LogMetadata | LogOptions, metadata?: LogMetadata): void {
-		if (this.shouldLog(LogLevel.INFO)) {
-			let ctx = this.context;
-			let meta = metadata;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public info(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public info(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.INFO)) {
+			let Ctx = this.Context;
+			let Meta = metadata;
 
 			// Handle options-object form
 			if (contextOrMetadata !== undefined && typeof contextOrMetadata === 'object' && !Array.isArray(contextOrMetadata) && 'context' in contextOrMetadata) {
-				const opts = contextOrMetadata as LogOptions;
-				ctx = opts.context ?? this.context;
-				meta = opts.metadata;
+				const Opts = contextOrMetadata as ILogOptions;
+				Ctx = Opts.context ?? this.Context;
+				Meta = Opts.metadata;
 			} else if (typeof contextOrMetadata === 'string') {
-				ctx = contextOrMetadata;
+				Ctx = contextOrMetadata;
 			} else if (typeof contextOrMetadata === 'object' && !('context' in contextOrMetadata)) {
-				meta = contextOrMetadata as LogMetadata;
+				Meta = contextOrMetadata as ILogMetadata;
 			}
 
-			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const Msg = message instanceof Error ? message.message : message;
+			const BuiltMetadata = this.BuildMetadata(Ctx, Meta);
 
-			void this.pawellsLogger.info(msg, builtMetadata).catch((err: unknown) => {
-				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
+			void this.PawellsLogger.info(Msg, BuiltMetadata).catch((err: unknown) => {
+				const FallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
 				try {
-					process.stderr.write(fallbackMsg);
+					process.stderr.write(FallbackMsg);
 				} catch {
 					// Ignore stderr write failures silently as final fallback
 				}
@@ -354,43 +378,47 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message
 	 * @param options - Optional context/metadata options
 	 */
-	public warn(message: string | Error, options: LogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public warn(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log warning message
 	 * @param message - Log message
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public warn(message: string | Error, context?: string, metadata?: LogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public warn(message: string | Error, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log warning message
 	 * @param message - Log message
 	 * @param metadata - Optional structured metadata
 	 */
-	public warn(message: string | Error, metadata?: LogMetadata): void;
-	public warn(message: string | Error, contextOrMetadata?: string | LogMetadata | LogOptions, metadata?: LogMetadata): void {
-		if (this.shouldLog(LogLevel.WARN)) {
-			let ctx = this.context;
-			let meta = metadata;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public warn(message: string | Error, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public warn(message: string | Error, contextOrMetadata?: string | ILogMetadata | ILogOptions, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.WARN)) {
+			let Ctx = this.Context;
+			let Meta = metadata;
 
 			// Handle options-object form
 			if (contextOrMetadata !== undefined && typeof contextOrMetadata === 'object' && !Array.isArray(contextOrMetadata) && 'context' in contextOrMetadata) {
-				const opts = contextOrMetadata as LogOptions;
-				ctx = opts.context ?? this.context;
-				meta = opts.metadata;
+				const Opts = contextOrMetadata as ILogOptions;
+				Ctx = Opts.context ?? this.Context;
+				Meta = Opts.metadata;
 			} else if (typeof contextOrMetadata === 'string') {
-				ctx = contextOrMetadata;
+				Ctx = contextOrMetadata;
 			} else if (typeof contextOrMetadata === 'object' && !('context' in contextOrMetadata)) {
-				meta = contextOrMetadata as LogMetadata;
+				Meta = contextOrMetadata as ILogMetadata;
 			}
 
-			const msg = message instanceof Error ? message.message : message;
-			const builtMetadata = this.buildMetadata(ctx, meta);
+			const Msg = message instanceof Error ? message.message : message;
+			const BuiltMetadata = this.BuildMetadata(Ctx, Meta);
 
-			void this.pawellsLogger.warn(msg, builtMetadata).catch((err: unknown) => {
-				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
+			void this.PawellsLogger.warn(Msg, BuiltMetadata).catch((err: unknown) => {
+				const FallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
 				try {
-					process.stderr.write(fallbackMsg);
+					process.stderr.write(FallbackMsg);
 				} catch {
 					// Ignore stderr write failures silently as final fallback
 				}
@@ -403,7 +431,8 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message or Error object
 	 * @param options - Optional context/trace/metadata options
 	 */
-	public error(message: string | Error, options: LogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public error(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log error message
 	 * @param message - Log message or Error object
@@ -411,50 +440,53 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public error(message: string | Error, trace?: string, context?: string, metadata?: LogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public error(message: string | Error, trace?: string, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log error message
 	 * @param message - Log message or Error object
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public error(message: string | Error, context?: string, metadata?: LogMetadata): void;
-	public error(message: string | Error, traceOrContext?: string | LogOptions, contextOrMetadata?: string | LogMetadata, metadata?: LogMetadata): void {
-		if (this.shouldLog(LogLevel.ERROR)) {
-			let ctx = this.context;
-			let meta = metadata;
-			let trace: string | undefined;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public error(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public error(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.ERROR)) {
+			let Ctx = this.Context;
+			let Meta = metadata;
+			let Trace: string | undefined;
 
 			// Handle options-object form
 			if (traceOrContext !== undefined && typeof traceOrContext === 'object' && !Array.isArray(traceOrContext) && 'context' in traceOrContext) {
-				const opts = traceOrContext as LogOptions;
-				ctx = opts.context ?? this.context;
-				meta = opts.metadata;
-				trace = opts.trace;
+				const Opts = traceOrContext as ILogOptions;
+				Ctx = Opts.context ?? this.Context;
+				Meta = Opts.metadata;
+				Trace = Opts.trace;
 			} else if (typeof traceOrContext === 'string' && typeof contextOrMetadata === 'string') {
 				// error(message, trace, context, metadata?)
-				trace = traceOrContext;
-				ctx = contextOrMetadata;
+				Trace = traceOrContext;
+				Ctx = contextOrMetadata;
 			} else if (typeof traceOrContext === 'string' && typeof contextOrMetadata === 'object') {
 				// error(message, trace, metadata)
-				trace = traceOrContext;
-				meta = contextOrMetadata;
+				Trace = traceOrContext;
+				Meta = contextOrMetadata;
 			} else if (typeof traceOrContext === 'string') {
 				// error(message, context)
-				ctx = traceOrContext;
+				Ctx = traceOrContext;
 			} else if (typeof contextOrMetadata === 'object') {
 				// error(message, metadata)
-				meta = contextOrMetadata;
+				Meta = contextOrMetadata;
 			}
 
-			const msg = message instanceof Error ? message.message : message;
-			const metaWithTrace = trace ? { ...meta, stack: trace } : meta;
-			const builtMetadata = this.buildMetadata(ctx, metaWithTrace);
+			const Msg = message instanceof Error ? message.message : message;
+			const MetaWithTrace = Trace ? { ...Meta, stack: Trace } : Meta;
+			const BuiltMetadata = this.BuildMetadata(Ctx, MetaWithTrace);
 
-			void this.pawellsLogger.error(msg, builtMetadata).catch((err: unknown) => {
-				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
+			void this.PawellsLogger.error(Msg, BuiltMetadata).catch((err: unknown) => {
+				const FallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
 				try {
-					process.stderr.write(fallbackMsg);
+					process.stderr.write(FallbackMsg);
 				} catch {
 					// Ignore stderr write failures silently as final fallback
 				}
@@ -467,7 +499,8 @@ export class AppLogger implements IContextualLogger {
 	 * @param message - Log message or Error object
 	 * @param options - Optional context/trace/metadata options
 	 */
-	public fatal(message: string | Error, options: LogOptions): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public fatal(message: string | Error, options: ILogOptions): void;
 	/**
 	 * Log fatal message
 	 * @param message - Log message or Error object
@@ -475,46 +508,49 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public fatal(message: string | Error, trace?: string, context?: string, metadata?: LogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public fatal(message: string | Error, trace?: string, context?: string, metadata?: ILogMetadata): void;
 	/**
 	 * Log fatal message
 	 * @param message - Log message or Error object
 	 * @param context - Optional context override
 	 * @param metadata - Optional structured metadata
 	 */
-	public fatal(message: string | Error, context?: string, metadata?: LogMetadata): void;
-	public fatal(message: string | Error, traceOrContext?: string | LogOptions, contextOrMetadata?: string | LogMetadata, metadata?: LogMetadata): void {
-		if (this.shouldLog(LogLevel.FATAL)) {
-			let ctx = this.context;
-			let meta = metadata;
-			let trace: string | undefined;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public fatal(message: string | Error, context?: string, metadata?: ILogMetadata): void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public fatal(message: string | Error, traceOrContext?: string | ILogOptions, contextOrMetadata?: string | ILogMetadata, metadata?: ILogMetadata): void {
+		if (this.ShouldLog(LogLevel.FATAL)) {
+			let Ctx = this.Context;
+			let Meta = metadata;
+			let Trace: string | undefined;
 
 			// Handle options-object form
 			if (traceOrContext !== undefined && typeof traceOrContext === 'object' && !Array.isArray(traceOrContext) && 'context' in traceOrContext) {
-				const opts = traceOrContext as LogOptions;
-				ctx = opts.context ?? this.context;
-				meta = opts.metadata;
-				trace = opts.trace;
+				const Opts = traceOrContext as ILogOptions;
+				Ctx = Opts.context ?? this.Context;
+				Meta = Opts.metadata;
+				Trace = Opts.trace;
 			} else if (typeof traceOrContext === 'string' && typeof contextOrMetadata === 'string') {
-				trace = traceOrContext;
-				ctx = contextOrMetadata;
+				Trace = traceOrContext;
+				Ctx = contextOrMetadata;
 			} else if (typeof traceOrContext === 'string' && typeof contextOrMetadata === 'object') {
-				trace = traceOrContext;
-				meta = contextOrMetadata;
+				Trace = traceOrContext;
+				Meta = contextOrMetadata;
 			} else if (typeof traceOrContext === 'string') {
-				ctx = traceOrContext;
+				Ctx = traceOrContext;
 			} else if (typeof contextOrMetadata === 'object') {
-				meta = contextOrMetadata;
+				Meta = contextOrMetadata;
 			}
 
-			const msg = message instanceof Error ? message.message : message;
-			const metaWithTrace = trace ? { ...meta, stack: trace } : meta;
-			const builtMetadata = this.buildMetadata(ctx, metaWithTrace);
+			const Msg = message instanceof Error ? message.message : message;
+			const MetaWithTrace = Trace ? { ...Meta, stack: Trace } : Meta;
+			const BuiltMetadata = this.BuildMetadata(Ctx, MetaWithTrace);
 
-			void this.pawellsLogger.fatal(msg, builtMetadata).catch((err: unknown) => {
-				const fallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
+			void this.PawellsLogger.fatal(Msg, BuiltMetadata).catch((err: unknown) => {
+				const FallbackMsg = `[AppLogger fallback] ${String(err)}\n`;
 				try {
-					process.stderr.write(fallbackMsg);
+					process.stderr.write(FallbackMsg);
 				} catch {
 					// Ignore stderr write failures silently as final fallback
 				}
@@ -527,7 +563,17 @@ export class AppLogger implements IContextualLogger {
 	 * @param context - Context string
 	 * @returns New AppLogger instance with context
 	 */
-	public createContextualLogger(context: string): AppLogger {
-		return new AppLogger(this.configService, context);
+	public CreateContextualLogger(context: string): AppLogger {
+		return new AppLogger(this.ConfigService, context);
+	}
+
+	/**
+	 * Create a contextual logger instance (implements IContextualLogger interface)
+	 * @param context - Context string
+	 * @returns New AppLogger instance with context
+	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public createContextualLogger(context: string): IContextualLogger {
+		return this.CreateContextualLogger(context);
 	}
 }

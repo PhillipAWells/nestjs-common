@@ -6,8 +6,8 @@
  * to change behaviour within a test.
  */
 import { Injectable } from '@nestjs/common';
-import type { KeycloakTokenClaims, KeycloakUser } from '../../keycloak/keycloak.types.js';
-import type { TokenValidationResult } from '../../keycloak/services/keycloak-token-validation.service.js';
+import type { IKeycloakTokenClaims, IKeycloakUser } from '../../keycloak/keycloak.types.js';
+import type { ITokenValidationResult } from '../../keycloak/services/keycloak-token-validation.service.js';
 
 const SECONDS_PER_MILLISECOND = 1000;
 const TOKEN_TTL_SECONDS = 3600;
@@ -15,7 +15,7 @@ const TOKEN_TTL_SECONDS = 3600;
 /**
  * Default minimal token claims used by MockKeycloakTokenValidationService.
  */
-const DEFAULT_CLAIMS: KeycloakTokenClaims = {
+const DEFAULT_CLAIMS: IKeycloakTokenClaims = {
 	sub: 'test-user-id',
 	iss: 'https://auth.example.com/realms/test',
 	aud: 'test-client',
@@ -23,7 +23,7 @@ const DEFAULT_CLAIMS: KeycloakTokenClaims = {
 	iat: Math.floor(Date.now() / SECONDS_PER_MILLISECOND),
 	preferred_username: 'test-user',
 	email: 'test@example.com',
-	name: 'Test User',
+	name: 'Test IUser',
 	realm_access: { roles: [] },
 	resource_access: {},
 };
@@ -31,11 +31,11 @@ const DEFAULT_CLAIMS: KeycloakTokenClaims = {
 /**
  * Default minimal user used by MockKeycloakTokenValidationService.
  */
-const DEFAULT_USER: KeycloakUser = {
+const DEFAULT_USER: IKeycloakUser = {
 	id: 'test-user-id',
 	email: 'test@example.com',
 	username: 'test-user',
-	name: 'Test User',
+	name: 'Test IUser',
 	realmRoles: [],
 	clientRoles: [],
 };
@@ -54,43 +54,43 @@ const DEFAULT_USER: KeycloakUser = {
  */
 @Injectable()
 export class MockKeycloakTokenValidationService {
-	private validateResult: TokenValidationResult = {
+	private ValidateResult: ITokenValidationResult = {
 		valid: true,
 		claims: DEFAULT_CLAIMS,
 	};
 
-	private extractResult: KeycloakUser = DEFAULT_USER;
+	private ExtractResult: IKeycloakUser = DEFAULT_USER;
 
 	// eslint-disable-next-line require-await
-	public async validateToken(_token: string): Promise<TokenValidationResult> {
-		return this.validateResult;
+	public async ValidateToken(_token: string): Promise<ITokenValidationResult> {
+		return this.ValidateResult;
 	}
 
-	public extractUser(_claims: KeycloakTokenClaims): KeycloakUser {
-		return this.extractResult;
+	public ExtractUser(_claims: IKeycloakTokenClaims): IKeycloakUser {
+		return this.ExtractResult;
 	}
 
 	/**
 	 * Override the result returned by validateToken() for subsequent calls.
-	 * @param result - The TokenValidationResult to return
+	 * @param result - The ITokenValidationResult to return
 	 */
-	public setValidateTokenResult(result: TokenValidationResult): void {
-		this.validateResult = result;
+	public SetValidateTokenResult(result: ITokenValidationResult): void {
+		this.ValidateResult = result;
 	}
 
 	/**
 	 * Override the result returned by extractUser() for subsequent calls.
-	 * @param user - The KeycloakUser to return
+	 * @param user - The IKeycloakUser to return
 	 */
-	public setExtractUserResult(user: KeycloakUser): void {
-		this.extractResult = user;
+	public SetExtractUserResult(user: IKeycloakUser): void {
+		this.ExtractResult = user;
 	}
 
 	/**
 	 * Reset validateToken and extractUser results to their defaults.
 	 */
-	public reset(): void {
-		this.validateResult = { valid: true, claims: DEFAULT_CLAIMS };
-		this.extractResult = DEFAULT_USER;
+	public Reset(): void {
+		this.ValidateResult = { valid: true, claims: DEFAULT_CLAIMS };
+		this.ExtractResult = DEFAULT_USER;
 	}
 }

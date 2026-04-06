@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { CSRFService } from '../services/csrf.service.js';
 import { AppLogger } from '../services/logger.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * CSRF Guard.
@@ -39,7 +39,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  */
 
 @Injectable()
-export class CSRFGuard implements CanActivate, LazyModuleRefService {
+export class CSRFGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -78,27 +78,27 @@ export class CSRFGuard implements CanActivate, LazyModuleRefService {
 	 */
 
 	public canActivate(context: ExecutionContext): boolean {
-		const request = context.switchToHttp().getRequest<Request>();
+		const Request = context.switchToHttp().getRequest<Request>();
 
 		// Skip CSRF validation for GET, HEAD, OPTIONS
-		if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
+		if (['GET', 'HEAD', 'OPTIONS'].includes(Request.method)) {
 			return true;
 		}
 
 		// Validate CSRF token
-		if (!this.CsrfService.validateToken(request)) {
+		if (!this.CsrfService.ValidateToken(Request)) {
 			// Extract IP address from request — prefer request.ip which respects trustProxy
-			const ipAddress = request.ip ?? (request.socket as { remoteAddress?: string } | undefined)?.remoteAddress ?? 'unknown';
-			const endpoint = request.path ?? request.url ?? 'unknown';
+			const IpAddress = Request.ip ?? (Request.socket as { remoteAddress?: string } | undefined)?.remoteAddress ?? 'unknown';
+			const Endpoint = Request.path ?? Request.url ?? 'unknown';
 
 			// Log via audit logger if available
-			this.AuditLogger?.logCsrfViolation(ipAddress, endpoint);
+			this.AuditLogger?.LogCsrfViolation(IpAddress, Endpoint);
 
 			// Also log via app logger for backward compatibility
 			this.Logger?.warn('CSRF token validation failed', 'CSRFGuard', {
-				ip: ipAddress,
-				path: endpoint,
-				method: request.method,
+				ip: IpAddress,
+				path: Endpoint,
+				method: Request.method,
 			});
 
 			throw new ForbiddenException('Invalid CSRF token');

@@ -17,7 +17,7 @@ import { SetRequestPropertyDecoratorLogger } from './decorators/request-property
 import { InstrumentationRegistryHolder } from './decorators/instrument.decorator.js';
 import { ConfigService } from '../config/index.js';
 import { InstrumentationRegistry } from './registry/instrumentation-registry.js';
-import { getErrorMessage } from './utils/error.utils.js';
+import { GetErrorMessage } from './utils/error.utils.js';
 
 /**
  * Common Module.
@@ -110,58 +110,53 @@ import { getErrorMessage } from './utils/error.utils.js';
 	],
 })
 export class CommonModule implements OnModuleInit {
-	private initialized = false;
+	private Initialized: boolean = false;
+
+	private readonly AppLogger: AppLogger;
+	private readonly Registry: InstrumentationRegistry;
+	private readonly ModuleRef: ModuleRef;
 
 	constructor(
-		private readonly appLogger: AppLogger,
-		private readonly registry: InstrumentationRegistry,
-		private readonly moduleRef: ModuleRef,
-	) {}
+		appLogger: AppLogger,
+		registry: InstrumentationRegistry,
+		moduleRef: ModuleRef,
+	) {
+		this.AppLogger = appLogger;
+		this.Registry = registry;
+		this.ModuleRef = moduleRef;
+	}
 
 	public onModuleInit(): void {
-		if (this.initialized) {
+		if (this.Initialized) {
 			return;
 		}
-		this.initialized = true;
+		this.Initialized = true;
 
 		// Initialize the RequestProperty decorator with the AppLogger instance
 		// This ensures structured logging is available before any route handlers are processed
-		SetRequestPropertyDecoratorLogger(this.appLogger);
+		SetRequestPropertyDecoratorLogger(this.AppLogger);
 
 		// Set the InstrumentationRegistry instance in the holder for @Instrument() decorator access
-		InstrumentationRegistryHolder.setInstance(this.registry);
+		InstrumentationRegistryHolder.SetInstance(this.Registry);
 
 		// Verify ConfigService is available to help developers catch import order issues early
-		this.verifyConfigServiceAvailable();
+		this.VerifyConfigServiceAvailable();
 	}
 
 	/**
 	 * Verify that ConfigService from the config module is registered in the application.
 	 * This helps catch import order issues where CommonModule is imported before ConfigModule.
 	 */
-	private verifyConfigServiceAvailable(): void {
+	private VerifyConfigServiceAvailable(): void {
 		try {
-			const configService = this.moduleRef.get(ConfigService, { strict: false });
-			if (!configService) {
+			const ConfigServiceInstance = this.ModuleRef.get(ConfigService, { strict: false });
+			if (!ConfigServiceInstance) {
 				throw new Error('ConfigService is null or undefined');
 			}
 		} catch (error) {
-			const errorMessage = `
-Failed to initialize CommonModule: ConfigService is not registered in the module hierarchy.
+			const ErrorMessage = `\nFailed to initialize CommonModule: ConfigService is not registered in the module hierarchy.\n\nCommonModule requires ConfigModule to be imported first in your application.\nEnsure your AppModule imports ConfigModule before CommonModule:\n\n  @Module({\n    imports: [ConfigModule, CommonModule],\n  })\n  export class AppModule {}\n\nImporting in the wrong order will cause services to fail during initialization.\nError details: ${GetErrorMessage(error)}\n\t\t\t`.trim();
 
-CommonModule requires ConfigModule to be imported first in your application.
-Ensure your AppModule imports ConfigModule before CommonModule:
-
-  @Module({
-    imports: [ConfigModule, CommonModule],
-  })
-  export class AppModule {}
-
-Importing in the wrong order will cause services to fail during initialization.
-Error details: ${getErrorMessage(error)}
-			`.trim();
-
-			throw new Error(errorMessage, { cause: error });
+			throw new Error(ErrorMessage, { cause: error });
 		}
 	}
 }

@@ -4,7 +4,7 @@
  */
 
 import { Inject } from '@nestjs/common';
-import { getQdrantClientToken } from '../qdrant.constants.js';
+import { GetQdrantClientToken } from '../qdrant.constants.js';
 
 /**
  * Decorator for injecting a Qdrant client instance.
@@ -22,7 +22,7 @@ import { getQdrantClientToken } from '../qdrant.constants.js';
  * @Injectable()
  * export class SearchService {
  *   constructor(
- *     @InjectQdrantClient() private readonly client: QdrantClient
+ *     @InjectQdrantClient() private readonly Client: QdrantClient
  *   ) {}
  * }
  *
@@ -40,4 +40,4 @@ import { getQdrantClientToken } from '../qdrant.constants.js';
  * @throws Error - If the Qdrant client is not registered or the named client does not exist
  */
 export const InjectQdrantClient = (name?: string): ReturnType<typeof Inject> =>
-	Inject(getQdrantClientToken(name));
+	Inject(GetQdrantClientToken(name));

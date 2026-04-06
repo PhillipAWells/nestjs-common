@@ -93,7 +93,7 @@ describe('Input Validation Security Tests', () => {
 			const nosqlInjectionPayloads = [
 				{ email: { $ne: null }, password: 'password123', name: 'Test' },
 				{ email: { $regex: '.*' }, password: 'password123', name: 'Test' },
-				{ email: { $where: 'this.email === "admin@example.com"' }, password: 'password123', name: 'Test' },
+				{ email: { $where: 'this.Email === "admin@example.com"' }, password: 'password123', name: 'Test' },
 				{ email: { $gt: '' }, password: 'password123', name: 'Test' },
 			];
 
@@ -347,7 +347,7 @@ describe('Input Validation Security Tests', () => {
 		});
 
 		it('should accept valid requests', async () => {
-			const validPayload = { email: 'test@example.com', password: 'password123', name: 'Test User' };
+			const validPayload = { email: 'test@example.com', password: 'password123', name: 'Test IUser' };
 
 			const result = await validationPipe.transform(validPayload, {
 				type: 'body',
@@ -357,7 +357,7 @@ describe('Input Validation Security Tests', () => {
 			expect(result).toBeDefined();
 			expect(result.email).toBe('test@example.com');
 			expect(result.password).toBe('password123');
-			expect(result.name).toBe('Test User');
+			expect(result.name).toBe('Test IUser');
 		});
 
 		it('should skip validation for primitive types', async () => {

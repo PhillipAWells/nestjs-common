@@ -1,4 +1,4 @@
-import type { IdentityProviderRepresentation } from '../types/index.js';
+import type { IIdentityProviderRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -27,74 +27,74 @@ export class IdentityProviderService extends BaseService {
 	/**
 	 * List all identity providers in a realm
 	 */
-	public async list(realm: string): Promise<IdentityProviderRepresentation[]> {
-		this.requireScope('identity-providers:read');
+	public async List(realm: string): Promise<IIdentityProviderRepresentation[]> {
+		this.RequireScope('identity-providers:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.identityProviders.find({ realm }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.identityProviders.find({ realm }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get an identity provider by alias
 	 */
-	public async get(realm: string, alias: string): Promise<IdentityProviderRepresentation> {
-		this.requireScope('identity-providers:read');
+	public async Get(realm: string, alias: string): Promise<IIdentityProviderRepresentation> {
+		this.RequireScope('identity-providers:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.identityProviders.findOne({ realm, alias }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.identityProviders.findOne({ realm, alias }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a new identity provider
 	 */
-	public async create(realm: string, idp: IdentityProviderRepresentation): Promise<void> {
-		this.requireScope('identity-providers:write');
+	public async Create(realm: string, idp: IIdentityProviderRepresentation): Promise<void> {
+		this.RequireScope('identity-providers:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.identityProviders.create({ ...idp, realm }),
+			await this.WithRetry(() =>
+				this.AdminClient.identityProviders.create({ ...idp, realm }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Update an identity provider
 	 */
-	public async update(
+	public async Update(
 		realm: string,
 		alias: string,
-		idp: IdentityProviderRepresentation,
+		idp: IIdentityProviderRepresentation,
 	): Promise<void> {
-		this.requireScope('identity-providers:write');
+		this.RequireScope('identity-providers:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.identityProviders.update({ realm, alias }, idp),
+			await this.WithRetry(() =>
+				this.AdminClient.identityProviders.update({ realm, alias }, idp),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete an identity provider
 	 */
-	public async delete(realm: string, alias: string): Promise<void> {
-		this.requireScope('identity-providers:write');
+	public async Delete(realm: string, alias: string): Promise<void> {
+		this.RequireScope('identity-providers:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.identityProviders.del({ realm, alias }),
+			await this.WithRetry(() =>
+				this.AdminClient.identityProviders.del({ realm, alias }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

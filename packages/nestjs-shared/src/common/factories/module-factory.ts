@@ -11,7 +11,7 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE, APP_GUARD } from '@nestjs/core';
 /**
  * Configuration interface for global modules
  */
-export interface GlobalModuleConfig {
+export interface IGlobalModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Providers to include in the module */
@@ -27,7 +27,7 @@ export interface GlobalModuleConfig {
 /**
  * Configuration interface for feature modules
  */
-export interface FeatureModuleConfig {
+export interface IFeatureModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Providers to include in the module */
@@ -43,7 +43,7 @@ export interface FeatureModuleConfig {
 /**
  * Configuration interface for service modules
  */
-export interface ServiceModuleConfig {
+export interface IServiceModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Service providers */
@@ -57,7 +57,7 @@ export interface ServiceModuleConfig {
 /**
  * Configuration interface for application modules
  */
-export interface ApplicationModuleConfig {
+export interface IApplicationModuleConfig {
 	/** Module name for logging */
 	name: string;
 	/** Global filters to apply */
@@ -88,10 +88,10 @@ export interface ApplicationModuleConfig {
  * }) {}
  * ```
  */
-export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
+export function CreateGlobalModule(config: IGlobalModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], imports = [], isGlobal = true } = config;
 
-	const moduleConfig: any = {
+	const ModuleConfig: any = {
 		providers: [
 			...providers,
 			{
@@ -107,7 +107,7 @@ export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
 	};
 
 	if (isGlobal) {
-		moduleConfig.providers.push({
+		ModuleConfig.providers.push({
 			provide: 'MODULE_TYPE',
 			useValue: 'global',
 		});
@@ -115,7 +115,7 @@ export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
 
 	return {
 		module: class {},
-		...moduleConfig,
+		...ModuleConfig,
 		global: isGlobal,
 	};
 }
@@ -137,7 +137,7 @@ export function CreateGlobalModule(config: GlobalModuleConfig): DynamicModule {
  * }) {}
  * ```
  */
-export function CreateFeatureModule(config: FeatureModuleConfig): DynamicModule {
+export function CreateFeatureModule(config: IFeatureModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], controllers = [], imports = [] } = config;
 
 	return {
@@ -174,7 +174,7 @@ export function CreateFeatureModule(config: FeatureModuleConfig): DynamicModule 
  * }) {}
  * ```
  */
-export function CreateServiceModule(config: ServiceModuleConfig): DynamicModule {
+export function CreateServiceModule(config: IServiceModuleConfig): DynamicModule {
 	const { name, providers = [], exports = [], imports = [] } = config;
 
 	return {
@@ -213,10 +213,10 @@ export function CreateServiceModule(config: ServiceModuleConfig): DynamicModule 
  * }) {}
  * ```
  */
-export function CreateApplicationModule(config: ApplicationModuleConfig): DynamicModule {
+export function CreateApplicationModule(config: IApplicationModuleConfig): DynamicModule {
 	const { name, filters = [], interceptors = [], pipes = [], guards = [], imports = [] } = config;
 
-	const providers: any[] = [
+	const Providers: any[] = [
 		{
 			provide: Logger,
 			useValue: new Logger(name),
@@ -225,7 +225,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 
 	// Add global filters
 	filters.forEach((filter) => {
-		providers.push({
+		Providers.push({
 			provide: APP_FILTER,
 			useClass: filter,
 		});
@@ -233,7 +233,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 
 	// Add global interceptors
 	interceptors.forEach((interceptor) => {
-		providers.push({
+		Providers.push({
 			provide: APP_INTERCEPTOR,
 			useClass: interceptor,
 		});
@@ -241,7 +241,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 
 	// Add global pipes
 	pipes.forEach((pipe) => {
-		providers.push({
+		Providers.push({
 			provide: APP_PIPE,
 			useClass: pipe,
 		});
@@ -249,7 +249,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 
 	// Add global guards
 	guards.forEach((guard) => {
-		providers.push({
+		Providers.push({
 			provide: APP_GUARD,
 			useClass: guard,
 		});
@@ -257,7 +257,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
 
 	return {
 		module: class {},
-		providers,
+		providers: Providers,
 		exports: [Logger],
 		imports,
 	};
@@ -286,7 +286,7 @@ export function CreateApplicationModule(config: ApplicationModuleConfig): Dynami
  * ```
  */
 export function CreateConditionalModule(
-	baseConfig: Partial<GlobalModuleConfig & FeatureModuleConfig & ServiceModuleConfig>,
+	baseConfig: Partial<IGlobalModuleConfig & IFeatureModuleConfig & IServiceModuleConfig>,
 	conditions: Array<{
 		condition: (config?: any) => boolean;
 		providers?: any[];
@@ -298,15 +298,15 @@ export function CreateConditionalModule(
 ): DynamicModule {
 	const { name = 'ConditionalModule', providers = [], exports = [], imports = [] } = baseConfig;
 
-	const conditionalProviders: any[] = [];
-	const conditionalExports: any[] = [];
-	const conditionalImports: any[] = [];
+	const ConditionalProviders: any[] = [];
+	const ConditionalExports: any[] = [];
+	const ConditionalImports: any[] = [];
 
 	conditions.forEach(({ condition, providers: condProviders = [], exports: condExports = [], imports: condImports = [], config }) => {
 		if (condition(config)) {
-			conditionalProviders.push(...condProviders);
-			conditionalExports.push(...condExports);
-			conditionalImports.push(...condImports);
+			ConditionalProviders.push(...condProviders);
+			ConditionalExports.push(...condExports);
+			ConditionalImports.push(...condImports);
 		}
 	});
 
@@ -314,7 +314,7 @@ export function CreateConditionalModule(
 		module: class {},
 		providers: [
 			...providers,
-			...conditionalProviders,
+			...ConditionalProviders,
 			{
 				provide: Logger,
 				useValue: new Logger(name),
@@ -322,12 +322,12 @@ export function CreateConditionalModule(
 		],
 		exports: [
 			...exports,
-			...conditionalExports,
+			...ConditionalExports,
 			Logger,
 		],
 		imports: [
 			...imports,
-			...conditionalImports,
+			...ConditionalImports,
 		],
 	};
 }
@@ -335,8 +335,13 @@ export function CreateConditionalModule(
 /**
  * Backwards compatibility aliases - exported functions use PascalCase per project conventions
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createApplicationModule = CreateApplicationModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createConditionalModule = CreateConditionalModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createFeatureModule = CreateFeatureModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createGlobalModule = CreateGlobalModule;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const createServiceModule = CreateServiceModule;

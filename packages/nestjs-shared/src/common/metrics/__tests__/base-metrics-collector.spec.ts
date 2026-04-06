@@ -1,13 +1,14 @@
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { register } from 'prom-client';
 import { MetricsRegistryService } from '../../services/metrics-registry.service.js';
 import { BaseMetricsCollector } from '../base-metrics-collector.js';
 
 class TestMetricsCollector extends BaseMetricsCollector {
-	protected initializeMetrics(): void {
-		this.registerCounter('test_counter', 'Test counter', ['type']);
-		this.registerGauge('test_gauge', 'Test gauge', ['type']);
-		this.registerHistogram('test_histogram', 'Test histogram', ['type'], [0.1, 0.5, 1]);
+	protected InitializeMetrics(): void {
+		this.RegisterCounter('test_counter', 'Test counter', ['type']);
+		this.RegisterGauge('test_gauge', 'Test gauge', ['type']);
+		this.RegisterHistogram('test_histogram', 'Test histogram', ['type'], [0.1, 0.5, 1]);
 	}
 }
 
@@ -21,14 +22,22 @@ describe('BaseMetricsCollector', () => {
 
 		mockAppLogger = {
 			info: () => {},
+			Info: () => {},
 			warn: () => {},
+			Warn: () => {},
 			error: () => {},
+			Error: () => {},
 			debug: () => {},
-			createContextualLogger: () => ({
+			Debug: () => {},
+			CreateContextualLogger: () => ({
 				info: () => {},
+				Info: () => {},
 				warn: () => {},
+				Warn: () => {},
 				error: () => {},
+				Error: () => {},
 				debug: () => {},
+				Debug: () => {},
 			}),
 		};
 
@@ -46,22 +55,22 @@ describe('BaseMetricsCollector', () => {
 	});
 
 	it('should return registered counter', () => {
-		const counter = collector.getMetric('test_counter');
+		const counter = collector.GetMetric('test_counter');
 		expect(counter).toBeDefined();
 	});
 
 	it('should return registered gauge', () => {
-		const gauge = collector.getMetric('test_gauge');
+		const gauge = collector.GetMetric('test_gauge');
 		expect(gauge).toBeDefined();
 	});
 
 	it('should return registered histogram', () => {
-		const histogram = collector.getMetric('test_histogram');
+		const histogram = collector.GetMetric('test_histogram');
 		expect(histogram).toBeDefined();
 	});
 
 	it('should return all metrics', () => {
-		const allMetrics = collector.getAllMetrics();
+		const allMetrics = collector.GetAllMetrics();
 		expect(allMetrics).toBeDefined();
 		expect(allMetrics.size).toBe(3);
 		expect(allMetrics.has('test_counter')).toBe(true);
@@ -70,7 +79,7 @@ describe('BaseMetricsCollector', () => {
 	});
 
 	it('should return undefined for non-existent metric', () => {
-		const metric = collector.getMetric('non_existent_metric');
+		const metric = collector.GetMetric('non_existent_metric');
 		expect(metric).toBeUndefined();
 	});
 });

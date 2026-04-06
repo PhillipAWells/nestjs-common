@@ -2,7 +2,7 @@
  * Application Configuration Interface
  * Defines top-level application configuration for port, environment, CORS, file uploads, logging, and optional GraphQL settings.
  */
-export interface AppConfig {
+export interface IAppConfig {
 	/** Server port number */
 	port: number;
 	/** Node environment (development, production, test) */
@@ -28,7 +28,7 @@ export interface AppConfig {
  * Database Configuration Interface
  * Defines MongoDB/database connection parameters and connection pool options.
  */
-export interface DatabaseConfig {
+export interface IDatabaseConfig {
 	/** Database connection URI */
 	uri: string;
 	/** Optional connection options */
@@ -50,7 +50,7 @@ export interface DatabaseConfig {
  * Cache Configuration Interface
  * Defines Redis cache connection parameters, timeouts, retry behavior, and performance settings.
  */
-export interface CacheConfig {
+export interface ICacheConfig {
 	/** Redis host */
 	host: string;
 	/** Redis port */
@@ -87,7 +87,7 @@ export interface CacheConfig {
  * Authentication Configuration Interface
  * Defines JWT token signing and validation parameters.
  */
-export interface AuthConfig {
+export interface IAuthConfig {
 	/** JWT token configuration */
 	jwt: {
 		/** Secret key for signing tokens */
@@ -107,7 +107,7 @@ export interface AuthConfig {
  * Generic Configuration Validation Result
  * Indicates validation outcome and collects any errors or warnings encountered.
  */
-export interface ValidationResult {
+export interface IValidationResult {
 	/** Whether validation passed */
 	isValid: boolean;
 	/** Array of validation error messages */
@@ -120,7 +120,7 @@ export interface ValidationResult {
  * Configuration Schema Definition
  * Object map defining validation rules for configuration values.
  */
-export interface ConfigSchema {
+export interface IConfigSchema {
 	/** Joi schema definition for configuration keys */
 	[key: string]: any;
 }
@@ -129,9 +129,9 @@ export interface ConfigSchema {
  * Environment Configuration Options
  * Options for loading and validating environment variables from files and process.env.
  */
-export interface EnvironmentOptions {
+export interface IEnvironmentOptions {
 	/** Joi schema for validating environment variables */
-	validationSchema?: ConfigSchema;
+	validationSchema?: IConfigSchema;
 	/** Options passed to Joi schema validation */
 	validationOptions?: {
 		/** Allow unknown environment variables */

@@ -1,4 +1,4 @@
-export interface LogEntry {
+export interface ILogEntry {
 	timestamp: string;        // ISO 8601 format
 	level: string;            // Log level: debug, info, warn, error, fatal
 	service: string;          // Service name
@@ -10,7 +10,7 @@ export interface LogEntry {
 	environment: string;      // Environment (dev, staging, prod)
 }
 
-export interface LogMetadata {
+export interface ILogMetadata {
 	[key: string]: any;
 }
  

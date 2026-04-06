@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ErrorSanitizerService, ErrorSanitizerOptions, ERROR_SANITIZER_OPTIONS } from '../error-sanitizer.service.js';
+import { ErrorSanitizerService, IErrorSanitizerOptions, ERROR_SANITIZER_OPTIONS } from '../error-sanitizer.service.js';
 
 describe('ErrorSanitizerService - Additional Coverage', () => {
 	let service: ErrorSanitizerService;
 
-	function makeMockModuleRef(options?: ErrorSanitizerOptions) {
+	function makeMockModuleRef(options?: IErrorSanitizerOptions) {
 		return {
 			get: (token: any) => {
 				if (token === ERROR_SANITIZER_OPTIONS) {
@@ -24,7 +24,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 
 	describe('additionalSensitiveKeys option', () => {
 		it('should accept additional sensitive keys in options', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customSecret', 'internalKey'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -36,14 +36,14 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				publicData: 'public',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.customSecret).toBe('***REDACTED***');
 			expect(sanitized.internalKey).toBe('***REDACTED***');
 			expect(sanitized.publicData).toBe('public');
 		});
 
 		it('should combine default and additional sensitive keys', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['customField'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -54,14 +54,14 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				customField: 'additional_sensitive',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.password).toBe('***REDACTED***');
 			expect(sanitized.token).toBe('***REDACTED***');
 			expect(sanitized.customField).toBe('***REDACTED***');
 		});
 
 		it('should handle empty additional sensitive keys array', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: [],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -71,13 +71,13 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				publicData: 'public',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.password).toBe('***REDACTED***');
 			expect(sanitized.publicData).toBe('public');
 		});
 
 		it('should match case-insensitively for additional keys', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalSensitiveKeys: ['CustomSecret'],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -88,7 +88,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				CustomSecret: 'value3',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// All variations should be redacted since match is case-insensitive
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
@@ -100,7 +100,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 
 	describe('additionalPatterns option', () => {
 		it('should apply additional patterns to message sanitization', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [/custom_secret_[a-z0-9]+/gi],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -110,13 +110,13 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			// The message should have custom patterns applied
 			expect(sanitized.message).toBeDefined();
 		});
 
 		it('should handle multiple additional patterns', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [
 					/secret_[a-z0-9]+/gi,
 					/token_[a-z0-9]+/gi,
@@ -129,12 +129,12 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBeDefined();
 		});
 
 		it('should handle empty patterns array', () => {
-			const options: ErrorSanitizerOptions = {
+			const options: IErrorSanitizerOptions = {
 				additionalPatterns: [],
 			};
 			service = new ErrorSanitizerService(makeMockModuleRef(options));
@@ -144,7 +144,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('Regular error message');
 		});
 	});
@@ -156,7 +156,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 401,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('Bearer eyJ');
 			expect(sanitized.message).toContain('Bearer [REDACTED]');
 		});
@@ -167,18 +167,18 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('postgresql://');
 			expect(sanitized.message).toContain('[REDACTED]');
 		});
 
 		it('should remove email addresses', () => {
 			const error = {
-				message: 'User admin@example.com not found',
+				message: 'IUser admin@example.com not found',
 				statusCode: 404,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('admin@example.com');
 			expect(sanitized.message).toContain('[EMAIL]');
 		});
@@ -189,7 +189,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 403,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('192.168.1.100');
 			expect(sanitized.message).toContain('[IP]');
 		});
@@ -200,7 +200,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).not.toContain('/home/user');
 			expect(sanitized.message).not.toContain('sk_live_');
 			expect(sanitized.message).not.toContain('user@example.com');
@@ -215,7 +215,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -225,7 +225,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -235,7 +235,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.message).toBe('An error occurred');
 		});
 
@@ -245,7 +245,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 500,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(typeof sanitized.message).toBe('string');
 		});
 
@@ -254,7 +254,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				message: 'Error occurred',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.statusCode).toBe(500); // Default
 		});
 
@@ -264,7 +264,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				statusCode: 400,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.timestamp).toBeDefined();
 			expect(sanitized.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 		});
@@ -285,7 +285,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				},
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized.user.id).toBe('123');
 			expect(sanitized.publicData).toBe('ok');
 			expect(Array.isArray(sanitized.items)).toBe(true);
@@ -299,7 +299,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				'API_KEY': 'value4',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// All variations should be redacted
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
@@ -316,7 +316,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				current = current.next;
 			}
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			expect(sanitized).toBeDefined();
 		});
 	});
@@ -332,7 +332,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				},
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.context).toBeDefined();
 			expect(sanitized.context.userId).toBe('123');
 			expect(sanitized.context.password).toBe('***REDACTED***');
@@ -348,7 +348,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				context,
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			expect(sanitized.context.id).toBe('123');
 			expect(sanitized.context.self).toBe('[CIRCULAR_REF]');
 		});
@@ -363,7 +363,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				],
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error);
+			const sanitized = service.SanitizeErrorResponse(error);
 			// Array contexts are preserved as arrays
 			expect(Array.isArray(sanitized.context)).toBe(true);
 		});
@@ -377,7 +377,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'Error: test\n  at line 1\n  at line 2',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, true);
+			const sanitized = service.SanitizeErrorResponse(error, true);
 			expect(sanitized.stack).toBeDefined();
 			expect(sanitized.stack).toContain('Error: test');
 		});
@@ -389,7 +389,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'Error: test\n  at line 1\n  at line 2',
 			};
 
-			const sanitized = service.sanitizeErrorResponse(error, false);
+			const sanitized = service.SanitizeErrorResponse(error, false);
 			expect(sanitized.stack).toBeUndefined();
 		});
 
@@ -400,8 +400,8 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				stack: 'stack trace here',
 			};
 
-			const devSanitized = service.sanitizeErrorResponse(error, true);
-			const prodSanitized = service.sanitizeErrorResponse(error, false);
+			const devSanitized = service.SanitizeErrorResponse(error, true);
+			const prodSanitized = service.SanitizeErrorResponse(error, false);
 
 			expect(devSanitized.message).not.toContain('/home/app.ts');
 			expect(devSanitized.message).not.toContain('sk_live_');
@@ -421,7 +421,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				token: 'value',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			Object.values(sanitized).forEach(v => {
 				if (typeof v === 'string') {
 					expect(v).toBe('***REDACTED***');
@@ -437,7 +437,7 @@ describe('ErrorSanitizerService - Additional Coverage', () => {
 				tokenValue: 'token',
 			};
 
-			const sanitized = service['sanitizeContext'](context);
+			const sanitized = service['SanitizeContext'](context);
 			// Fields containing sensitive keywords should be redacted
 			expect(sanitized.userPassword).toBe('***REDACTED***');
 			expect(sanitized.myApiKey).toBe('***REDACTED***');

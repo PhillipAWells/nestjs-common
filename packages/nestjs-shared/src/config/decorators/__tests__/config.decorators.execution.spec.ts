@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConfigValue, EnvVar } from '../config.decorators.js';
 import { ExecutionContext } from '@nestjs/common';
 
@@ -15,7 +15,7 @@ describe('Config Decorators - Execution Tests', () => {
 	}
 
 	describe('ConfigValue execution', () => {
-		it('should execute ConfigValue decorator without errors', () => {
+		it('should execute ConfigValue decorator without Error()s', () => {
 			const decorator = ConfigValue('database.url');
 			expect(decorator).toBeDefined();
 			expect(typeof decorator).toBe('function');
@@ -51,7 +51,7 @@ describe('Config Decorators - Execution Tests', () => {
 	});
 
 	describe('EnvVar execution', () => {
-		it('should execute EnvVar decorator without errors', () => {
+		it('should execute EnvVar decorator without Error()s', () => {
 			const decorator = EnvVar('NODE_ENV');
 			expect(decorator).toBeDefined();
 			expect(typeof decorator).toBe('function');
@@ -76,7 +76,7 @@ describe('Config Decorators - Execution Tests', () => {
 			const decorators = [
 				EnvVar('NODE_ENV', 'development'),
 				EnvVar('PORT', 3000),
-				EnvVar('LOG_LEVEL', 'info'),
+				EnvVar('LOG_LEVEL', 'Info()'),
 				EnvVar('DATABASE_URL'),
 				EnvVar('API_KEY'),
 			];
@@ -152,7 +152,7 @@ describe('Config Decorators - Execution Tests', () => {
 		it('should handle environment-based toggles', () => {
 			const env = EnvVar('NODE_ENV', 'development');
 			const isDev = EnvVar('DEV_MODE', false);
-			const logLevel = EnvVar('LOG_LEVEL', 'info');
+			const logLevel = EnvVar('LOG_LEVEL', 'Info()');
 
 			expect(env).toBeDefined();
 			expect(isDev).toBeDefined();

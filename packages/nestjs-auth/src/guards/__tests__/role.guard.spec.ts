@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RoleGuard } from '../role.guard.js';
-import type { KeycloakUser } from '../../keycloak/keycloak.types.js';
+import type { IKeycloakUser } from '../../keycloak/keycloak.types.js';
 
 describe('RoleGuard', () => {
 	let guard: RoleGuard;
@@ -90,7 +90,7 @@ describe('RoleGuard', () => {
 			it('should throw ForbiddenException when user has no required roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['admin', 'moderator']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -114,7 +114,7 @@ describe('RoleGuard', () => {
 			it('should allow access when user has one of required realm roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['admin', 'moderator']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -136,7 +136,7 @@ describe('RoleGuard', () => {
 			it('should allow access when user has one of required client roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['read', 'write']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',
@@ -158,7 +158,7 @@ describe('RoleGuard', () => {
 			it('should check both realm and client roles', () => {
 				(mockReflector.getAllAndOverride as Mock).mockReturnValue(['admin', 'viewer']);
 
-				const mockUser: KeycloakUser = {
+				const mockUser: IKeycloakUser = {
 					id: 'user-123',
 					email: 'user@example.com',
 					username: 'john',

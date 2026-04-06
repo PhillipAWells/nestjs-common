@@ -1,14 +1,14 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { LazyModuleRefService } from '../common/utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../common/utils/lazy-getter.types.js';
 import { AppLogger, getErrorMessage } from '../common/index.js';
 
 /**
  * Configuration schema definition interface.
  * Used for validating configuration structure.
  */
-export interface ConfigSchemaDefinition {
+export interface IConfigSchemaDefinition {
 	[key: string]: {
 		required: boolean;
 		[key: string]: any;
@@ -43,8 +43,8 @@ export interface ConfigSchemaDefinition {
  * ```
  */
 @Injectable()
-export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModuleDestroy {
-	private _contextualLogger: AppLogger | undefined;
+export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnModuleDestroy {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -57,13 +57,13 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	}
 
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger, { strict: false });
-			if (baseLogger) {
-				this._contextualLogger = baseLogger.createContextualLogger(ConfigService.name);
+		if (!this._ContextualLogger) {
+			const BaseLogger = this.Module.get(AppLogger, { strict: false });
+			if (BaseLogger) {
+				this._ContextualLogger = BaseLogger.CreateContextualLogger(ConfigService.name);
 			}
 		}
-		return this._contextualLogger ?? this.Module.get(AppLogger);
+		return this._ContextualLogger ?? this.Module.get(AppLogger);
 	}
 
 	private get NestConfig(): NestConfigService {
@@ -73,40 +73,40 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	/**
 	 * Validate configuration against schema
 	 */
-	public validate(schema: ConfigSchemaDefinition): void {
-		const startTime = Date.now();
-		this.Logger.debug('Starting configuration validation', {
+	public Validate(schema: IConfigSchemaDefinition): void {
+		const StartTime = Date.now();
+		this.Logger.Debug('Starting configuration validation', {
 			schemaKeys: Object.keys(schema).length,
 		});
 
 		try {
 			// Basic validation - check required fields
-			const requiredFields = Object.keys(schema).filter(key => schema[key].required);
-			const optionalFields = Object.keys(schema).filter(key => !schema[key].required);
-			const missingFields = requiredFields.filter(field => this.get(field) === undefined);
+			const RequiredFields = Object.keys(schema).filter(key => schema[key].required);
+			const OptionalFields = Object.keys(schema).filter(key => !schema[key].required);
+			const MissingFields = RequiredFields.filter(field => this.Get(field) === undefined);
 
-			if (missingFields.length > 0) {
-				const durationMs = Date.now() - startTime;
+			if (MissingFields.length > 0) {
+				const DurationMs = Date.now() - StartTime;
 				this.Logger.error('Configuration validation failed', undefined, undefined, {
-					missingFields,
-					requiredFields: requiredFields.length,
-					durationMs,
+					missingFields: MissingFields,
+					requiredFields: RequiredFields.length,
+					durationMs: DurationMs,
 				});
-				throw new Error(`Missing required configuration fields: ${missingFields.join(', ')}`);
+				throw new Error(`Missing required configuration fields: ${MissingFields.join(', ')}`);
 			}
 
-			const durationMs = Date.now() - startTime;
+			const DurationMs = Date.now() - StartTime;
 			this.Logger.info('Configuration validation successful', {
 				validatedFields: Object.keys(schema).length,
-				requiredFields: requiredFields.length,
-				optionalFields: optionalFields.length,
-				durationMs,
+				requiredFields: RequiredFields.length,
+				optionalFields: OptionalFields.length,
+				durationMs: DurationMs,
 			});
 		} catch (error) {
-			const durationMs = Date.now() - startTime;
+			const DurationMs = Date.now() - StartTime;
 			this.Logger.error('Configuration validation error', undefined, undefined, {
 				error: getErrorMessage(error),
-				durationMs,
+				durationMs: DurationMs,
 			});
 			throw error;
 		}
@@ -115,40 +115,40 @@ export class ConfigService implements LazyModuleRefService, OnModuleInit, OnModu
 	/**
 	 * Get configuration value
 	 */
-	public get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
+	public Get<T = any>(propertyPath: string, defaultValue?: T): T | undefined {
 		return this.NestConfig.get(propertyPath, defaultValue);
 	}
 
 	/**
 	 * Get configuration value or throw
 	 */
-	public getOrThrow<T = any>(propertyPath: string): T {
+	public GetOrThrow<T = any>(propertyPath: string): T {
 		return this.NestConfig.getOrThrow(propertyPath);
 	}
 
 	/**
 	 * Get configuration value as string
 	 */
-	public getString(propertyPath: string, defaultValue?: string): string | undefined {
-		const value = this.get(propertyPath, defaultValue);
-		if (value === undefined) return undefined;
-		return String(value);
+	public GetString(propertyPath: string, defaultValue?: string): string | undefined {
+		const Value = this.Get(propertyPath, defaultValue);
+		if (Value === undefined) return undefined;
+		return String(Value);
 	}
 
 	/**
 	 * Get configuration value as number
 	 */
-	public getNumber(propertyPath: string, defaultValue?: number): number | undefined {
-		const value = this.get(propertyPath, defaultValue);
-		if (value === undefined) return undefined;
-		const num = Number(value);
-		return isNaN(num) ? undefined : num;
+	public GetNumber(propertyPath: string, defaultValue?: number): number | undefined {
+		const Value = this.Get(propertyPath, defaultValue);
+		if (Value === undefined) return undefined;
+		const Num = Number(Value);
+		return isNaN(Num) ? undefined : Num;
 	}
 
 	/**
 	 * Cleanup resources on module destruction
 	 */
 	public onModuleDestroy(): void {
-		this._contextualLogger = undefined;
+		this._ContextualLogger = undefined;
 	}
 }

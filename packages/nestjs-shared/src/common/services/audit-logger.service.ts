@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
-import { escapeNewlines } from '../utils/sanitization.utils.js';
+import { EscapeNewlines } from '../utils/sanitization.utils.js';
 
 /**
  * Audit log entry for security events.
  */
-export interface AuditLogEntry {
+export interface IAuditLogEntry {
 	timestamp: Date;
 	userId?: string;
 	action: string;
@@ -51,8 +51,8 @@ export interface AuditLogEntry {
  * ```
  */
 @Injectable()
-export class AuditLoggerService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class AuditLoggerService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -61,23 +61,23 @@ export class AuditLoggerService implements LazyModuleRefService {
 	}
 
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(AuditLoggerService.name);
+		if (!this._ContextualLogger) {
+			const BaseLogger = this.Module.get(AppLogger);
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(AuditLoggerService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
 	 * Log authentication attempt
 	 */
-	public logAuthenticationAttempt(
+	public LogAuthenticationAttempt(
 		email: string,
 		success: boolean,
 		ipAddress?: string,
 		reason?: string,
 	): void {
-		const auditData = {
+		const AuditData = {
 			event: 'authentication',
 			email,
 			success,
@@ -86,7 +86,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Authentication ${success ? 'SUCCESS' : 'FAILURE'}: ${escapeNewlines(email)}${reason ? ` - ${escapeNewlines(reason)}` : ''} | ${JSON.stringify(auditData)}`,
+			`Authentication ${success ? 'SUCCESS' : 'FAILURE'}: ${EscapeNewlines(email)}${reason ? ` - ${EscapeNewlines(reason)}` : ''} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -94,13 +94,13 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log authorization failure
 	 */
-	public logAuthorizationFailure(
+	public LogAuthorizationFailure(
 		userId: string,
 		resource: string,
 		action: string,
 		ipAddress?: string,
 	): void {
-		const auditData = {
+		const AuditData = {
 			event: 'authorization_failure',
 			userId,
 			resource,
@@ -109,7 +109,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`Authorization FAILURE: User ${escapeNewlines(userId)} attempted ${escapeNewlines(action)} on ${escapeNewlines(resource)} | ${JSON.stringify(auditData)}`,
+			`Authorization FAILURE: IUser ${EscapeNewlines(userId)} attempted ${EscapeNewlines(action)} on ${EscapeNewlines(resource)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -117,15 +117,15 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log token generation
 	 */
-	public logTokenGeneration(userId: string, tokenType: 'access' | 'refresh'): void {
-		const auditData = {
+	public LogTokenGeneration(userId: string, tokenType: 'access' | 'refresh'): void {
+		const AuditData = {
 			event: 'token_generation',
 			userId,
 			tokenType,
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Token GENERATED: ${tokenType} token for user ${escapeNewlines(userId)} | ${JSON.stringify(auditData)}`,
+			`Token GENERATED: ${tokenType} token for user ${EscapeNewlines(userId)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -133,15 +133,15 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log token revocation
 	 */
-	public logTokenRevocation(userId: string, reason: string): void {
-		const auditData = {
+	public LogTokenRevocation(userId: string, reason: string): void {
+		const AuditData = {
 			event: 'token_revocation',
 			userId,
 			reason,
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Token REVOCATION: User ${escapeNewlines(userId)} - ${escapeNewlines(reason)} | ${JSON.stringify(auditData)}`,
+			`Token REVOCATION: IUser ${EscapeNewlines(userId)} - ${EscapeNewlines(reason)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -149,12 +149,12 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log rate limit violation
 	 */
-	public logRateLimitViolation(
+	public LogRateLimitViolation(
 		endpoint: string,
 		ipAddress: string,
 		limit: number,
 	): void {
-		const auditData = {
+		const AuditData = {
 			event: 'rate_limit_violation',
 			endpoint,
 			ipAddress,
@@ -162,7 +162,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`Rate LIMIT VIOLATION: ${escapeNewlines(endpoint)} from ${escapeNewlines(ipAddress)} (limit: ${limit}/min) | ${JSON.stringify(auditData)}`,
+			`Rate LIMIT VIOLATION: ${EscapeNewlines(endpoint)} from ${EscapeNewlines(ipAddress)} (limit: ${limit}/min) | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -170,15 +170,15 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log CSRF violation
 	 */
-	public logCsrfViolation(ipAddress: string, endpoint: string): void {
-		const auditData = {
+	public LogCsrfViolation(ipAddress: string, endpoint: string): void {
+		const AuditData = {
 			event: 'csrf_violation',
 			ipAddress,
 			endpoint,
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.warn(
-			`CSRF VIOLATION: ${escapeNewlines(endpoint)} from ${escapeNewlines(ipAddress)} | ${JSON.stringify(auditData)}`,
+			`CSRF VIOLATION: ${EscapeNewlines(endpoint)} from ${EscapeNewlines(ipAddress)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -186,13 +186,13 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log security configuration change
 	 */
-	public logConfigurationChange(
+	public LogConfigurationChange(
 		userId: string,
 		config: string,
 		oldValue: any,
 		newValue: any,
 	): void {
-		const auditData = {
+		const AuditData = {
 			event: 'config_change',
 			userId,
 			config,
@@ -201,7 +201,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Configuration CHANGE: ${escapeNewlines(config)} modified by ${escapeNewlines(userId)} | ${JSON.stringify(auditData)}`,
+			`Configuration CHANGE: ${EscapeNewlines(config)} modified by ${EscapeNewlines(userId)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -209,8 +209,8 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log data access
 	 */
-	public logDataAccess(userId: string, resource: string, action: string): void {
-		const auditData = {
+	public LogDataAccess(userId: string, resource: string, action: string): void {
+		const AuditData = {
 			event: 'data_access',
 			userId,
 			resource,
@@ -218,7 +218,7 @@ export class AuditLoggerService implements LazyModuleRefService {
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Data ACCESS: User ${escapeNewlines(userId)} ${escapeNewlines(action)} ${escapeNewlines(resource)} | ${JSON.stringify(auditData)}`,
+			`Data ACCESS: IUser ${EscapeNewlines(userId)} ${EscapeNewlines(action)} ${EscapeNewlines(resource)} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}
@@ -226,13 +226,13 @@ export class AuditLoggerService implements LazyModuleRefService {
 	/**
 	 * Log security event
 	 */
-	public logSecurityEvent(entry: AuditLogEntry): void {
-		const auditData = {
+	public LogSecurityEvent(entry: IAuditLogEntry): void {
+		const AuditData = {
 			...entry,
 			timestamp: new Date().toISOString(),
 		};
 		this.Logger.info(
-			`Security EVENT: ${escapeNewlines(entry.action)} on ${escapeNewlines(entry.resource)} - ${entry.result} | ${JSON.stringify(auditData)}`,
+			`Security EVENT: ${EscapeNewlines(entry.action)} on ${EscapeNewlines(entry.resource)} - ${entry.result} | ${JSON.stringify(AuditData)}`,
 			'AuditLogger',
 		);
 	}

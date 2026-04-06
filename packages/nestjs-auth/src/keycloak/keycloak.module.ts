@@ -1,8 +1,8 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { KEYCLOAK_MODULE_OPTIONS } from './keycloak.constants.js';
-import type { KeycloakModuleOptions } from './keycloak.types.js';
-import type { KeycloakModuleAsyncOptions } from './keycloak.interfaces.js';
+import type { IKeycloakModuleOptions } from './keycloak.types.js';
+import type { IKeycloakModuleAsyncOptions } from './keycloak.interfaces.js';
 import { JwksCacheService } from './services/jwks-cache.service.js';
 import { KeycloakTokenValidationService } from './services/keycloak-token-validation.service.js';
 
@@ -42,24 +42,24 @@ export class KeycloakModule {
 	 * @param options - Configuration options for the Keycloak module
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService
 	 */
-	public static forRoot(options: KeycloakModuleOptions): DynamicModule {
-		const isOffline = options.validationMode === 'offline';
-		const providers = [
+	public static ForRoot(options: IKeycloakModuleOptions): DynamicModule {
+		const IsOffline = options.validationMode === 'offline';
+		const Providers = [
 			{
 				provide: KEYCLOAK_MODULE_OPTIONS,
 				useValue: options,
 			},
 			KeycloakTokenValidationService,
-			...(isOffline ? [JwksCacheService] : []),
+			...(IsOffline ? [JwksCacheService] : []),
 		];
 
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({})],
-			providers,
+			providers: Providers,
 			exports: [
 				KeycloakTokenValidationService,
-				...(isOffline ? [JwksCacheService] : []),
+				...(IsOffline ? [JwksCacheService] : []),
 				KEYCLOAK_MODULE_OPTIONS,
 			],
 		};
@@ -72,14 +72,14 @@ export class KeycloakModule {
 	 * Useful for reading configuration from environment variables or other async sources.
 	 *
 	 * @param options - Async factory configuration
-	 * @param options.useFactory - Function that returns KeycloakModuleOptions or a promise that resolves to it
+	 * @param options.useFactory - Function that returns IKeycloakModuleOptions or a promise that resolves to it
 	 * @param options.inject - Optional array of providers to inject into the factory function
 	 * @param options.imports - Optional array of modules to import for dependency injection
 	 * @returns Dynamic module configuration with KeycloakTokenValidationService and JwksCacheService.
 	 *   Note: JwksCacheService is always provided in async mode (validationMode is not known at
 	 *   module definition time). In online mode, it initializes but skips the JWKS fetch.
 	 */
-	public static forRootAsync(options: KeycloakModuleAsyncOptions): DynamicModule {
+	public static ForRootAsync(options: IKeycloakModuleAsyncOptions): DynamicModule {
 		return {
 			module: KeycloakModule,
 			imports: [JwtModule.register({}), ...(options.imports ?? [])],

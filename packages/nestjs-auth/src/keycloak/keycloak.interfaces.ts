@@ -1,12 +1,12 @@
 import { ModuleMetadata } from '@nestjs/common';
 import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
-import type { KeycloakModuleOptions } from './keycloak.types.js';
+import type { IKeycloakModuleOptions } from './keycloak.types.js';
 
 /**
  * Async options for KeycloakModule configuration
  */
-export interface KeycloakModuleAsyncOptions {
+export interface IKeycloakModuleAsyncOptions {
 	imports?: ModuleMetadata['imports'];
-	useFactory: (...args: unknown[]) => Promise<KeycloakModuleOptions> | KeycloakModuleOptions;
+	useFactory: (...args: unknown[]) => Promise<IKeycloakModuleOptions> | IKeycloakModuleOptions;
 	inject?: Array<InjectionToken | OptionalFactoryDependency>;
 }

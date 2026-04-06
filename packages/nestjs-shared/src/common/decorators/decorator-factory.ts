@@ -5,7 +5,7 @@ import type { Request } from 'express';
  * Base options for decorator factories
  */
 
-export interface BaseDecoratorOptions {
+export interface IBaseDecoratorOptions {
 	/**
 	 * Transform function to apply to the extracted value
 	 */
@@ -20,7 +20,7 @@ export interface BaseDecoratorOptions {
 /**
  * Options for conditional decorators (metadata-based)
  */
-export interface ConditionalDecoratorOptions extends BaseDecoratorOptions {
+export interface IConditionalDecoratorOptions extends IBaseDecoratorOptions {
 	/**
 	 * Metadata key to set
 	 */
@@ -35,7 +35,7 @@ export interface ConditionalDecoratorOptions extends BaseDecoratorOptions {
 /**
  * Options for validating decorators
  */
-export interface ValidatingDecoratorOptions extends BaseDecoratorOptions {
+export interface IValidatingDecoratorOptions extends IBaseDecoratorOptions {
 	/**
 	 * Whether to throw an error if validation fails
 	 */
@@ -50,7 +50,7 @@ export interface ValidatingDecoratorOptions extends BaseDecoratorOptions {
 /**
  * Options for transforming decorators
  */
-export interface TransformingDecoratorOptions extends BaseDecoratorOptions {
+export interface ITransformingDecoratorOptions extends IBaseDecoratorOptions {
 	/**
 	 * Whether to apply transformation even if value is undefined/null
 	 */
@@ -82,24 +82,24 @@ export function GetRequestFromContext(ctx: ExecutionContext): Request {
  */
 export function CreateRequestPropertyDecorator<T = any>(
 	extractor: (request: Request, ctx: ExecutionContext) => T,
-	options: BaseDecoratorOptions = {},
+	options: IBaseDecoratorOptions = {},
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply validation if provided
-			if (options.validate && !options.validate(value)) {
+			if (options.validate && !options.validate(Value)) {
 				throw new Error('Validation failed for extracted value');
 			}
 
 			// Apply transformation if provided
 			if (options.transform) {
-				value = options.transform(value);
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }
@@ -109,7 +109,7 @@ export function CreateRequestPropertyDecorator<T = any>(
  * @param options - Configuration options
  * @returns Method decorator function
  */
-export function CreateConditionalDecorator(options: ConditionalDecoratorOptions): MethodDecorator {
+export function CreateConditionalDecorator(options: IConditionalDecoratorOptions): MethodDecorator {
 	return SetMetadata(options.key, options.value);
 }
 
@@ -129,27 +129,27 @@ export function CreateConditionalDecorator(options: ConditionalDecoratorOptions)
  */
 export function CreateValidatingDecorator<T = any>(
 	extractor: (request: Request, ctx: ExecutionContext) => T,
-	options: ValidatingDecoratorOptions = {},
+	options: IValidatingDecoratorOptions = {},
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply validation if provided
 			if (options.validate) {
-				const isValid = options.validate(value);
-				if (!isValid && options.throwOnInvalid) {
+				const IsValid = options.validate(Value);
+				if (!IsValid && options.throwOnInvalid) {
 					throw new Error(options.errorMessage ?? 'Validation failed for extracted value');
 				}
 			}
 
 			// Apply transformation if provided
 			if (options.transform) {
-				value = options.transform(value);
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }
@@ -170,19 +170,19 @@ export function CreateValidatingDecorator<T = any>(
  */
 export function CreateTransformingDecorator<T = any>(
 	extractor: (request: Request, ctx: ExecutionContext) => T,
-	options: TransformingDecoratorOptions = {},
+	options: ITransformingDecoratorOptions = {},
 ): ParameterDecorator {
 	return createParamDecorator(
 		(_data: unknown, ctx: ExecutionContext): T => {
-			const request = GetRequestFromContext(ctx);
-			let value: unknown = extractor(request, ctx);
+			const Request = GetRequestFromContext(ctx);
+			let Value: unknown = extractor(Request, ctx);
 
 			// Apply transformation if provided
-			if (options.transform && (value !== undefined || options.transformUndefined)) {
-				value = options.transform(value);
+			if (options.transform && (Value !== undefined || options.transformUndefined)) {
+				Value = options.transform(Value);
 			}
 
-			return value as T;
+			return Value as T;
 		},
 	)();
 }

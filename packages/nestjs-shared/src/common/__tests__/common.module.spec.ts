@@ -13,14 +13,32 @@ describe('CommonModule', () => {
 		mockAppLogger = {
 			createContextualLogger: vi.fn().mockReturnValue({
 				debug: vi.fn(),
+				Debug: vi.fn(),
 				info: vi.fn(),
+				Info: vi.fn(),
 				error: vi.fn(),
+				Error: vi.fn(),
 				warn: vi.fn(),
+				Warn: vi.fn(),
+			}),
+			CreateContextualLogger: vi.fn().mockReturnValue({
+				debug: vi.fn(),
+				Debug: vi.fn(),
+				info: vi.fn(),
+				Info: vi.fn(),
+				error: vi.fn(),
+				Error: vi.fn(),
+				warn: vi.fn(),
+				Warn: vi.fn(),
 			}),
 			debug: vi.fn(),
+			Debug: vi.fn(),
 			info: vi.fn(),
+			Info: vi.fn(),
 			error: vi.fn(),
+			Error: vi.fn(),
 			warn: vi.fn(),
+			Warn: vi.fn(),
 		};
 	});
 
@@ -60,6 +78,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -121,6 +140,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -150,6 +170,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -185,6 +206,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -205,7 +227,7 @@ describe('CommonModule', () => {
 	});
 
 	describe('onModuleInit - Error handling', () => {
-		it('should handle moduleRef.get() throwing an exception', () => {
+		it('should handle moduleRef.Get() throwing an exception', () => {
 			const testError = new Error('Module reference error');
 			mockModuleRef = {
 				get: vi.fn(() => {
@@ -219,6 +241,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -251,6 +274,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -288,6 +312,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -317,6 +342,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),
@@ -331,7 +357,7 @@ describe('CommonModule', () => {
 			commonModule = new CommonModule(mockAppLogger as AppLogger, mockRegistry, mockModuleRef as ModuleRef);
 
 			// Module should be able to call moduleRef methods
-			expect(commonModule).toHaveProperty('moduleRef');
+			expect(commonModule).toHaveProperty('ModuleRef');
 		});
 	});
 
@@ -349,6 +375,7 @@ describe('CommonModule', () => {
 				exporters: [],
 				listeners: new Map(),
 				registerDescriptor: vi.fn(),
+				RegisterDescriptor: vi.fn(),
 				recordMetric: vi.fn(),
 				getAllMetrics: vi.fn().mockReturnValue(new Map()),
 				getMetric: vi.fn().mockReturnValue([]),

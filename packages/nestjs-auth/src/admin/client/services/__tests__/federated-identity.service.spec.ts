@@ -3,15 +3,15 @@ import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { FederatedIdentityService } from '../federated-identity.service.js';
 import { ConflictError } from '../../errors/index.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('FederatedIdentityService', () => {
 	let service: FederatedIdentityService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let writeOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let writeOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -26,16 +26,16 @@ describe('FederatedIdentityService', () => {
 		allScopes = new Set([
 			'federated-identity:read',
 			'federated-identity:write',
-		] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['federated-identity:read'] as KeycloakAdminScope[]);
-		writeOnlyScopes = new Set(['federated-identity:write'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['federated-identity:read'] as TKeycloakAdminScope[]);
+		writeOnlyScopes = new Set(['federated-identity:write'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('list', () => {
 		it('throws KeycloakAdminScopeError when federated-identity:read scope is not granted', async () => {
 			service = new FederatedIdentityService(mockAdminClient, noScopes);
-			await expect(service.list('user-id')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.List('user-id')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.users.listFederatedIdentities).not.toHaveBeenCalled();
 		});
 
@@ -44,7 +44,7 @@ describe('FederatedIdentityService', () => {
 				{ identityProvider: 'github', userId: 'octocat', userName: 'octocat' },
 			]);
 			service = new FederatedIdentityService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('user-id');
+			const result = await service.List('user-id');
 			expect(result).toEqual([
 				{ identityProvider: 'github', userId: 'octocat', userName: 'octocat' },
 			]);
@@ -56,7 +56,7 @@ describe('FederatedIdentityService', () => {
 		it('returns empty array when no federated identities found', async () => {
 			mockAdminClient.users.listFederatedIdentities.mockResolvedValue([]);
 			service = new FederatedIdentityService(mockAdminClient, readOnlyScopes);
-			const result = await service.list('user-id');
+			const result = await service.List('user-id');
 			expect(result).toEqual([]);
 		});
 	});
@@ -64,7 +64,7 @@ describe('FederatedIdentityService', () => {
 	describe('unlink', () => {
 		it('throws KeycloakAdminScopeError when federated-identity:write scope is not granted', async () => {
 			service = new FederatedIdentityService(mockAdminClient, readOnlyScopes);
-			await expect(service.unlink('user-id', 'github')).rejects.toThrow(
+			await expect(service.Unlink('user-id', 'github')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.users.delFromFederatedIdentity).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('FederatedIdentityService', () => {
 		it('calls adminClient.users.delFromFederatedIdentity when scope is granted', async () => {
 			mockAdminClient.users.delFromFederatedIdentity.mockResolvedValue(undefined);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
-			await service.unlink('user-id', 'github');
+			await service.Unlink('user-id', 'github');
 			expect(mockAdminClient.users.delFromFederatedIdentity).toHaveBeenCalledWith({
 				id: 'user-id',
 				federatedIdentityId: 'github',
@@ -85,7 +85,7 @@ describe('FederatedIdentityService', () => {
 		it('throws KeycloakAdminScopeError when federated-identity:write scope is not granted', async () => {
 			service = new FederatedIdentityService(mockAdminClient, readOnlyScopes);
 			await expect(
-				service.link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
+				service.Link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.users.addToFederatedIdentity).not.toHaveBeenCalled();
 		});
@@ -93,7 +93,7 @@ describe('FederatedIdentityService', () => {
 		it('throws KeycloakAdminScopeError when federated-identity:read scope is not granted (needed for internal list check)', async () => {
 			service = new FederatedIdentityService(mockAdminClient, writeOnlyScopes);
 			await expect(
-				service.link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
+				service.Link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.users.addToFederatedIdentity).not.toHaveBeenCalled();
 		});
@@ -102,7 +102,7 @@ describe('FederatedIdentityService', () => {
 			mockAdminClient.users.listFederatedIdentities.mockResolvedValue([]);
 			mockAdminClient.users.addToFederatedIdentity.mockResolvedValue(undefined);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
-			await service.link('user-id', 'github', { userId: 'octocat', userName: 'octocat' });
+			await service.Link('user-id', 'github', { userId: 'octocat', userName: 'octocat' });
 			expect(mockAdminClient.users.addToFederatedIdentity).toHaveBeenCalledWith({
 				id: 'user-id',
 				federatedIdentityId: 'github',
@@ -120,7 +120,7 @@ describe('FederatedIdentityService', () => {
 			]);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
 			await expect(
-				service.link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
+				service.Link('user-id', 'github', { userId: 'octocat', userName: 'octocat' }),
 			).rejects.toThrow(ConflictError);
 			expect(mockAdminClient.users.addToFederatedIdentity).not.toHaveBeenCalled();
 		});
@@ -131,7 +131,7 @@ describe('FederatedIdentityService', () => {
 			]);
 			mockAdminClient.users.addToFederatedIdentity.mockResolvedValue(undefined);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
-			await service.link('user-id', 'google', { userId: 'user@example.com', userName: 'user' });
+			await service.Link('user-id', 'google', { userId: 'user@example.com', userName: 'user' });
 			expect(mockAdminClient.users.addToFederatedIdentity).toHaveBeenCalled();
 		});
 
@@ -141,7 +141,7 @@ describe('FederatedIdentityService', () => {
 			]);
 			mockAdminClient.users.addToFederatedIdentity.mockResolvedValue(undefined);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
-			await service.link('user-id', 'github', { userId: 'other-user', userName: 'other' });
+			await service.Link('user-id', 'github', { userId: 'other-user', userName: 'other' });
 			expect(mockAdminClient.users.addToFederatedIdentity).toHaveBeenCalled();
 		});
 
@@ -151,7 +151,7 @@ describe('FederatedIdentityService', () => {
 			]);
 			service = new FederatedIdentityService(mockAdminClient, allScopes);
 			try {
-				await service.link('user-id', 'github', { userId: 'octocat', userName: 'octocat' });
+				await service.Link('user-id', 'github', { userId: 'octocat', userName: 'octocat' });
 				expect.fail('Should have thrown ConflictError');
 			} catch (error) {
 				expect(error).toBeInstanceOf(ConflictError);

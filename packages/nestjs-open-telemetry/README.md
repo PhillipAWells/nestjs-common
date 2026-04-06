@@ -412,7 +412,6 @@ Return values are only captured if explicitly enabled with `captureReturn: true`
 
 - **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** — Provides `InstrumentationRegistry` and HTTP metrics interceptor
 - **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** — Trace authentication flows with `@Traced`
-- **[@pawells/nestjs-graphql](https://www.npmjs.com/package/@pawells/nestjs-graphql)** — Trace GraphQL resolvers
 - **[@pawells/nestjs-pyroscope](https://www.npmjs.com/package/@pawells/nestjs-pyroscope)** — Profiling integration
 
 ## Examples

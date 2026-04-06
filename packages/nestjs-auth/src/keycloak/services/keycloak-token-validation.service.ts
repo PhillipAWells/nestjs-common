@@ -2,12 +2,12 @@ import { Injectable, Inject, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppLogger, getErrorMessage, escapeNewlines } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
-import type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from '../keycloak.types.js';
+import type { IKeycloakModuleOptions, IKeycloakTokenClaims, IKeycloakUser } from '../keycloak.types.js';
 import { JwksCacheService } from './jwks-cache.service.js';
 
-export interface TokenValidationResult {
+export interface ITokenValidationResult {
 	valid: boolean;
-	claims?: KeycloakTokenClaims;
+	claims?: IKeycloakTokenClaims;
 	error?: string;
 }
 
@@ -36,28 +36,28 @@ const MS_PER_SECOND = 1000;
  */
 @Injectable()
 export class KeycloakTokenValidationService {
-	private logger?: AppLogger;
+	private Logger?: AppLogger;
 
-	private readonly options: KeycloakModuleOptions;
+	private readonly Options: IKeycloakModuleOptions;
 
-	private readonly jwtService: JwtService;
+	private readonly JwtService: JwtService;
 
-	private readonly jwksCacheService?: JwksCacheService;
+	private readonly JwksCacheService?: JwksCacheService;
 
 	constructor(
-		@Inject(KEYCLOAK_MODULE_OPTIONS) options: KeycloakModuleOptions,
+		@Inject(KEYCLOAK_MODULE_OPTIONS) options: IKeycloakModuleOptions,
 		jwtService: JwtService,
 		@Optional() jwksCacheService?: JwksCacheService,
 	) {
-		this.options = options;
-		this.jwtService = jwtService;
-		this.jwksCacheService = jwksCacheService;
-		this.initializeLogger();
+		this.Options = options;
+		this.JwtService = jwtService;
+		this.JwksCacheService = jwksCacheService;
+		this.InitializeLogger();
 	}
 
-	private initializeLogger(): void {
+	private InitializeLogger(): void {
 		try {
-			this.logger = new AppLogger(undefined, KeycloakTokenValidationService.name);
+			this.Logger = new AppLogger(undefined, KeycloakTokenValidationService.name);
 		} catch {
 			// Logger unavailable, fall back to console
 		}
@@ -74,7 +74,7 @@ export class KeycloakTokenValidationService {
 	 *
 	 * @param token - The JWT to validate (Bearer token without "Bearer " prefix)
 	 * @returns Result object with validation status and optional claims on success, or error code on failure
-	 * @returns `{ valid: true, claims: KeycloakTokenClaims }` on success
+	 * @returns `{ valid: true, claims: IKeycloakTokenClaims }` on success
 	 * @returns `{ valid: false, error: string }` on failure (includes error codes like 'token_expired', 'invalid_issuer', etc.)
 	 *
 	 * @example
@@ -85,128 +85,128 @@ export class KeycloakTokenValidationService {
 	 * }
 	 * ```
 	 */
-	public async validateToken(token: string): Promise<TokenValidationResult> {
+	public async ValidateToken(token: string): Promise<ITokenValidationResult> {
 		try {
-			const isOfflineMode = this.options.validationMode === 'offline';
+			const IsOfflineMode = this.Options.validationMode === 'offline';
 
-			if (isOfflineMode) {
-				return await this.validateTokenOffline(token);
+			if (IsOfflineMode) {
+				return await this.ValidateTokenOffline(token);
 			}
-			return await this.validateTokenOnline(token);
+			return await this.ValidateTokenOnline(token);
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Token validation failed unexpectedly: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Token validation failed unexpectedly: ${ErrorMessage}`);
 			return { valid: false, error: 'validation_error' };
 		}
 	}
 
-	private async validateTokenOnline(token: string): Promise<TokenValidationResult> {
+	private async ValidateTokenOnline(token: string): Promise<ITokenValidationResult> {
 		try {
-			const introspectionUrl = `${this.options.authServerUrl}/realms/${this.options.realm}/protocol/openid-connect/token/introspect`;
+			const IntrospectionUrl = `${this.Options.authServerUrl}/realms/${this.Options.realm}/protocol/openid-connect/token/introspect`;
 
-			const body = new URLSearchParams({
+			const Body = new URLSearchParams({
 				token,
 				token_type_hint: 'access_token',
-				client_id: this.options.clientId,
-				client_secret: this.options.clientSecret ?? '',
+				client_id: this.Options.clientId,
+				client_secret: this.Options.clientSecret ?? '',
 			});
 
-			const response = await fetch(introspectionUrl, {
+			const Response = await fetch(IntrospectionUrl, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded',
 				},
-				body: body.toString(),
+				body: Body.toString(),
 			});
 
-			if (!response.ok) {
-				this.log('warn', `Introspection request failed with status ${response.status}`);
+			if (!Response.ok) {
+				this.Log('warn', `Introspection request failed with status ${Response.status}`);
 				return { valid: false, error: 'introspection_failed' };
 			}
 
-			const introspectionResult = await response.json();
+			const IntrospectionResult = await Response.json();
 
-			if (introspectionResult.active !== true) {
+			if (IntrospectionResult.active !== true) {
 				return { valid: false, error: 'token_inactive' };
 			}
 
 			// Validate audience claim — must match our clientId
-			const audiences = Array.isArray(introspectionResult.aud)
-				? introspectionResult.aud
-				: [introspectionResult.aud].filter(Boolean);
-			if (!audiences.includes(this.options.clientId)) {
+			const Audiences = Array.isArray(IntrospectionResult.aud)
+				? IntrospectionResult.aud
+				: [IntrospectionResult.aud].filter(Boolean);
+			if (!Audiences.includes(this.Options.clientId)) {
 				return { valid: false, error: 'invalid_audience' };
 			}
 
-			return { valid: true, claims: introspectionResult as KeycloakTokenClaims };
+			return { valid: true, claims: IntrospectionResult as IKeycloakTokenClaims };
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Introspection error: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Introspection error: ${ErrorMessage}`);
 			return { valid: false, error: 'introspection_failed' };
 		}
 	}
 
-	private async validateTokenOffline(token: string): Promise<TokenValidationResult> {
+	private async ValidateTokenOffline(token: string): Promise<ITokenValidationResult> {
 		try {
-			if (!this.jwksCacheService) {
+			if (!this.JwksCacheService) {
 				return { valid: false, error: 'offline_mode_not_available' };
 			}
 
 			// Decode header to get kid
-			const decoded = this.jwtService.decode(token, { complete: true }) as {
+			const Decoded = this.JwtService.decode(token, { complete: true }) as {
 				header: { kid?: string };
 				payload: unknown;
 			} | null;
 
-			if (!decoded?.header?.kid) {
+			if (!Decoded?.header?.kid) {
 				return { valid: false, error: 'missing_kid' };
 			}
 
 			// Get public key from cache
-			let publicKey: string;
+			let PublicKey: string;
 			try {
-				publicKey = await this.jwksCacheService.getKey(decoded.header.kid);
+				PublicKey = await this.JwksCacheService.GetKey(Decoded.header.kid);
 			} catch (error) {
-				const errorMessage = getErrorMessage(error);
-				this.log('warn', `Failed to get signing key: ${errorMessage}`);
+				const ErrorMessage = getErrorMessage(error);
+				this.Log('warn', `Failed to get signing key: ${ErrorMessage}`);
 				return { valid: false, error: 'unknown_signing_key' };
 			}
 
 			// Verify JWT
-			let claims: KeycloakTokenClaims;
+			let Claims: IKeycloakTokenClaims;
 			try {
-				claims = this.jwtService.verify(token, {
-					publicKey,
+				Claims = this.JwtService.verify(token, {
+					publicKey: PublicKey,
 					algorithms: ['RS256'],
-				}) as KeycloakTokenClaims;
+				}) as IKeycloakTokenClaims;
 			} catch (error) {
-				const errorMessage = getErrorMessage(error);
-				this.log('warn', `JWT verification failed: ${errorMessage}`);
+				const ErrorMessage = getErrorMessage(error);
+				this.Log('warn', `JWT verification failed: ${ErrorMessage}`);
 				return { valid: false, error: 'jwt_verification_failed' };
 			}
 
 			// Validate claims
-			const now = Math.floor(Date.now() / MS_PER_SECOND);
-			if (claims.exp <= now) {
+			const Now = Math.floor(Date.now() / MS_PER_SECOND);
+			if (Claims.exp <= Now) {
 				return { valid: false, error: 'token_expired' };
 			}
 
-			const expectedIssuer = this.options.issuer ?? this.options.authServerUrl;
-			if (claims.iss !== expectedIssuer) {
-				this.log('warn', `Issuer mismatch: expected ${escapeNewlines(expectedIssuer)}, got ${escapeNewlines(claims.iss)}`);
+			const ExpectedIssuer = this.Options.issuer ?? this.Options.authServerUrl;
+			if (Claims.iss !== ExpectedIssuer) {
+				this.Log('warn', `Issuer mismatch: expected ${escapeNewlines(ExpectedIssuer)}, got ${escapeNewlines(Claims.iss)}`);
 				return { valid: false, error: 'invalid_issuer' };
 			}
 
-			const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-			if (!audience.includes(this.options.clientId)) {
-				this.log('warn', `Audience mismatch: clientId ${this.options.clientId} not in ${escapeNewlines(audience.join(','))}`);
+			const Audience = Array.isArray(Claims.aud) ? Claims.aud : [Claims.aud];
+			if (!Audience.includes(this.Options.clientId)) {
+				this.Log('warn', `Audience mismatch: clientId ${this.Options.clientId} not in ${escapeNewlines(Audience.join(','))}`);
 				return { valid: false, error: 'invalid_audience' };
 			}
 
-			return { valid: true, claims };
+			return { valid: true, claims: Claims };
 		} catch (error) {
-			const errorMessage = getErrorMessage(error);
-			this.log('warn', `Offline validation error: ${errorMessage}`);
+			const ErrorMessage = getErrorMessage(error);
+			this.Log('warn', `Offline validation error: ${ErrorMessage}`);
 			return { valid: false, error: 'validation_failed' };
 		}
 	}
@@ -214,12 +214,12 @@ export class KeycloakTokenValidationService {
 	/**
 	 * Extract user identity and roles from validated token claims
 	 *
-	 * Maps Keycloak token claims to a simplified `KeycloakUser` object.
+	 * Maps Keycloak token claims to a simplified `IKeycloakUser` object.
 	 * Extracts both realm-level roles (`realm_access.roles`) and client-specific roles
 	 * (`resource_access[clientId].roles`).
 	 *
 	 * @param claims - The validated Keycloak token claims
-	 * @returns User object with ID, email, username, name, and both realm and client roles
+	 * @returns IUser object with ID, email, username, name, and both realm and client roles
 	 *
 	 * @example
 	 * ```typescript
@@ -234,23 +234,23 @@ export class KeycloakTokenValidationService {
 	 * // }
 	 * ```
 	 */
-	public extractUser(claims: KeycloakTokenClaims): KeycloakUser {
+	public ExtractUser(claims: IKeycloakTokenClaims): IKeycloakUser {
 		return {
 			id: claims.sub,
 			email: claims.email,
 			username: claims.preferred_username,
 			name: claims.name,
 			realmRoles: claims.realm_access?.roles ?? [],
-			clientRoles: claims.resource_access?.[this.options.clientId]?.roles ?? [],
+			clientRoles: claims.resource_access?.[this.Options.clientId]?.roles ?? [],
 		};
 	}
 
-	private log(level: 'warn' | 'info', message: string): void {
-		if (this.logger) {
+	private Log(level: 'warn' | 'info', message: string): void {
+		if (this.Logger) {
 			if (level === 'warn') {
-				this.logger.warn(message);
+				this.Logger.warn(message);
 			} else {
-				this.logger.info(message);
+				this.Logger.info(message);
 			}
 		}
 	}

@@ -15,17 +15,32 @@ describe('GlobalExceptionFilter - Advanced Scenarios', () => {
 	beforeEach(() => {
 		mockLogger = {
 			debug() {},
+			Debug() {},
 			error() {},
+			Error() {},
 			info() {},
+			Info() {},
 			warn() {},
+			Warn() {},
 		};
 		mockErrorSanitizer = {
 			sanitizeErrorResponse(error: any) {
 				return { message: error.message ?? 'Error sanitized' };
 			},
+			SanitizeErrorResponse(error: any) {
+				return { message: error.message ?? 'Error sanitized' };
+			},
 		};
 		mockErrorCategorizer = {
 			categorizeError() {
+				return {
+					type: 'UNKNOWN_ERROR',
+					retryable: false,
+					strategy: 'NONE',
+					backoffMs: 0,
+				};
+			},
+			CategorizeError() {
 				return {
 					type: 'UNKNOWN_ERROR',
 					retryable: false,

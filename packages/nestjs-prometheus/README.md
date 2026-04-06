@@ -201,8 +201,8 @@ The main NestJS module. Implements `OnModuleInit` and `OnApplicationShutdown`.
 Implements `IMetricsExporter` from `@pawells/nestjs-shared`.
 
 **Properties:**
-- `supportsEventBased` - `true` (buffers metric values)
-- `supportsPull` - `true` (supports pull-based retrieval)
+- `SupportsEventBased` - `true` (buffers metric values)
+- `SupportsPull` - `true` (supports pull-based retrieval)
 
 **Methods:**
 - `onDescriptorRegistered(descriptor: MetricDescriptor)` - Called when a metric is registered; creates the appropriate prom-client instrument

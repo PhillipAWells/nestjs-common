@@ -1,6 +1,6 @@
 import { ModuleMetadata } from '@nestjs/common';
 import type { InjectionToken, OptionalFactoryDependency } from '@nestjs/common';
-import type { KeycloakAdminConfig } from './config/keycloak.config.js';
+import type { IKeycloakAdminConfig } from './config/keycloak.config.js';
 
 /**
  * Async options for KeycloakAdminModule configuration.
@@ -26,7 +26,7 @@ import type { KeycloakAdminConfig } from './config/keycloak.config.js';
  * })
  * ```
  */
-export interface KeycloakAdminModuleAsyncOptions {
+export interface IKeycloakAdminModuleAsyncOptions {
 	/**
 	 * Modules to import for dependency resolution.
 	 * Typically includes {@link ConfigModule} if reading from environment.
@@ -34,10 +34,10 @@ export interface KeycloakAdminModuleAsyncOptions {
 	imports?: ModuleMetadata['imports'];
 
 	/**
-	 * Factory function that returns KeycloakAdminConfig (sync or async).
+	 * Factory function that returns IKeycloakAdminConfig (sync or async).
 	 * Receives injected dependencies as arguments.
 	 */
-	useFactory: (...args: unknown[]) => Promise<KeycloakAdminConfig> | KeycloakAdminConfig;
+	useFactory: (...args: unknown[]) => Promise<IKeycloakAdminConfig> | IKeycloakAdminConfig;
 
 	/**
 	 * Array of providers to inject into the factory function.

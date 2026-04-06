@@ -1,31 +1,31 @@
 import { ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { vi as jest } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-	detectContextType,
-	extractRequestFromContext,
-	extractUserFromContext,
-	extractAuthTokenFromContext,
+	DetectContextType,
+	ExtractRequestFromContext,
+	ExtractUserFromContext,
+	ExtractAuthTokenFromContext,
 } from '../context-utils.js';
 
 function makeHttpCtx(request: any): ExecutionContext {
 	return {
-		getType: jest.fn().mockReturnValue('http'),
-		switchToHttp: jest.fn().mockReturnValue({
+		getType: vi.fn().mockReturnValue('http'),
+		switchToHttp: vi.fn().mockReturnValue({
 			getRequest: () => request,
 		}),
-		switchToWs: jest.fn(),
+		switchToWs: vi.fn(),
 	} as unknown as ExecutionContext;
 }
 
 function makeGraphQLCtx(req: any): ExecutionContext {
 	const ctx = {
-		getType: jest.fn().mockReturnValue('graphql'),
-		switchToHttp: jest.fn(),
-		switchToWs: jest.fn(),
+		getType: vi.fn().mockReturnValue('graphql'),
+		switchToHttp: vi.fn(),
+		switchToWs: vi.fn(),
 	} as unknown as ExecutionContext;
 
-	jest.spyOn(GqlExecutionContext, 'create').mockReturnValue({
+	vi.spyOn(GqlExecutionContext, 'create').mockReturnValue({
 		getContext: () => ({ req }),
 	} as any);
 
@@ -34,9 +34,9 @@ function makeGraphQLCtx(req: any): ExecutionContext {
 
 function makeWsCtx(client: any): ExecutionContext {
 	return {
-		getType: jest.fn().mockReturnValue('ws'),
-		switchToHttp: jest.fn(),
-		switchToWs: jest.fn().mockReturnValue({
+		getType: vi.fn().mockReturnValue('ws'),
+		switchToHttp: vi.fn(),
+		switchToWs: vi.fn().mockReturnValue({
 			getClient: () => client,
 		}),
 	} as unknown as ExecutionContext;
@@ -46,38 +46,38 @@ describe('Context Utils', () => {
 	describe('detectContextType', () => {
 		it('should detect HTTP context', () => {
 			const mockHttpCtx = {
-				getType: jest.fn().mockReturnValue('http'),
+				getType: vi.fn().mockReturnValue('http'),
 			} as unknown as ExecutionContext;
 
-			const result = detectContextType(mockHttpCtx);
+			const result = DetectContextType(mockHttpCtx);
 			expect(result).toBe('http');
 		});
 
 		it('should detect GraphQL context', () => {
 			const mockGraphQLCtx = {
-				getType: jest.fn().mockReturnValue('graphql'),
+				getType: vi.fn().mockReturnValue('graphql'),
 			} as unknown as ExecutionContext;
 
-			const result = detectContextType(mockGraphQLCtx);
+			const result = DetectContextType(mockGraphQLCtx);
 			expect(result).toBe('graphql');
 		});
 
 		it('should detect WebSocket context', () => {
 			const mockWsCtx = {
-				getType: jest.fn().mockReturnValue('ws'),
+				getType: vi.fn().mockReturnValue('ws'),
 			} as unknown as ExecutionContext;
 
-			const result = detectContextType(mockWsCtx);
+			const result = DetectContextType(mockWsCtx);
 			expect(result).toBe('websocket');
 		});
 
 		it('should default to http for unknown context type', () => {
 			const mockUnknownCtx = {
-				getType: jest.fn().mockReturnValue('unknown'),
+				getType: vi.fn().mockReturnValue('unknown'),
 			} as unknown as ExecutionContext;
 
 			// The new implementation falls back to 'http' instead of throwing
-			const result = detectContextType(mockUnknownCtx);
+			const result = DetectContextType(mockUnknownCtx);
 			expect(result).toBe('http');
 		});
 	});
@@ -87,7 +87,7 @@ describe('Context Utils', () => {
 			const mockRequest = { user: { id: 1 } };
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractRequestFromContext(mockHttpCtx);
+			const result = ExtractRequestFromContext(mockHttpCtx);
 			expect(result).toBe(mockRequest);
 		});
 
@@ -95,7 +95,7 @@ describe('Context Utils', () => {
 			const mockRequest = { user: { id: 1 } };
 			const mockGraphQLCtx = makeGraphQLCtx(mockRequest);
 
-			const result = extractRequestFromContext(mockGraphQLCtx);
+			const result = ExtractRequestFromContext(mockGraphQLCtx);
 			expect(result).toBe(mockRequest);
 		});
 
@@ -103,20 +103,20 @@ describe('Context Utils', () => {
 			const mockClient = { id: 'socket-1' };
 			const mockWsCtx = makeWsCtx(mockClient);
 
-			const result = extractRequestFromContext(mockWsCtx, { contextType: 'websocket' });
+			const result = ExtractRequestFromContext(mockWsCtx, { contextType: 'websocket' });
 			expect(result).toBe(mockClient);
 		});
 
 		it('should throw error for unsupported context type', () => {
 			const mockCtx = {} as ExecutionContext;
 
-			expect(() => extractRequestFromContext(mockCtx, { contextType: 'unknown' as any, autoDetect: false })).toThrow('Unsupported context type: unknown');
+			expect(() => ExtractRequestFromContext(mockCtx, { contextType: 'unknown' as any, autoDetect: false })).toThrow('Unsupported context type: unknown');
 		});
 
 		it('should throw error when context type required but not specified', () => {
 			const mockCtx = {} as ExecutionContext;
 
-			expect(() => extractRequestFromContext(mockCtx, { autoDetect: false })).toThrow('Context type must be specified when autoDetect is false');
+			expect(() => ExtractRequestFromContext(mockCtx, { autoDetect: false })).toThrow('Context type must be specified when autoDetect is false');
 		});
 	});
 
@@ -126,7 +126,7 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractUserFromContext(mockHttpCtx);
+			const result = ExtractUserFromContext(mockHttpCtx);
 			expect(result).toBe(mockUser);
 		});
 
@@ -135,7 +135,7 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractUserFromContext(mockHttpCtx, { property: 'profile.name', contextType: 'http' });
+			const result = ExtractUserFromContext(mockHttpCtx, { property: 'profile.name', contextType: 'http' });
 			expect(result).toBe('John');
 		});
 
@@ -143,7 +143,7 @@ describe('Context Utils', () => {
 			const mockRequest = {};
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractUserFromContext(mockHttpCtx);
+			const result = ExtractUserFromContext(mockHttpCtx);
 			expect(result).toBeUndefined();
 		});
 
@@ -152,7 +152,7 @@ describe('Context Utils', () => {
 			const mockRequest = { user: mockUser };
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractUserFromContext(mockHttpCtx, { property: 'profile.name', contextType: 'http' });
+			const result = ExtractUserFromContext(mockHttpCtx, { property: 'profile.name', contextType: 'http' });
 			expect(result).toBeUndefined();
 		});
 	});
@@ -164,7 +164,7 @@ describe('Context Utils', () => {
 			};
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractAuthTokenFromContext(mockHttpCtx);
+			const result = ExtractAuthTokenFromContext(mockHttpCtx);
 			expect(result).toBe('token123');
 		});
 
@@ -174,7 +174,7 @@ describe('Context Utils', () => {
 			};
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractAuthTokenFromContext(mockHttpCtx);
+			const result = ExtractAuthTokenFromContext(mockHttpCtx);
 			expect(result).toBe('token123');
 		});
 
@@ -184,7 +184,7 @@ describe('Context Utils', () => {
 			};
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractAuthTokenFromContext(mockHttpCtx);
+			const result = ExtractAuthTokenFromContext(mockHttpCtx);
 			expect(result).toBe('token123');
 		});
 
@@ -192,14 +192,14 @@ describe('Context Utils', () => {
 			const mockRequest = { headers: {} };
 			const mockHttpCtx = makeHttpCtx(mockRequest);
 
-			const result = extractAuthTokenFromContext(mockHttpCtx);
+			const result = ExtractAuthTokenFromContext(mockHttpCtx);
 			expect(result).toBeUndefined();
 		});
 
 		it('should return undefined when request not found', () => {
 			const mockHttpCtx = makeHttpCtx(null);
 
-			const result = extractAuthTokenFromContext(mockHttpCtx);
+			const result = ExtractAuthTokenFromContext(mockHttpCtx);
 			expect(result).toBeUndefined();
 		});
 	});

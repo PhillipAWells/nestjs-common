@@ -2,9 +2,9 @@ import { Injectable, OnModuleInit, Inject, UnauthorizedException } from '@nestjs
 import { createPublicKey } from 'node:crypto';
 import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
-import type { KeycloakModuleOptions } from '../keycloak.types.js';
+import type { IKeycloakModuleOptions } from '../keycloak.types.js';
 
-interface JWK {
+interface IJWK {
 	kid: string;
 	kty: string;
 	n: string;
@@ -12,8 +12,8 @@ interface JWK {
 	[key: string]: unknown;
 }
 
-interface JWKSResponse {
-	keys: JWK[];
+interface IJWKSResponse {
+	keys: IJWK[];
 }
 
 const DEFAULT_JWKS_CACHE_TTL_MS = 300_000;
@@ -42,26 +42,26 @@ const DEFAULT_JWKS_CACHE_TTL_MS = 300_000;
  */
 @Injectable()
 export class JwksCacheService implements OnModuleInit {
-	private readonly keyCache: Map<string, string> = new Map();
+	private readonly KeyCache: Map<string, string> = new Map();
 
-	private cacheExpiresAt: number = 0;
+	private CacheExpiresAt: number = 0;
 
-	private fetchPromise: Promise<void> | null = null;
+	private FetchPromise: Promise<void> | null = null;
 
-	private logger?: AppLogger;
+	private Logger?: AppLogger;
 
-	private readonly options: KeycloakModuleOptions;
+	private readonly Options: IKeycloakModuleOptions;
 
 	constructor(
-		@Inject(KEYCLOAK_MODULE_OPTIONS) options: KeycloakModuleOptions,
+		@Inject(KEYCLOAK_MODULE_OPTIONS) options: IKeycloakModuleOptions,
 	) {
-		this.options = options;
-		this.initializeLogger();
+		this.Options = options;
+		this.InitializeLogger();
 	}
 
-	private initializeLogger(): void {
+	private InitializeLogger(): void {
 		try {
-			this.logger = new AppLogger(undefined, JwksCacheService.name);
+			this.Logger = new AppLogger(undefined, JwksCacheService.name);
 		} catch {
 			// Logger unavailable, fall back to console
 		}
@@ -69,10 +69,10 @@ export class JwksCacheService implements OnModuleInit {
 
 	public async onModuleInit(): Promise<void> {
 		// Only fetch JWKS if in offline validation mode
-		if (this.options.validationMode !== 'offline') {
+		if (this.Options.validationMode !== 'offline') {
 			return;
 		}
-		await this.fetchJwks();
+		await this.FetchJwks();
 	}
 
 	/**
@@ -99,92 +99,92 @@ export class JwksCacheService implements OnModuleInit {
 	 * }
 	 * ```
 	 */
-	public async getKey(kid: string): Promise<string> {
+	public async GetKey(kid: string): Promise<string> {
 		// Check if key is in cache and not expired
-		if (this.keyCache.has(kid) && Date.now() < this.cacheExpiresAt) {
-			const key = this.keyCache.get(kid);
-			if (key) {
-				return key;
+		if (this.KeyCache.has(kid) && Date.now() < this.CacheExpiresAt) {
+			const Key = this.KeyCache.get(kid);
+			if (Key) {
+				return Key;
 			}
 		}
 
 		// Key not found or cache expired, re-fetch
 		try {
-			await this.fetchJwks();
+			await this.FetchJwks();
 		} catch (error) {
-			this.log('warn', `Failed to re-fetch JWKS during key lookup: ${getErrorMessage(error)}`);
+			this.Log('warn', `Failed to re-fetch JWKS during key lookup: ${getErrorMessage(error)}`);
 		}
 
 		// Check cache again after re-fetch — only return if cache is still valid
-		if (this.keyCache.has(kid) && Date.now() < this.cacheExpiresAt) {
-			const key = this.keyCache.get(kid);
-			if (key) {
-				return key;
+		if (this.KeyCache.has(kid) && Date.now() < this.CacheExpiresAt) {
+			const Key = this.KeyCache.get(kid);
+			if (Key) {
+				return Key;
 			}
 		}
 
 		throw new UnauthorizedException('Unknown signing key');
 	}
 
-	private async fetchJwks(): Promise<void> {
+	private async FetchJwks(): Promise<void> {
 		// If a fetch is already in-flight, await it instead of making another request
-		if (this.fetchPromise !== null) {
-			await this.fetchPromise;
+		if (this.FetchPromise !== null) {
+			await this.FetchPromise;
 			return;
 		}
 
-		this.fetchPromise = this.doFetch().finally(() => {
-			this.fetchPromise = null;
+		this.FetchPromise = this.DoFetch().finally(() => {
+			this.FetchPromise = null;
 		});
-		await this.fetchPromise;
+		await this.FetchPromise;
 	}
 
-	private async doFetch(): Promise<void> {
+	private async DoFetch(): Promise<void> {
 		try {
-			const jwksUrl = `${this.options.authServerUrl}/realms/${this.options.realm}/protocol/openid-connect/certs`;
-			const response = await fetch(jwksUrl);
+			const JwksUrl = `${this.Options.authServerUrl}/realms/${this.Options.realm}/protocol/openid-connect/certs`;
+			const Response = await fetch(JwksUrl);
 
-			if (!response.ok) {
-				throw new Error(`JWKS fetch failed with status ${response.status}`);
+			if (!Response.ok) {
+				throw new Error(`JWKS fetch failed with status ${Response.status}`);
 			}
 
-			const jwksData: JWKSResponse = await response.json();
+			const JwksData: IJWKSResponse = await Response.json();
 
-			if (!Array.isArray(jwksData.keys)) {
+			if (!Array.isArray(JwksData.keys)) {
 				throw new Error('Invalid JWKS response: keys is not an array');
 			}
 
-			this.keyCache.clear();
-			for (const jwk of jwksData.keys) {
-				const pem = this.convertJwkToPem(jwk);
-				this.keyCache.set(jwk.kid, pem);
+			this.KeyCache.clear();
+			for (const Jwk of JwksData.keys) {
+				const Pem = this.ConvertJwkToPem(Jwk);
+				this.KeyCache.set(Jwk.kid, Pem);
 			}
 
-			const ttlMs = this.options.jwksCacheTtlMs ?? DEFAULT_JWKS_CACHE_TTL_MS;
-			this.cacheExpiresAt = Date.now() + ttlMs;
+			const TtlMs = this.Options.jwksCacheTtlMs ?? DEFAULT_JWKS_CACHE_TTL_MS;
+			this.CacheExpiresAt = Date.now() + TtlMs;
 		} catch (error) {
-			this.log('warn', `Failed to fetch JWKS: ${getErrorMessage(error)}`);
+			this.Log('warn', `Failed to fetch JWKS: ${getErrorMessage(error)}`);
 			throw error;
 		}
 	}
 
-	private convertJwkToPem(jwk: JWK): string {
-		const key = createPublicKey({
+	private ConvertJwkToPem(jwk: IJWK): string {
+		const Key = createPublicKey({
 			key: jwk,
 			format: 'jwk',
 		});
-		return key.export({
+		return Key.export({
 			type: 'spki',
 			format: 'pem',
 		}) as string;
 	}
 
-	private log(level: 'warn' | 'info', message: string): void {
-		if (this.logger) {
+	private Log(level: 'warn' | 'info', message: string): void {
+		if (this.Logger) {
 			if (level === 'warn') {
-				this.logger.warn(message);
+				this.Logger.warn(message);
 			} else {
-				this.logger.info(message);
+				this.Logger.info(message);
 			}
 		}
 	}

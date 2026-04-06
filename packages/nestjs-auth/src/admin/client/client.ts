@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import KcAdminClient from '@keycloak/keycloak-admin-client';
-import type { KeycloakClientConfig } from './types/index.js';
-import { isPasswordCredentials, isClientCredentials } from './types/index.js';
-import type { KeycloakAdminScope } from '../permissions/keycloak-admin.permissions.js';
+import type { IKeycloakClientConfig } from './types/index.js';
+import { IsPasswordCredentials, IsClientCredentials } from './types/index.js';
+import type { TKeycloakAdminScope } from '../permissions/keycloak-admin.permissions.js';
 import {
 	RealmService,
 	UserService,
@@ -38,7 +38,7 @@ export class KeycloakClient {
 	public readonly Realms: RealmService;
 
 	/**
-	 * User service for managing users
+	 * IUser service for managing users
 	 */
 	public readonly Users: UserService;
 
@@ -80,18 +80,18 @@ export class KeycloakClient {
 	/**
 	 * Internal Keycloak admin client
 	 */
-	private readonly adminClient: KcAdminClient;
+	private readonly AdminClient: KcAdminClient;
 
 	/**
 	 * Client configuration
 	 */
-	private readonly config: KeycloakClientConfig;
+	private readonly Config: IKeycloakClientConfig;
 
 	/**
 	 * Create a new Keycloak client instance
 	 */
-	constructor(config: KeycloakClientConfig, grantedScopes: ReadonlySet<KeycloakAdminScope>) {
-		this.config = {
+	constructor(config: IKeycloakClientConfig, grantedScopes: ReadonlySet<TKeycloakAdminScope>) {
+		this.Config = {
 			realmName: 'master',
 			timeout: 30000,
 			...config,
@@ -102,29 +102,29 @@ export class KeycloakClient {
 		this.ClientID = this.ClientUUID.slice(-CLIENT_ID_SHORT_LENGTH);
 
 		// Initialize admin client
-		this.adminClient = new KcAdminClient({
-			baseUrl: this.config.baseUrl,
-			...(this.config.realmName && { realmName: this.config.realmName }),
+		this.AdminClient = new KcAdminClient({
+			baseUrl: this.Config.baseUrl,
+			...(this.Config.realmName && { realmName: this.Config.realmName }),
 		});
 
 		// Initialize services
-		const { logger, retry } = this.config;
+		const { logger, retry } = this.Config;
 
-		this.Realms = new RealmService(this.adminClient, grantedScopes, logger, retry);
-		this.Users = new UserService(this.adminClient, grantedScopes, logger, retry);
-		this.Clients = new ClientService(this.adminClient, grantedScopes, logger, retry);
-		this.Roles = new RoleService(this.adminClient, grantedScopes, logger, retry);
-		this.Groups = new GroupService(this.adminClient, grantedScopes, logger, retry);
-		this.IdentityProviders = new IdentityProviderService(this.adminClient, grantedScopes, logger, retry);
-		this.Authentication = new AuthenticationService(this.adminClient, grantedScopes, logger, retry);
-		this.FederatedIdentities = new FederatedIdentityService(this.adminClient, grantedScopes, logger, retry);
-		this.Events = new EventService(this.adminClient, grantedScopes, logger, retry);
+		this.Realms = new RealmService(this.AdminClient, grantedScopes, logger, retry);
+		this.Users = new UserService(this.AdminClient, grantedScopes, logger, retry);
+		this.Clients = new ClientService(this.AdminClient, grantedScopes, logger, retry);
+		this.Roles = new RoleService(this.AdminClient, grantedScopes, logger, retry);
+		this.Groups = new GroupService(this.AdminClient, grantedScopes, logger, retry);
+		this.IdentityProviders = new IdentityProviderService(this.AdminClient, grantedScopes, logger, retry);
+		this.Authentication = new AuthenticationService(this.AdminClient, grantedScopes, logger, retry);
+		this.FederatedIdentities = new FederatedIdentityService(this.AdminClient, grantedScopes, logger, retry);
+		this.Events = new EventService(this.AdminClient, grantedScopes, logger, retry);
 
-		if (this.config.logger) {
-			this.config.logger.info('KeycloakClient initialized', {
+		if (this.Config.logger) {
+			this.Config.logger.info('KeycloakClient initialized', {
 				clientId: this.ClientID,
-				baseUrl: this.config.baseUrl,
-				realm: this.config.realmName,
+				baseUrl: this.Config.baseUrl,
+				realm: this.Config.realmName,
 			});
 		}
 	}
@@ -133,37 +133,37 @@ export class KeycloakClient {
 	 * Authenticate with Keycloak admin API
 	 * This must be called before making API requests
 	 */
-	public async authenticate(): Promise<void> {
+	public async Authenticate(): Promise<void> {
 		try {
-			if (isPasswordCredentials(this.config.credentials)) {
-				await this.adminClient.auth({
-					username: this.config.credentials.username,
-					password: this.config.credentials.password,
+			if (IsPasswordCredentials(this.Config.credentials)) {
+				await this.AdminClient.auth({
+					username: this.Config.credentials.username,
+					password: this.Config.credentials.password,
 					grantType: 'password',
 					clientId: 'admin-cli',
 				});
 
-				if (this.config.logger) {
-					this.config.logger.info('Authenticated with Keycloak using password credentials', {
-						username: this.config.credentials.username,
+				if (this.Config.logger) {
+					this.Config.logger.info('Authenticated with Keycloak using password credentials', {
+						username: this.Config.credentials.username,
 					});
 				}
-			} else if (isClientCredentials(this.config.credentials)) {
-				await this.adminClient.auth({
+			} else if (IsClientCredentials(this.Config.credentials)) {
+				await this.AdminClient.auth({
 					grantType: 'client_credentials',
-					clientId: this.config.credentials.clientId,
-					clientSecret: this.config.credentials.clientSecret,
+					clientId: this.Config.credentials.clientId,
+					clientSecret: this.Config.credentials.clientSecret,
 				});
 
-				if (this.config.logger) {
-					this.config.logger.info('Authenticated with Keycloak using client credentials', {
-						clientId: this.config.credentials.clientId,
+				if (this.Config.logger) {
+					this.Config.logger.info('Authenticated with Keycloak using client credentials', {
+						clientId: this.Config.credentials.clientId,
 					});
 				}
 			}
 		} catch (error) {
-			if (this.config.logger) {
-				this.config.logger.error('Failed to authenticate with Keycloak', { error });
+			if (this.Config.logger) {
+				this.Config.logger.error('Failed to authenticate with Keycloak', { error });
 			}
 			throw error;
 		}
@@ -172,21 +172,21 @@ export class KeycloakClient {
 	/**
 	 * Check if the client is authenticated
 	 */
-	public isAuthenticated(): boolean {
-		return this.adminClient.accessToken !== undefined;
+	public IsAuthenticated(): boolean {
+		return this.AdminClient.accessToken !== undefined;
 	}
 
 	/**
 	 * Get the current access token
 	 */
-	public getAccessToken(): string | undefined {
-		return this.adminClient.accessToken;
+	public GetAccessToken(): string | undefined {
+		return this.AdminClient.accessToken;
 	}
 
 	/**
 	 * Set the access token manually (for use with external auth)
 	 */
-	public setAccessToken(token: string): void {
-		this.adminClient.setAccessToken(token);
+	public SetAccessToken(token: string): void {
+		this.AdminClient.setAccessToken(token);
 	}
 }

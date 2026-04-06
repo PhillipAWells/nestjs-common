@@ -1,11 +1,12 @@
+import { describe, it, expect, afterEach } from 'vitest';
 import {
 	ProfilingConfigValidator,
 	TagFormatter,
 	MetricAggregator,
 	ProfilingErrorHandler,
-	generateProfileId,
-	formatDuration,
-	isProfilingEnabled,
+	GenerateProfileId,
+	FormatDuration,
+	IsProfilingEnabled,
 } from '../profiling.utils.js';
 import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
@@ -19,7 +20,7 @@ describe('Profiling Utils', () => {
 					applicationName: 'test-app',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(true);
 				expect(result.errors).toHaveLength(0);
@@ -31,7 +32,7 @@ describe('Profiling Utils', () => {
 					applicationName: 'test-app',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain('serverAddress is required');
@@ -44,7 +45,7 @@ describe('Profiling Utils', () => {
 					applicationName: 'test-app',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain('serverAddress must start with http:// or https://');
@@ -57,7 +58,7 @@ describe('Profiling Utils', () => {
 					applicationName: 'test-app',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(true);
 			});
@@ -68,7 +69,7 @@ describe('Profiling Utils', () => {
 					serverAddress: 'http://localhost:4040',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain('applicationName is required');
@@ -82,7 +83,7 @@ describe('Profiling Utils', () => {
 					sampleRate: 1.5,
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain('sampleRate must be between 0 and 1');
@@ -96,7 +97,7 @@ describe('Profiling Utils', () => {
 					sampleRate: 0.5,
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(true);
 			});
@@ -109,7 +110,7 @@ describe('Profiling Utils', () => {
 					profileTypes: ['cpu', 'invalid' as any],
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain('Invalid profile types: invalid');
@@ -123,7 +124,7 @@ describe('Profiling Utils', () => {
 					profileTypes: ['cpu', 'memory', 'goroutine'],
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(true);
 			});
@@ -136,7 +137,7 @@ describe('Profiling Utils', () => {
 					basicAuthUser: 'user',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain(
@@ -152,7 +153,7 @@ describe('Profiling Utils', () => {
 					basicAuthPassword: 'password',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors).toContain(
@@ -169,7 +170,7 @@ describe('Profiling Utils', () => {
 					basicAuthPassword: 'password',
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(true);
 			});
@@ -180,7 +181,7 @@ describe('Profiling Utils', () => {
 					sampleRate: 2,
 				};
 
-				const result = ProfilingConfigValidator.validate(config);
+				const result = ProfilingConfigValidator.Validate(config);
 
 				expect(result.isValid).toBe(false);
 				expect(result.errors.length).toBeGreaterThan(1);
@@ -197,7 +198,7 @@ describe('Profiling Utils', () => {
 					requestType: 'GET',
 				};
 
-				const formatted = TagFormatter.format(tags);
+				const formatted = TagFormatter.Format(tags);
 
 				expect(formatted).toEqual({
 					user_name: 'john',
@@ -212,7 +213,7 @@ describe('Profiling Utils', () => {
 					version: '1.0',
 				};
 
-				const formatted = TagFormatter.format(tags);
+				const formatted = TagFormatter.Format(tags);
 
 				expect(formatted).toEqual({
 					service: 'api',
@@ -226,7 +227,7 @@ describe('Profiling Utils', () => {
 					active: true as any,
 				};
 
-				const formatted = TagFormatter.format(tags);
+				const formatted = TagFormatter.Format(tags);
 
 				expect(formatted).toEqual({
 					count: '123',
@@ -235,7 +236,7 @@ describe('Profiling Utils', () => {
 			});
 
 			it('should handle empty tags object', () => {
-				const formatted = TagFormatter.format({});
+				const formatted = TagFormatter.Format({});
 
 				expect(formatted).toEqual({});
 			});
@@ -246,7 +247,7 @@ describe('Profiling Utils', () => {
 				const baseTags = { env: 'dev', service: 'api', version: '1.0' };
 				const overrideTags = { env: 'prod', region: 'us-east-1' };
 
-				const merged = TagFormatter.merge(baseTags, overrideTags);
+				const merged = TagFormatter.Merge(baseTags, overrideTags);
 
 				expect(merged).toEqual({
 					env: 'prod',
@@ -259,7 +260,7 @@ describe('Profiling Utils', () => {
 			it('should handle empty base tags', () => {
 				const overrideTags = { key: 'value' };
 
-				const merged = TagFormatter.merge({}, overrideTags);
+				const merged = TagFormatter.Merge({}, overrideTags);
 
 				expect(merged).toEqual({ key: 'value' });
 			});
@@ -267,7 +268,7 @@ describe('Profiling Utils', () => {
 			it('should handle empty override tags', () => {
 				const baseTags = { key: 'value' };
 
-				const merged = TagFormatter.merge(baseTags, {});
+				const merged = TagFormatter.Merge(baseTags, {});
 
 				expect(merged).toEqual({ key: 'value' });
 			});
@@ -280,7 +281,7 @@ describe('Profiling Utils', () => {
 					nullValue: null as any,
 				};
 
-				const sanitized = TagFormatter.sanitize(tags);
+				const sanitized = TagFormatter.Sanitize(tags);
 
 				expect(sanitized).toEqual({ valid: 'value' });
 			});
@@ -291,7 +292,7 @@ describe('Profiling Utils', () => {
 					undefinedValue: undefined as any,
 				};
 
-				const sanitized = TagFormatter.sanitize(tags);
+				const sanitized = TagFormatter.Sanitize(tags);
 
 				expect(sanitized).toEqual({ valid: 'value' });
 			});
@@ -302,7 +303,7 @@ describe('Profiling Utils', () => {
 					empty: '',
 				};
 
-				const sanitized = TagFormatter.sanitize(tags);
+				const sanitized = TagFormatter.Sanitize(tags);
 
 				expect(sanitized).toEqual({ valid: 'value' });
 			});
@@ -313,7 +314,7 @@ describe('Profiling Utils', () => {
 					long: longValue,
 				};
 
-				const sanitized = TagFormatter.sanitize(tags, 100);
+				const sanitized = TagFormatter.Sanitize(tags, 100);
 
 				expect(sanitized.long.length).toBe(100);
 			});
@@ -324,7 +325,7 @@ describe('Profiling Utils', () => {
 					long: longValue,
 				};
 
-				const sanitized = TagFormatter.sanitize(tags);
+				const sanitized = TagFormatter.Sanitize(tags);
 
 				expect(sanitized.long).toBeDefined();
 				expect(sanitized.long.length).toBeLessThanOrEqual(256);
@@ -336,7 +337,7 @@ describe('Profiling Utils', () => {
 					boolean: true as any,
 				};
 
-				const sanitized = TagFormatter.sanitize(tags);
+				const sanitized = TagFormatter.Sanitize(tags);
 
 				expect(sanitized).toEqual({
 					number: '123',
@@ -355,13 +356,13 @@ describe('Profiling Utils', () => {
 					{ duration: 300 },
 				];
 
-				const average = MetricAggregator.averageDuration(metrics);
+				const average = MetricAggregator.AverageDuration(metrics);
 
 				expect(average).toBe(200);
 			});
 
 			it('should return 0 for empty metrics', () => {
-				const average = MetricAggregator.averageDuration([]);
+				const average = MetricAggregator.AverageDuration([]);
 
 				expect(average).toBe(0);
 			});
@@ -369,7 +370,7 @@ describe('Profiling Utils', () => {
 			it('should handle single metric', () => {
 				const metrics = [{ duration: 150 }];
 
-				const average = MetricAggregator.averageDuration(metrics);
+				const average = MetricAggregator.AverageDuration(metrics);
 
 				expect(average).toBe(150);
 			});
@@ -385,7 +386,7 @@ describe('Profiling Utils', () => {
 					{ duration: 500 },
 				];
 
-				const p50 = MetricAggregator.percentile(metrics, 50);
+				const p50 = MetricAggregator.Percentile(metrics, 50);
 
 				expect(p50).toBe(300);
 			});
@@ -393,7 +394,7 @@ describe('Profiling Utils', () => {
 			it('should calculate 95th percentile', () => {
 				const metrics = Array.from({ length: 100 }, (_, i) => ({ duration: i + 1 }));
 
-				const p95 = MetricAggregator.percentile(metrics, 95);
+				const p95 = MetricAggregator.Percentile(metrics, 95);
 
 				expect(p95).toBe(95);
 			});
@@ -401,13 +402,13 @@ describe('Profiling Utils', () => {
 			it('should calculate 99th percentile', () => {
 				const metrics = Array.from({ length: 100 }, (_, i) => ({ duration: i + 1 }));
 
-				const p99 = MetricAggregator.percentile(metrics, 99);
+				const p99 = MetricAggregator.Percentile(metrics, 99);
 
 				expect(p99).toBe(99);
 			});
 
 			it('should return 0 for empty metrics', () => {
-				const p50 = MetricAggregator.percentile([], 50);
+				const p50 = MetricAggregator.Percentile([], 50);
 
 				expect(p50).toBe(0);
 			});
@@ -415,7 +416,7 @@ describe('Profiling Utils', () => {
 			it('should handle single metric', () => {
 				const metrics = [{ duration: 250 }];
 
-				const p50 = MetricAggregator.percentile(metrics, 50);
+				const p50 = MetricAggregator.Percentile(metrics, 50);
 
 				expect(p50).toBe(250);
 			});
@@ -429,7 +430,7 @@ describe('Profiling Utils', () => {
 					{ duration: 300, tags: { env: 'dev' } },
 				];
 
-				const grouped = MetricAggregator.groupByTags(metrics, ['env']);
+				const grouped = MetricAggregator.GroupByTags(metrics, ['env']);
 
 				expect(grouped['dev']).toHaveLength(2);
 				expect(grouped['prod']).toHaveLength(1);
@@ -442,7 +443,7 @@ describe('Profiling Utils', () => {
 					{ duration: 300, tags: { env: 'dev', region: 'eu' } },
 				];
 
-				const grouped = MetricAggregator.groupByTags(metrics, ['env', 'region']);
+				const grouped = MetricAggregator.GroupByTags(metrics, ['env', 'region']);
 
 				expect(grouped['dev_us']).toHaveLength(1);
 				expect(grouped['prod_us']).toHaveLength(1);
@@ -455,14 +456,14 @@ describe('Profiling Utils', () => {
 					{ duration: 200 },
 				];
 
-				const grouped = MetricAggregator.groupByTags(metrics, ['env']);
+				const grouped = MetricAggregator.GroupByTags(metrics, ['env']);
 
 				expect(grouped['dev']).toHaveLength(1);
 				expect(grouped['unknown']).toHaveLength(1);
 			});
 
 			it('should handle empty metrics', () => {
-				const grouped = MetricAggregator.groupByTags([], ['env']);
+				const grouped = MetricAggregator.GroupByTags([], ['env']);
 
 				expect(grouped).toEqual({});
 			});
@@ -474,37 +475,37 @@ describe('Profiling Utils', () => {
 			it('should identify connection refused errors as recoverable', () => {
 				const error = new Error('ECONNREFUSED');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(true);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(true);
 			});
 
 			it('should identify not found errors as recoverable', () => {
 				const error = new Error('ENOTFOUND');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(true);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(true);
 			});
 
 			it('should identify timeout errors as recoverable', () => {
 				const error = new Error('Request timeout');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(true);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(true);
 			});
 
 			it('should identify 401 errors as not recoverable', () => {
 				const error = new Error('401 Unauthorized');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(false);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(false);
 			});
 
 			it('should identify 403 errors as not recoverable', () => {
 				const error = new Error('403 Forbidden');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(false);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(false);
 			});
 
 			it('should identify unknown errors as not recoverable', () => {
 				const error = new Error('Unknown error');
 
-				expect(ProfilingErrorHandler.isRecoverableError(error)).toBe(false);
+				expect(ProfilingErrorHandler.IsRecoverableError(error)).toBe(false);
 			});
 		});
 
@@ -512,7 +513,7 @@ describe('Profiling Utils', () => {
 			it('should format connection refused errors', () => {
 				const error = new Error('ECONNREFUSED');
 
-				const formatted = ProfilingErrorHandler.formatError(error);
+				const formatted = ProfilingErrorHandler.FormatError(error);
 
 				expect(formatted).toContain('Unable to connect to Pyroscope server');
 			});
@@ -520,7 +521,7 @@ describe('Profiling Utils', () => {
 			it('should format 401 errors', () => {
 				const error = new Error('401 Authentication failed');
 
-				const formatted = ProfilingErrorHandler.formatError(error);
+				const formatted = ProfilingErrorHandler.FormatError(error);
 
 				expect(formatted).toContain('Authentication failed');
 			});
@@ -528,7 +529,7 @@ describe('Profiling Utils', () => {
 			it('should format 403 errors', () => {
 				const error = new Error('403 Access denied');
 
-				const formatted = ProfilingErrorHandler.formatError(error);
+				const formatted = ProfilingErrorHandler.FormatError(error);
 
 				expect(formatted).toContain('Access forbidden');
 			});
@@ -536,7 +537,7 @@ describe('Profiling Utils', () => {
 			it('should format generic errors', () => {
 				const error = new Error('Something went wrong');
 
-				const formatted = ProfilingErrorHandler.formatError(error);
+				const formatted = ProfilingErrorHandler.FormatError(error);
 
 				expect(formatted).toBe('Profiling operation failed');
 			});
@@ -546,7 +547,7 @@ describe('Profiling Utils', () => {
 			it('should return 0 for non-recoverable errors', () => {
 				const error = new Error('401 Unauthorized');
 
-				const delay = ProfilingErrorHandler.getRetryDelay(error, 1);
+				const delay = ProfilingErrorHandler.GetRetryDelay(error, 1);
 
 				expect(delay).toBe(0);
 			});
@@ -554,8 +555,8 @@ describe('Profiling Utils', () => {
 			it('should calculate exponential backoff for recoverable errors', () => {
 				const error = new Error('ECONNREFUSED');
 
-				const delay1 = ProfilingErrorHandler.getRetryDelay(error, 1, 1000, 10000, 0);
-				const delay2 = ProfilingErrorHandler.getRetryDelay(error, 2, 1000, 10000, 0);
+				const delay1 = ProfilingErrorHandler.GetRetryDelay(error, 1, 1000, 10000, 0);
+				const delay2 = ProfilingErrorHandler.GetRetryDelay(error, 2, 1000, 10000, 0);
 
 				expect(delay2).toBeGreaterThan(delay1);
 			});
@@ -564,7 +565,7 @@ describe('Profiling Utils', () => {
 				const error = new Error('ECONNREFUSED');
 				const maxDelay = 5000;
 
-				const delay = ProfilingErrorHandler.getRetryDelay(error, 10, 1000, maxDelay, 0);
+				const delay = ProfilingErrorHandler.GetRetryDelay(error, 10, 1000, maxDelay, 0);
 
 				expect(delay).toBeLessThanOrEqual(maxDelay);
 			});
@@ -572,8 +573,8 @@ describe('Profiling Utils', () => {
 			it('should add jitter to delay', () => {
 				const error = new Error('timeout');
 
-				const delay1 = ProfilingErrorHandler.getRetryDelay(error, 1, 1000, 10000, 1000);
-				const delay2 = ProfilingErrorHandler.getRetryDelay(error, 1, 1000, 10000, 1000);
+				const delay1 = ProfilingErrorHandler.GetRetryDelay(error, 1, 1000, 10000, 1000);
+				const delay2 = ProfilingErrorHandler.GetRetryDelay(error, 1, 1000, 10000, 1000);
 
 				// Due to jitter, delays might be different
 				expect(delay1).toBeGreaterThan(0);
@@ -582,29 +583,29 @@ describe('Profiling Utils', () => {
 		});
 	});
 
-	describe('generateProfileId', () => {
+	describe('GenerateProfileId', () => {
 		it('should generate unique profile IDs', () => {
-			const id1 = generateProfileId();
-			const id2 = generateProfileId();
+			const id1 = GenerateProfileId();
+			const id2 = GenerateProfileId();
 
 			expect(id1).not.toBe(id2);
 		});
 
 		it('should use default prefix', () => {
-			const id = generateProfileId();
+			const id = GenerateProfileId();
 
 			expect(id).toMatch(/^profile_\d+_[a-z0-9]+$/);
 		});
 
 		it('should use custom prefix', () => {
-			const id = generateProfileId('custom');
+			const id = GenerateProfileId('custom');
 
 			expect(id).toMatch(/^custom_\d+_[a-z0-9]+$/);
 		});
 
 		it('should include timestamp', () => {
 			const before = Date.now();
-			const id = generateProfileId();
+			const id = GenerateProfileId();
 			const after = Date.now();
 
 			const timestamp = parseInt(id.split('_')[1], 10);
@@ -614,24 +615,24 @@ describe('Profiling Utils', () => {
 		});
 	});
 
-	describe('formatDuration', () => {
+	describe('FormatDuration', () => {
 		it('should format milliseconds', () => {
-			expect(formatDuration(500)).toBe('500.00ms');
-			expect(formatDuration(1.5)).toBe('1.50ms');
+			expect(FormatDuration(500)).toBe('500.00ms');
+			expect(FormatDuration(1.5)).toBe('1.50ms');
 		});
 
 		it('should format seconds', () => {
-			expect(formatDuration(1000)).toBe('1.00s');
-			expect(formatDuration(2500)).toBe('2.50s');
+			expect(FormatDuration(1000)).toBe('1.00s');
+			expect(FormatDuration(2500)).toBe('2.50s');
 		});
 
 		it('should handle zero', () => {
-			expect(formatDuration(0)).toBe('0.00ms');
+			expect(FormatDuration(0)).toBe('0.00ms');
 		});
 
 		it('should round to 2 decimal places', () => {
-			expect(formatDuration(123.456)).toBe('123.46ms');
-			expect(formatDuration(1234.567)).toBe('1.23s');
+			expect(FormatDuration(123.456)).toBe('123.46ms');
+			expect(FormatDuration(1234.567)).toBe('1.23s');
 		});
 	});
 
@@ -649,31 +650,31 @@ describe('Profiling Utils', () => {
 		it('should return true when PYROSCOPE_ENABLED is "true"', () => {
 			process.env['PYROSCOPE_ENABLED'] = 'true';
 
-			expect(isProfilingEnabled()).toBe(true);
+			expect(IsProfilingEnabled()).toBe(true);
 		});
 
 		it('should return true when PYROSCOPE_ENABLED is "1"', () => {
 			process.env['PYROSCOPE_ENABLED'] = '1';
 
-			expect(isProfilingEnabled()).toBe(true);
+			expect(IsProfilingEnabled()).toBe(true);
 		});
 
 		it('should return false when PYROSCOPE_ENABLED is "false"', () => {
 			process.env['PYROSCOPE_ENABLED'] = 'false';
 
-			expect(isProfilingEnabled()).toBe(false);
+			expect(IsProfilingEnabled()).toBe(false);
 		});
 
 		it('should return false when PYROSCOPE_ENABLED is not set', () => {
 			delete process.env['PYROSCOPE_ENABLED'];
 
-			expect(isProfilingEnabled()).toBe(false);
+			expect(IsProfilingEnabled()).toBe(false);
 		});
 
 		it('should return false for other values', () => {
 			process.env['PYROSCOPE_ENABLED'] = 'yes';
 
-			expect(isProfilingEnabled()).toBe(false);
+			expect(IsProfilingEnabled()).toBe(false);
 		});
 	});
 });

@@ -47,13 +47,13 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 * The OpenTelemetry exporter instance
 	 * @private
 	 */
-	private readonly exporter: OpenTelemetryExporter;
+	private readonly Exporter: OpenTelemetryExporter;
 
 	/**
 	 * The instrumentation registry (from nestjs-shared)
 	 * @private
 	 */
-	private readonly registry: InstrumentationRegistry;
+	private readonly Registry: InstrumentationRegistry;
 
 	/**
 	 * Initialize the module by registering the exporter with the registry
@@ -64,8 +64,8 @@ export class OpenTelemetryModule implements OnModuleInit {
 		exporter: OpenTelemetryExporter,
 		registry: InstrumentationRegistry,
 	) {
-		this.exporter = exporter;
-		this.registry = registry;
+		this.Exporter = exporter;
+		this.Registry = registry;
 	}
 
 	/**
@@ -74,13 +74,13 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 * Throws an error if InstrumentationRegistry was not properly injected.
 	 */
 	public onModuleInit(): void {
-		if (!this.registry) {
+		if (!this.Registry) {
 			throw new BaseApplicationError(
 				'OpenTelemetryModule initialization failed: InstrumentationRegistry not found. ' +
 				'Ensure that CommonModule from @pawells/nestjs-shared is imported in your module or a parent module.',
 			);
 		}
-		this.registry.registerExporter(this.exporter);
+		this.Registry.RegisterExporter(this.Exporter);
 	}
 
 	/**
@@ -95,7 +95,7 @@ export class OpenTelemetryModule implements OnModuleInit {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: OpenTelemetryModule,
 			providers: [OpenTelemetryExporter],

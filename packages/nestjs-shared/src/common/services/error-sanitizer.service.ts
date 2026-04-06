@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR } from '../constants/http-status.constants.js';
 import { ModuleRef } from '@nestjs/core';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Options for configuring the ErrorSanitizerService.
  */
-export interface ErrorSanitizerOptions {
+export interface IErrorSanitizerOptions {
 	/**
 	 * Additional regex patterns to apply for message sanitization.
 	 */
@@ -54,14 +54,14 @@ export const ERROR_SANITIZER_OPTIONS = 'ERROR_SANITIZER_OPTIONS';
  *   message: 'Error at /home/user/app.ts, Bearer sk_live_abc123',
  *   context: { password: 'secret123', userId: '456' }
  * };
- * const sanitized = errorSanitizer.sanitizeErrorResponse(error, false);
+ * const Sanitized = errorSanitizer.sanitizeErrorResponse(error, false);
  * // message: 'Error at [FILE], Bearer [REDACTED]'
  * // context: { password: '***REDACTED***', userId: '456' }
  * ```
  */
 
 @Injectable()
-export class ErrorSanitizerService implements LazyModuleRefService {
+export class ErrorSanitizerService implements ILazyModuleRefService {
 	/**
 	 * Maximum length for error messages before truncation.
 	 * Prevents ReDoS (Regular Expression Denial of Service) attacks by limiting
@@ -138,7 +138,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		this.Module = module;
 	}
 
-	private get Options(): ErrorSanitizerOptions | undefined {
+	private get Options(): IErrorSanitizerOptions | undefined {
 		try {
 			return this.Module.get(ERROR_SANITIZER_OPTIONS, { strict: false });
 		} catch {
@@ -150,24 +150,24 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * Sanitize error response for client
 	 * Removes sensitive information like stack traces, file paths, etc.
 	 */
-	public sanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
-		const sanitized: Record<string, any> = {
-			message: this.sanitizeMessage(error.message),
+	public SanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
+		const Sanitized: Record<string, any> = {
+			message: this.SanitizeMessage(error.message),
 			statusCode: error.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
 			timestamp: new Date().toISOString(),
 		};
 
 		// Only include stack trace in development
 		if (isDevelopment && error.stack) {
-			sanitized.stack = error.stack;
+			Sanitized.stack = error.stack;
 		}
 
 		// Sanitize context if present
 		if (error.context) {
-			sanitized.context = this.sanitizeContext(error.context);
+			Sanitized.context = this.SanitizeContext(error.context);
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	/**
@@ -182,58 +182,58 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * @example
 	 * ```typescript
 	 * const msg = 'Error at /home/user/app.ts, Bearer sk_live_abc123';
-	 * const sanitized = sanitizeMessage(msg);
+	 * const Sanitized = sanitizeMessage(msg);
 	 * // Returns: 'Error at [FILE], Bearer [REDACTED]'
 	 * ```
 	 */
-	private sanitizeMessage(message: string): string {
+	private SanitizeMessage(message: string): string {
 		if (!message) return 'An error occurred';
 
 		// Ensure message is a string
-		let safeMessage = message;
-		if (typeof safeMessage !== 'string') {
-			safeMessage = String(safeMessage);
+		let SafeMessage = message;
+		if (typeof SafeMessage !== 'string') {
+			SafeMessage = String(SafeMessage);
 		}
 
 		// Truncate message to prevent ReDoS attacks on regex patterns
-		const truncated = safeMessage.length > ErrorSanitizerService.MAX_MESSAGE_LENGTH
-			? `${safeMessage.substring(0, ErrorSanitizerService.MAX_MESSAGE_LENGTH)}... [truncated]`
-			: safeMessage;
+		const Truncated = SafeMessage.length > ErrorSanitizerService.MAX_MESSAGE_LENGTH
+			? `${SafeMessage.substring(0, ErrorSanitizerService.MAX_MESSAGE_LENGTH)}... [truncated]`
+			: SafeMessage;
 
 		// Remove file paths - match paths with code file extensions
-		let sanitized = truncated.replace(ErrorSanitizerService.FILE_PATH_REGEX, '[FILE]');
+		let Sanitized = Truncated.replace(ErrorSanitizerService.FILE_PATH_REGEX, '[FILE]');
 
 		// Remove database connection strings
-		sanitized = sanitized.replace(
+		Sanitized = Sanitized.replace(
 			/mongodb:\/\/[^\s/]+/gi,
 			'[REDACTED]',
 		);
-		sanitized = sanitized.replace(
+		Sanitized = Sanitized.replace(
 			/postgres(?:ql)?:\/\/[^\s/]+/gi,
 			'[REDACTED]',
 		);
 
 		// Remove API keys and tokens
-		sanitized = sanitized.replace(
+		Sanitized = Sanitized.replace(
 			/Bearer\s+[a-zA-Z0-9._-]+/gi,
 			'Bearer [REDACTED]',
 		);
-		sanitized = sanitized.replace(
+		Sanitized = Sanitized.replace(
 			/(?:api[_-]?key|sk_live|sk_test|pk_live|pk_test)[\s=:]*[a-zA-Z0-9._-]+/gi,
 			'[REDACTED]',
 		);
 
 		// Remove email addresses - more restrictive pattern
-		sanitized = sanitized.replace(
+		Sanitized = Sanitized.replace(
 			/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
 			'[EMAIL]',
 		);
 
 		// Remove IP addresses (both IPv4 and IPv6)
-		sanitized = sanitized.replace(ErrorSanitizerService.IPV4_REGEX, '[IP]');
-		sanitized = sanitized.replace(ErrorSanitizerService.IPV6_REGEX, '[IP]');
+		Sanitized = Sanitized.replace(ErrorSanitizerService.IPV4_REGEX, '[IP]');
+		Sanitized = Sanitized.replace(ErrorSanitizerService.IPV6_REGEX, '[IP]');
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	/**
@@ -247,20 +247,20 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 *
 	 * @example
 	 * ```typescript
-	 * const ctx = { user: 'john', password: 'secret123', nested: { apiKey: 'sk_live' } };
-	 * const sanitized = sanitizeContext(ctx);
+	 * const Ctx = { user: 'john', password: 'secret123', nested: { apiKey: 'sk_live' } };
+	 * const Sanitized = sanitizeContext(ctx);
 	 * // Returns: { user: 'john', password: '***REDACTED***', nested: { apiKey: '***REDACTED***' } }
 	 * ```
 	 */
-	private sanitizeContext(context: Record<string, any>): Record<string, any> {
-		const seen = new Set<object>();
-		const result = this.serializeWithDepthLimit(
+	private SanitizeContext(context: Record<string, any>): Record<string, any> {
+		const Seen = new Set<object>();
+		const Result = this.SerializeWithDepthLimit(
 			context,
 			ErrorSanitizerService.MAX_CONTEXT_DEPTH,
 			0,
-			seen,
+			Seen,
 		);
-		return (result as Record<string, any>) ?? {};
+		return (Result as Record<string, any>) ?? {};
 	}
 
 	/**
@@ -273,7 +273,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 	 * @param seen - Set of already-visited objects to detect cycles
 	 * @returns Serialized object with sensitive fields redacted
 	 */
-	private serializeWithDepthLimit(
+	private SerializeWithDepthLimit(
 		obj: unknown,
 		maxDepth: number,
 		currentDepth: number,
@@ -282,7 +282,7 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		// Return non-object values as-is
 		if (typeof obj !== 'object' || obj === null) {
 			if (typeof obj === 'string') {
-				return this.sanitizeMessage(obj);
+				return this.SanitizeMessage(obj);
 			}
 			return obj;
 		}
@@ -303,49 +303,49 @@ export class ErrorSanitizerService implements LazyModuleRefService {
 		// Handle arrays
 		if (Array.isArray(obj)) {
 			return obj.map(item =>
-				this.serializeWithDepthLimit(item, maxDepth, currentDepth + 1, seen),
+				this.SerializeWithDepthLimit(item, maxDepth, currentDepth + 1, seen),
 			);
 		}
 
 		// Handle objects
-		const sanitized: Record<string, any> = {};
+		const Sanitized: Record<string, any> = {};
 
-		for (const [key, value] of Object.entries(obj)) {
+		for (const [Key, Value] of Object.entries(obj)) {
 			// Skip sensitive fields
-			if (this.isSensitiveField(key)) {
-				sanitized[key] = '***REDACTED***';
-			} else if (typeof value === 'object' && value !== null) {
+			if (this.IsSensitiveField(Key)) {
+				Sanitized[Key] = '***REDACTED***';
+			} else if (typeof Value === 'object' && Value !== null) {
 				// For objects and arrays, recurse with depth check
-				sanitized[key] = this.serializeWithDepthLimit(
-					value,
+				Sanitized[Key] = this.SerializeWithDepthLimit(
+					Value,
 					maxDepth,
 					currentDepth + 1,
 					seen,
 				);
-			} else if (typeof value === 'string') {
+			} else if (typeof Value === 'string') {
 				// Sanitize string values
-				sanitized[key] = this.sanitizeMessage(value);
+				Sanitized[Key] = this.SanitizeMessage(Value);
 			} else {
 				// Return primitive values as-is
-				sanitized[key] = value;
+				Sanitized[Key] = Value;
 			}
 		}
 
-		return sanitized;
+		return Sanitized;
 	}
 
 	/**
 	 * Check if field is sensitive (case-insensitive comparison)
 	 */
-	private isSensitiveField(fieldName: string): boolean {
-		const fieldNameLower = fieldName.toLowerCase();
-		const allSensitiveFields = [
+	private IsSensitiveField(fieldName: string): boolean {
+		const FieldNameLower = fieldName.toLowerCase();
+		const AllSensitiveFields = [
 			...ErrorSanitizerService.DEFAULT_SENSITIVE_KEYS,
 			...(this.Options?.additionalSensitiveKeys ?? []),
 		];
 
-		return allSensitiveFields.some(field =>
-			fieldNameLower.includes(field.toLowerCase()),
+		return AllSensitiveFields.some(field =>
+			FieldNameLower.includes(field.toLowerCase()),
 		);
 	}
 }

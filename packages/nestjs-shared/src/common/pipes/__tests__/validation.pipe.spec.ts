@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ValidationPipe } from '../validation.pipe.js';
 import { ValidationError } from 'class-validator';
 
@@ -24,7 +25,7 @@ describe('ValidationPipe', () => {
 				} as ValidationError,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual(['email: email must be an email, email should not be empty']);
 		});
@@ -46,7 +47,7 @@ describe('ValidationPipe', () => {
 				} as ValidationError,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				'email: email must be an email',
@@ -62,7 +63,7 @@ describe('ValidationPipe', () => {
 				} as ValidationError,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([]);
 		});
@@ -75,7 +76,7 @@ describe('ValidationPipe', () => {
 				} as any,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([]);
 		});
@@ -83,7 +84,7 @@ describe('ValidationPipe', () => {
 		it('should handle empty errors array', () => {
 			const errors: ValidationError[] = [];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([]);
 		});
@@ -110,7 +111,7 @@ describe('ValidationPipe', () => {
 				} as any,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				'address.street: street should not be empty',
@@ -138,7 +139,7 @@ describe('ValidationPipe', () => {
 				} as any,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				'profile.address.coordinates: latitude must be a number',
@@ -171,7 +172,7 @@ describe('ValidationPipe', () => {
 				} as any,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				'user.name: name should not be empty',
@@ -200,7 +201,7 @@ describe('ValidationPipe', () => {
 				} as any,
 			];
 
-			const result = (pipe as any).formatValidationErrors(errors);
+			const result = (pipe as any).FormatValidationErrors(errors);
 
 			expect(result).toEqual([
 				'email: must be email',

@@ -1,4 +1,4 @@
-import type { GroupRepresentation } from '../types/index.js';
+import type { IGroupRepresentation } from '../types/index.js';
 import { BaseService } from './base-service.js';
 
 /**
@@ -22,96 +22,96 @@ export class GroupService extends BaseService {
 	/**
 	 * List all groups in a realm
 	 */
-	public async list(realm: string): Promise<GroupRepresentation[]> {
-		this.requireScope('groups:read');
+	public async List(realm: string): Promise<IGroupRepresentation[]> {
+		this.RequireScope('groups:read');
 		try {
-			return (await this.withRetry(() => this.adminClient.groups.find({ realm }))) as any;
+			return (await this.WithRetry(() => this.AdminClient.groups.find({ realm }))) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Get a group by ID
 	 */
-	public async get(realm: string, groupId: string): Promise<GroupRepresentation> {
-		this.requireScope('groups:read');
+	public async Get(realm: string, groupId: string): Promise<IGroupRepresentation> {
+		this.RequireScope('groups:read');
 		try {
-			return (await this.withRetry(() =>
-				this.adminClient.groups.findOne({ realm, id: groupId }),
+			return (await this.WithRetry(() =>
+				this.AdminClient.groups.findOne({ realm, id: groupId }),
 			)) as any;
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Create a new group
 	 */
-	public async create(realm: string, group: GroupRepresentation): Promise<{ id: string }> {
-		this.requireScope('groups:write');
+	public async Create(realm: string, group: IGroupRepresentation): Promise<{ id: string }> {
+		this.RequireScope('groups:write');
 		try {
-			return await this.withRetry(() =>
-				this.adminClient.groups.create({ ...group, realm }),
+			return await this.WithRetry(() =>
+				this.AdminClient.groups.create({ ...group, realm }),
 			);
 		} catch (error) {
-			return this.handleError(error);
+			return this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Update a group
 	 */
-	public async update(realm: string, groupId: string, group: GroupRepresentation): Promise<void> {
-		this.requireScope('groups:write');
+	public async Update(realm: string, groupId: string, group: IGroupRepresentation): Promise<void> {
+		this.RequireScope('groups:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.groups.update({ realm, id: groupId }, group),
+			await this.WithRetry(() =>
+				this.AdminClient.groups.update({ realm, id: groupId }, group),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Delete a group
 	 */
-	public async delete(realm: string, groupId: string): Promise<void> {
-		this.requireScope('groups:write');
+	public async Delete(realm: string, groupId: string): Promise<void> {
+		this.RequireScope('groups:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.groups.del({ realm, id: groupId }),
+			await this.WithRetry(() =>
+				this.AdminClient.groups.del({ realm, id: groupId }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Add a user to a group
 	 */
-	public async addMember(realm: string, groupId: string, userId: string): Promise<void> {
-		this.requireScope('groups:write');
+	public async AddMember(realm: string, groupId: string, userId: string): Promise<void> {
+		this.RequireScope('groups:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.users.addToGroup({ realm, id: userId, groupId }),
+			await this.WithRetry(() =>
+				this.AdminClient.users.addToGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 
 	/**
 	 * Remove a user from a group
 	 */
-	public async removeMember(realm: string, groupId: string, userId: string): Promise<void> {
-		this.requireScope('groups:write');
+	public async RemoveMember(realm: string, groupId: string, userId: string): Promise<void> {
+		this.RequireScope('groups:write');
 		try {
-			await this.withRetry(() =>
-				this.adminClient.users.delFromGroup({ realm, id: userId, groupId }),
+			await this.WithRetry(() =>
+				this.AdminClient.users.delFromGroup({ realm, id: userId, groupId }),
 			);
 		} catch (error) {
-			this.handleError(error);
+			this.HandleError(error);
 		}
 	}
 }

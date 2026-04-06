@@ -3,18 +3,18 @@ import { Injectable } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { InjectNatsOptions } from '../decorators/inject-nats-options.decorator.js';
 import { NATS_MODULE_OPTIONS } from '../nats.constants.js';
-import type { NatsModuleOptions } from '../nats.interfaces.js';
+import type { TNatsModuleOptions } from '../nats.interfaces.js';
 
 describe('InjectNatsOptions', () => {
 	@Injectable()
 	class TestService {
 		constructor(
-			@InjectNatsOptions() public readonly options: Partial<NatsModuleOptions>,
+			@InjectNatsOptions() public readonly Options: Partial<TNatsModuleOptions>,
 		) {}
 	}
 
 	it('should inject the NATS module options', async () => {
-		const mockOptions: Partial<NatsModuleOptions> = {
+		const mockOptions: Partial<TNatsModuleOptions> = {
 			servers: 'nats://localhost:4222',
 			timeout: 5000,
 		};
@@ -28,9 +28,9 @@ describe('InjectNatsOptions', () => {
 
 		const service = module.get<TestService>(TestService);
 
-		expect(service.options).toEqual(mockOptions);
-		expect(service.options.servers).toBe('nats://localhost:4222');
-		expect(service.options.timeout).toBe(5000);
+		expect(service.Options).toEqual(mockOptions);
+		expect(service.Options.servers).toBe('nats://localhost:4222');
+		expect(service.Options.timeout).toBe(5000);
 	});
 
 	it('should inject empty object when no options provided', async () => {
@@ -43,6 +43,6 @@ describe('InjectNatsOptions', () => {
 
 		const service = module.get<TestService>(TestService);
 
-		expect(service.options).toEqual({});
+		expect(service.Options).toEqual({});
 	});
 });

@@ -15,15 +15,15 @@ export class MockCacheProvider implements ICacheProvider {
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly MS_PER_SECOND = 1000;
 
-	private readonly store: Map<string, { value: any; expiresAt?: number }> = new Map();
+	private readonly Store: Map<string, { value: any; expiresAt?: number }> = new Map();
 
 	/**
 	 * Set a cache value with optional TTL
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public set(key: string, value: any, ttlSeconds?: number): Promise<void> {
-		const expiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
-		this.store.set(key, { value, expiresAt });
+	public Set(key: string, value: any, ttlSeconds?: number): Promise<void> {
+		const ExpiresAt = ttlSeconds ? Date.now() + (ttlSeconds * MockCacheProvider.MS_PER_SECOND) : undefined;
+		this.Store.set(key, { value, expiresAt: ExpiresAt });
 		return Promise.resolve();
 	}
 
@@ -31,34 +31,34 @@ export class MockCacheProvider implements ICacheProvider {
 	 * Get a cache value
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public get(key: string): Promise<any> {
-		const entry = this.store.get(key);
-		if (!entry) {
+	public Get(key: string): Promise<any> {
+		const Entry = this.Store.get(key);
+		if (!Entry) {
 			return Promise.resolve(null);
 		}
 
 		// Check expiration
-		if (entry.expiresAt && Date.now() > entry.expiresAt) {
-			this.store.delete(key);
+		if (Entry.expiresAt && Date.now() > Entry.expiresAt) {
+			this.Store.delete(key);
 			return Promise.resolve(null);
 		}
 
-		return Promise.resolve(entry.value);
+		return Promise.resolve(Entry.value);
 	}
 
 	/**
 	 * Check if a key exists in cache
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public exists(key: string): Promise<boolean> {
-		const entry = this.store.get(key);
-		if (!entry) {
+	public Exists(key: string): Promise<boolean> {
+		const Entry = this.Store.get(key);
+		if (!Entry) {
 			return Promise.resolve(false);
 		}
 
 		// Check expiration
-		if (entry.expiresAt && Date.now() > entry.expiresAt) {
-			this.store.delete(key);
+		if (Entry.expiresAt && Date.now() > Entry.expiresAt) {
+			this.Store.delete(key);
 			return Promise.resolve(false);
 		}
 
@@ -69,8 +69,8 @@ export class MockCacheProvider implements ICacheProvider {
 	 * Delete a cache value
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public del(key: string): Promise<void> {
-		this.store.delete(key);
+	public Del(key: string): Promise<void> {
+		this.Store.delete(key);
 		return Promise.resolve();
 	}
 
@@ -78,26 +78,28 @@ export class MockCacheProvider implements ICacheProvider {
 	 * Clear all cache values
 	 */
 	// eslint-disable-next-line @typescript-eslint/promise-function-async
-	public clear(): Promise<void> {
-		this.store.clear();
+	public Clear(): Promise<void> {
+		this.Store.clear();
 		return Promise.resolve();
 	}
 
 	/**
 	 * Helper: Get cache statistics for testing
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public getStats(): { size: number; keys: string[] } {
 		return {
-			size: this.store.size,
-			keys: Array.from(this.store.keys()),
+			size: this.Store.size,
+			keys: Array.from(this.Store.keys()),
 		};
 	}
 
 	/**
 	 * Helper: Manually expire all entries (for testing)
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public expireAll(): void {
-		this.store.forEach(entry => {
+		this.Store.forEach(entry => {
 			entry.expiresAt = Date.now() - 1; // Already expired
 		});
 	}

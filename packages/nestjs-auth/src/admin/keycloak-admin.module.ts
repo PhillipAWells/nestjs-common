@@ -3,9 +3,9 @@ import { CommonModule } from '@pawells/nestjs-shared/common';
 import { KeycloakAdminService } from './services/keycloak-admin.service.js';
 import { KeycloakHealthIndicator } from './health/keycloak.health.js';
 import { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './keycloak.constants.js';
-import type { KeycloakAdminConfig } from './config/keycloak.config.js';
-import { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './config/keycloak.defaults.js';
-import type { KeycloakAdminModuleAsyncOptions } from './keycloak-admin.interfaces.js';
+import type { IKeycloakAdminConfig } from './config/keycloak.config.js';
+import { KeycloakAdminDefaults, ValidateKeycloakAdminConfig } from './config/keycloak.defaults.js';
+import type { IKeycloakAdminModuleAsyncOptions } from './keycloak-admin.interfaces.js';
 
 /**
  * Keycloak Admin module for managing users, roles, and groups.
@@ -20,19 +20,19 @@ export class KeycloakAdminModule {
 	 * @returns Dynamic module configuration
 	 * @throws Error if Keycloak is enabled but credentials are missing
 	 */
-	public static forRoot(config: Partial<KeycloakAdminConfig> = {}): DynamicModule {
-		const mergedConfig = { ...KeycloakAdminDefaults, ...config };
-		validateKeycloakAdminConfig(mergedConfig);
+	public static ForRoot(config: Partial<IKeycloakAdminConfig> = {}): DynamicModule {
+		const MergedConfig = { ...KeycloakAdminDefaults, ...config };
+		ValidateKeycloakAdminConfig(MergedConfig);
 
 		// Validate that credentials are provided if Keycloak is enabled
-		if (mergedConfig.enabled && mergedConfig.credentials) {
-			const creds = mergedConfig.credentials;
-			if (creds.type === 'password') {
-				if (!creds.username || !creds.password) {
+		if (MergedConfig.enabled && MergedConfig.credentials) {
+			const Creds = MergedConfig.credentials;
+			if (Creds.type === 'password') {
+				if (!Creds.username || !Creds.password) {
 					throw new Error('Keycloak enabled but username/password credentials are empty. Set KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD environment variables.');
 				}
-			} else if (creds.type === 'clientCredentials') {
-				if (!creds.clientId || !creds.clientSecret) {
+			} else if (Creds.type === 'clientCredentials') {
+				if (!Creds.clientId || !Creds.clientSecret) {
 					throw new Error('Keycloak enabled but clientId/clientSecret credentials are empty. Set KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET environment variables.');
 				}
 			}
@@ -44,7 +44,7 @@ export class KeycloakAdminModule {
 			providers: [
 				{
 					provide: KEYCLOAK_ADMIN_CONFIG_TOKEN,
-					useValue: mergedConfig,
+					useValue: MergedConfig,
 				},
 				KeycloakAdminService,
 				KeycloakHealthIndicator,
@@ -58,7 +58,7 @@ export class KeycloakAdminModule {
 	 * @param options Async factory configuration
 	 * @returns Dynamic module configuration
 	 */
-	public static forRootAsync(options: KeycloakAdminModuleAsyncOptions): DynamicModule {
+	public static ForRootAsync(options: IKeycloakAdminModuleAsyncOptions): DynamicModule {
 		return {
 			module: KeycloakAdminModule,
 			imports: [CommonModule, ...(options.imports ?? [])],
@@ -66,24 +66,24 @@ export class KeycloakAdminModule {
 				{
 					provide: KEYCLOAK_ADMIN_CONFIG_TOKEN,
 					useFactory: async (...args: unknown[]) => {
-						const config = await options.useFactory(...args);
-						validateKeycloakAdminConfig(config);
+						const Config = await options.useFactory(...args);
+						ValidateKeycloakAdminConfig(Config);
 
 						// Validate that credentials are provided if Keycloak is enabled
-						if (config.enabled && config.credentials) {
-							const creds = config.credentials;
-							if (creds.type === 'password') {
-								if (!creds.username || !creds.password) {
+						if (Config.enabled && Config.credentials) {
+							const Creds = Config.credentials;
+							if (Creds.type === 'password') {
+								if (!Creds.username || !Creds.password) {
 									throw new Error('Keycloak enabled but username/password credentials are empty. Set KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD environment variables.');
 								}
-							} else if (creds.type === 'clientCredentials') {
-								if (!creds.clientId || !creds.clientSecret) {
+							} else if (Creds.type === 'clientCredentials') {
+								if (!Creds.clientId || !Creds.clientSecret) {
 									throw new Error('Keycloak enabled but clientId/clientSecret credentials are empty. Set KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET environment variables.');
 								}
 							}
 						}
 
-						return config;
+						return Config;
 					},
 					inject: options.inject ?? [],
 				},

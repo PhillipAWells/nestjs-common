@@ -8,7 +8,7 @@ import { MetricsController } from './controllers/metrics.controller.js';
  * Async options for MetricsModule.
  * Configuration options for asynchronous MetricsModule initialization.
  */
-export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+export interface IMetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
 	/** Optional modules to import for async configuration */
 }
 
@@ -32,14 +32,14 @@ export interface MetricsModuleAsyncOptions extends Pick<ModuleMetadata, 'imports
  * @example
  * ```typescript
  * // Access metrics in any injectable
- * constructor(private metrics: MetricsRegistryService) {}
+ * constructor(private Metrics: MetricsRegistryService) {}
  *
  * // Create and record custom metrics
- * const counter = this.metrics.createCounter('orders_total', 'Total orders');
+ * const counter = this.Metrics.createCounter('orders_total', 'Total orders');
  * counter.inc({ status: 'completed' });
  *
  * // Get metrics (typically called by MetricsController)
- * const prometheusText = await this.metrics.getMetrics();
+ * const prometheusText = await this.Metrics.getMetrics();
  * ```
  */
 
@@ -60,7 +60,7 @@ export class MetricsModule {
 	 * Configure metrics module for root application
 	 * Enables HTTP metrics collection and /metrics endpoint
 	 */
-	public static forRoot(): DynamicModule {
+	public static ForRoot(): DynamicModule {
 		return {
 			module: MetricsModule,
 		};
@@ -69,7 +69,7 @@ export class MetricsModule {
 	/**
 	 * Configure metrics module with async options
 	 */
-	public static forRootAsync(options: MetricsModuleAsyncOptions): DynamicModule {
+	public static ForRootAsync(options: IMetricsModuleAsyncOptions): DynamicModule {
 		return {
 			module: MetricsModule,
 			imports: options.imports,

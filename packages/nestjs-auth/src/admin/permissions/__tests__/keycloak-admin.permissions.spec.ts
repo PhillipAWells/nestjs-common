@@ -24,7 +24,7 @@ describe('KeycloakAdminScopeError', () => {
 
 	it('should expose the scope property', () => {
 		const error = new KeycloakAdminScopeError('federated-identity:write');
-		expect(error.scope).toBe('federated-identity:write');
+		expect(error.Scope).toBe('federated-identity:write');
 	});
 
 	it('should be an instance of Error', () => {

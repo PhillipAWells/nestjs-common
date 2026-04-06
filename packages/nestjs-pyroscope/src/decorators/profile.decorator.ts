@@ -1,7 +1,7 @@
 import { PyroscopeService } from '../service.js';
 import { IProfileContext } from '../interfaces/profiling.interface.js';
 
-type AnyFunction = (...args: unknown[]) => unknown;
+type TAnyFunction = (...args: unknown[]) => unknown;
 
 /**
  * Class-level decorator for profiling all methods in a class.
@@ -42,62 +42,62 @@ type AnyFunction = (...args: unknown[]) => unknown;
  */
 export function Profile(options?: { tags?: Record<string, string> }): ClassDecorator {
 	return function(target: object): void {
-		const proto = (target as { prototype: Record<string, unknown> }).prototype;
-		const originalMethods = Object.getOwnPropertyNames(proto);
-		const targetName = (target as { name: string }).name;
+		const Proto = (target as { prototype: Record<string, unknown> }).prototype;
+		const OriginalMethods = Object.getOwnPropertyNames(Proto);
+		const TargetName = (target as { name: string }).name;
 
-		for (const methodName of originalMethods) {
-			if (methodName === 'constructor' || typeof proto[methodName] !== 'function') {
+		for (const MethodName of OriginalMethods) {
+			if (MethodName === 'constructor' || typeof Proto[MethodName] !== 'function') {
 				continue;
 			}
 
-			const originalMethod = proto[methodName] as AnyFunction;
+			const OriginalMethod = Proto[MethodName] as TAnyFunction;
 
-			proto[methodName] = function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): unknown {
+			Proto[MethodName] = function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): unknown {
 				const { pyroscopeService } = this;
 
 				// PyroscopeService not injected — skip profiling silently
 				if (!pyroscopeService) {
-					return originalMethod.apply(this, args);
+					return OriginalMethod.apply(this, args);
 				}
 
-				if (!pyroscopeService.isEnabled()) {
-					return originalMethod.apply(this, args);
+				if (!pyroscopeService.IsEnabled()) {
+					return OriginalMethod.apply(this, args);
 				}
 
-				const context: IProfileContext = {
-					functionName: `${targetName}.${methodName}`,
-					className: targetName,
-					methodName,
+				const Context: IProfileContext = {
+					functionName: `${TargetName}.${MethodName}`,
+					className: TargetName,
+					methodName: MethodName,
 					startTime: Date.now(),
 					...(options?.tags && { tags: options.tags }),
 				};
 
-				pyroscopeService.startProfiling(context);
+				pyroscopeService.StartProfiling(Context);
 
 				try {
-					const result = originalMethod.apply(this, args);
+					const Result = OriginalMethod.apply(this, args);
 
 					// Handle async methods (Promises)
-					if (result instanceof Promise) {
-						return result
+					if (Result instanceof Promise) {
+						return Result
 							.then((value) => {
-								pyroscopeService.stopProfiling(context);
+								pyroscopeService.StopProfiling(Context);
 								return value;
 							})
 							.catch((error) => {
-								context.error = error as Error;
-								pyroscopeService.stopProfiling(context);
+								Context.error = error as Error;
+								pyroscopeService.StopProfiling(Context);
 								throw error;
 							});
 					}
 
 					// Handle synchronous methods
-					pyroscopeService.stopProfiling(context);
-					return result;
+					pyroscopeService.StopProfiling(Context);
+					return Result;
 				} catch (error) {
-					context.error = error as Error;
-					pyroscopeService.stopProfiling(context);
+					Context.error = error as Error;
+					pyroscopeService.StopProfiling(Context);
 					throw error;
 				}
 			};
@@ -149,56 +149,56 @@ export function ProfileMethod(options?: {
 	tags?: Record<string, string>;
 }): MethodDecorator {
 	return function(target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
-		const originalMethod = descriptor.value as AnyFunction;
-		const methodName = String(propertyKey);
+		const OriginalMethod = descriptor.value as TAnyFunction;
+		const MethodName = String(propertyKey);
 
 		descriptor.value = function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): unknown {
 			const { pyroscopeService } = this;
 
 			// PyroscopeService not injected — skip profiling silently
 			if (!pyroscopeService) {
-				return originalMethod.apply(this, args);
+				return OriginalMethod.apply(this, args);
 			}
 
-			if (!pyroscopeService.isEnabled()) {
-				return originalMethod.apply(this, args);
+			if (!pyroscopeService.IsEnabled()) {
+				return OriginalMethod.apply(this, args);
 			}
 
-			const targetConstructorName = (target as { constructor: { name: string } }).constructor.name;
-			const profileName = options?.name ?? `${targetConstructorName}.${methodName}`;
-			const context: IProfileContext = {
-				functionName: profileName,
-				className: targetConstructorName,
-				methodName,
+			const TargetConstructorName = (target as { constructor: { name: string } }).constructor.name;
+			const ProfileName = options?.name ?? `${TargetConstructorName}.${MethodName}`;
+			const Context: IProfileContext = {
+				functionName: ProfileName,
+				className: TargetConstructorName,
+				methodName: MethodName,
 				startTime: Date.now(),
 				...(options?.tags && { tags: options.tags }),
 			};
 
-			pyroscopeService.startProfiling(context);
+			pyroscopeService.StartProfiling(Context);
 
 			try {
-				const result = originalMethod.apply(this, args);
+				const Result = OriginalMethod.apply(this, args);
 
 				// Handle async methods (Promises)
-				if (result instanceof Promise) {
-					return result
+				if (Result instanceof Promise) {
+					return Result
 						.then((value) => {
-							pyroscopeService.stopProfiling(context);
+							pyroscopeService.StopProfiling(Context);
 							return value;
 						})
 						.catch((error) => {
-							context.error = error as Error;
-							pyroscopeService.stopProfiling(context);
+							Context.error = error as Error;
+							pyroscopeService.StopProfiling(Context);
 							throw error;
 						});
 				}
 
 				// Handle synchronous methods
-				pyroscopeService.stopProfiling(context);
-				return result;
+				pyroscopeService.StopProfiling(Context);
+				return Result;
 			} catch (error) {
-				context.error = error as Error;
-				pyroscopeService.stopProfiling(context);
+				Context.error = error as Error;
+				pyroscopeService.StopProfiling(Context);
 				throw error;
 			}
 		};
@@ -252,42 +252,42 @@ export function ProfileAsync(options?: {
 	tags?: Record<string, string>;
 }): MethodDecorator {
 	return function(target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
-		const originalMethod = descriptor.value as AnyFunction;
-		const methodName = String(propertyKey);
+		const OriginalMethod = descriptor.value as TAnyFunction;
+		const MethodName = String(propertyKey);
 
 		descriptor.value = async function(this: { pyroscopeService?: PyroscopeService }, ...args: unknown[]): Promise<unknown> {
 			const { pyroscopeService } = this;
 
 			// PyroscopeService not injected — skip profiling silently
 			if (!pyroscopeService) {
-				return await originalMethod.apply(this, args);
+				return await OriginalMethod.apply(this, args);
 			}
 
-			if (!pyroscopeService.isEnabled()) {
-				return await originalMethod.apply(this, args);
+			if (!pyroscopeService.IsEnabled()) {
+				return await OriginalMethod.apply(this, args);
 			}
 
-			const targetConstructorName = (target as { constructor: { name: string } }).constructor.name;
-			const profileName = options?.name ?? `${targetConstructorName}.${methodName}`;
-			const context: IProfileContext = {
-				functionName: profileName,
-				className: targetConstructorName,
-				methodName,
+			const TargetConstructorName = (target as { constructor: { name: string } }).constructor.name;
+			const ProfileName = options?.name ?? `${TargetConstructorName}.${MethodName}`;
+			const Context: IProfileContext = {
+				functionName: ProfileName,
+				className: TargetConstructorName,
+				methodName: MethodName,
 				startTime: Date.now(),
 				...(options?.tags && { tags: options.tags }),
 			};
 
-			pyroscopeService.startProfiling(context);
+			pyroscopeService.StartProfiling(Context);
 
 			try {
-				const result = await originalMethod.apply(this, args);
+				const Result = await OriginalMethod.apply(this, args);
 
 				// Stop profiling on successful async completion
-				pyroscopeService.stopProfiling(context);
-				return result;
+				pyroscopeService.StopProfiling(Context);
+				return Result;
 			} catch (error) {
-				context.error = error as Error;
-				pyroscopeService.stopProfiling(context);
+				Context.error = error as Error;
+				pyroscopeService.StopProfiling(Context);
 				throw error;
 			}
 		};

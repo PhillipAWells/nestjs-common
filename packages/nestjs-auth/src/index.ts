@@ -57,10 +57,10 @@
 export { KeycloakModule } from './keycloak/keycloak.module.js';
 export { KeycloakTokenValidationService } from './keycloak/services/keycloak-token-validation.service.js';
 export { JwksCacheService } from './keycloak/services/jwks-cache.service.js';
-export type { TokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
-export type { KeycloakModuleOptions, KeycloakTokenClaims, KeycloakUser } from './keycloak/keycloak.types.js';
-export { createMockKeycloakUser } from './keycloak/keycloak.types.js';
-export type { KeycloakModuleAsyncOptions } from './keycloak/keycloak.interfaces.js';
+export type { ITokenValidationResult } from './keycloak/services/keycloak-token-validation.service.js';
+export type { IKeycloakModuleOptions, IKeycloakTokenClaims, IKeycloakUser } from './keycloak/keycloak.types.js';
+export { CreateMockKeycloakUser as createMockKeycloakUser } from './keycloak/keycloak.types.js';
+export type { IKeycloakModuleAsyncOptions } from './keycloak/keycloak.interfaces.js';
 export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 
 // ============================================================================
@@ -69,13 +69,13 @@ export { KEYCLOAK_MODULE_OPTIONS } from './keycloak/keycloak.constants.js';
 export { KeycloakAdminModule } from './admin/keycloak-admin.module.js';
 export { KeycloakAdminService } from './admin/services/keycloak-admin.service.js';
 export { KeycloakHealthIndicator } from './admin/health/keycloak.health.js';
-export type { KeycloakAdminConfig } from './admin/config/keycloak.config.js';
-export type { KeycloakAdminModuleAsyncOptions } from './admin/keycloak-admin.interfaces.js';
-export { KeycloakAdminDefaults, validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
+export type { IKeycloakAdminConfig } from './admin/config/keycloak.config.js';
+export type { IKeycloakAdminModuleAsyncOptions } from './admin/keycloak-admin.interfaces.js';
+export { KeycloakAdminDefaults, ValidateKeycloakAdminConfig as validateKeycloakAdminConfig } from './admin/config/keycloak.defaults.js';
 export { KEYCLOAK_ADMIN_CONFIG_TOKEN } from './admin/keycloak.constants.js';
 
 // Keycloak Admin Permission Scopes
-export type { KeycloakAdminScope } from './admin/permissions/keycloak-admin.permissions.js';
+export type { TKeycloakAdminScope } from './admin/permissions/keycloak-admin.permissions.js';
 export { KEYCLOAK_DEFAULT_SCOPES, KEYCLOAK_ALL_SCOPES, KeycloakAdminScopeError } from './admin/permissions/keycloak-admin.permissions.js';
 
 // Keycloak Admin Client
@@ -91,12 +91,12 @@ export { GroupService } from './admin/client/services/group.service.js';
 export { IdentityProviderService } from './admin/client/services/identity-provider.service.js';
 export { AuthenticationService } from './admin/client/services/authentication.service.js';
 export { FederatedIdentityService } from './admin/client/services/federated-identity.service.js';
-export type { FederatedIdentityLink } from './admin/client/services/federated-identity.service.js';
+export type { IFederatedIdentityLink } from './admin/client/services/federated-identity.service.js';
 export { EventService } from './admin/client/services/event.service.js';
 
 // Keycloak Admin Types
-export type { KeycloakClientConfig } from './admin/client/types/config.types.js';
-export type { AdminEventQuery, AccessEventQuery, KeycloakAdminEvent, KeycloakAccessEvent } from './admin/client/types/event.types.js';
+export type { IKeycloakClientConfig } from './admin/client/types/config.types.js';
+export type { IAdminEventQuery, IAccessEventQuery, IKeycloakAdminEvent, IKeycloakAccessEvent } from './admin/client/types/event.types.js';
 
 // Keycloak Admin Errors
 export {
@@ -104,7 +104,7 @@ export {
 	AuthenticationError,
 	AuthorizationError,
 	NotFoundError,
-	ValidationError,
+	IValidationError,
 	RateLimitError,
 	TimeoutError,
 	NetworkError,
@@ -112,7 +112,7 @@ export {
 } from './admin/client/errors/base-error.js';
 
 // Keycloak Admin Utils
-export { withRetry } from './admin/client/utils/retry.js';
+export { WithRetry as withRetry } from './admin/client/utils/retry.js';
 
 // ============================================================================
 // Guards — Authorization and JWT
@@ -134,13 +134,13 @@ export {
 	IS_PUBLIC_KEY,
 	ROLES_KEY,
 	PERMISSIONS_KEY,
-	detectContextType,
-	extractRequestFromContext,
-	extractUserFromContext,
-	extractAuthTokenFromContext,
+	DetectContextType,
+	ExtractRequestFromContext,
+	ExtractUserFromContext,
+	ExtractAuthTokenFromContext,
 } from './decorators/auth-decorators.js';
 
-export type { ContextOptions } from './decorators/auth-decorators.js';
+export type { IContextOptions } from './decorators/auth-decorators.js';
 
 export {
 	GraphQLPublic,
@@ -151,5 +151,3 @@ export {
 	GraphQLContextParam,
 	GraphQLUser,
 } from './decorators/graphql-auth-decorators.js';
-
-export { ExtractRequestFromContext, ExtractUserFromContext, ExtractAuthTokenFromContext, DetectContextType } from './decorators/context-utils.js';

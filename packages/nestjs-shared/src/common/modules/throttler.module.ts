@@ -36,11 +36,10 @@ import {
 	ModuleMetadata,
 	Type,
 	Provider,
-	Logger,
 } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
-export interface SharedThrottlerConfig {
+export interface ISharedThrottlerConfig {
 	/** Time window in milliseconds (default: 15 * 60 * 1000 = 15 minutes) */
 	ttl?: number;
 	/** Maximum number of requests per window (default: 100) */
@@ -58,8 +57,6 @@ export interface SharedThrottlerConfig {
 
 @Module({})
 export class SharedThrottlerModule {
-	private static readonly logger = new Logger(SharedThrottlerModule.name);
-
 	// eslint-disable-next-line no-magic-numbers
 	private static readonly DEFAULT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -72,19 +69,15 @@ export class SharedThrottlerModule {
 	/**
 	 * Configure in-memory throttling (default)
 	 */
-	public static forRoot(config?: SharedThrottlerConfig): DynamicModule {
-		const ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
-		const limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
-
-		SharedThrottlerModule.logger.log(
-			`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
-		);
+	public static ForRoot(config?: ISharedThrottlerConfig): DynamicModule {
+		const Ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
+		const Limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
 
 		return {
 			module: SharedThrottlerModule,
 			imports: [
 				ThrottlerModule.forRoot({
-					throttlers: [{ ttl: Math.round(ttl / SharedThrottlerModule.MS_PER_SECOND), limit }],
+					throttlers: [{ ttl: Math.round(Ttl / SharedThrottlerModule.MS_PER_SECOND), limit: Limit }],
 				}),
 			],
 			providers: [ThrottlerGuard],
@@ -95,19 +88,19 @@ export class SharedThrottlerModule {
 	/**
 	 * Configure with async options (supports Redis backend)
 	 */
-	public static forRootAsync(
+	public static ForRootAsync(
 		options: {
-			useFactory?: (...args: any[]) => SharedThrottlerConfig | Promise<SharedThrottlerConfig>;
-			useClass?: Type<{ createThrottlerConfig(): SharedThrottlerConfig | Promise<SharedThrottlerConfig> }>;
+			useFactory?: (...args: any[]) => ISharedThrottlerConfig | Promise<ISharedThrottlerConfig>;
+			useClass?: Type<{ createThrottlerConfig(): ISharedThrottlerConfig | Promise<ISharedThrottlerConfig> }>;
 			inject?: any[];
 			imports?: ModuleMetadata['imports'];
 		},
 	): DynamicModule {
-		const providers: Provider[] = [];
+		const Providers: Provider[] = [];
 
 		// If useFactory is provided
 		if (options.useFactory) {
-			providers.push({
+			Providers.push({
 				provide: 'SHARED_THROTTLER_CONFIG',
 				useFactory: options.useFactory,
 				inject: options.inject ?? [],
@@ -116,7 +109,7 @@ export class SharedThrottlerModule {
 
 		// If useClass is provided
 		if (options.useClass) {
-			providers.push(options.useClass, {
+			Providers.push(options.useClass, {
 				provide: 'SHARED_THROTTLER_CONFIG',
 				useFactory: (instance: any) => instance.createThrottlerConfig(),
 				inject: [options.useClass],
@@ -128,26 +121,22 @@ export class SharedThrottlerModule {
 			imports: [
 				ThrottlerModule.forRootAsync({
 					inject: ['SHARED_THROTTLER_CONFIG'],
-					useFactory: (config: SharedThrottlerConfig) => {
-						const ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
-						const limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
+					useFactory: (config: ISharedThrottlerConfig) => {
+						const Ttl = config?.ttl ?? SharedThrottlerModule.DEFAULT_WINDOW_MS;
+						const Limit = config?.limit ?? SharedThrottlerModule.DEFAULT_MAX_REQUESTS;
 
 						if (config?.redis) {
 							throw new Error('Redis backend for SharedThrottlerModule is not yet implemented. Remove the redis config or wait for the implementation.');
 						}
 
-						SharedThrottlerModule.logger.log(
-							`Initializing SharedThrottlerModule with in-memory storage (ttl: ${ttl}ms, limit: ${limit})`,
-						);
-
 						return {
-							throttlers: [{ ttl: Math.round(ttl / SharedThrottlerModule.MS_PER_SECOND), limit }],
+							throttlers: [{ ttl: Math.round(Ttl / SharedThrottlerModule.MS_PER_SECOND), limit: Limit }],
 						};
 					},
 				}),
 				...(options.imports ?? []),
 			],
-			providers: [...providers, ThrottlerGuard],
+			providers: [...Providers, ThrottlerGuard],
 			exports: [ThrottlerModule, ThrottlerGuard],
 		};
 	}

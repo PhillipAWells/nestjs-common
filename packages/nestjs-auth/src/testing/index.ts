@@ -10,4 +10,4 @@
  * ```
  */
 export { MockKeycloakTokenValidationService } from './mocks/keycloak-token-validation.mock.js';
-export { KeycloakTestingModule, type KeycloakTestingModuleOptions } from './keycloak-testing.module.js';
+export { KeycloakTestingModule, type IKeycloakTestingModuleOptions } from './keycloak-testing.module.js';

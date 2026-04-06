@@ -6,8 +6,8 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { createAsyncProviders } from '@pawells/nestjs-shared/common';
-import { getQdrantClientToken, getQdrantModuleOptionsToken } from './qdrant.constants.js';
-import type { QdrantModuleAsyncOptions, QdrantModuleOptions, QdrantOptionsFactory } from './qdrant.interfaces.js';
+import { GetQdrantClientToken, GetQdrantModuleOptionsToken } from './qdrant.constants.js';
+import type { IQdrantModuleAsyncOptions, TQdrantModuleOptions, IQdrantOptionsFactory } from './qdrant.interfaces.js';
 import { QdrantService } from './qdrant.service.js';
 
 /**
@@ -66,30 +66,30 @@ export class QdrantModule {
 	 * export class AppModule {}
 	 * ```
 	 */
-	public static forRoot(
-		options: QdrantModuleOptions,
+	public static ForRoot(
+		options: TQdrantModuleOptions,
 		isGlobal?: boolean,
 	): DynamicModule {
-		const global = isGlobal ?? true;
-		const { name, ...clientOptions } = options;
-		const clientToken = getQdrantClientToken(name);
-		const optionsToken = getQdrantModuleOptionsToken(name);
+		const Global = isGlobal ?? true;
+		const { name, ...ClientOptions } = options;
+		const ClientToken = GetQdrantClientToken(name);
+		const OptionsToken = GetQdrantModuleOptionsToken(name);
 
 		// Sanitize options by removing apiKey before storing
-		const { apiKey: _apiKey, ...sanitizedOptions } = clientOptions;
+		const { apiKey: _ApiKey, ...SanitizedOptions } = ClientOptions;
 
 		return {
 			module: QdrantModule,
-			global,
+			global: Global,
 			providers: [
-				{ provide: optionsToken, useValue: sanitizedOptions },
-				{ provide: clientToken, useValue: new QdrantClient(clientOptions) },
+				{ provide: OptionsToken, useValue: SanitizedOptions },
+				{ provide: ClientToken, useValue: new QdrantClient(ClientOptions) },
 				{
 					provide: QdrantService,
 					useClass: QdrantService,
 				},
 			],
-			exports: [QdrantService, clientToken],
+			exports: [QdrantService, ClientToken],
 		};
 	}
 
@@ -98,7 +98,7 @@ export class QdrantModule {
 	 * Supports factory functions, class-based factories, and existing service reuse.
 	 * Creates and provides the Qdrant client instance and service globally.
 	 *
-	 * The apiKey is automatically sanitized and stored separately from the public options token
+	 * The apiKey is automatically sanitized and stored separately from the public Options token
 	 * to ensure security. The client factory receives the full options including the apiKey,
 	 * but the publicly injectable options token excludes it.
 	 *
@@ -125,54 +125,48 @@ export class QdrantModule {
 	 * })
 	 * ```
 	 */
-	public static forRootAsync(
-		options: QdrantModuleAsyncOptions,
+	public static ForRootAsync(
+		options: IQdrantModuleAsyncOptions,
 		isGlobal?: boolean,
 	): DynamicModule {
-		const global = isGlobal ?? true;
-		const clientToken = getQdrantClientToken(options.name);
-		const optionsToken = getQdrantModuleOptionsToken(options.name);
+		const Global = isGlobal ?? true;
+		const ClientToken = GetQdrantClientToken(options.name);
+		const OptionsToken = GetQdrantModuleOptionsToken(options.name);
 		// Internal token for raw (unsanitized) options — includes apiKey for client creation
-		const rawOptionsToken = Symbol('QDRANT_RAW_OPTIONS');
+		const RawOptionsToken = Symbol('QDRANT_RAW_OPTIONS');
 
-		const rawProviders = createAsyncProviders(
-			options,
-			rawOptionsToken,
-			(factory: QdrantOptionsFactory): QdrantModuleOptions | Promise<QdrantModuleOptions> => {
-				return factory.createQdrantOptions();
-			},
-		);
+		const RawProviders = createAsyncProviders(options, RawOptionsToken, (factory: IQdrantOptionsFactory) => factory.createQdrantOptions());
 
 		return {
 			module: QdrantModule,
-			global,
+			global: Global,
 			imports: options.imports ?? [],
 			providers: [
-				...rawProviders,
+				...RawProviders,
 				// Store sanitized options (without apiKey) under the public token
 				{
-					provide: optionsToken,
-					useFactory: (opts: QdrantModuleOptions) => {
-						const { apiKey: _apiKey, name: _name, ...sanitized } = opts;
-						return sanitized;
+					provide: OptionsToken,
+					useFactory: (opts: TQdrantModuleOptions) => {
+						const { apiKey: _ApiKey, name: _Name, ...Sanitized } = opts;
+						return Sanitized;
 					},
-					inject: [rawOptionsToken],
+					inject: [RawOptionsToken],
 				},
 				// Create client with full options (including apiKey)
 				{
-					provide: clientToken,
-					useFactory: (opts: QdrantModuleOptions) => {
-						const { name: _name, ...clientOptions } = opts;
-						return new QdrantClient(clientOptions);
+					provide: ClientToken,
+					useFactory: (opts: TQdrantModuleOptions) => {
+						const { name: _Name, ...ClientOptions } = opts;
+						return new QdrantClient(ClientOptions);
 					},
-					inject: [rawOptionsToken],
+					inject: [RawOptionsToken],
 				},
 				{
 					provide: QdrantService,
 					useClass: QdrantService,
 				},
 			],
-			exports: [QdrantService, clientToken],
+			exports: [QdrantService, ClientToken],
 		};
 	}
 }

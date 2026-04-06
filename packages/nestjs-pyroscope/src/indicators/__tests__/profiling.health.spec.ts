@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ModuleRef } from '@nestjs/core';
 import { ProfilingHealthIndicator } from '../profiling.health.js';
 import { PyroscopeService } from '../../service.js';
@@ -7,7 +7,7 @@ import { IPyroscopeConfig } from '../../interfaces/profiling.interface.js';
 
 describe('ProfilingHealthIndicator', () => {
 	let indicator: ProfilingHealthIndicator;
-	let mockPyroscopeService: { getHealth: ReturnType<typeof vi.fn>; isEnabled: ReturnType<typeof vi.fn> };
+	let mockPyroscopeService: { GetHealth: ReturnType<typeof vi.fn>; IsEnabled: ReturnType<typeof vi.fn> };
 	let mockConfig: IPyroscopeConfig;
 
 	beforeEach(() => {
@@ -19,8 +19,8 @@ describe('ProfilingHealthIndicator', () => {
 		};
 
 		mockPyroscopeService = {
-			getHealth: vi.fn(),
-			isEnabled: vi.fn().mockReturnValue(true),
+			GetHealth: vi.fn(),
+			IsEnabled: vi.fn().mockReturnValue(true),
 		} as any;
 
 		const mockModuleRef = {
@@ -40,7 +40,7 @@ describe('ProfilingHealthIndicator', () => {
 
 	describe('check', () => {
 		it('should return healthy status when profiling is properly initialized', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -52,7 +52,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result).toEqual({
 				pyroscope: {
@@ -65,7 +65,7 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should return unhealthy when enabled but not initialized', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'unhealthy',
 				details: {
 					enabled: true,
@@ -73,7 +73,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 			expect(result.pyroscope).toHaveProperty('message');
@@ -81,7 +81,7 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should return unhealthy when too many active profiles', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -91,7 +91,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 			expect(result.pyroscope).toHaveProperty('message');
@@ -102,7 +102,7 @@ describe('ProfilingHealthIndicator', () => {
 		it('should use default threshold when not configured', () => {
 			mockConfig.degradedActiveProfilesThreshold = undefined;
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -112,15 +112,15 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('up');
 		});
 
 		it('should handle profiling disabled gracefully', () => {
 			mockConfig.enabled = false;
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: false,
@@ -128,14 +128,14 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			// When disabled but health check requested, should still check initialization
 			expect(result).toBeDefined();
 		});
 
 		it('should include detailed health information', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -147,7 +147,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('profiling-status');
+			const result = indicator.Check('profiling-status');
 
 			expect(result['profiling-status'].status).toBe('up');
 			expect(result['profiling-status'].initialized).toBe(true);
@@ -156,7 +156,7 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should work with custom key names', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -166,14 +166,14 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('custom_key');
+			const result = indicator.Check('custom_key');
 
 			expect(result).toHaveProperty('custom_key');
 			expect(result.custom_key.status).toBe('up');
 		});
 
 		it('should handle edge case at threshold boundary', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -183,13 +183,13 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('up'); // At threshold, not over
 		});
 
 		it('should handle edge case just over threshold', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -199,13 +199,13 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 		});
 
 		it('should handle zero active profiles', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -215,15 +215,15 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('up');
 			expect(result.pyroscope.activeProfiles).toBe(0);
 		});
 
 		it('should skip uninitialized check when profiling is disabled', () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: false,
@@ -233,7 +233,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			// Should not return "not initialized" error since profiling is disabled
 			expect(result.pyroscope.status).toBe('up');
@@ -243,7 +243,7 @@ describe('ProfilingHealthIndicator', () => {
 		it('should return degraded status when activeProfiles exceeds configured threshold', () => {
 			mockConfig.degradedActiveProfilesThreshold = 75;
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -253,7 +253,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 			expect(result.pyroscope.message).toContain('Too many active profiles');
@@ -261,17 +261,17 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should handle error when getHealth throws exception', () => {
-			mockPyroscopeService.getHealth.mockImplementation(() => {
+			mockPyroscopeService.GetHealth.mockImplementation(() => {
 				throw new Error('Health check failed');
 			});
 
 			expect(() => {
-				indicator.check('pyroscope');
+				indicator.Check('pyroscope');
 			}).toThrow('Health check failed');
 		});
 
 		it('should handle undefined activeProfiles gracefully', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -281,7 +281,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			// Should still return a result even with undefined activeProfiles
 			expect(result.pyroscope).toBeDefined();
@@ -290,7 +290,7 @@ describe('ProfilingHealthIndicator', () => {
 		it('should properly use configured threshold over default', () => {
 			mockConfig.degradedActiveProfilesThreshold = 50;
 
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -300,14 +300,14 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 			expect(result.pyroscope.message).toContain('Too many active profiles');
 		});
 
 		it('should include all health details in successful response', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: true,
@@ -317,7 +317,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('health');
+			const result = indicator.Check('health');
 
 			expect(result.health).toEqual({
 				status: 'up',
@@ -328,7 +328,7 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should return unhealthy when not initialized and enabled, including all details', () => {
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'unhealthy',
 				details: {
 					enabled: true,
@@ -338,7 +338,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			expect(result.pyroscope.status).toBe('down');
 			expect(result.pyroscope.message).toContain('not initialized');
@@ -347,8 +347,8 @@ describe('ProfilingHealthIndicator', () => {
 		});
 
 		it('should handle both initialized and not enabled conditions', () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
-			mockPyroscopeService.getHealth.mockReturnValue({
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
+			mockPyroscopeService.GetHealth.mockReturnValue({
 				status: 'healthy',
 				details: {
 					enabled: false,
@@ -358,7 +358,7 @@ describe('ProfilingHealthIndicator', () => {
 				},
 			});
 
-			const result = indicator.check('pyroscope');
+			const result = indicator.Check('pyroscope');
 
 			// Should skip first condition since !enabled
 			// activeProfiles over threshold but should still return down

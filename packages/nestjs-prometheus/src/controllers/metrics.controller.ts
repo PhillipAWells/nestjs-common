@@ -14,7 +14,7 @@ import { PrometheusExporter } from '../prometheus.exporter.js';
  *
  * Response Headers:
  * - `Content-Type: text/plain; version=0.0.4; charset=utf-8`
- * - `X-Robots-Tag: noindex, nofollow` — prevents search engine indexing
+ * - `X-Robots-ITag: noindex, nofollow` — prevents search engine indexing
  *
  * Security:
  * - Protected by MetricsGuard from @pawells/nestjs-shared
@@ -28,7 +28,7 @@ import { PrometheusExporter } from '../prometheus.exporter.js';
  * Response:
  * 200 OK
  * Content-Type: text/plain; version=0.0.4; charset=utf-8
- * X-Robots-Tag: noindex, nofollow
+ * X-Robots-ITag: noindex, nofollow
  *
  * # HELP http_request_duration_seconds Duration of HTTP requests in seconds
  * # TYPE http_request_duration_seconds histogram
@@ -38,9 +38,13 @@ import { PrometheusExporter } from '../prometheus.exporter.js';
  */
 @Controller()
 export class MetricsController {
+	private readonly Exporter: PrometheusExporter;
+
 	constructor(
-		private readonly exporter: PrometheusExporter,
-	) {}
+		exporter: PrometheusExporter,
+	) {
+		this.Exporter = exporter;
+	}
 
 	/**
 	 * Get all metrics in Prometheus text format
@@ -61,7 +65,7 @@ export class MetricsController {
 	 *
 	 * Response Headers:
 	 * - Content-Type: text/plain; version=0.0.4; charset=utf-8
-	 * - X-Robots-Tag: noindex, nofollow
+	 * - X-Robots-ITag: noindex, nofollow
 	 *
 	 * @param response - Express response object
 	 * @returns Promise that resolves when response is sent
@@ -73,7 +77,7 @@ export class MetricsController {
 	 *
 	 * HTTP/1.1 200 OK
 	 * Content-Type: text/plain; version=0.0.4; charset=utf-8
-	 * X-Robots-Tag: noindex, nofollow
+	 * X-Robots-ITag: noindex, nofollow
 	 *
 	 * # HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
 	 * # TYPE process_cpu_user_seconds_total counter
@@ -88,9 +92,9 @@ export class MetricsController {
 	@Get('metrics')
 	@UseGuards(MetricsGuard)
 	@Header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
-	@Header('X-Robots-Tag', 'noindex, nofollow')
-	public async getMetrics(@Res() response: Response): Promise<void> {
-		const metrics = await this.exporter.getMetrics();
-		response.send(metrics);
+	@Header('X-Robots-ITag', 'noindex, nofollow')
+	public async GetMetrics(@Res() response: Response): Promise<void> {
+		const Metrics = await this.Exporter.GetMetrics();
+		response.send(Metrics);
 	}
 }

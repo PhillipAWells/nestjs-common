@@ -22,16 +22,16 @@ import { MetricsRegistryService } from '../services/metrics-registry.service.js'
  * ```
  */
 export abstract class BaseMetricsCollector {
-	protected readonly logger: AppLogger = new AppLogger(undefined, this.constructor.name);
+	protected readonly Logger: AppLogger = new AppLogger(undefined, this.constructor.name);
 
-	private readonly metricsRegistry: MetricsRegistryService;
+	private readonly MetricsRegistry: MetricsRegistryService;
 
-	private readonly metrics: Map<string, Counter<string> | Gauge<string> | Histogram<string>> = new Map();
+	private readonly Metrics: Map<string, Counter<string> | Gauge<string> | Histogram<string>> = new Map();
 
 	constructor(metricsRegistry: MetricsRegistryService) {
-		this.metricsRegistry = metricsRegistry;
-		this.initializeMetrics();
-		this.logger.info(`${this.constructor.name} initialized with ${this.metrics.size} metrics`);
+		this.MetricsRegistry = metricsRegistry;
+		this.InitializeMetrics();
+		this.Logger.info(`${this.constructor.name} initialized with ${this.Metrics.size} metrics`);
 	}
 
 	/**
@@ -44,7 +44,7 @@ export abstract class BaseMetricsCollector {
 	 *   this.registerGauge('queue_depth', 'Current queue depth');
 	 * }
 	 */
-	protected abstract initializeMetrics(): void;
+	protected abstract InitializeMetrics(): void;
 
 	/**
 	 * Register a counter metric.
@@ -54,10 +54,10 @@ export abstract class BaseMetricsCollector {
 	 * @param labelNames - Optional label names for the metric
 	 * @returns The registered counter metric
 	 */
-	protected registerCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
-		const counter = this.metricsRegistry.createCounter(name, help, labelNames);
-		this.metrics.set(name, counter);
-		return counter;
+	protected RegisterCounter(name: string, help: string, labelNames: string[] = []): Counter<string> {
+		const Counter = this.MetricsRegistry.CreateCounter(name, help, labelNames);
+		this.Metrics.set(name, Counter);
+		return Counter;
 	}
 
 	/**
@@ -68,10 +68,10 @@ export abstract class BaseMetricsCollector {
 	 * @param labelNames - Optional label names for the metric
 	 * @returns The registered gauge metric
 	 */
-	protected registerGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
-		const gauge = this.metricsRegistry.createGauge(name, help, labelNames);
-		this.metrics.set(name, gauge);
-		return gauge;
+	protected RegisterGauge(name: string, help: string, labelNames: string[] = []): Gauge<string> {
+		const Gauge = this.MetricsRegistry.CreateGauge(name, help, labelNames);
+		this.Metrics.set(name, Gauge);
+		return Gauge;
 	}
 
 	/**
@@ -83,15 +83,15 @@ export abstract class BaseMetricsCollector {
 	 * @param buckets - Optional bucket boundaries for the histogram
 	 * @returns The registered histogram metric
 	 */
-	protected registerHistogram(
+	protected RegisterHistogram(
 		name: string,
 		help: string,
 		labelNames: string[] = [],
 		buckets?: number[],
 	): Histogram<string> {
-		const histogram = this.metricsRegistry.createHistogram(name, help, labelNames, buckets);
-		this.metrics.set(name, histogram);
-		return histogram;
+		const Histogram = this.MetricsRegistry.CreateHistogram(name, help, labelNames, buckets);
+		this.Metrics.set(name, Histogram);
+		return Histogram;
 	}
 
 	/**
@@ -100,8 +100,8 @@ export abstract class BaseMetricsCollector {
 	 * @param name - The metric name
 	 * @returns The metric instance, or undefined if not found
 	 */
-	public getMetric(name: string): Counter<string> | Gauge<string> | Histogram<string> | undefined {
-		return this.metrics.get(name);
+	public GetMetric(name: string): Counter<string> | Gauge<string> | Histogram<string> | undefined {
+		return this.Metrics.get(name);
 	}
 
 	/**
@@ -109,7 +109,7 @@ export abstract class BaseMetricsCollector {
 	 *
 	 * @returns A Map of all registered metrics keyed by name
 	 */
-	public getAllMetrics(): Map<string, Counter<string> | Gauge<string> | Histogram<string>> {
-		return new Map(this.metrics);
+	public GetAllMetrics(): Map<string, Counter<string> | Gauge<string> | Histogram<string>> {
+		return new Map(this.Metrics);
 	}
 }

@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-auth",
   "displayName": "@pawells/nestjs-auth",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "NestJS Keycloak integration library — token validation, admin API, and federated identity",
   "type": "module",
   "main": "./build/index.js",
@@ -54,13 +54,13 @@
     }
   },
   "dependencies": {
-    "@pawells/nestjs-shared": "^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
-    "@nestjs/graphql": "^13.0.0",
+    "@nestjs/graphql": "^13.2.4",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/terminus": "^11.1.1",
     "@nestjs/throttler": "^6.5.0",
@@ -69,10 +69,10 @@
     "class-validator": "^0.15.1",
     "compression": "^1.8.1",
     "csrf-csrf": "^4.0.3",
-    "express": "^5.0.0",
+    "express": "^5.2.1",
     "graphql": "^16.13.2",
     "helmet": "^8.1.0",
-    "joi": "^18.0.0",
+    "joi": "^18.1.2",
     "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",

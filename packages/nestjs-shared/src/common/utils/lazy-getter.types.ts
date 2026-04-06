@@ -8,6 +8,7 @@
  * @see {@link .claude/skills/lazy-module-ref-pattern.md} - Comprehensive pattern guide
  */
 
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
 /**
@@ -22,7 +23,7 @@ import { ModuleRef } from '@nestjs/core';
  * }
  * ```
  */
-export type LazyGetter<T> = () => T;
+export type TLazyGetter<T> = () => T;
 
 /**
  * Type for an optional lazy-loaded getter that may return undefined
@@ -40,7 +41,7 @@ export type LazyGetter<T> = () => T;
  * }
  * ```
  */
-export type OptionalLazyGetter<T> = () => T | undefined;
+export type TOptionalLazyGetter<T> = () => T | undefined;
 
 /**
  * Type for a lazy-loaded getter using a string-based injection token
@@ -54,7 +55,7 @@ export type OptionalLazyGetter<T> = () => T | undefined;
  * }
  * ```
  */
-export type TokenLazyGetter<T> = (token: string) => T;
+export type TTokenLazyGetter<T> = (token: string) => T;
 
 /**
  * Interface for a service using lazy ModuleRef pattern
@@ -65,7 +66,7 @@ export type TokenLazyGetter<T> = (token: string) => T;
  * @example
  * ```typescript
  * @Injectable()
- * export class ExampleService implements LazyModuleRefService {
+ * export class ExampleService implements ILazyModuleRefService {
  *     constructor(public readonly Module: ModuleRef) {}
  *
  *     public get SomeService(): SomeServiceType {
@@ -74,7 +75,7 @@ export type TokenLazyGetter<T> = (token: string) => T;
  * }
  * ```
  */
-export interface LazyModuleRefService {
+export interface ILazyModuleRefService {
 	/**
 	 * The ModuleRef instance for lazy dependency resolution
 	 * This should be the ONLY injected dependency
@@ -91,12 +92,12 @@ export interface LazyModuleRefService {
  *
  * @example
  * ```typescript
- * type AuthServiceDeps = LazyGetterDependencies<AuthService>;
+ * type AuthServiceDeps = TLazyGetterDependencies<AuthService>;
  * // Results in: { Config: ConfigService, Logger: AppLogger }
  * ```
  */
-export type LazyGetterDependencies<S> = {
-	[K in keyof S as S[K] extends LazyGetter<any> ? K : never]: S[K] extends LazyGetter<infer T>
+export type TLazyGetterDependencies<S> = {
+	[K in keyof S as S[K] extends TLazyGetter<any> ? K : never]: S[K] extends TLazyGetter<infer T>
 		? T
 		: never;
 };
@@ -105,7 +106,7 @@ export type LazyGetterDependencies<S> = {
  * Configuration for optional dependency resolution
  * Used when a service may not be registered in the module
  */
-export interface OptionalGetterConfig {
+export interface IOptionalGetterConfig {
 	/**
 	 * Set to false to return undefined instead of throwing if not found
 	 * @default true
@@ -136,15 +137,15 @@ export interface OptionalGetterConfig {
 export function CreateMemoizedLazyGetter<T>(
 	getterFn: () => T,
 ): () => T {
-	let cached: T | undefined;
-	let initialized = false;
+	let Cached: T | undefined;
+	let Initialized = false;
 
 	return () => {
-		if (!initialized) {
-			cached = getterFn();
-			initialized = true;
+		if (!Initialized) {
+			Cached = getterFn();
+			Initialized = true;
 		}
-		return cached as T;
+		return Cached as T;
 	};
 }
 
@@ -167,7 +168,7 @@ export function CreateMemoizedLazyGetter<T>(
 export function CreateOptionalLazyGetter<T>(
 	module: ModuleRef,
 	token: string | Function,
-	config?: OptionalGetterConfig,
+	config?: IOptionalGetterConfig,
 ): T | undefined {
 	try {
 		return module.get(token, { strict: config?.strict ?? true });
@@ -177,7 +178,7 @@ export function CreateOptionalLazyGetter<T>(
 }
 
 /**
- * Type guard to check if a value is a LazyModuleRefService
+ * Type guard to check if a value is a ILazyModuleRefService
  *
  * @param value - The value to check
  * @returns True if the value has a Module property of type ModuleRef
@@ -189,7 +190,7 @@ export function CreateOptionalLazyGetter<T>(
  * }
  * ```
  */
-export function IsLazyModuleRefService(value: any): value is LazyModuleRefService {
+export function IsLazyModuleRefService(value: any): value is ILazyModuleRefService {
 	return !!(value && typeof value === 'object' && 'Module' in value && value.Module instanceof ModuleRef);
 }
 
@@ -226,6 +227,43 @@ export const LazyGetterNamingConventions = {
 /**
  * Backwards compatibility aliases - exported functions use PascalCase per project conventions
  */
-export const createMemoizedLazyGetter = CreateMemoizedLazyGetter;
-export const createOptionalLazyGetter = CreateOptionalLazyGetter;
-export const isLazyModuleRefService = IsLazyModuleRefService;
+export const CreateMemoizedLazyGetterAlias = CreateMemoizedLazyGetter;
+export const CreateOptionalLazyGetterAlias = CreateOptionalLazyGetter;
+export const IsLazyModuleRefServiceAlias = IsLazyModuleRefService;
+
+/**
+ * Abstract base class for NestJS services using the lazy ModuleRef pattern.
+ *
+ * Extend this class instead of implementing `ILazyModuleRefService` directly to avoid
+ * boilerplate. Declare lazy-loaded dependencies as protected getters in your subclass.
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class MediaService extends LazyModuleRefBase {
+ *     protected get Library(): MediaLibraryService {
+ *         return this.Module.get(MediaLibraryService) as MediaLibraryService;
+ *     }
+ *
+ *     public async processMedia(id: string): Promise<void> {
+ *         const library = this.Library;
+ *         // ... use library
+ *     }
+ * }
+ * ```
+ *
+ * Benefits:
+ * - Eliminates constructor boilerplate for `Module: ModuleRef` property
+ * - Enforces consistent implementation of `ILazyModuleRefService`
+ * - Getter names follow PascalCase matching the service/type being resolved
+ *
+ * @implements {ILazyModuleRefService}
+ */
+@Injectable()
+export abstract class LazyModuleRefBase implements ILazyModuleRefService {
+	public readonly Module: ModuleRef;
+
+	constructor(module: ModuleRef) {
+		this.Module = module;
+	}
+}

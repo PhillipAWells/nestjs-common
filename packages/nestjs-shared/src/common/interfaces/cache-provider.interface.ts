@@ -12,32 +12,32 @@ export interface ICacheProvider {
 	 * @param value Value to cache
 	 * @param ttlSeconds Time-to-live in seconds (optional)
 	 */
-	set(key: string, value: any, ttlSeconds?: number): Promise<void>;
+	Set(key: string, value: any, ttlSeconds?: number): Promise<void>;
 
 	/**
 	 * Get a cache value
 	 * @param key Cache key
 	 * @returns Cached value or null if not found
 	 */
-	get(key: string): Promise<any>;
+	Get(key: string): Promise<any>;
 
 	/**
 	 * Check if a key exists in cache
 	 * @param key Cache key
 	 * @returns True if key exists
 	 */
-	exists(key: string): Promise<boolean>;
+	Exists(key: string): Promise<boolean>;
 
 	/**
 	 * Delete a cache value
 	 * @param key Cache key
 	 */
-	del(key: string): Promise<void>;
+	Del(key: string): Promise<void>;
 
 	/**
 	 * Clear all cache values
 	 */
-	clear(): Promise<void>;
+	Clear(): Promise<void>;
 
 	/**
 	 * Execute an atomic script/command (e.g. Redis Lua script) on the cache backend.

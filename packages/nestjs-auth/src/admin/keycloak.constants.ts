@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * constructor(@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) config: KeycloakAdminConfig) {
+ * constructor(@Inject(KEYCLOAK_ADMIN_CONFIG_TOKEN) config: IKeycloakAdminConfig) {
  *   // Access the configuration directly
  *   console.log(config.realmName);
  * }

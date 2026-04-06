@@ -1,14 +1,14 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Profile, ProfileMethod, ProfileAsync } from '../profile.decorator.js';
 
 describe('Profile Decorators', () => {
-	let mockPyroscopeService: { isEnabled: ReturnType<typeof vi.fn>; startProfiling: ReturnType<typeof vi.fn>; stopProfiling: ReturnType<typeof vi.fn> };
+	let mockPyroscopeService: { IsEnabled: ReturnType<typeof vi.fn>; StartProfiling: ReturnType<typeof vi.fn>; StopProfiling: ReturnType<typeof vi.fn> };
 
 	beforeEach(() => {
 		mockPyroscopeService = {
-			isEnabled: vi.fn().mockReturnValue(true),
-			startProfiling: vi.fn(),
-			stopProfiling: vi.fn().mockReturnValue({
+			IsEnabled: vi.fn().mockReturnValue(true),
+			StartProfiling: vi.fn(),
+			StopProfiling: vi.fn().mockReturnValue({
 				cpuTime: 0,
 				memoryUsage: 0,
 				duration: 10,
@@ -39,19 +39,19 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			instance.testMethod();
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
 					methodName: 'testMethod',
 				}),
 			);
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalled();
 
 			vi.clearAllMocks();
 
 			instance.anotherMethod();
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'TestClass.anotherMethod',
 					className: 'TestClass',
@@ -73,7 +73,7 @@ describe('Profile Decorators', () => {
 			new TestClass();
 
 			// Constructor should not trigger profiling
-			expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+			expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
 		});
 
 		it('should apply custom tags to all methods', () => {
@@ -91,7 +91,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tags: customTags,
 				}),
@@ -112,11 +112,11 @@ describe('Profile Decorators', () => {
 			const result = instance.testMethod();
 
 			expect(result).toBe('result');
-			expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+			expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
 		});
 
 		it('should not profile when service is disabled', () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
 
 			@Profile()
 			class TestClass {
@@ -131,7 +131,7 @@ describe('Profile Decorators', () => {
 			const result = instance.testMethod();
 
 			expect(result).toBe('result');
-			expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+			expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
 		});
 
 		it('should handle errors and still stop profiling', () => {
@@ -149,8 +149,8 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			expect(() => instance.testMethod()).toThrow(error);
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					error,
 				}),
@@ -204,14 +204,14 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
 					methodName: 'testMethod',
 				}),
 			);
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalled();
 		});
 
 		it('should use custom name when provided', () => {
@@ -227,7 +227,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'CustomProfileName',
 				}),
@@ -249,7 +249,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tags: customTags,
 				}),
@@ -257,7 +257,7 @@ describe('Profile Decorators', () => {
 		});
 
 		it('should not profile when service is disabled', () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
 
 			class TestClass {
 				public pyroscopeService = mockPyroscopeService;
@@ -272,7 +272,7 @@ describe('Profile Decorators', () => {
 			const result = instance.testMethod();
 
 			expect(result).toBe('result');
-			expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+			expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
 		});
 
 		it('should handle errors and still stop profiling', () => {
@@ -290,8 +290,8 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			expect(() => instance.testMethod()).toThrow(error);
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					error,
 				}),
@@ -347,14 +347,14 @@ describe('Profile Decorators', () => {
 			const result = await instance.testMethod();
 
 			expect(result).toBe('async result');
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'TestClass.testMethod',
 					className: 'TestClass',
 					methodName: 'testMethod',
 				}),
 			);
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalled();
 		});
 
 		it('should use custom name when provided', async () => {
@@ -370,7 +370,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			await instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'CustomAsyncProfile',
 				}),
@@ -392,7 +392,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 			await instance.testMethod();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tags: customTags,
 				}),
@@ -400,7 +400,7 @@ describe('Profile Decorators', () => {
 		});
 
 		it('should not profile when service is disabled', async () => {
-			mockPyroscopeService.isEnabled.mockReturnValue(false);
+			mockPyroscopeService.IsEnabled.mockReturnValue(false);
 
 			class TestClass {
 				public pyroscopeService = mockPyroscopeService;
@@ -415,7 +415,7 @@ describe('Profile Decorators', () => {
 			const result = await instance.testMethod();
 
 			expect(result).toBe('result');
-			expect(mockPyroscopeService.startProfiling).not.toHaveBeenCalled();
+			expect(mockPyroscopeService.StartProfiling).not.toHaveBeenCalled();
 		});
 
 		it('should handle async errors and still stop profiling', async () => {
@@ -433,8 +433,8 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			await expect(instance.testMethod()).rejects.toThrow(error);
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalled();
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					error,
 				}),
@@ -487,7 +487,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			await expect(instance.testMethod()).rejects.toThrow('Promise rejected');
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalled();
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalled();
 		});
 	});
 
@@ -511,7 +511,7 @@ describe('Profile Decorators', () => {
 			const instance = new DerivedClass();
 
 			instance.baseMethod();
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'BaseClass.baseMethod',
 				}),
@@ -538,7 +538,7 @@ describe('Profile Decorators', () => {
 			vi.clearAllMocks();
 			instance.method1();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					functionName: 'CustomName',
 				}),
@@ -572,7 +572,7 @@ describe('Profile Decorators', () => {
 			instance.method2();
 			instance.method3();
 
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledTimes(3);
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledTimes(3);
 		});
 	});
 
@@ -596,7 +596,7 @@ describe('Profile Decorators', () => {
 			const instance = new TestClass();
 
 			expect(() => instance.method()).toThrow('Wrapped error');
-			expect(mockPyroscopeService.stopProfiling).toHaveBeenCalledWith(
+			expect(mockPyroscopeService.StopProfiling).toHaveBeenCalledWith(
 				expect.objectContaining({
 					error: expect.any(Error),
 				}),
@@ -695,13 +695,13 @@ describe('Profile Decorators', () => {
 			expect(result1).toBe('resolved');
 			expect(result2).toBe('direct value');
 			expect(result3).toBe('awaited');
-			expect(mockPyroscopeService.startProfiling).toHaveBeenCalledTimes(3);
+			expect(mockPyroscopeService.StartProfiling).toHaveBeenCalledTimes(3);
 		});
 
 		it('should measure correct timing across multiple calls', () => {
 			const startTimes: number[] = [];
 
-			mockPyroscopeService.startProfiling.mockImplementation((context) => {
+			mockPyroscopeService.StartProfiling.mockImplementation((context) => {
 				startTimes.push(context.startTime);
 			});
 

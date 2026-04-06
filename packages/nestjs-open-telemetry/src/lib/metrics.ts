@@ -13,7 +13,7 @@ const MAX_METER_CACHE_SIZE = 100;
 /**
  * Global meter cache to ensure singleton meters per name
  */
-const meterCache = new Map<string, Meter>();
+const MeterCache = new Map<string, Meter>();
 
 /**
  * Get a meter for creating metrics.
@@ -23,27 +23,27 @@ const meterCache = new Map<string, Meter>();
  * @param version - Meter version (optional)
  * @returns Meter instance
  */
-export function getMeter(
+export function GetMeter(
 	name: string,
 	version?: string,
 ): Meter {
-	const cacheKey = version ? `${name}@${version}` : name;
+	const CacheKey = version ? `${name}@${version}` : name;
 	// Return cached meter if exists
-	const cached = meterCache.get(cacheKey);
-	if (cached !== undefined) {
-		return cached;
+	const Cached = MeterCache.get(CacheKey);
+	if (Cached !== undefined) {
+		return Cached;
 	}
 	// Evict oldest entry if cache is full (simple FIFO)
-	if (meterCache.size >= MAX_METER_CACHE_SIZE) {
-		const firstKey = meterCache.keys().next().value as string | undefined;
-		if (typeof firstKey === 'string') {
-			meterCache.delete(firstKey);
+	if (MeterCache.size >= MAX_METER_CACHE_SIZE) {
+		const FirstKey = MeterCache.keys().next().value as string | undefined;
+		if (typeof FirstKey === 'string') {
+			MeterCache.delete(FirstKey);
 		}
 	}
 	// Get meter from global provider
-	const meter = version ? metrics.getMeter(name, version) : metrics.getMeter(name);
-	meterCache.set(cacheKey, meter);
-	return meter;
+	const Meter = version ? metrics.getMeter(name, version) : metrics.getMeter(name);
+	MeterCache.set(CacheKey, Meter);
+	return Meter;
 }
 
 /**
@@ -54,13 +54,13 @@ export function getMeter(
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Counter instance
  */
-export function createCounter(
+export function CreateCounter(
 	name: string,
 	options?: MetricOptions,
 	meterName = '@pawells/nestjs-open-telemetry',
 ): Counter {
-	const meter = getMeter(meterName);
-	return meter.createCounter(name, options);
+	const Meter = GetMeter(meterName);
+	return Meter.createCounter(name, options);
 }
 
 /**
@@ -71,13 +71,13 @@ export function createCounter(
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns Histogram instance
  */
-export function createHistogram(
+export function CreateHistogram(
 	name: string,
 	options?: MetricOptions,
 	meterName = '@pawells/nestjs-open-telemetry',
 ): Histogram {
-	const meter = getMeter(meterName);
-	return meter.createHistogram(name, options);
+	const Meter = GetMeter(meterName);
+	return Meter.createHistogram(name, options);
 }
 
 /**
@@ -88,20 +88,20 @@ export function createHistogram(
  * @param meterName - Optional meter name (defaults to '@pawells/nestjs-open-telemetry')
  * @returns UpDownCounter instance
  */
-export function createUpDownCounter(
+export function CreateUpDownCounter(
 	name: string,
 	options?: MetricOptions,
 	meterName = '@pawells/nestjs-open-telemetry',
 ): UpDownCounter {
-	const meter = getMeter(meterName);
-	return meter.createUpDownCounter(name, options);
+	const Meter = GetMeter(meterName);
+	return Meter.createUpDownCounter(name, options);
 }
 
 /**
  * Lazy-initialized HTTP server metrics following OpenTelemetry semantic conventions.
  * These metrics are created on first access, after SDK initialization.
  */
-let cachedHttpMetrics: {
+let CachedHttpMetrics: {
 	requests: Counter;
 	duration: Histogram;
 	activeRequests: UpDownCounter;
@@ -114,39 +114,39 @@ let cachedHttpMetrics: {
  * @internal
  * @private
  */
-function getHttpMetrics(): {
+function GetHttpMetrics(): {
 	readonly requests: Counter;
 	readonly duration: Histogram;
 	readonly activeRequests: UpDownCounter;
 	readonly requestSize: Histogram;
 	readonly responseSize: Histogram;
 } {
-	if (cachedHttpMetrics !== null) {
-		return cachedHttpMetrics;
+	if (CachedHttpMetrics !== null) {
+		return CachedHttpMetrics;
 	}
-	cachedHttpMetrics = {
-		requests: createCounter('http.server.request.count', {
+	CachedHttpMetrics = {
+		requests: CreateCounter('http.server.request.count', {
 			description: 'Total HTTP requests',
 			unit: '1',
 		}),
-		duration: createHistogram('http.server.request.duration', {
+		duration: CreateHistogram('http.server.request.duration', {
 			description: 'HTTP request duration',
 			unit: 'ms',
 		}),
-		activeRequests: createUpDownCounter('http.server.active_requests', {
+		activeRequests: CreateUpDownCounter('http.server.active_requests', {
 			description: 'Active HTTP requests',
 			unit: '1',
 		}),
-		requestSize: createHistogram('http.server.request.size', {
+		requestSize: CreateHistogram('http.server.request.size', {
 			description: 'HTTP request body size',
 			unit: 'bytes',
 		}),
-		responseSize: createHistogram('http.server.response.size', {
+		responseSize: CreateHistogram('http.server.response.size', {
 			description: 'HTTP response body size',
 			unit: 'bytes',
 		}),
 	};
-	return cachedHttpMetrics;
+	return CachedHttpMetrics;
 }
 
 /**
@@ -169,7 +169,7 @@ function getHttpMetrics(): {
  * recordHttpMetrics('GET', '/users/:id', 200, 45.2, 0, 1024);
  * ```
  */
-export function recordHttpMetrics(
+export function RecordHttpMetrics(
 	method: string,
 	route: string,
 	statusCode: number,
@@ -177,24 +177,24 @@ export function recordHttpMetrics(
 	requestSize?: number,
 	responseSize?: number,
 ): void {
-	const attributes = {
+	const Attributes = {
 		[ATTR_HTTP_REQUEST_METHOD]: method,
 		[ATTR_HTTP_ROUTE]: route,
 		[ATTR_HTTP_RESPONSE_STATUS_CODE]: statusCode,
 	};
 
-	const httpMetrics = getHttpMetrics();
+	const HttpMetrics = GetHttpMetrics();
 
 	// Record request count
-	httpMetrics.requests.add(1, attributes);
+	HttpMetrics.requests.add(1, Attributes);
 	// Record duration
-	httpMetrics.duration.record(duration, attributes);
+	HttpMetrics.duration.record(duration, Attributes);
 	// Record sizes if provided
 	if (requestSize !== undefined) {
-		httpMetrics.requestSize.record(requestSize, attributes);
+		HttpMetrics.requestSize.record(requestSize, Attributes);
 	}
 	if (responseSize !== undefined) {
-		httpMetrics.responseSize.record(responseSize, attributes);
+		HttpMetrics.responseSize.record(responseSize, Attributes);
 	}
 }
 
@@ -217,9 +217,9 @@ export function recordHttpMetrics(
  * trackActiveRequests(-1, { method: 'GET' });
  * ```
  */
-export function trackActiveRequests(delta: number, attributes?: Attributes): void {
-	const httpMetrics = getHttpMetrics();
-	httpMetrics.activeRequests.add(delta, attributes);
+export function TrackActiveRequests(delta: number, attributes?: Attributes): void {
+	const HttpMetrics = GetHttpMetrics();
+	HttpMetrics.activeRequests.add(delta, attributes);
 }
 
 /**
@@ -228,6 +228,6 @@ export function trackActiveRequests(delta: number, attributes?: Attributes): voi
  * @internal
  * @private
  */
-export function resetHttpMetrics(): void {
-	cachedHttpMetrics = null;
+export function ResetHttpMetrics(): void {
+	CachedHttpMetrics = null;
 }

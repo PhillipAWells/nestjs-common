@@ -3,10 +3,10 @@ import type { InjectionToken, OptionalFactoryDependency, Provider, Type } from '
 /**
  * Generic shape for forRootAsync() options.
  *
- * F is the factory interface (e.g. NatsOptionsFactory, QdrantModuleOptionsFactory).
+ * F is the factory interface (e.g. INatsOptionsFactory, QdrantModuleOptionsFactory).
  * T is the resolved options type.
  */
-export interface AsyncModuleOptions<T, F = unknown> {
+export interface IAsyncModuleOptions<T, F = unknown> {
 	useFactory?: (...args: unknown[]) => T | Promise<T>;
 	useClass?: Type<F>;
 	useExisting?: Type<F>;
@@ -22,8 +22,8 @@ export interface AsyncModuleOptions<T, F = unknown> {
  * @param factoryFn  Calls the factory method on the options-factory instance,
  *                   e.g. `(f) => f.createNatsOptions()`
  */
-export function createAsyncOptionsProvider<T, F>(
-	options: AsyncModuleOptions<T, F>,
+export function CreateAsyncOptionsProvider<T, F>(
+	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
 ): Provider<T> {
@@ -34,8 +34,8 @@ export function createAsyncOptionsProvider<T, F>(
 			inject: (options.inject ?? []) as Array<InjectionToken | OptionalFactoryDependency>,
 		};
 	}
-	const factoryToken = options.useExisting ?? options.useClass;
-	if (factoryToken === undefined) {
+	const FactoryToken = options.useExisting ?? options.useClass;
+	if (FactoryToken === undefined) {
 		throw new Error(
 			'Invalid async module options: must specify useFactory, useClass, or useExisting.',
 		);
@@ -43,7 +43,7 @@ export function createAsyncOptionsProvider<T, F>(
 	return {
 		provide: token,
 		useFactory: factoryFn,
-		inject: [factoryToken],
+		inject: [FactoryToken],
 	};
 }
 
@@ -55,17 +55,17 @@ export function createAsyncOptionsProvider<T, F>(
  * @param token      Injection token to provide the resolved options under
  * @param factoryFn  Calls the factory method on the options-factory instance
  */
-export function createAsyncProviders<T, F>(
-	options: AsyncModuleOptions<T, F>,
+export function CreateAsyncProviders<T, F>(
+	options: IAsyncModuleOptions<T, F>,
 	token: InjectionToken,
 	factoryFn: (factory: F) => T | Promise<T>,
 ): Provider[] {
 	if (options.useExisting !== undefined || options.useFactory !== undefined) {
-		return [createAsyncOptionsProvider(options, token, factoryFn)];
+		return [CreateAsyncOptionsProvider(options, token, factoryFn)];
 	}
 	if (options.useClass !== undefined) {
 		return [
-			createAsyncOptionsProvider(options, token, factoryFn),
+			CreateAsyncOptionsProvider(options, token, factoryFn),
 			{ provide: options.useClass, useClass: options.useClass },
 		];
 	}

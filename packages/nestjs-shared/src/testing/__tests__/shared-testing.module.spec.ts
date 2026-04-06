@@ -30,8 +30,8 @@ describe('SharedTestingModule', () => {
 			imports: [SharedTestingModule],
 		}).compile();
 
-		const logger = moduleRef.get(MockAppLogger);
-		expect(logger).toBeInstanceOf(MockAppLogger);
+		const Logger = moduleRef.get(MockAppLogger);
+		expect(Logger).toBeInstanceOf(MockAppLogger);
 	});
 
 	it('provides MockAppLogger under AppLogger token', async () => {
@@ -39,8 +39,8 @@ describe('SharedTestingModule', () => {
 			imports: [SharedTestingModule],
 		}).compile();
 
-		const logger = moduleRef.get(AppLogger);
-		expect(logger).toBeInstanceOf(MockAppLogger);
+		const Logger = moduleRef.get(AppLogger);
+		expect(Logger).toBeInstanceOf(MockAppLogger);
 	});
 
 	it('CACHE_PROVIDER and MockCacheProvider tokens resolve to the same instance', async () => {

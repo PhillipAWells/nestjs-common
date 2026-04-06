@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PyroscopeModule } from '../module.js';
 import { PyroscopeService } from '../service.js';
@@ -17,7 +18,7 @@ describe('PyroscopeModule', () => {
 	describe('forRoot', () => {
 		it('should create module with synchronous config object', async () => {
 			const module: TestingModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -33,7 +34,7 @@ describe('PyroscopeModule', () => {
 			const configFactory = (): IPyroscopeConfig => mockConfig;
 
 			const module: TestingModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configFactory })],
+				imports: [PyroscopeModule.ForRoot({ config: configFactory })],
 			}).compile();
 
 			const pyroscopeService = module.get<PyroscopeService>(PyroscopeService);
@@ -42,7 +43,7 @@ describe('PyroscopeModule', () => {
 
 		it('should register HealthController when enableHealthChecks is not false', async () => {
 			const module: TestingModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: mockConfig })],
+				imports: [PyroscopeModule.ForRoot({ config: mockConfig })],
 			}).compile();
 
 			const healthController = module.get<HealthController>(HealthController);
@@ -53,19 +54,19 @@ describe('PyroscopeModule', () => {
 			const configWithoutHealth = { ...mockConfig, enableHealthChecks: false };
 
 			const module: TestingModule = await Test.createTestingModule({
-				imports: [PyroscopeModule.forRoot({ config: configWithoutHealth })],
+				imports: [PyroscopeModule.ForRoot({ config: configWithoutHealth })],
 			}).compile();
 
 			expect(() => module.get<HealthController>(HealthController)).toThrow();
 		});
 
 		it('should be global by default', () => {
-			const dynamicModule = PyroscopeModule.forRoot({ config: mockConfig });
+			const dynamicModule = PyroscopeModule.ForRoot({ config: mockConfig });
 			expect(dynamicModule.global).toBe(true);
 		});
 
 		it('should respect isGlobal option', () => {
-			const dynamicModule = PyroscopeModule.forRoot({
+			const dynamicModule = PyroscopeModule.ForRoot({
 				config: mockConfig,
 				isGlobal: false,
 			});
@@ -73,7 +74,7 @@ describe('PyroscopeModule', () => {
 		});
 
 		it('should export PyroscopeService and ProfilingHealthIndicator', () => {
-			const dynamicModule = PyroscopeModule.forRoot({ config: mockConfig });
+			const dynamicModule = PyroscopeModule.ForRoot({ config: mockConfig });
 			expect(dynamicModule.exports).toContain(PyroscopeService);
 			expect(dynamicModule.exports).toContain(ProfilingHealthIndicator);
 		});
@@ -83,7 +84,7 @@ describe('PyroscopeModule', () => {
 		it('should create module with async factory', async () => {
 			const module: TestingModule = await Test.createTestingModule({
 				imports: [
-					PyroscopeModule.forRootAsync({
+					PyroscopeModule.ForRootAsync({
 						useFactory: () => mockConfig,
 					}),
 				],
@@ -103,7 +104,7 @@ describe('PyroscopeModule', () => {
 
 			const module: TestingModule = await Test.createTestingModule({
 				imports: [
-					PyroscopeModule.forRootAsync({
+					PyroscopeModule.ForRootAsync({
 						useFactory: configFactory,
 					}),
 				],
@@ -116,7 +117,7 @@ describe('PyroscopeModule', () => {
 		it('should always register HealthController for async config', async () => {
 			const module: TestingModule = await Test.createTestingModule({
 				imports: [
-					PyroscopeModule.forRootAsync({
+					PyroscopeModule.ForRootAsync({
 						useFactory: () => mockConfig,
 					}),
 				],
@@ -127,14 +128,14 @@ describe('PyroscopeModule', () => {
 		});
 
 		it('should be global by default', () => {
-			const dynamicModule = PyroscopeModule.forRootAsync({
+			const dynamicModule = PyroscopeModule.ForRootAsync({
 				useFactory: () => mockConfig,
 			});
 			expect(dynamicModule.global).toBe(true);
 		});
 
 		it('should respect isGlobal option', () => {
-			const dynamicModule = PyroscopeModule.forRootAsync({
+			const dynamicModule = PyroscopeModule.ForRootAsync({
 				useFactory: () => mockConfig,
 				isGlobal: false,
 			});
@@ -142,7 +143,7 @@ describe('PyroscopeModule', () => {
 		});
 
 		it('should export PyroscopeService and ProfilingHealthIndicator', () => {
-			const dynamicModule = PyroscopeModule.forRootAsync({
+			const dynamicModule = PyroscopeModule.ForRootAsync({
 				useFactory: () => mockConfig,
 			});
 			expect(dynamicModule.exports).toContain(PyroscopeService);

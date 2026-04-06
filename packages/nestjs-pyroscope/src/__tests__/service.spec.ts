@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PyroscopeService } from '../service.js';
@@ -45,20 +45,20 @@ describe('PyroscopeService', () => {
 			warn: vi.fn(),
 			debug: vi.fn(),
 			verbose: vi.fn(),
-		} as unknown as Logger;
+		};
 
 		mockMetricsService = {
-			getMetrics: vi.fn().mockReturnValue({
+			GetMetrics: vi.fn().mockReturnValue({
 				timestamp: Date.now(),
 				cpu: { samples: 0, duration: 0 },
 				memory: { samples: 0, allocations: 0 },
 				requests: { total: 0, successful: 0, failed: 0, averageResponseTime: 0 },
 			}),
-			recordCPUSample: vi.fn(),
-			recordMemorySample: vi.fn(),
-			recordRequest: vi.fn(),
-			getPrometheusMetrics: vi.fn(),
-			reset: vi.fn(),
+			RecordCPUSample: vi.fn(),
+			RecordMemorySample: vi.fn(),
+			RecordRequest: vi.fn(),
+			GetPrometheusMetrics: vi.fn(),
+			Reset: vi.fn(),
 		};
 
 		service = createService(mockConfig, mockLogger, mockMetricsService);
@@ -84,7 +84,7 @@ describe('PyroscopeService', () => {
 		it('should log when profiling is disabled', () => {
 			service.onModuleInit();
 
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should not crash when initialization fails', () => {
@@ -107,7 +107,7 @@ describe('PyroscopeService', () => {
 
 			// onModuleInit returns immediately without blocking
 			// Async initialization happens in background via setImmediate
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should log debug info when profiling is successfully initialized', () => {
@@ -126,7 +126,7 @@ describe('PyroscopeService', () => {
 			service.onModuleInit();
 
 			// Should return immediately without throwing
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should set basicAuth when provided in config', () => {
@@ -138,7 +138,7 @@ describe('PyroscopeService', () => {
 			service.onModuleInit();
 
 			// Should return immediately
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should set sample rate when provided in config', () => {
@@ -147,7 +147,7 @@ describe('PyroscopeService', () => {
 
 			service.onModuleInit();
 
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should set log level when provided in config', () => {
@@ -156,7 +156,7 @@ describe('PyroscopeService', () => {
 
 			service.onModuleInit();
 
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 	});
 
@@ -175,8 +175,8 @@ describe('PyroscopeService', () => {
 
 			// Manually set initialized state and mock client
 			const mockClient = createMockPyroscopeClient();
-			(serviceWithInit as any).pyroscopeClient = mockClient;
-			(serviceWithInit as any).isInitialized = true;
+			(serviceWithInit as any).PyroscopeClient = mockClient;
+			(serviceWithInit as any).IsInitialized = true;
 
 			await serviceWithInit.onModuleDestroy();
 
@@ -194,8 +194,8 @@ describe('PyroscopeService', () => {
 			const stopError = new Error('Stop failed');
 			mockClient.stop.mockRejectedValueOnce(stopError);
 
-			(serviceWithInit as any).pyroscopeClient = mockClient;
-			(serviceWithInit as any).isInitialized = true;
+			(serviceWithInit as any).PyroscopeClient = mockClient;
+			(serviceWithInit as any).IsInitialized = true;
 
 			await serviceWithInit.onModuleDestroy();
 		});
@@ -206,7 +206,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceWithoutClient = createService(
 				mockConfig,
@@ -214,8 +214,8 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceWithoutClient as any).pyroscopeClient = null;
-			(serviceWithoutClient as any).isInitialized = true;
+			(serviceWithoutClient as any).PyroscopeClient = null;
+			(serviceWithoutClient as any).IsInitialized = true;
 
 			await serviceWithoutClient.onModuleDestroy();
 
@@ -230,7 +230,7 @@ describe('PyroscopeService', () => {
 				startTime: Date.now(),
 			};
 
-			service.startProfiling(context);
+			service.StartProfiling(context);
 
 			expect(context.profileId).toBeUndefined();
 		});
@@ -241,7 +241,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -250,7 +250,7 @@ describe('PyroscopeService', () => {
 			);
 
 			// Set initialized flag manually
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -258,7 +258,7 @@ describe('PyroscopeService', () => {
 				tags: { route: '/test' },
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			// Should have generated profile ID
 			expect(context.profileId).toBeDefined();
@@ -272,7 +272,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -280,14 +280,14 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			expect(context.startTime).toBeDefined();
 			expect(typeof context.startTime).toBe('number');
@@ -300,7 +300,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -308,7 +308,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const customStartTime = 1234567890;
 			const context: IProfileContext = {
@@ -316,7 +316,7 @@ describe('PyroscopeService', () => {
 				startTime: customStartTime,
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			expect(context.startTime).toBe(customStartTime);
 		});
@@ -327,7 +327,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -335,7 +335,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -343,7 +343,7 @@ describe('PyroscopeService', () => {
 				tags: { env: 'test' },
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 		});
 	});
 
@@ -354,7 +354,7 @@ describe('PyroscopeService', () => {
 				startTime: Date.now(),
 			};
 
-			const metrics = service.stopProfiling(context);
+			const metrics = service.StopProfiling(context);
 
 			expect(metrics.cpuTime).toBe(0);
 			expect(metrics.memoryUsage).toBe(0);
@@ -367,7 +367,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -375,7 +375,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const startTime = Date.now();
 			const context: IProfileContext = {
@@ -385,11 +385,11 @@ describe('PyroscopeService', () => {
 			};
 
 			// Start profiling first
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			// Wait a bit and then stop
 			await new Promise(resolve => setTimeout(resolve, 15));
-			const metrics = serviceEnabled.stopProfiling(context);
+			const metrics = serviceEnabled.StopProfiling(context);
 
 			expect(metrics).toBeDefined();
 			expect(metrics.duration).toBeGreaterThan(0);
@@ -404,7 +404,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -412,7 +412,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -420,12 +420,12 @@ describe('PyroscopeService', () => {
 				tags: { route: '/test' },
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			// Add tags on stop
 			context.tags = { ...context.tags, status: 'success' };
 
-			const metrics = serviceEnabled.stopProfiling(context);
+			const metrics = serviceEnabled.StopProfiling(context);
 
 			expect(metrics.tags).toEqual({
 				route: '/test',
@@ -439,7 +439,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -447,7 +447,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -455,7 +455,7 @@ describe('PyroscopeService', () => {
 				profileId: 'nonexistent_id',
 			};
 
-			const metrics = serviceEnabled.stopProfiling(context);
+			const metrics = serviceEnabled.StopProfiling(context);
 
 			expect(metrics.duration).toBe(0);
 		});
@@ -466,7 +466,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -474,7 +474,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -482,8 +482,8 @@ describe('PyroscopeService', () => {
 				tags: { env: 'test' },
 			};
 
-			serviceEnabled.startProfiling(context);
-			serviceEnabled.stopProfiling(context);
+			serviceEnabled.StartProfiling(context);
+			serviceEnabled.StopProfiling(context);
 		});
 
 		it('should remove profile from active profiles after stop', () => {
@@ -492,7 +492,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -500,25 +500,25 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 			const { profileId } = context;
 
 			// Verify it's in active profiles
-			const { activeProfiles } = (serviceEnabled as any);
-			expect(activeProfiles.has(profileId)).toBe(true);
+			const { ActiveProfiles } = (serviceEnabled as any);
+			expect(ActiveProfiles.has(profileId)).toBe(true);
 
 			// Stop profiling
-			serviceEnabled.stopProfiling(context);
+			serviceEnabled.StopProfiling(context);
 
 			// Should be removed
-			expect(activeProfiles.has(profileId)).toBe(false);
+			expect(ActiveProfiles.has(profileId)).toBe(false);
 		});
 
 		it('should add metrics to internal metrics array', () => {
@@ -527,7 +527,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -535,17 +535,17 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc1',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
-			serviceEnabled.stopProfiling(context);
+			serviceEnabled.StartProfiling(context);
+			serviceEnabled.StopProfiling(context);
 
-			const allMetrics = serviceEnabled.getProfileMetrics();
+			const allMetrics = serviceEnabled.GetProfileMetrics();
 			expect(allMetrics.length).toBeGreaterThan(0);
 		});
 	});
@@ -554,7 +554,7 @@ describe('PyroscopeService', () => {
 		it('should track synchronous function execution', async () => {
 			const fn = vi.fn(() => 'result');
 
-			const result = await service.trackFunction('testFunc', fn);
+			const result = await service.TrackFunction('testFunc', fn);
 
 			expect(result).toBe('result');
 			expect(fn).toHaveBeenCalled();
@@ -566,7 +566,7 @@ describe('PyroscopeService', () => {
 				return 'async result';
 			});
 
-			const result = await service.trackFunction('testFunc', fn);
+			const result = await service.TrackFunction('testFunc', fn);
 
 			expect(result).toBe('async result');
 			expect(fn).toHaveBeenCalled();
@@ -578,14 +578,14 @@ describe('PyroscopeService', () => {
 				throw error;
 			});
 
-			await expect(service.trackFunction('testFunc', fn)).rejects.toThrow(error);
+			await expect(service.TrackFunction('testFunc', fn)).rejects.toThrow(error);
 			expect(fn).toHaveBeenCalled();
 		});
 
 		it('should track with custom tags', async () => {
 			const fn = vi.fn(() => 'result');
 
-			const result = await service.trackFunction('testFunc', fn, { env: 'test' });
+			const result = await service.TrackFunction('testFunc', fn, { env: 'test' });
 
 			expect(result).toBe('result');
 			expect(fn).toHaveBeenCalled();
@@ -594,19 +594,19 @@ describe('PyroscopeService', () => {
 
 	describe('addTags and removeTags', () => {
 		it('should not crash when disabled', () => {
-			expect(() => service.addTags({ tag: 'value' })).not.toThrow();
-			expect(() => service.removeTags(['tag'])).not.toThrow();
+			expect(() => service.AddTags({ tag: 'value' })).not.toThrow();
+			expect(() => service.RemoveTags(['tag'])).not.toThrow();
 		});
 
 		it('should early return when disabled (addTags)', () => {
-			service.addTags({ tag: 'value' });
+			service.AddTags({ tag: 'value' });
 
 			// Should not log anything when disabled (early return)
 			expect(mockLogger.debug).not.toHaveBeenCalled();
 		});
 
 		it('should early return when disabled (removeTags)', () => {
-			service.removeTags(['tag']);
+			service.RemoveTags(['tag']);
 
 			// Should not log anything when disabled (early return)
 			expect(mockLogger.debug).not.toHaveBeenCalled();
@@ -618,7 +618,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -626,11 +626,11 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 			const mockClient = createMockPyroscopeClient();
-			(serviceEnabled as any).pyroscopeClient = mockClient;
+			(serviceEnabled as any).PyroscopeClient = mockClient;
 
-			expect(() => serviceEnabled.addTags({ tag: 'value' })).not.toThrow();
+			expect(() => serviceEnabled.AddTags({ tag: 'value' })).not.toThrow();
 		});
 
 		it('should not crash when removing tags on enabled service (lines 151-165)', () => {
@@ -639,7 +639,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -647,11 +647,11 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 			const mockClient = createMockPyroscopeClient();
-			(serviceEnabled as any).pyroscopeClient = mockClient;
+			(serviceEnabled as any).PyroscopeClient = mockClient;
 
-			expect(() => serviceEnabled.removeTags(['tag'])).not.toThrow();
+			expect(() => serviceEnabled.RemoveTags(['tag'])).not.toThrow();
 		});
 
 		it('should not crash when adding tags with no client', () => {
@@ -660,7 +660,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -668,16 +668,16 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
-			(serviceEnabled as any).pyroscopeClient = null;
+			(serviceEnabled as any).IsInitialized = true;
+			(serviceEnabled as any).PyroscopeClient = null;
 
-			expect(() => serviceEnabled.addTags({ tag: 'value' })).not.toThrow();
+			expect(() => serviceEnabled.AddTags({ tag: 'value' })).not.toThrow();
 		});
 	});
 
 	describe('getProfileMetrics', () => {
 		it('should return empty array when no metrics collected', () => {
-			const metrics = service.getProfileMetrics();
+			const metrics = service.GetProfileMetrics();
 
 			expect(metrics).toEqual([]);
 		});
@@ -688,7 +688,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -696,18 +696,18 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
-			serviceEnabled.stopProfiling(context);
+			serviceEnabled.StartProfiling(context);
+			serviceEnabled.StopProfiling(context);
 
-			const metrics1 = serviceEnabled.getProfileMetrics();
-			const metrics2 = serviceEnabled.getProfileMetrics();
+			const metrics1 = serviceEnabled.GetProfileMetrics();
+			const metrics2 = serviceEnabled.GetProfileMetrics();
 
 			expect(metrics1).toEqual(metrics2);
 			expect(metrics1).not.toBe(metrics2); // Different array instances
@@ -722,11 +722,11 @@ describe('PyroscopeService', () => {
 				memory: { samples: 5, allocations: 1000 },
 				requests: { total: 15, successful: 14, failed: 1, averageResponseTime: 50 },
 			};
-			mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
+			mockMetricsService.GetMetrics.mockReturnValue(mockMetrics);
 
-			const metrics = service.getMetrics();
+			const metrics = service.GetMetrics();
 
-			expect(mockMetricsService.getMetrics).toHaveBeenCalled();
+			expect(mockMetricsService.GetMetrics).toHaveBeenCalled();
 			expect(metrics).toEqual(mockMetrics);
 		});
 
@@ -738,7 +738,7 @@ describe('PyroscopeService', () => {
 				undefined,
 			);
 
-			const metrics = serviceWithoutMetrics.getMetrics();
+			const metrics = serviceWithoutMetrics.GetMetrics();
 
 			expect(metrics).toHaveProperty('timestamp');
 			expect(metrics).toHaveProperty('cpu');
@@ -752,7 +752,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -760,7 +760,7 @@ describe('PyroscopeService', () => {
 				undefined, // No MetricsService
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			// Add some profiles
 			const context1: IProfileContext = {
@@ -768,10 +768,10 @@ describe('PyroscopeService', () => {
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context1);
-			serviceEnabled.stopProfiling(context1);
+			serviceEnabled.StartProfiling(context1);
+			serviceEnabled.StopProfiling(context1);
 
-			const metrics = serviceEnabled.getMetrics();
+			const metrics = serviceEnabled.GetMetrics();
 
 			expect(metrics.requests.total).toBeGreaterThan(0);
 			expect(metrics.requests.successful).toBeGreaterThan(0);
@@ -786,7 +786,7 @@ describe('PyroscopeService', () => {
 				undefined,
 			);
 
-			const metrics = serviceWithoutMetrics.getMetrics();
+			const metrics = serviceWithoutMetrics.GetMetrics();
 
 			expect(metrics.cpu.samples).toBe(0);
 			expect(metrics.cpu.duration).toBe(0);
@@ -799,14 +799,14 @@ describe('PyroscopeService', () => {
 
 	describe('getHealth', () => {
 		it('should return healthy when disabled', () => {
-			const health = service.getHealth();
+			const health = service.GetHealth();
 
 			expect(health.status).toBe('healthy');
 			expect(health.details.enabled).toBe(false);
 		});
 
 		it('should include configuration in health response', () => {
-			const health = service.getHealth();
+			const health = service.GetHealth();
 
 			expect(health.details).toBeDefined();
 			expect(health.status).toBeDefined();
@@ -818,7 +818,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -826,9 +826,9 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = false;
+			(serviceEnabled as any).IsInitialized = false;
 
-			const health = serviceEnabled.getHealth();
+			const health = serviceEnabled.GetHealth();
 
 			expect(health.status).toBe('unhealthy');
 			expect(health.details.initialized).toBe(false);
@@ -840,7 +840,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -848,9 +848,9 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
-			const health = serviceEnabled.getHealth();
+			const health = serviceEnabled.GetHealth();
 
 			expect(health.status).toBe('healthy');
 			expect(health.details.initialized).toBe(true);
@@ -866,7 +866,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -874,16 +874,16 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
-			const health = serviceEnabled.getHealth();
+			const health = serviceEnabled.GetHealth();
 
 			expect(health.details.activeProfiles).toBe(1);
 		});
@@ -894,7 +894,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -902,17 +902,17 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
-			serviceEnabled.stopProfiling(context);
+			serviceEnabled.StartProfiling(context);
+			serviceEnabled.StopProfiling(context);
 
-			const health = serviceEnabled.getHealth();
+			const health = serviceEnabled.GetHealth();
 
 			expect(health.details.totalMetrics).toBeGreaterThan(0);
 		});
@@ -920,11 +920,11 @@ describe('PyroscopeService', () => {
 
 	describe('isEnabled', () => {
 		it('should return false when config disabled', () => {
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should return false when not initialized', () => {
-			expect(service.isEnabled()).toBe(false);
+			expect(service.IsEnabled()).toBe(false);
 		});
 
 		it('should return true when both config enabled and initialized', () => {
@@ -933,7 +933,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -941,20 +941,20 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
-			expect(serviceEnabled.isEnabled()).toBe(true);
+			expect(serviceEnabled.IsEnabled()).toBe(true);
 		});
 	});
 
-	describe('generateProfileId', () => {
+	describe('GenerateProfileId', () => {
 		it('should generate unique profile IDs', () => {
 			const mockLogger2 = {
 				log: vi.fn(),
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -962,7 +962,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context1: IProfileContext = {
 				functionName: 'testFunc',
@@ -974,8 +974,8 @@ describe('PyroscopeService', () => {
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context1);
-			serviceEnabled.startProfiling(context2);
+			serviceEnabled.StartProfiling(context1);
+			serviceEnabled.StartProfiling(context2);
 
 			expect(context1.profileId).not.toBe(context2.profileId);
 		});
@@ -986,7 +986,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -994,14 +994,14 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'myTestFunction',
 				startTime: Date.now(),
 			};
 
-			serviceEnabled.startProfiling(context);
+			serviceEnabled.StartProfiling(context);
 
 			expect(context.profileId).toContain('myTestFunction');
 		});
@@ -1014,7 +1014,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -1023,17 +1023,17 @@ describe('PyroscopeService', () => {
 			);
 
 			// Initially unhealthy
-			let health = serviceEnabled.getHealth();
+			let health = serviceEnabled.GetHealth();
 			expect(health.status).toBe('unhealthy');
 
 			// Becomes healthy when initialized
-			(serviceEnabled as any).isInitialized = true;
-			health = serviceEnabled.getHealth();
+			(serviceEnabled as any).IsInitialized = true;
+			health = serviceEnabled.GetHealth();
 			expect(health.status).toBe('healthy');
 
 			// Can transition back to unhealthy
-			(serviceEnabled as any).isInitialized = false;
-			health = serviceEnabled.getHealth();
+			(serviceEnabled as any).IsInitialized = false;
+			health = serviceEnabled.GetHealth();
 			expect(health.status).toBe('unhealthy');
 		});
 
@@ -1043,7 +1043,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceDisabled = createService(
 				mockConfig, // enabled: false
@@ -1051,7 +1051,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			const health = serviceDisabled.getHealth();
+			const health = serviceDisabled.GetHealth();
 			expect(health.status).toBe('healthy');
 			expect(health.details.enabled).toBe(false);
 		});
@@ -1064,7 +1064,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -1072,7 +1072,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const context: IProfileContext = {
 				functionName: 'testFunc',
@@ -1080,8 +1080,8 @@ describe('PyroscopeService', () => {
 				// No tags
 			};
 
-			expect(() => serviceEnabled.startProfiling(context)).not.toThrow();
-			expect(() => serviceEnabled.stopProfiling(context)).not.toThrow();
+			expect(() => serviceEnabled.StartProfiling(context)).not.toThrow();
+			expect(() => serviceEnabled.StopProfiling(context)).not.toThrow();
 		});
 
 		it('should handle rapid profile start/stop cycles', () => {
@@ -1090,7 +1090,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -1098,7 +1098,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			for (let i = 0; i < 5; i++) {
 				const context: IProfileContext = {
@@ -1106,11 +1106,11 @@ describe('PyroscopeService', () => {
 					startTime: Date.now(),
 				};
 
-				serviceEnabled.startProfiling(context);
-				serviceEnabled.stopProfiling(context);
+				serviceEnabled.StartProfiling(context);
+				serviceEnabled.StopProfiling(context);
 			}
 
-			const metrics = serviceEnabled.getProfileMetrics();
+			const metrics = serviceEnabled.GetProfileMetrics();
 			expect(metrics.length).toBe(5);
 		});
 
@@ -1120,7 +1120,7 @@ describe('PyroscopeService', () => {
 				error: vi.fn(),
 				warn: vi.fn(),
 				debug: vi.fn(),
-			} as unknown as Logger;
+			};
 
 			const serviceEnabled = createService(
 				{ ...mockConfig, enabled: true },
@@ -1128,7 +1128,7 @@ describe('PyroscopeService', () => {
 				mockMetricsService,
 			);
 
-			(serviceEnabled as any).isInitialized = true;
+			(serviceEnabled as any).IsInitialized = true;
 
 			const contexts: IProfileContext[] = [
 				{ functionName: 'func1', startTime: Date.now() },
@@ -1136,14 +1136,14 @@ describe('PyroscopeService', () => {
 				{ functionName: 'func3', startTime: Date.now() },
 			];
 
-			contexts.forEach(ctx => serviceEnabled.startProfiling(ctx));
+			contexts.forEach(ctx => serviceEnabled.StartProfiling(ctx));
 
-			const health = serviceEnabled.getHealth();
+			const health = serviceEnabled.GetHealth();
 			expect(health.details.activeProfiles).toBe(3);
 
-			contexts.forEach(ctx => serviceEnabled.stopProfiling(ctx));
+			contexts.forEach(ctx => serviceEnabled.StopProfiling(ctx));
 
-			const health2 = serviceEnabled.getHealth();
+			const health2 = serviceEnabled.GetHealth();
 			expect(health2.details.activeProfiles).toBe(0);
 		});
 	});

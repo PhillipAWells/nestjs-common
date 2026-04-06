@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { BaseApplicationError } from '../base-application-error.js';
 
 describe('BaseApplicationError', () => {
@@ -6,10 +7,10 @@ describe('BaseApplicationError', () => {
 			const error = new BaseApplicationError('Test error');
 
 			expect(error.message).toBe('Test error');
-			expect(error.code).toBe('INTERNAL_SERVER_ERROR');
-			expect(error.statusCode).toBe(500);
-			expect(error.context).toEqual({});
-			expect(error.timestamp).toBeInstanceOf(Date);
+			expect(error.Code).toBe('INTERNAL_SERVER_ERROR');
+			expect(error.StatusCode).toBe(500);
+			expect(error.Context).toEqual({});
+			expect(error.Timestamp).toBeInstanceOf(Date);
 			expect(error.name).toBe('BaseApplicationError');
 		});
 
@@ -22,9 +23,9 @@ describe('BaseApplicationError', () => {
 			});
 
 			expect(error.message).toBe('Test error');
-			expect(error.code).toBe('CUSTOM_ERROR');
-			expect(error.statusCode).toBe(400);
-			expect(error.context).toEqual(context);
+			expect(error.Code).toBe('CUSTOM_ERROR');
+			expect(error.StatusCode).toBe(400);
+			expect(error.Context).toEqual(context);
 		});
 
 		it('should capture stack trace', () => {
@@ -46,7 +47,7 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json).toEqual({
 				name: 'BaseApplicationError',
@@ -54,7 +55,7 @@ describe('BaseApplicationError', () => {
 				code: 'TEST_ERROR',
 				statusCode: 400,
 				context: { userId: '123' },
-				timestamp: error.timestamp.toISOString(),
+				timestamp: error.Timestamp.toISOString(),
 			});
 
 			process.env.NODE_ENV = originalEnv;
@@ -65,7 +66,7 @@ describe('BaseApplicationError', () => {
 			process.env.NODE_ENV = 'development';
 
 			const error = new BaseApplicationError('Test error');
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json.stack).toBeDefined();
 
@@ -77,7 +78,7 @@ describe('BaseApplicationError', () => {
 			process.env.NODE_ENV = 'production';
 
 			const error = new BaseApplicationError('Test error');
-			const json = error.toJSON();
+			const json = error.ToJSON();
 
 			expect(json.stack).toBeUndefined();
 
@@ -91,13 +92,13 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const newError = originalError.withContext({ action: 'login' });
+			const newError = originalError.WithContext({ action: 'login' });
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('Test error');
-			expect(newError.code).toBe('INTERNAL_SERVER_ERROR');
-			expect(newError.statusCode).toBe(500);
-			expect(newError.context).toEqual({ userId: '123', action: 'login' });
+			expect(newError.Code).toBe('INTERNAL_SERVER_ERROR');
+			expect(newError.StatusCode).toBe(500);
+			expect(newError.Context).toEqual({ userId: '123', action: 'login' });
 		});
 
 		it('should override existing context values', () => {
@@ -105,9 +106,9 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123', action: 'register' },
 			});
 
-			const newError = originalError.withContext({ action: 'login' });
+			const newError = originalError.WithContext({ action: 'login' });
 
-			expect(newError.context).toEqual({ userId: '123', action: 'login' });
+			expect(newError.Context).toEqual({ userId: '123', action: 'login' });
 		});
 	});
 
@@ -118,12 +119,12 @@ describe('BaseApplicationError', () => {
 				context: { userId: '123' },
 			});
 
-			const newError = originalError.withMessage('New message');
+			const newError = originalError.WithMessage('New message');
 
 			expect(newError).not.toBe(originalError);
 			expect(newError.message).toBe('New message');
-			expect(newError.code).toBe('TEST_ERROR');
-			expect(newError.context).toEqual({ userId: '123' });
+			expect(newError.Code).toBe('TEST_ERROR');
+			expect(newError.Context).toEqual({ userId: '123' });
 		});
 	});
 

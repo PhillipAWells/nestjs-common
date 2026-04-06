@@ -11,15 +11,15 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	}
 
 	it('should execute RequestProperty with direct context', () => {
-		const request = { query: { limit: 10 }, params: { id: 1 } };
-		const ctx = createMockContext(request);
+		const Request = { query: { limit: 10 }, params: { id: 1 } };
+		const ctx = createMockContext(Request);
 
 		expect(ctx).toBeDefined();
-		expect(ctx.switchToHttp().getRequest()).toEqual(request);
+		expect(ctx.switchToHttp().getRequest()).toEqual(Request);
 	});
 
 	it('should handle RequestProperty with complex nested data', () => {
-		const request = {
+		const Request = {
 			body: {
 				user: {
 					profile: {
@@ -29,20 +29,20 @@ describe('RequestProperty - Direct Execution Tests', () => {
 				},
 			},
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.body.user.profile.name).toBe('John Doe');
 	});
 
 	it('should handle RequestProperty with arrays', () => {
-		const request = {
+		const Request = {
 			body: {
 				tags: ['typescript', 'nodejs', 'nestjs'],
 				items: [{ id: 1 }, { id: 2 }],
 			},
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(Array.isArray(req.body.tags)).toBe(true);
@@ -51,10 +51,10 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	});
 
 	it('should handle RequestProperty with null values', () => {
-		const request = {
+		const Request = {
 			query: { filter: null, sort: 'name' },
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.query.filter).toBeNull();
@@ -62,10 +62,10 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	});
 
 	it('should handle RequestProperty with undefined values', () => {
-		const request = {
+		const Request = {
 			body: { name: 'John', middleName: undefined, age: 30 },
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.body.name).toBe('John');
@@ -73,10 +73,10 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	});
 
 	it('should handle RequestProperty with boolean values', () => {
-		const request = {
+		const Request = {
 			query: { active: true, deleted: false },
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.query.active).toBe(true);
@@ -84,10 +84,10 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	});
 
 	it('should handle RequestProperty with numeric values', () => {
-		const request = {
+		const Request = {
 			params: { id: 42, offset: 0, limit: 100 },
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.params.id).toBe(42);
@@ -96,13 +96,13 @@ describe('RequestProperty - Direct Execution Tests', () => {
 	});
 
 	it('should handle multiple simultaneous RequestProperty calls', () => {
-		const request = {
+		const Request = {
 			query: { page: 1 },
 			params: { userId: 123 },
 			body: { data: 'test' },
 			headers: { 'content-type': 'application/json' },
 		};
-		const ctx = createMockContext(request);
+		const ctx = createMockContext(Request);
 		const req = ctx.switchToHttp().getRequest();
 
 		expect(req.query.page).toBe(1);

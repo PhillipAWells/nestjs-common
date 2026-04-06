@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type KcAdminClient from '@keycloak/keycloak-admin-client';
 import { AuthenticationService } from '../authentication.service.js';
 import { KeycloakAdminScopeError } from '../../../permissions/keycloak-admin.permissions.js';
-import type { KeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
+import type { TKeycloakAdminScope } from '../../../permissions/keycloak-admin.permissions.js';
 
 describe('AuthenticationService', () => {
 	let service: AuthenticationService;
 	let mockAdminClient: any;
-	let allScopes: Set<KeycloakAdminScope>;
-	let readOnlyScopes: Set<KeycloakAdminScope>;
-	let noScopes: Set<KeycloakAdminScope>;
+	let allScopes: Set<TKeycloakAdminScope>;
+	let readOnlyScopes: Set<TKeycloakAdminScope>;
+	let noScopes: Set<TKeycloakAdminScope>;
 
 	beforeEach(() => {
 		mockAdminClient = {
@@ -23,15 +23,15 @@ describe('AuthenticationService', () => {
 			},
 		} as unknown as KcAdminClient;
 
-		allScopes = new Set(['authentication:read', 'authentication:write'] as KeycloakAdminScope[]);
-		readOnlyScopes = new Set(['authentication:read'] as KeycloakAdminScope[]);
-		noScopes = new Set([] as KeycloakAdminScope[]);
+		allScopes = new Set(['authentication:read', 'authentication:write'] as TKeycloakAdminScope[]);
+		readOnlyScopes = new Set(['authentication:read'] as TKeycloakAdminScope[]);
+		noScopes = new Set([] as TKeycloakAdminScope[]);
 	});
 
 	describe('getFlows', () => {
 		it('throws KeycloakAdminScopeError when authentication:read scope is not granted', async () => {
 			service = new AuthenticationService(mockAdminClient, noScopes);
-			await expect(service.getFlows('realm')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.GetFlows('realm')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.authenticationManagement.getFlows).not.toHaveBeenCalled();
 		});
 
@@ -40,7 +40,7 @@ describe('AuthenticationService', () => {
 				{ id: 'flow1', alias: 'browser' },
 			]);
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			const result = await service.getFlows('realm');
+			const result = await service.GetFlows('realm');
 			expect(result).toEqual([{ id: 'flow1', alias: 'browser' }]);
 			expect(mockAdminClient.authenticationManagement.getFlows).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -50,7 +50,7 @@ describe('AuthenticationService', () => {
 		it('returns empty array when no flows found', async () => {
 			mockAdminClient.authenticationManagement.getFlows.mockResolvedValue([]);
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			const result = await service.getFlows('realm');
+			const result = await service.GetFlows('realm');
 			expect(result).toEqual([]);
 		});
 	});
@@ -58,7 +58,7 @@ describe('AuthenticationService', () => {
 	describe('getFlow', () => {
 		it('throws KeycloakAdminScopeError when authentication:read scope is not granted', async () => {
 			service = new AuthenticationService(mockAdminClient, noScopes);
-			await expect(service.getFlow('realm', 'flow-id')).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.GetFlow('realm', 'flow-id')).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.authenticationManagement.getFlow).not.toHaveBeenCalled();
 		});
 
@@ -68,7 +68,7 @@ describe('AuthenticationService', () => {
 				alias: 'browser',
 			});
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			const result = await service.getFlow('realm', 'flow-id');
+			const result = await service.GetFlow('realm', 'flow-id');
 			expect(result).toEqual({ id: 'flow-id', alias: 'browser' });
 			expect(mockAdminClient.authenticationManagement.getFlow).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -81,7 +81,7 @@ describe('AuthenticationService', () => {
 		it('throws KeycloakAdminScopeError when authentication:write scope is not granted', async () => {
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
 			const flow = { alias: 'custom-flow' };
-			await expect(service.createFlow('realm', flow)).rejects.toThrow(KeycloakAdminScopeError);
+			await expect(service.CreateFlow('realm', flow)).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.authenticationManagement.createFlow).not.toHaveBeenCalled();
 		});
 
@@ -89,7 +89,7 @@ describe('AuthenticationService', () => {
 			mockAdminClient.authenticationManagement.createFlow.mockResolvedValue(undefined);
 			service = new AuthenticationService(mockAdminClient, allScopes);
 			const flow = { alias: 'custom-flow' };
-			await service.createFlow('realm', flow);
+			await service.CreateFlow('realm', flow);
 			expect(mockAdminClient.authenticationManagement.createFlow).toHaveBeenCalledWith({
 				realm: 'realm',
 				alias: 'custom-flow',
@@ -100,7 +100,7 @@ describe('AuthenticationService', () => {
 	describe('deleteFlow', () => {
 		it('throws KeycloakAdminScopeError when authentication:write scope is not granted', async () => {
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			await expect(service.deleteFlow('realm', 'flow-id')).rejects.toThrow(
+			await expect(service.DeleteFlow('realm', 'flow-id')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.authenticationManagement.deleteFlow).not.toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe('AuthenticationService', () => {
 		it('calls adminClient.authenticationManagement.deleteFlow when authentication:write scope is granted', async () => {
 			mockAdminClient.authenticationManagement.deleteFlow.mockResolvedValue(undefined);
 			service = new AuthenticationService(mockAdminClient, allScopes);
-			await service.deleteFlow('realm', 'flow-id');
+			await service.DeleteFlow('realm', 'flow-id');
 			expect(mockAdminClient.authenticationManagement.deleteFlow).toHaveBeenCalledWith({
 				realm: 'realm',
 				flowId: 'flow-id',
@@ -120,7 +120,7 @@ describe('AuthenticationService', () => {
 	describe('getExecutions', () => {
 		it('throws KeycloakAdminScopeError when authentication:read scope is not granted', async () => {
 			service = new AuthenticationService(mockAdminClient, noScopes);
-			await expect(service.getExecutions('realm', 'browser')).rejects.toThrow(
+			await expect(service.GetExecutions('realm', 'browser')).rejects.toThrow(
 				KeycloakAdminScopeError,
 			);
 			expect(mockAdminClient.authenticationManagement.getExecutions).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('AuthenticationService', () => {
 				{ id: 'exec1', providerId: 'auth-cookie' },
 			]);
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			const result = await service.getExecutions('realm', 'browser');
+			const result = await service.GetExecutions('realm', 'browser');
 			expect(result).toEqual([{ id: 'exec1', providerId: 'auth-cookie' }]);
 			expect(mockAdminClient.authenticationManagement.getExecutions).toHaveBeenCalledWith({
 				realm: 'realm',
@@ -142,7 +142,7 @@ describe('AuthenticationService', () => {
 		it('returns empty array when no executions found', async () => {
 			mockAdminClient.authenticationManagement.getExecutions.mockResolvedValue([]);
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
-			const result = await service.getExecutions('realm', 'browser');
+			const result = await service.GetExecutions('realm', 'browser');
 			expect(result).toEqual([]);
 		});
 	});
@@ -152,7 +152,7 @@ describe('AuthenticationService', () => {
 			service = new AuthenticationService(mockAdminClient, readOnlyScopes);
 			const execution = { provider: 'auth-cookie' };
 			await expect(
-				service.createExecution('realm', 'browser', execution),
+				service.CreateExecution('realm', 'browser', execution),
 			).rejects.toThrow(KeycloakAdminScopeError);
 			expect(mockAdminClient.authenticationManagement.addExecution).not.toHaveBeenCalled();
 		});
@@ -161,7 +161,7 @@ describe('AuthenticationService', () => {
 			mockAdminClient.authenticationManagement.addExecution.mockResolvedValue(undefined);
 			service = new AuthenticationService(mockAdminClient, allScopes);
 			const execution = { provider: 'auth-cookie' };
-			await service.createExecution('realm', 'browser', execution);
+			await service.CreateExecution('realm', 'browser', execution);
 			expect(mockAdminClient.authenticationManagement.addExecution).toHaveBeenCalledWith(
 				{ realm: 'realm', flow: 'browser' },
 				execution,

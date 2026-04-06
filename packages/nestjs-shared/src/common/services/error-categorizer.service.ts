@@ -11,7 +11,7 @@ import {
 	HTTP_STATUS_GATEWAY_TIMEOUT,
 	HTTP_STATUS_UNPROCESSABLE_ENTITY,
 } from '../constants/http-status.constants.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 import { AppLogger } from './logger.service.js';
 
 // Backoff times in milliseconds
@@ -23,7 +23,7 @@ const BACKOFF_RATE_LIMIT_MS = 10000;
 /**
  * Error category classification for recovery strategy determination.
  */
-export interface ErrorCategory {
+export interface IErrorCategory {
 	type: 'transient' | 'permanent';
 	retryable: boolean;
 	strategy: 'retry' | 'fail' | 'backoff';
@@ -61,8 +61,8 @@ export interface ErrorCategory {
  * ```
  */
 @Injectable()
-export class ErrorCategorizerService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class ErrorCategorizerService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -74,35 +74,35 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	 * Get contextual logger for error categorizer
 	 */
 	public get Logger(): AppLogger {
-		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(ErrorCategorizerService.name);
+		if (!this._ContextualLogger) {
+			const BaseLogger = this.Module.get(AppLogger);
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(ErrorCategorizerService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
 	 * Check if an error is retryable
 	 */
-	public isRetryable(error: unknown): boolean {
-		const category = this.categorizeError(error);
-		return category.retryable;
+	public IsRetryable(error: unknown): boolean {
+		const Category = this.CategorizeError(error);
+		return Category.retryable;
 	}
 
 	/**
 	 * Categorize an error and determine recovery strategy
 	 */
-	public categorizeError(error: unknown): ErrorCategory {
-		const err = error as Record<string, any>;
-		const errorMessage = err?.message ?? String(error);
-		const errorCode = err?.code ?? err?.status;
+	public CategorizeError(error: unknown): IErrorCategory {
+		const Err = error as Record<string, any>;
+		const ErrorMessage = Err?.message ?? String(error);
+		const ErrorCode = Err?.code ?? Err?.status;
 
 		// Node.js network error codes are always transient (checked first before pattern matching)
 		const NODE_TRANSIENT_CODES = new Set(['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN']);
 		if (error && NODE_TRANSIENT_CODES.has((error as { code?: string }).code ?? '')) {
-			this.Logger.debug('Categorized as transient network error (Node.js error code)', {
-				error: errorMessage,
-				code: errorCode,
+			this.Logger.Debug('Categorized as transient network error (Node.js error code)', {
+				error: ErrorMessage,
+				code: ErrorCode,
 				category: 'transient',
 				strategy: 'backoff',
 			});
@@ -115,9 +115,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Database connection errors (transient) - check before timeout since "timeout" may be in message
-		if (this.isDatabaseError(error)) {
-			this.Logger.debug('Categorized as transient database error', {
-				error: errorMessage,
+		if (this.IsDatabaseError(error)) {
+			this.Logger.Debug('Categorized as transient database error', {
+				error: ErrorMessage,
 				category: 'transient',
 				strategy: 'backoff',
 			});
@@ -130,9 +130,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Timeout errors (transient) - check before generic network errors since ETIMEDOUT is in networkCodes
-		if (this.isTimeoutError(error)) {
-			this.Logger.debug('Categorized as transient timeout error', {
-				error: errorMessage,
+		if (this.IsTimeoutError(error)) {
+			this.Logger.Debug('Categorized as transient timeout error', {
+				error: ErrorMessage,
 				category: 'transient',
 				strategy: 'backoff',
 			});
@@ -145,9 +145,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Network errors (transient)
-		if (this.isNetworkError(error)) {
-			this.Logger.debug('Categorized as transient network error', {
-				error: errorMessage,
+		if (this.IsNetworkError(error)) {
+			this.Logger.Debug('Categorized as transient network error', {
+				error: ErrorMessage,
 				category: 'transient',
 				strategy: 'retry',
 			});
@@ -160,10 +160,10 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Server errors (transient) - 502, 503, 504
-		if (this.isServerError(error)) {
-			this.Logger.debug('Categorized as transient server error', {
-				error: errorMessage,
-				status: errorCode,
+		if (this.IsServerError(error)) {
+			this.Logger.Debug('Categorized as transient server error', {
+				error: ErrorMessage,
+				status: ErrorCode,
 				category: 'transient',
 				strategy: 'backoff',
 			});
@@ -176,9 +176,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Rate limit errors (transient) - 429
-		if (this.isRateLimitError(error)) {
-			this.Logger.debug('Categorized as transient rate limit error', {
-				error: errorMessage,
+		if (this.IsRateLimitError(error)) {
+			this.Logger.Debug('Categorized as transient rate limit error', {
+				error: ErrorMessage,
 				category: 'transient',
 				strategy: 'backoff',
 			});
@@ -191,9 +191,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Bad request errors (permanent) - 400, 422
-		if (this.isBadRequestError(error)) {
-			this.Logger.debug('Categorized as permanent bad request error', {
-				error: errorMessage,
+		if (this.IsBadRequestError(error)) {
+			this.Logger.Debug('Categorized as permanent bad request error', {
+				error: ErrorMessage,
 				category: 'permanent',
 				strategy: 'fail',
 			});
@@ -205,9 +205,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Validation errors (permanent)
-		if (this.isValidationError(error)) {
-			this.Logger.debug('Categorized as permanent validation error', {
-				error: errorMessage,
+		if (this.IsValidationError(error)) {
+			this.Logger.Debug('Categorized as permanent validation error', {
+				error: ErrorMessage,
 				category: 'permanent',
 				strategy: 'fail',
 			});
@@ -219,9 +219,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Authentication errors (permanent) - 401
-		if (this.isAuthError(error)) {
-			this.Logger.debug('Categorized as permanent authentication error', {
-				error: errorMessage,
+		if (this.IsAuthError(error)) {
+			this.Logger.Debug('Categorized as permanent authentication error', {
+				error: ErrorMessage,
 				category: 'permanent',
 				strategy: 'fail',
 			});
@@ -233,9 +233,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Authorization errors (permanent) - 403
-		if (this.isAuthzError(error)) {
-			this.Logger.debug('Categorized as permanent authorization error', {
-				error: errorMessage,
+		if (this.IsAuthzError(error)) {
+			this.Logger.Debug('Categorized as permanent authorization error', {
+				error: ErrorMessage,
 				category: 'permanent',
 				strategy: 'fail',
 			});
@@ -247,9 +247,9 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 		}
 
 		// Not found errors (permanent) - 404
-		if (this.isNotFoundError(error)) {
-			this.Logger.debug('Categorized as permanent not found error', {
-				error: errorMessage,
+		if (this.IsNotFoundError(error)) {
+			this.Logger.Debug('Categorized as permanent not found error', {
+				error: ErrorMessage,
 				category: 'permanent',
 				strategy: 'fail',
 			});
@@ -262,8 +262,8 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 
 		// Default to permanent error
 		this.Logger.warn('Uncategorized error treated as permanent', {
-			error: errorMessage,
-			code: errorCode,
+			error: ErrorMessage,
+			code: ErrorCode,
 			category: 'permanent',
 			strategy: 'fail',
 		});
@@ -278,14 +278,14 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log error recovery attempt
 	 */
-	public logRecoveryAttempt(error: unknown, attempt: number, maxAttempts: number): void {
-		const category = this.categorizeError(error);
+	public LogRecoveryAttempt(error: unknown, attempt: number, maxAttempts: number): void {
+		const Category = this.CategorizeError(error);
 		this.Logger.info('Error recovery attempt', {
 			attempt,
 			maxAttempts,
-			errorType: category.type,
-			strategy: category.strategy,
-			backoffMs: category.backoffMs,
+			errorType: Category.type,
+			strategy: Category.strategy,
+			backoffMs: Category.backoffMs,
 			error: (error as Record<string, any>)?.message ?? String(error),
 		});
 	}
@@ -293,7 +293,7 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log successful recovery
 	 */
-	public logRecoverySuccess(error: unknown, attempts: number): void {
+	public LogRecoverySuccess(error: unknown, attempts: number): void {
 		this.Logger.info('Error recovery successful', {
 			attempts,
 			error: (error as Record<string, any>)?.message ?? String(error),
@@ -303,78 +303,78 @@ export class ErrorCategorizerService implements LazyModuleRefService {
 	/**
 	 * Log failed recovery
 	 */
-	public logRecoveryFailed(error: unknown, attempts: number): void {
-		const err = error as Record<string, any>;
-		const category = this.categorizeError(error);
+	public LogRecoveryFailed(error: unknown, attempts: number): void {
+		const Err = error as Record<string, any>;
+		const Category = this.CategorizeError(error);
 		this.Logger.error('Error recovery failed', undefined, undefined, {
 			attempts,
-			errorType: category.type,
-			retryable: category.retryable,
-			error: err?.message ?? String(error),
+			errorType: Category.type,
+			retryable: Category.retryable,
+			error: Err?.message ?? String(error),
 		});
 	}
 
-	private isNetworkError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		const networkCodes = ['ECONNREFUSED', 'ENOTFOUND', 'ECONNRESET', 'EPIPE'];
-		return networkCodes.includes(err?.code) || /\bnetwork\b/i.test(err?.message) || /\bconnection\b/i.test(err?.message);
+	private IsNetworkError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		const NetworkCodes = ['ECONNREFUSED', 'ENOTFOUND', 'ECONNRESET', 'EPIPE'];
+		return NetworkCodes.includes(Err?.code) || /\bnetwork\b/i.test(Err?.message) || /\bconnection\b/i.test(Err?.message);
 	}
 
-	private isTimeoutError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.code === 'ETIMEDOUT' ||
-			/\btimeout\b|\btimed out\b/i.test(err?.message);
+	private IsTimeoutError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.code === 'ETIMEDOUT' ||
+			/\btimeout\b|\btimed out\b/i.test(Err?.message);
 	}
 
-	private isDatabaseError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return /\bconnection\b/i.test(err?.message) &&
+	private IsDatabaseError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return /\bconnection\b/i.test(Err?.message) &&
 			(
-				/\bdatabase\b/i.test(err?.message) ||
-				/\bmongodb\b/i.test(err?.message) ||
-				/\bredis\b/i.test(err?.message)
+				/\bdatabase\b/i.test(Err?.message) ||
+				/\bmongodb\b/i.test(Err?.message) ||
+				/\bredis\b/i.test(Err?.message)
 			);
 	}
 
-	private isBadRequestError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_BAD_REQUEST ||
-			err?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY;
+	private IsBadRequestError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_BAD_REQUEST ||
+			Err?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY;
 	}
 
-	private isValidationError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return /\bvalidation\b/i.test(err?.message) ||
-			err?.name === 'ValidationError';
+	private IsValidationError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return /\bvalidation\b/i.test(Err?.message) ||
+			Err?.name === 'IValidationError';
 	}
 
-	private isAuthError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_UNAUTHORIZED || /\bunauthorized\b/i.test(err?.message) ||
-			/\bauthentication\b/i.test(err?.message);
+	private IsAuthError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_UNAUTHORIZED || /\bunauthorized\b/i.test(Err?.message) ||
+			/\bauthentication\b/i.test(Err?.message);
 	}
 
-	private isAuthzError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_FORBIDDEN || /\bforbidden\b/i.test(err?.message) ||
-			/\bauthorization\b/i.test(err?.message);
+	private IsAuthzError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_FORBIDDEN || /\bforbidden\b/i.test(Err?.message) ||
+			/\bauthorization\b/i.test(Err?.message);
 	}
 
-	private isNotFoundError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_NOT_FOUND || /\bnot found\b/i.test(err?.message);
+	private IsNotFoundError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_NOT_FOUND || /\bnot found\b/i.test(Err?.message);
 	}
 
-	private isServerError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_BAD_GATEWAY ||
-			err?.status === HTTP_STATUS_SERVICE_UNAVAILABLE ||
-			err?.status === HTTP_STATUS_GATEWAY_TIMEOUT;
+	private IsServerError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_BAD_GATEWAY ||
+			Err?.status === HTTP_STATUS_SERVICE_UNAVAILABLE ||
+			Err?.status === HTTP_STATUS_GATEWAY_TIMEOUT;
 	}
 
-	private isRateLimitError(error: unknown): boolean {
-		const err = error as Record<string, any>;
-		return err?.status === HTTP_STATUS_TOO_MANY_REQUESTS || /\brate limit\b/i.test(err?.message) ||
-			/\btoo many requests\b/i.test(err?.message);
+	private IsRateLimitError(error: unknown): boolean {
+		const Err = error as Record<string, any>;
+		return Err?.status === HTTP_STATUS_TOO_MANY_REQUESTS || /\brate limit\b/i.test(Err?.message) ||
+			/\btoo many requests\b/i.test(Err?.message);
 	}
 }

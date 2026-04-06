@@ -17,7 +17,7 @@ import { BaseValidationPipe } from './base-validation.pipe.js';
  * ```typescript
  * // Automatically applied globally; decorator is optional
  * @Post()
- * async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+ * async createUser(@Body() createUserDto: CreateUserDto): Promise<IUser> {
  *   // DTO will be validated automatically
  * }
  * ```
@@ -30,22 +30,22 @@ export class ValidationPipe extends BaseValidationPipe {
 	 * @param errors - The validation errors
 	 * @returns string[] - Array of error messages
 	 */
-	protected formatValidationErrors(errors: ValidationError[]): string[] {
-		const result: string[] = [];
+	protected FormatValidationErrors(errors: ValidationError[]): string[] {
+		const Result: string[] = [];
 
-		const processError = (error: ValidationError, parentPath: string = ''): void => {
-			const currentPath = parentPath ? `${parentPath}.${error.property}` : error.property;
+		const ProcessError = (error: ValidationError, parentPath: string = ''): void => {
+			const CurrentPath = parentPath ? `${parentPath}.${error.property}` : error.property;
 
 			// If error has constraints, add them to result
 			if (error.constraints && Object.keys(error.constraints).length > 0) {
-				const messages = Object.values(error.constraints).join(', ');
-				result.push(`${currentPath}: ${messages}`);
+				const Messages = Object.values(error.constraints).join(', ');
+				Result.push(`${CurrentPath}: ${Messages}`);
 			}
 
 			// If error has children, recurse
 			if (error.children && error.children.length > 0) {
-				error.children.forEach(childError =>
-					processError(childError, currentPath),
+				error.children.forEach((childError: ValidationError) =>
+					ProcessError(childError, CurrentPath),
 				);
 			}
 
@@ -53,8 +53,8 @@ export class ValidationPipe extends BaseValidationPipe {
 			// (do not add empty entries like "email: ")
 		};
 
-		errors.forEach(error => processError(error));
+		errors.forEach(error => ProcessError(error));
 
-		return result;
+		return Result;
 	}
 }

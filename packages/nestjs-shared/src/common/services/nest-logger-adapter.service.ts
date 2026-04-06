@@ -16,7 +16,7 @@ import { AppLogger } from './logger.service.js';
  * ```
  */
 export class NestLoggerAdapter implements LoggerService {
-	private readonly logger: AppLogger;
+	private readonly Logger: AppLogger;
 
 	/**
 	 * @param logger - Optional existing `AppLogger` instance to delegate to.
@@ -24,13 +24,13 @@ export class NestLoggerAdapter implements LoggerService {
 	 *   (`SERVICE_NAME`, `LOG_LEVEL`, `LOG_FORMAT`).
 	 */
 	constructor(logger?: AppLogger) {
-		this.logger = logger ?? new AppLogger();
+		this.Logger = logger ?? new AppLogger();
 	}
 
 	/** Maps NestJS `log()` (INFO level) to {@link AppLogger.info}. */
-	public log(message: any, ...optionalParams: any[]): void {
-		const context = this.extractContext(optionalParams);
-		this.logger.info(this.formatMessage(message), context);
+	public Log(message: any, ...optionalParams: any[]): void {
+		const Context = this.ExtractContext(optionalParams);
+		this.Logger.info(this.FormatMessage(message), Context);
 	}
 
 	/**
@@ -39,51 +39,51 @@ export class NestLoggerAdapter implements LoggerService {
 	 * NestJS calls this as `error(message, stack?, context?)`.
 	 * When a stack trace is present it is forwarded as `metadata.stack`.
 	 */
-	public error(message: any, ...optionalParams: any[]): void {
-		const { context, stack } = this.extractErrorParams(optionalParams);
-		const msg = this.formatMessage(message);
-		if (stack !== undefined) {
-			this.logger.error(msg, context, { stack });
+	public Error(message: any, ...optionalParams: any[]): void {
+		const { context: Context, stack: Stack } = this.ExtractErrorParams(optionalParams);
+		const Msg = this.FormatMessage(message);
+		if (Stack !== undefined) {
+			this.Logger.error(Msg, Context, { stack: Stack });
 		} else {
-			this.logger.error(msg, context);
+			this.Logger.error(Msg, Context);
 		}
 	}
 
 	/** Maps NestJS `warn()` to {@link AppLogger.warn}. */
-	public warn(message: any, ...optionalParams: any[]): void {
-		const context = this.extractContext(optionalParams);
-		this.logger.warn(this.formatMessage(message), context);
+	public Warn(message: any, ...optionalParams: any[]): void {
+		const Context = this.ExtractContext(optionalParams);
+		this.Logger.warn(this.FormatMessage(message), Context);
 	}
 
 	/** Maps NestJS `debug()` to {@link AppLogger.debug}. */
-	public debug(message: any, ...optionalParams: any[]): void {
-		const context = this.extractContext(optionalParams);
-		this.logger.debug(this.formatMessage(message), context);
+	public Debug(message: any, ...optionalParams: any[]): void {
+		const Context = this.ExtractContext(optionalParams);
+		this.Logger.debug(this.FormatMessage(message), Context);
 	}
 
 	/**
 	 * Maps NestJS `verbose()` to {@link AppLogger.debug}.
 	 * `AppLogger` has no `verbose` level; `debug` is the nearest equivalent.
 	 */
-	public verbose(message: any, ...optionalParams: any[]): void {
-		const context = this.extractContext(optionalParams);
-		this.logger.debug(this.formatMessage(message), context);
+	public Verbose(message: any, ...optionalParams: any[]): void {
+		const Context = this.ExtractContext(optionalParams);
+		this.Logger.debug(this.FormatMessage(message), Context);
 	}
 
 	/** Maps NestJS `fatal()` to {@link AppLogger.fatal}. */
-	public fatal(message: any, ...optionalParams: any[]): void {
-		const context = this.extractContext(optionalParams);
-		this.logger.fatal(this.formatMessage(message), context);
+	public Fatal(message: any, ...optionalParams: any[]): void {
+		const Context = this.ExtractContext(optionalParams);
+		this.Logger.fatal(this.FormatMessage(message), Context);
 	}
 
 	/**
 	 * Extracts the NestJS context string (e.g. `"NestFactory"`, `"RouterExplorer"`)
 	 * from variadic params. NestJS passes context as the last string argument.
 	 */
-	private extractContext(params: any[]): string | undefined {
+	private ExtractContext(params: any[]): string | undefined {
 		if (params.length === 0) return undefined;
-		const last = params[params.length - 1];
-		return typeof last === 'string' ? last : undefined;
+		const Last = params[params.length - 1];
+		return typeof Last === 'string' ? Last : undefined;
 	}
 
 	/**
@@ -92,36 +92,36 @@ export class NestLoggerAdapter implements LoggerService {
 	 * NestJS error signature: `error(message, stack?, context?)` where `stack`
 	 * is a multiline string (contains `\n`) or begins with `"Error:"`.
 	 */
-	private extractErrorParams(params: any[]): { stack?: string; context?: string; } {
+	private ExtractErrorParams(params: any[]): { stack?: string; context?: string; } {
 		if (params.length === 0) return {};
 
 		if (params.length === 1) {
-			const [param] = params;
-			if (typeof param !== 'string') return {};
-			return this.looksLikeStack(param) ? { stack: param } : { context: param };
+			const [Param] = params;
+			if (typeof Param !== 'string') return {};
+			return this.LooksLikeStack(Param) ? { stack: Param } : { context: Param };
 		}
 
-		const [first, ...rest] = params;
-		if (typeof first === 'string' && this.looksLikeStack(first)) {
-			const contextParam = rest[rest.length - 1];
+		const [First, ...Rest] = params;
+		if (typeof First === 'string' && this.LooksLikeStack(First)) {
+			const ContextParam = Rest[Rest.length - 1];
 			return {
-				stack: first,
-				context: typeof contextParam === 'string' ? contextParam : undefined,
+				stack: First,
+				context: typeof ContextParam === 'string' ? ContextParam : undefined,
 			};
 		}
 
 		// No stack — treat last string param as context
-		const last = params[params.length - 1];
-		return { context: typeof last === 'string' ? last : undefined };
+		const Last = params[params.length - 1];
+		return { context: typeof Last === 'string' ? Last : undefined };
 	}
 
 	/** Returns `true` if the string looks like a stack trace. */
-	private looksLikeStack(value: string): boolean {
+	private LooksLikeStack(value: string): boolean {
 		return value.includes('\n') || value.startsWith('Error:');
 	}
 
 	/** Coerces any log message type to a string. */
-	private formatMessage(message: any): string {
+	private FormatMessage(message: any): string {
 		if (message instanceof Error) return message.message;
 		if (typeof message === 'string') return message;
 		return String(message);

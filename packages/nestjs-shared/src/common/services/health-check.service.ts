@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { AppLogger } from './logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Health status enumeration for standardized health check responses.
@@ -62,8 +62,8 @@ export interface IHealthCheck {
  * ```
  */
 @Injectable()
-export class HealthCheckService implements LazyModuleRefService {
-	private _contextualLogger: AppLogger | undefined;
+export class HealthCheckService implements ILazyModuleRefService {
+	private _ContextualLogger: AppLogger | undefined;
 
 	public readonly Module: ModuleRef;
 
@@ -72,11 +72,11 @@ export class HealthCheckService implements LazyModuleRefService {
 	}
 
 	private get Logger(): AppLogger {
-		if (!this._contextualLogger) {
-			const baseLogger = this.Module.get(AppLogger);
-			this._contextualLogger = baseLogger.createContextualLogger(HealthCheckService.name);
+		if (!this._ContextualLogger) {
+			const BaseLogger = this.Module.get(AppLogger);
+			this._ContextualLogger = BaseLogger.CreateContextualLogger(HealthCheckService.name);
 		}
-		return this._contextualLogger;
+		return this._ContextualLogger;
 	}
 
 	/**
@@ -86,24 +86,24 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * @param version - Optional version string
 	 * @returns Health check response
 	 */
-	public getHealth(serviceName?: string, version?: string): IHealthCheck {
-		this.Logger.debug('Health check requested');
+	public GetHealth(serviceName?: string, version?: string): IHealthCheck {
+		this.Logger.Debug('Health check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.OK,
 			timestamp: new Date().toISOString(),
 		};
 
 		if (serviceName) {
-			response.service = serviceName;
+			Response.service = serviceName;
 		}
 
 		if (version) {
-			response.version = version;
+			Response.version = version;
 		}
 
-		this.Logger.debug(`Health check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Health check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 
 	/**
@@ -112,17 +112,17 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * @param checks - Optional custom health checks (e.g., database, cache status)
 	 * @returns Readiness check response
 	 */
-	public getReadiness(checks?: Record<string, string>): IHealthCheck {
-		this.Logger.debug('Readiness check requested');
+	public GetReadiness(checks?: Record<string, string>): IHealthCheck {
+		this.Logger.Debug('Readiness check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.READY,
 			timestamp: new Date().toISOString(),
 			checks: checks ?? {},
 		};
 
-		this.Logger.debug(`Readiness check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Readiness check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 
 	/**
@@ -130,15 +130,15 @@ export class HealthCheckService implements LazyModuleRefService {
 	 * Used for Kubernetes liveness probes to determine if service is alive
 	 * @returns Liveness check response
 	 */
-	public getLiveness(): IHealthCheck {
-		this.Logger.debug('Liveness check requested');
+	public GetLiveness(): IHealthCheck {
+		this.Logger.Debug('Liveness check requested');
 
-		const response: IHealthCheck = {
+		const Response: IHealthCheck = {
 			status: HealthStatus.ALIVE,
 			timestamp: new Date().toISOString(),
 		};
 
-		this.Logger.debug(`Liveness check response: ${JSON.stringify(response)}`);
-		return response;
+		this.Logger.Debug(`Liveness check response: ${JSON.stringify(Response)}`);
+		return Response;
 	}
 }

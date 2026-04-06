@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { HttpClientInterceptor } from '../http-client.interceptor.js';
 import { of, throwError } from 'rxjs';
 
@@ -12,13 +13,25 @@ describe('HttpClientInterceptor', () => {
 			debug(...args: any[]) {
 				logCalls.push({ level: 'debug', args });
 			},
+			Debug(...args: any[]) {
+				logCalls.push({ level: 'debug', args });
+			},
 			info(...args: any[]) {
+				logCalls.push({ level: 'info', args });
+			},
+			Info(...args: any[]) {
 				logCalls.push({ level: 'info', args });
 			},
 			warn(...args: any[]) {
 				logCalls.push({ level: 'warn', args });
 			},
+			Warn(...args: any[]) {
+				logCalls.push({ level: 'warn', args });
+			},
 			error(...args: any[]) {
+				logCalls.push({ level: 'error', args });
+			},
+			Error(...args: any[]) {
 				logCalls.push({ level: 'error', args });
 			},
 			log(...args: any[]) {
@@ -28,6 +41,9 @@ describe('HttpClientInterceptor', () => {
 
 		mockLogger = {
 			createContextualLogger() {
+				return contextualLogger;
+			},
+			CreateContextualLogger() {
 				return contextualLogger;
 			},
 		};

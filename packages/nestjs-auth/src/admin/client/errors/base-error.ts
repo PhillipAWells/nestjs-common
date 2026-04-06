@@ -13,22 +13,24 @@ const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
  * Base error class for Keycloak client errors
  */
 export class KeycloakClientError extends BaseApplicationError {
-	public readonly response?: unknown;
+	public readonly Response?: unknown;
+	public readonly Cause?: Error;
 
 	constructor(
 		message: string,
 		statusCode?: number,
 		response?: unknown,
-		public override readonly cause?: Error,
+		cause?: Error,
 	) {
-		const errorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
+		const ErrorCode = `KEYCLOAK_${statusCode ? 'HTTP_' + statusCode : 'CLIENT_ERROR'}`;
 		super(message, {
-			code: errorCode,
+			code: ErrorCode,
 			statusCode: statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR,
 			context: { response, cause },
 		});
 		this.name = 'KeycloakClientError';
-		this.response = response;
+		this.Response = response;
+		this.Cause = cause;
 	}
 }
 
@@ -65,10 +67,10 @@ export class NotFoundError extends KeycloakClientError {
 /**
  * Validation error - invalid request data
  */
-export class ValidationError extends KeycloakClientError {
+export class IValidationError extends KeycloakClientError {
 	constructor(message: string, response?: unknown) {
 		super(message, HTTP_STATUS_BAD_REQUEST, response);
-		this.name = 'ValidationError';
+		this.name = 'IValidationError';
 	}
 }
 

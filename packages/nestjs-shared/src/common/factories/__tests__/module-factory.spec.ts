@@ -4,10 +4,10 @@ import {
 	CreateServiceModule,
 	CreateApplicationModule,
 	CreateConditionalModule,
-	type GlobalModuleConfig,
-	type FeatureModuleConfig,
-	type ServiceModuleConfig,
-	type ApplicationModuleConfig,
+	type IGlobalModuleConfig,
+	type IFeatureModuleConfig,
+	type IServiceModuleConfig,
+	type IApplicationModuleConfig,
 } from '../module-factory.js';
 import { Logger, Module, Injectable } from '@nestjs/common';
 import { describe, it, expect, vi } from 'vitest';
@@ -15,7 +15,7 @@ import { describe, it, expect, vi } from 'vitest';
 describe('Module Factory Utilities', () => {
 	describe('CreateGlobalModule', () => {
 		it('should create a global module with default configuration', () => {
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'TestGlobalModule',
 				providers: [],
 				exports: [],
@@ -34,7 +34,7 @@ describe('Module Factory Utilities', () => {
 			@Injectable()
 			class TestService {}
 
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'TestModule',
 				providers: [TestService],
 				exports: [TestService],
@@ -47,22 +47,22 @@ describe('Module Factory Utilities', () => {
 		});
 
 		it('should create a Logger provider with module name', () => {
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'MyModule',
 				providers: [],
 				exports: [],
 			};
 
-			const result = CreateGlobalModule(config);
+			const Result = CreateGlobalModule(config);
 
-			const loggerProvider = result.providers?.find(
+			const loggerProvider = Result.providers?.find(
 				(p: any) => p?.provide === Logger || p === Logger,
 			);
 			expect(loggerProvider).toBeDefined();
 		});
 
 		it('should set isGlobal to true by default', () => {
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'TestModule',
 			};
 
@@ -72,7 +72,7 @@ describe('Module Factory Utilities', () => {
 		});
 
 		it('should allow isGlobal to be overridden', () => {
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'TestModule',
 				isGlobal: false,
 			};
@@ -86,7 +86,7 @@ describe('Module Factory Utilities', () => {
 			@Module({})
 			class ImportedModule {}
 
-			const config: GlobalModuleConfig = {
+			const config: IGlobalModuleConfig = {
 				name: 'TestModule',
 				imports: [ImportedModule],
 			};
@@ -99,7 +99,7 @@ describe('Module Factory Utilities', () => {
 
 	describe('CreateFeatureModule', () => {
 		it('should create a feature module with standard configuration', () => {
-			const config: FeatureModuleConfig = {
+			const config: IFeatureModuleConfig = {
 				name: 'TestFeatureModule',
 				providers: [],
 				exports: [],
@@ -117,7 +117,7 @@ describe('Module Factory Utilities', () => {
 		it('should include controllers in the result', () => {
 			const mockController = {};
 
-			const config: FeatureModuleConfig = {
+			const config: IFeatureModuleConfig = {
 				name: 'UserModule',
 				controllers: [mockController as any],
 				providers: [],
@@ -130,7 +130,7 @@ describe('Module Factory Utilities', () => {
 		});
 
 		it('should export Logger by default', () => {
-			const config: FeatureModuleConfig = {
+			const config: IFeatureModuleConfig = {
 				name: 'TestModule',
 			};
 
@@ -145,7 +145,7 @@ describe('Module Factory Utilities', () => {
 			@Injectable()
 			class TestService {}
 
-			const config: ServiceModuleConfig = {
+			const config: IServiceModuleConfig = {
 				name: 'TestServiceModule',
 				providers: [TestService],
 				exports: [TestService],
@@ -159,7 +159,7 @@ describe('Module Factory Utilities', () => {
 		});
 
 		it('should include Logger in providers and exports', () => {
-			const config: ServiceModuleConfig = {
+			const config: IServiceModuleConfig = {
 				name: 'MyServiceModule',
 			};
 
@@ -180,7 +180,7 @@ describe('Module Factory Utilities', () => {
 			const mockPipe = {};
 			const mockGuard = {};
 
-			const config: ApplicationModuleConfig = {
+			const config: IApplicationModuleConfig = {
 				name: 'AppModule',
 				filters: [mockFilter as any],
 				interceptors: [mockInterceptor as any],
@@ -198,7 +198,7 @@ describe('Module Factory Utilities', () => {
 		it('should create providers for each filter with APP_FILTER token', () => {
 			const mockFilter = class MockFilter {};
 
-			const config: ApplicationModuleConfig = {
+			const config: IApplicationModuleConfig = {
 				name: 'AppModule',
 				filters: [mockFilter as any],
 			};
@@ -214,7 +214,7 @@ describe('Module Factory Utilities', () => {
 			const filter1 = class Filter1 {};
 			const filter2 = class Filter2 {};
 
-			const config: ApplicationModuleConfig = {
+			const config: IApplicationModuleConfig = {
 				name: 'AppModule',
 				filters: [filter1 as any, filter2 as any],
 			};
@@ -227,7 +227,7 @@ describe('Module Factory Utilities', () => {
 		});
 
 		it('should export Logger', () => {
-			const config: ApplicationModuleConfig = {
+			const config: IApplicationModuleConfig = {
 				name: 'AppModule',
 			};
 

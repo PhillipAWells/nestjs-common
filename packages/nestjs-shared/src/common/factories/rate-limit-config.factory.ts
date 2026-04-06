@@ -19,7 +19,7 @@
  * @property ttl Time-to-live in milliseconds (sliding window for rate limit)
  * @property limit Maximum number of requests allowed within the TTL
  */
-export interface RateLimitDescriptor {
+export interface IRateLimitDescriptor {
 	/** Time-to-live in milliseconds */
 	ttl: number;
 	/** Maximum number of requests allowed within TTL */
@@ -33,17 +33,17 @@ export interface RateLimitDescriptor {
  * @property api API endpoint rate limits (default, search)
  * @property custom Index signature for service-specific custom rate limits
  */
-export interface RateLimitConfig {
+export interface IRateLimitConfig {
 	/** Authentication endpoint limits */
 	auth: {
-		login?: RateLimitDescriptor;
-		register?: RateLimitDescriptor;
-		refreshToken?: RateLimitDescriptor;
+		login?: IRateLimitDescriptor;
+		register?: IRateLimitDescriptor;
+		refreshToken?: IRateLimitDescriptor;
 	};
 	/** API endpoint limits */
 	api: {
-		default?: RateLimitDescriptor;
-		search?: RateLimitDescriptor;
+		default?: IRateLimitDescriptor;
+		search?: IRateLimitDescriptor;
 	};
 	/** Custom service-specific limits */
 	[key: string]: any;
@@ -55,7 +55,7 @@ export interface RateLimitConfig {
  * Provides sensible defaults for all standard auth and API endpoints.
  * TTL values are in milliseconds, limit values are request counts.
  */
-const DEFAULT_CONFIG: RateLimitConfig = {
+const DEFAULT_CONFIG: IRateLimitConfig = {
 	auth: {
 		login: {
 			ttl: 60000, // 60 seconds
@@ -96,32 +96,32 @@ function DeepMerge(target: any, source: any): any {
 		return target;
 	}
 
-	const result = { ...target };
+	const Result = { ...target };
 
-	for (const key in source) {
-		if (Object.prototype.hasOwnProperty.call(source, key)) {
-			const sourceValue = source[key];
-			const targetValue = target[key];
+	for (const Key in source) {
+		if (Object.prototype.hasOwnProperty.call(source, Key)) {
+			const SourceValue = source[Key];
+			const TargetValue = target[Key];
 
 			// If source is an object (but not array or null), merge recursively
 			if (
-				sourceValue &&
-				typeof sourceValue === 'object' &&
-				!Array.isArray(sourceValue) &&
-				sourceValue !== null &&
-				targetValue &&
-				typeof targetValue === 'object' &&
-				!Array.isArray(targetValue)
+				SourceValue &&
+				typeof SourceValue === 'object' &&
+				!Array.isArray(SourceValue) &&
+				SourceValue !== null &&
+				TargetValue &&
+				typeof TargetValue === 'object' &&
+				!Array.isArray(TargetValue)
 			) {
-				result[key] = DeepMerge(targetValue, sourceValue);
+				Result[Key] = DeepMerge(TargetValue, SourceValue);
 			} else {
 				// Otherwise, use source value (overwrite)
-				result[key] = sourceValue;
+				Result[Key] = SourceValue;
 			}
 		}
 	}
 
-	return result;
+	return Result;
 }
 
 /**
@@ -139,7 +139,7 @@ function DeepMerge(target: any, source: any): any {
  * import { CreateRateLimitConfig } from '@pawells/nestjs-shared';
  *
  * // Use all defaults
- * const config = CreateRateLimitConfig();
+ * const Config = CreateRateLimitConfig();
  *
  * // Override specific limits
  * const customConfig = CreateRateLimitConfig({
@@ -153,6 +153,6 @@ function DeepMerge(target: any, source: any): any {
  * });
  * ```
  */
-export function CreateRateLimitConfig(overrides?: Partial<RateLimitConfig>): RateLimitConfig {
-	return DeepMerge(DEFAULT_CONFIG, overrides) as RateLimitConfig;
+export function CreateRateLimitConfig(overrides?: Partial<IRateLimitConfig>): IRateLimitConfig {
+	return DeepMerge(DEFAULT_CONFIG, overrides) as IRateLimitConfig;
 }

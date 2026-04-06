@@ -3,9 +3,9 @@ import { ModuleRef } from '@nestjs/core';
 import { performance } from 'node:perf_hooks';
 import { AppLogger } from '../services/logger.service.js';
 import type { IContextualLogger } from '../interfaces/logger.interface.js';
-import type { IMetricsExporter, MetricDescriptor, MetricValue } from '../interfaces/metrics-exporter.interface.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
-import { getErrorMessage } from '../utils/error.utils.js';
+import type { IMetricsExporter, IMetricDescriptor, IMetricValue } from '../interfaces/metrics-exporter.interface.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { GetErrorMessage } from '../utils/error.utils.js';
 
 /**
  * Central registry for metrics collection and export
@@ -41,7 +41,7 @@ import { getErrorMessage } from '../utils/error.utils.js';
  * ```
  */
 @Injectable()
-export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefService {
+export class InstrumentationRegistry implements OnModuleInit, ILazyModuleRefService {
 	/**
 	 * Maximum number of metric values to store per metric.
 	 * Prevents unbounded memory growth when recording values continuously.
@@ -54,39 +54,39 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * Map of metric descriptors by name
 	 * @private
 	 */
-	private readonly descriptors = new Map<string, MetricDescriptor>();
+	private readonly Descriptors = new Map<string, IMetricDescriptor>();
 
 	/**
 	 * Map of recorded metric values by metric name
 	 * @private
 	 */
-	private readonly values = new Map<string, MetricValue[]>();
+	private readonly Values = new Map<string, IMetricValue[]>();
 
 	/**
 	 * List of registered exporters
 	 * @private
 	 */
-	private readonly exporters: IMetricsExporter[] = [];
+	private readonly Exporters: IMetricsExporter[] = [];
 
 	/**
 	 * Map of event listeners by metric name
 	 * @private
 	 */
-	private readonly listeners = new Map<string, Array<(value: MetricValue) => void>>();
+	private readonly Listeners = new Map<string, Array<(value: IMetricValue) => void>>();
 
 	/**
 	 * Lazy-loaded contextual logger
 	 * @private
 	 */
-	private _logger: IContextualLogger | undefined;
+	private _Logger: IContextualLogger | undefined;
 
 	/**
 	 * Getter for contextual logger (lazy initialization)
 	 * @private
 	 */
-	private get logger(): IContextualLogger {
-		this._logger ??= this.AppLogger.createContextualLogger(InstrumentationRegistry.name);
-		return this._logger;
+	private get Logger(): IContextualLogger {
+		this._Logger ??= this.AppLogger.createContextualLogger(InstrumentationRegistry.name);
+		return this._Logger;
 	}
 
 	public readonly Module: ModuleRef;
@@ -100,15 +100,15 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	}
 
 	public onModuleInit(): void {
-		this.registerHttpMetrics();
+		this.RegisterHttpMetrics();
 	}
 
 	/**
 	 * Register standard HTTP metrics that are always available
 	 * @private
 	 */
-	private registerHttpMetrics(): void {
-		this.registerDescriptor({
+	private RegisterHttpMetrics(): void {
+		this.RegisterDescriptor({
 			name: 'http_request_duration_seconds',
 			type: 'histogram',
 			help: 'Duration of HTTP requests in seconds',
@@ -118,14 +118,14 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 			unit: 'seconds',
 		});
 
-		this.registerDescriptor({
+		this.RegisterDescriptor({
 			name: 'http_requests_total',
 			type: 'counter',
 			help: 'Total number of HTTP requests',
 			labelNames: ['method', 'route', 'status_code'],
 		});
 
-		this.registerDescriptor({
+		this.RegisterDescriptor({
 			name: 'http_request_size_bytes',
 			type: 'histogram',
 			help: 'Size of HTTP request bodies in bytes',
@@ -157,12 +157,12 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * });
 	 * ```
 	 */
-	public registerDescriptor(descriptor: MetricDescriptor): void {
-		const existing = this.descriptors.get(descriptor.name);
+	public RegisterDescriptor(descriptor: IMetricDescriptor): void {
+		const Existing = this.Descriptors.get(descriptor.name);
 
-		if (existing) {
+		if (Existing) {
 			// Check if descriptors are identical
-			if (this.descriptorsAreEqual(existing, descriptor)) {
+			if (this.DescriptorsAreEqual(Existing, descriptor)) {
 				// Idempotent: same descriptor already registered
 				return;
 			}
@@ -174,20 +174,20 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 		}
 
 		// Register new descriptor
-		this.descriptors.set(descriptor.name, descriptor);
-		this.values.set(descriptor.name, []);
+		this.Descriptors.set(descriptor.name, descriptor);
+		this.Values.set(descriptor.name, []);
 
 		// Notify all registered exporters
-		for (const exporter of this.exporters) {
+		for (const Exporter of this.Exporters) {
 			try {
-				if (exporter.onDescriptorRegistered) {
-					exporter.onDescriptorRegistered(descriptor);
+				if (Exporter.onDescriptorRegistered) {
+					Exporter.onDescriptorRegistered(descriptor);
 				}
 			} catch (error) {
-				this.logger.error('Error notifying exporter of descriptor registration', 'InstrumentationRegistry', {
-					exporterIndex: this.exporters.indexOf(exporter),
+				this.Logger.error('Error notifying exporter of descriptor registration', 'InstrumentationRegistry', {
+					exporterIndex: this.Exporters.indexOf(Exporter),
 					metricName: descriptor.name,
-					error: getErrorMessage(error),
+					error: GetErrorMessage(error),
 				});
 			}
 		}
@@ -197,7 +197,7 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * Check if two metric descriptors are equal
 	 * @private
 	 */
-	private descriptorsAreEqual(a: MetricDescriptor, b: MetricDescriptor): boolean {
+	private DescriptorsAreEqual(a: IMetricDescriptor, b: IMetricDescriptor): boolean {
 		return (
 			a.name === b.name &&
 			a.type === b.type &&
@@ -229,54 +229,54 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * });
 	 * ```
 	 */
-	public recordMetric(name: string, value: number, labels?: Record<string, string | number>): void {
-		const descriptor = this.descriptors.get(name);
-		if (!descriptor) {
+	public RecordMetric(name: string, value: number, labels?: Record<string, string | number>): void {
+		const Descriptor = this.Descriptors.get(name);
+		if (!Descriptor) {
 			throw new Error(`Metric descriptor not found: "${name}". Register the descriptor first using registerDescriptor().`);
 		}
 
-		const metricValue: MetricValue = {
-			descriptor,
+		const MetricValue: IMetricValue = {
+			descriptor: Descriptor,
 			value,
 			labels: labels ?? {},
 			timestamp: performance.now(),
 		};
 
 		// Store in-memory values with rolling window
-		const valuesArray = this.values.get(name);
-		if (valuesArray) {
-			valuesArray.push(metricValue);
+		const ValuesArray = this.Values.get(name);
+		if (ValuesArray) {
+			ValuesArray.push(MetricValue);
 			// Enforce rolling window: discard oldest values if we exceed the limit
-			if (valuesArray.length > InstrumentationRegistry.MAX_VALUES_PER_METRIC) {
-				valuesArray.shift();
+			if (ValuesArray.length > InstrumentationRegistry.MAX_VALUES_PER_METRIC) {
+				ValuesArray.shift();
 			}
 		}
 
 		// Notify event-based exporters
-		for (const exporter of this.exporters) {
+		for (const Exporter of this.Exporters) {
 			try {
-				if (exporter.supportsEventBased && exporter.onMetricRecorded) {
-					exporter.onMetricRecorded(metricValue);
+				if (Exporter.SupportsEventBased && Exporter.onMetricRecorded) {
+					Exporter.onMetricRecorded(MetricValue);
 				}
 			} catch (error) {
-				this.logger.error('Error in event-based exporter onMetricRecorded', 'InstrumentationRegistry', {
-					exporterIndex: this.exporters.indexOf(exporter),
+				this.Logger.error('Error in event-based exporter onMetricRecorded', 'InstrumentationRegistry', {
+					exporterIndex: this.Exporters.indexOf(Exporter),
 					metricName: name,
-					error: getErrorMessage(error),
+					error: GetErrorMessage(error),
 				});
 			}
 		}
 
 		// Notify named listeners
-		const namedListeners = this.listeners.get(name);
-		if (namedListeners) {
-			for (const handler of namedListeners) {
+		const NamedListeners = this.Listeners.get(name);
+		if (NamedListeners) {
+			for (const Handler of NamedListeners) {
 				try {
-					handler(metricValue);
+					Handler(MetricValue);
 				} catch (error) {
-					this.logger.error('Error in metric listener', 'InstrumentationRegistry', {
+					this.Logger.error('Error in metric listener', 'InstrumentationRegistry', {
 						metricName: name,
-						error: getErrorMessage(error),
+						error: GetErrorMessage(error),
 					});
 				}
 			}
@@ -296,12 +296,12 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * ```typescript
 	 * const allMetrics = registry.getAllMetrics();
 	 * for (const [name, values] of allMetrics.entries()) {
-	 *   console.log(`${name}: ${values.length} values recorded`);
+	 *   console.log(`${name}: ${values.:Length} values recorded`);
 	 * }
 	 * ```
 	 */
-	public getAllMetrics(): Map<string, MetricValue[]> {
-		return new Map(this.values);
+	public GetAllMetrics(): Map<string, IMetricValue[]> {
+		return new Map(this.Values);
 	}
 
 	/**
@@ -313,11 +313,11 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * @example
 	 * ```typescript
 	 * const values = registry.getMetric('http_request_duration_seconds');
-	 * console.log(`Recorded ${values.length} request duration measurements`);
+	 * console.log(`Recorded ${values.:Length} request duration measurements`);
 	 * ```
 	 */
-	public getMetric(name: string): MetricValue[] {
-		return this.values.get(name) ?? [];
+	public GetMetric(name: string): IMetricValue[] {
+		return this.Values.get(name) ?? [];
 	}
 
 	/**
@@ -341,16 +341,16 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * unsubscribe();
 	 * ```
 	 */
-	public on(metricName: string, handler: (value: MetricValue) => void): () => void {
-		const handlers = this.listeners.get(metricName) ?? [];
-		handlers.push(handler);
-		this.listeners.set(metricName, handlers);
+	public On(metricName: string, handler: (value: IMetricValue) => void): () => void {
+		const Handlers = this.Listeners.get(metricName) ?? [];
+		Handlers.push(handler);
+		this.Listeners.set(metricName, Handlers);
 
 		// Return unsubscribe function
 		return () => {
-			const idx = handlers.indexOf(handler);
-			if (idx >= 0) {
-				handlers.splice(idx, 1);
+			const Idx = Handlers.indexOf(handler);
+			if (Idx >= 0) {
+				Handlers.splice(Idx, 1);
 			}
 		};
 	}
@@ -376,20 +376,20 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * registry.registerExporter(otExporter);
 	 * ```
 	 */
-	public registerExporter(exporter: IMetricsExporter): void {
-		this.exporters.push(exporter);
+	public RegisterExporter(exporter: IMetricsExporter): void {
+		this.Exporters.push(exporter);
 
 		// Call onDescriptorRegistered for all existing descriptors
-		for (const descriptor of this.descriptors.values()) {
+		for (const Descriptor of this.Descriptors.values()) {
 			try {
 				if (exporter.onDescriptorRegistered) {
-					exporter.onDescriptorRegistered(descriptor);
+					exporter.onDescriptorRegistered(Descriptor);
 				}
 			} catch (error) {
-				this.logger.error('Error notifying exporter during registration', 'InstrumentationRegistry', {
-					exporterIndex: this.exporters.length - 1,
-					metricName: descriptor.name,
-					error: getErrorMessage(error),
+				this.Logger.error('Error notifying exporter during registration', 'InstrumentationRegistry', {
+					exporterIndex: this.Exporters.length - 1,
+					metricName: Descriptor.name,
+					error: GetErrorMessage(error),
 				});
 			}
 		}
@@ -411,23 +411,23 @@ export class InstrumentationRegistry implements OnModuleInit, LazyModuleRefServi
 	 * });
 	 * ```
 	 */
-	public async shutdown(): Promise<void> {
-		const shutdownPromises = this.exporters
+	public async Shutdown(): Promise<void> {
+		const ShutdownPromises = this.Exporters
 			.map((exporter) => {
 				try {
-					const result = exporter.shutdown?.();
-					if (result instanceof Promise) {
-						return result;
+					const Result = exporter.shutdown?.();
+					if (Result instanceof Promise) {
+						return Result;
 					}
 				} catch (error) {
-					this.logger.error('Error during exporter shutdown', 'InstrumentationRegistry', {
-						exporterIndex: this.exporters.indexOf(exporter),
-						error: getErrorMessage(error),
+					this.Logger.error('Error during exporter shutdown', 'InstrumentationRegistry', {
+						exporterIndex: this.Exporters.indexOf(exporter),
+						error: GetErrorMessage(error),
 					});
 				}
 				return Promise.resolve();
 			});
 
-		await Promise.all(shutdownPromises);
+		await Promise.all(ShutdownPromises);
 	}
 }

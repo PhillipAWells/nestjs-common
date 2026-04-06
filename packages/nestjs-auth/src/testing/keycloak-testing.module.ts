@@ -20,21 +20,21 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak/keycloak.constants.js';
 import { KeycloakTokenValidationService } from '../keycloak/services/keycloak-token-validation.service.js';
-import type { KeycloakModuleOptions } from '../keycloak/keycloak.types.js';
+import type { IKeycloakModuleOptions } from '../keycloak/keycloak.types.js';
 import { MockKeycloakTokenValidationService } from './mocks/keycloak-token-validation.mock.js';
 
 /**
  * Options for KeycloakTestingModule.forRoot().
  */
-export interface KeycloakTestingModuleOptions {
+export interface IKeycloakTestingModuleOptions {
 	/**
 	 * Partial Keycloak options provided under KEYCLOAK_MODULE_OPTIONS.
 	 * Defaults to stub values suitable for unit tests.
 	 */
-	keycloakOptions?: Partial<KeycloakModuleOptions>;
+	keycloakOptions?: Partial<IKeycloakModuleOptions>;
 }
 
-const DEFAULT_KEYCLOAK_OPTIONS: KeycloakModuleOptions = {
+const DEFAULT_KEYCLOAK_OPTIONS: IKeycloakModuleOptions = {
 	authServerUrl: 'https://auth.example.com',
 	realm: 'test',
 	clientId: 'test-client',
@@ -53,8 +53,8 @@ export class KeycloakTestingModule {
 	 * @param options - Optional overrides for default stub values
 	 * @returns DynamicModule configuration
 	 */
-	public static forRoot(options: KeycloakTestingModuleOptions = {}): DynamicModule {
-		const keycloakOptions: KeycloakModuleOptions = {
+	public static ForRoot(options: IKeycloakTestingModuleOptions = {}): DynamicModule {
+		const KeycloakOptions: IKeycloakModuleOptions = {
 			...DEFAULT_KEYCLOAK_OPTIONS,
 			...options.keycloakOptions,
 		};
@@ -64,7 +64,7 @@ export class KeycloakTestingModule {
 			providers: [
 				{
 					provide: KEYCLOAK_MODULE_OPTIONS,
-					useValue: keycloakOptions,
+					useValue: KeycloakOptions,
 				},
 				MockKeycloakTokenValidationService,
 				{

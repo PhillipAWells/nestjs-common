@@ -1,4 +1,5 @@
-import { AuditLoggerService, AuditLogEntry } from '../audit-logger.service.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { AuditLoggerService, IAuditLogEntry } from '../audit-logger.service.js';
 
 describe('AuditLoggerService', () => {
 	let service: AuditLoggerService;
@@ -12,19 +13,37 @@ describe('AuditLoggerService', () => {
 			info(...args: any[]) {
 				logCalls.push({ level: 'info', args });
 			},
+			Info(...args: any[]) {
+				logCalls.push({ level: 'info', args });
+			},
 			warn(...args: any[]) {
+				logCalls.push({ level: 'warn', args });
+			},
+			Warn(...args: any[]) {
 				logCalls.push({ level: 'warn', args });
 			},
 			error(...args: any[]) {
 				logCalls.push({ level: 'error', args });
 			},
+			Error(...args: any[]) {
+				logCalls.push({ level: 'error', args });
+			},
 			debug(...args: any[]) {
+				logCalls.push({ level: 'debug', args });
+			},
+			Debug(...args: any[]) {
 				logCalls.push({ level: 'debug', args });
 			},
 			log(...args: any[]) {
 				logCalls.push({ level: 'log', args });
 			},
+			Log(...args: any[]) {
+				logCalls.push({ level: 'log', args });
+			},
 			createContextualLogger() {
+				return mockLogger;
+			},
+			CreateContextualLogger() {
 				return mockLogger;
 			},
 		};
@@ -42,7 +61,7 @@ describe('AuditLoggerService', () => {
 		expect(service).toBeDefined();
 	});
 
-	it('should implement LazyModuleRefService', () => {
+	it('should implement ILazyModuleRefService', () => {
 		expect(service.Module).toBeDefined();
 		expect(service.Logger).toBeDefined();
 	});
@@ -51,7 +70,7 @@ describe('AuditLoggerService', () => {
 		it('should log successful authentication', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', true, '192.168.1.1');
+			service.LogAuthenticationAttempt('user@example.com', true, '192.168.1.1');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			// eslint-disable-next-line prefer-destructuring
@@ -63,7 +82,7 @@ describe('AuditLoggerService', () => {
 		it('should log failed authentication', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', false, '192.168.1.1', 'Invalid password');
+			service.LogAuthenticationAttempt('user@example.com', false, '192.168.1.1', 'Invalid password');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			// eslint-disable-next-line prefer-destructuring
@@ -74,7 +93,7 @@ describe('AuditLoggerService', () => {
 		it('should include email in authentication log', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('test@example.com', true);
+			service.LogAuthenticationAttempt('test@example.com', true);
 
 			expect(logCalls[0].args[0]).toContain('test@example.com');
 		});
@@ -82,7 +101,7 @@ describe('AuditLoggerService', () => {
 		it('should include reason in failed authentication', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', false, undefined, 'Account locked');
+			service.LogAuthenticationAttempt('user@example.com', false, undefined, 'Account locked');
 
 			expect(logCalls[0].args[0]).toContain('Account locked');
 		});
@@ -92,7 +111,7 @@ describe('AuditLoggerService', () => {
 		it('should log authorization failure', () => {
 			logCalls = [];
 
-			service.logAuthorizationFailure('user-123', '/admin/users', 'DELETE', '192.168.1.1');
+			service.LogAuthorizationFailure('user-123', '/admin/users', 'DELETE', '192.168.1.1');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			// eslint-disable-next-line prefer-destructuring
@@ -104,7 +123,7 @@ describe('AuditLoggerService', () => {
 		it('should include user ID in authorization log', () => {
 			logCalls = [];
 
-			service.logAuthorizationFailure('user-456', '/api/data', 'WRITE');
+			service.LogAuthorizationFailure('user-456', '/api/data', 'WRITE');
 
 			expect(logCalls[0].args[0]).toContain('user-456');
 		});
@@ -112,7 +131,7 @@ describe('AuditLoggerService', () => {
 		it('should include resource in authorization log', () => {
 			logCalls = [];
 
-			service.logAuthorizationFailure('user-789', '/api/reports', 'READ');
+			service.LogAuthorizationFailure('user-789', '/api/reports', 'READ');
 
 			expect(logCalls[0].args[0]).toContain('/api/reports');
 		});
@@ -120,7 +139,7 @@ describe('AuditLoggerService', () => {
 		it('should include action in authorization log', () => {
 			logCalls = [];
 
-			service.logAuthorizationFailure('user-123', '/admin', 'DELETE');
+			service.LogAuthorizationFailure('user-123', '/admin', 'DELETE');
 
 			expect(logCalls[0].args[0]).toContain('DELETE');
 		});
@@ -130,7 +149,7 @@ describe('AuditLoggerService', () => {
 		it('should log token generation', () => {
 			logCalls = [];
 
-			service.logTokenGeneration('user-123', 'access');
+			service.LogTokenGeneration('user-123', 'access');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Token GENERATED');
@@ -139,7 +158,7 @@ describe('AuditLoggerService', () => {
 		it('should include token type in generation log', () => {
 			logCalls = [];
 
-			service.logTokenGeneration('user-456', 'refresh');
+			service.LogTokenGeneration('user-456', 'refresh');
 
 			expect(logCalls[0].args[0]).toContain('refresh');
 		});
@@ -147,7 +166,7 @@ describe('AuditLoggerService', () => {
 		it('should log token revocation', () => {
 			logCalls = [];
 
-			service.logTokenRevocation('user-789', 'User logout');
+			service.LogTokenRevocation('user-789', 'IUser logout');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Token REVOCATION');
@@ -156,7 +175,7 @@ describe('AuditLoggerService', () => {
 		it('should include revocation reason', () => {
 			logCalls = [];
 
-			service.logTokenRevocation('user-123', 'Password changed');
+			service.LogTokenRevocation('user-123', 'Password changed');
 
 			expect(logCalls[0].args[0]).toContain('Password changed');
 		});
@@ -166,7 +185,7 @@ describe('AuditLoggerService', () => {
 		it('should log rate limit violation', () => {
 			logCalls = [];
 
-			service.logRateLimitViolation('/api/login', '192.168.1.100', 5);
+			service.LogRateLimitViolation('/api/login', '192.168.1.100', 5);
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			// eslint-disable-next-line prefer-destructuring
@@ -178,7 +197,7 @@ describe('AuditLoggerService', () => {
 		it('should include endpoint in rate limit log', () => {
 			logCalls = [];
 
-			service.logRateLimitViolation('/api/users', '203.0.113.50', 10);
+			service.LogRateLimitViolation('/api/users', '203.0.113.50', 10);
 
 			expect(logCalls[0].args[0]).toContain('/api/users');
 		});
@@ -186,7 +205,7 @@ describe('AuditLoggerService', () => {
 		it('should include IP in rate limit log', () => {
 			logCalls = [];
 
-			service.logRateLimitViolation('/api/data', '10.0.0.5', 15);
+			service.LogRateLimitViolation('/api/data', '10.0.0.5', 15);
 
 			expect(logCalls[0].args[0]).toContain('10.0.0.5');
 		});
@@ -194,7 +213,7 @@ describe('AuditLoggerService', () => {
 		it('should include limit count in rate limit log', () => {
 			logCalls = [];
 
-			service.logRateLimitViolation('/api/test', '127.0.0.1', 20);
+			service.LogRateLimitViolation('/api/test', '127.0.0.1', 20);
 
 			expect(logCalls[0].args[0]).toContain('20');
 		});
@@ -204,7 +223,7 @@ describe('AuditLoggerService', () => {
 		it('should log CSRF violation', () => {
 			logCalls = [];
 
-			service.logCsrfViolation('192.168.1.50', '/api/data');
+			service.LogCsrfViolation('192.168.1.50', '/api/data');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			// eslint-disable-next-line prefer-destructuring
@@ -216,7 +235,7 @@ describe('AuditLoggerService', () => {
 		it('should include endpoint in CSRF log', () => {
 			logCalls = [];
 
-			service.logCsrfViolation('192.168.1.50', '/admin');
+			service.LogCsrfViolation('192.168.1.50', '/admin');
 
 			expect(logCalls[0].args[0]).toContain('/admin');
 		});
@@ -224,7 +243,7 @@ describe('AuditLoggerService', () => {
 		it('should include IP in CSRF log', () => {
 			logCalls = [];
 
-			service.logCsrfViolation('10.0.0.100', '/api/endpoint');
+			service.LogCsrfViolation('10.0.0.100', '/api/endpoint');
 
 			expect(logCalls[0].args[0]).toContain('10.0.0.100');
 		});
@@ -234,7 +253,7 @@ describe('AuditLoggerService', () => {
 		it('should log configuration change', () => {
 			logCalls = [];
 
-			service.logConfigurationChange('admin-user', 'api-key-rotation', 'disabled', 'enabled');
+			service.LogConfigurationChange('admin-user', 'api-key-rotation', 'disabled', 'enabled');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Configuration CHANGE');
@@ -243,7 +262,7 @@ describe('AuditLoggerService', () => {
 		it('should include config name in change log', () => {
 			logCalls = [];
 
-			service.logConfigurationChange('user-789', 'timeout-value', '30', '60');
+			service.LogConfigurationChange('user-789', 'timeout-value', '30', '60');
 
 			expect(logCalls[0].args[0]).toContain('timeout-value');
 		});
@@ -251,7 +270,7 @@ describe('AuditLoggerService', () => {
 		it('should include user in config change log', () => {
 			logCalls = [];
 
-			service.logConfigurationChange('admin-001', 'rate-limit', 100, 200);
+			service.LogConfigurationChange('admin-001', 'rate-limit', 100, 200);
 
 			expect(logCalls[0].args[0]).toContain('admin-001');
 		});
@@ -259,7 +278,7 @@ describe('AuditLoggerService', () => {
 		it('should include values in config change log', () => {
 			logCalls = [];
 
-			service.logConfigurationChange('admin', 'setting', 'oldVal', 'newVal');
+			service.LogConfigurationChange('admin', 'setting', 'oldVal', 'newVal');
 
 			expect(logCalls[0].args[0]).toContain('oldVal');
 			expect(logCalls[0].args[0]).toContain('newVal');
@@ -270,7 +289,7 @@ describe('AuditLoggerService', () => {
 		it('should log data access', () => {
 			logCalls = [];
 
-			service.logDataAccess('user-123', 'customer-records', 'READ');
+			service.LogDataAccess('user-123', 'customer-records', 'READ');
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Data ACCESS');
@@ -279,7 +298,7 @@ describe('AuditLoggerService', () => {
 		it('should include user in data access log', () => {
 			logCalls = [];
 
-			service.logDataAccess('user-456', 'payment-data', 'WRITE');
+			service.LogDataAccess('user-456', 'payment-data', 'WRITE');
 
 			expect(logCalls[0].args[0]).toContain('user-456');
 		});
@@ -287,7 +306,7 @@ describe('AuditLoggerService', () => {
 		it('should include resource in data access log', () => {
 			logCalls = [];
 
-			service.logDataAccess('user-789', 'audit-logs', 'DELETE');
+			service.LogDataAccess('user-789', 'audit-logs', 'DELETE');
 
 			expect(logCalls[0].args[0]).toContain('audit-logs');
 		});
@@ -295,7 +314,7 @@ describe('AuditLoggerService', () => {
 		it('should include action in data access log', () => {
 			logCalls = [];
 
-			service.logDataAccess('user-111', 'reports', 'EXPORT');
+			service.LogDataAccess('user-111', 'reports', 'EXPORT');
 
 			expect(logCalls[0].args[0]).toContain('EXPORT');
 		});
@@ -305,7 +324,7 @@ describe('AuditLoggerService', () => {
 		it('should log custom security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				userId: 'user-123',
 				action: 'export-data',
@@ -313,7 +332,7 @@ describe('AuditLoggerService', () => {
 				result: 'success',
 			};
 
-			service.logSecurityEvent(auditEntry);
+			service.LogSecurityEvent(auditEntry);
 
 			expect(logCalls.length).toBeGreaterThan(0);
 			expect(logCalls[0].args[0]).toContain('Security EVENT');
@@ -322,14 +341,14 @@ describe('AuditLoggerService', () => {
 		it('should include action in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'permission-change',
 				resource: 'user-456',
 				result: 'success',
 			};
 
-			service.logSecurityEvent(auditEntry);
+			service.LogSecurityEvent(auditEntry);
 
 			expect(logCalls[0].args[0]).toContain('permission-change');
 		});
@@ -337,14 +356,14 @@ describe('AuditLoggerService', () => {
 		it('should include resource in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'delete-user',
 				resource: '/users/789',
 				result: 'success',
 			};
 
-			service.logSecurityEvent(auditEntry);
+			service.LogSecurityEvent(auditEntry);
 
 			expect(logCalls[0].args[0]).toContain('/users/789');
 		});
@@ -352,14 +371,14 @@ describe('AuditLoggerService', () => {
 		it('should include result in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'login-attempt',
 				resource: '/auth/login',
 				result: 'failure',
 			};
 
-			service.logSecurityEvent(auditEntry);
+			service.LogSecurityEvent(auditEntry);
 
 			expect(logCalls[0].args[0]).toContain('failure');
 		});
@@ -367,14 +386,14 @@ describe('AuditLoggerService', () => {
 		it('should handle optional fields in security event', () => {
 			logCalls = [];
 
-			const auditEntry: AuditLogEntry = {
+			const auditEntry: IAuditLogEntry = {
 				timestamp: new Date(),
 				action: 'system-check',
 				resource: 'health-endpoint',
 				result: 'success',
 			};
 
-			service.logSecurityEvent(auditEntry);
+			service.LogSecurityEvent(auditEntry);
 
 			expect(logCalls.length).toBeGreaterThan(0);
 		});
@@ -384,7 +403,7 @@ describe('AuditLoggerService', () => {
 		it('should use AuditLogger context', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', true);
+			service.LogAuthenticationAttempt('user@example.com', true);
 
 			expect(logCalls[0].args[1]).toBe('AuditLogger');
 		});
@@ -392,8 +411,8 @@ describe('AuditLoggerService', () => {
 		it('should consistently use AuditLogger context across methods', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', true);
-			service.logAuthorizationFailure('user-2', '/api', 'READ');
+			service.LogAuthenticationAttempt('user@example.com', true);
+			service.LogAuthorizationFailure('user-2', '/api', 'READ');
 
 			expect(logCalls[0].args[1]).toBe('AuditLogger');
 			expect(logCalls[1].args[1]).toBe('AuditLogger');
@@ -404,7 +423,7 @@ describe('AuditLoggerService', () => {
 		it('should include timestamp in audit logs', () => {
 			logCalls = [];
 
-			service.logAuthenticationAttempt('user@example.com', true);
+			service.LogAuthenticationAttempt('user@example.com', true);
 
 			// eslint-disable-next-line prefer-destructuring
 			const logMessage = logCalls[0].args[0];
@@ -414,7 +433,7 @@ describe('AuditLoggerService', () => {
 		it('should use ISO timestamp format', () => {
 			logCalls = [];
 
-			service.logTokenGeneration('user-123', 'access');
+			service.LogTokenGeneration('user-123', 'access');
 
 			// eslint-disable-next-line prefer-destructuring
 			const logMessage = logCalls[0].args[0];

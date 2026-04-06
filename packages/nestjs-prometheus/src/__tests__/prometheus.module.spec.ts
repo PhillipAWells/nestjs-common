@@ -25,7 +25,7 @@ vi.mock('prom-client', () => ({
 
 vi.mock('@pawells/nestjs-shared', () => ({
 	InstrumentationRegistry: class {
-		registerExporter = vi.fn();
+		RegisterExporter = vi.fn();
 	},
 	MetricsGuard: class {
 		canActivate = vi.fn().mockReturnValue(true);
@@ -61,7 +61,7 @@ describe('PrometheusModule', () => {
 
 	describe('forRoot', () => {
 		it('should return a module config', () => {
-			const config = PrometheusModule.forRoot();
+			const config = PrometheusModule.ForRoot();
 
 			expect(config).toBeDefined();
 			expect(config.module).toBe(PrometheusModule);
@@ -72,13 +72,13 @@ describe('PrometheusModule', () => {
 		it('should register exporter with the registry on onModuleInit', () => {
 			module.onModuleInit();
 
-			expect(mockRegistry2.registerExporter).toHaveBeenCalledWith(exporter);
+			expect(mockRegistry2.RegisterExporter).toHaveBeenCalledWith(exporter);
 		});
 	});
 
 	describe('onApplicationShutdown', () => {
 		it('should call exporter shutdown on onApplicationShutdown', async () => {
-			const shutdownSpy = vi.spyOn(exporter, 'shutdown');
+			const shutdownSpy = vi.spyOn(exporter, 'Shutdown');
 
 			await module.onApplicationShutdown();
 

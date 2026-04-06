@@ -16,15 +16,28 @@ describe('GlobalExceptionFilter', () => {
 	beforeEach(() => {
 		mockLogger = {
 			debug() {},
+			Debug() {},
 			error() {},
+			Error() {},
 		};
 		mockErrorSanitizer = {
 			sanitizeErrorResponse(errorResponse: any) {
 				return errorResponse;
 			},
+			SanitizeErrorResponse(errorResponse: any) {
+				return errorResponse;
+			},
 		};
 		mockErrorCategorizer = {
 			categorizeError() {
+				return {
+					type: 'GENERIC_ERROR',
+					retryable: false,
+					strategy: 'NONE',
+					backoffMs: 0,
+				};
+			},
+			CategorizeError() {
 				return {
 					type: 'GENERIC_ERROR',
 					retryable: false,
@@ -112,7 +125,7 @@ describe('GlobalExceptionFilter', () => {
 						statusCode: 400,
 					});
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'APPLICATION_ERROR',
 							retryable: false,
@@ -142,7 +155,7 @@ describe('GlobalExceptionFilter', () => {
 						statusCode: 400,
 					});
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'APPLICATION_ERROR',
 							retryable: false,
@@ -196,7 +209,7 @@ describe('GlobalExceptionFilter', () => {
 					const error = new Error('Generic error message');
 					error.stack = 'Error: Generic error message\n    at test.ts:1';
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'GENERIC_ERROR',
 							retryable: false,
@@ -222,7 +235,7 @@ describe('GlobalExceptionFilter', () => {
 
 					const error = new Error('Sensitive error information');
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'GENERIC_ERROR',
 							retryable: false,
@@ -253,7 +266,7 @@ describe('GlobalExceptionFilter', () => {
 				it('should handle non-Error exception objects', () => {
 					const unknownException = { custom: 'object' };
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'unknown',
 							retryable: false,
@@ -275,7 +288,7 @@ describe('GlobalExceptionFilter', () => {
 
 					const unknownException = 'string exception';
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'unknown',
 							retryable: false,
@@ -297,7 +310,7 @@ describe('GlobalExceptionFilter', () => {
 
 					const unknownException = { custom: 'object' };
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'unknown',
 							retryable: false,
@@ -318,7 +331,7 @@ describe('GlobalExceptionFilter', () => {
 				it('should call errorCategorizer for each exception type', () => {
 					let categorizerCalled = false;
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						categorizerCalled = true;
 						return {
 							type: 'TEST_TYPE',
@@ -341,7 +354,7 @@ describe('GlobalExceptionFilter', () => {
 						loggedData = data;
 					};
 
-					mockErrorCategorizer.categorizeError = function() {
+					mockErrorCategorizer.CategorizeError = function() {
 						return {
 							type: 'TEST_ERROR_TYPE',
 							retryable: true,
@@ -381,7 +394,7 @@ describe('GlobalExceptionFilter', () => {
 					let sanitizedCalled = false;
 					let sanitizeInput: any = null;
 
-					mockErrorSanitizer.sanitizeErrorResponse = function(input: any, isDev: boolean) {
+					mockErrorSanitizer.SanitizeErrorResponse = function(input: any, isDev: boolean) {
 						sanitizedCalled = true;
 						sanitizeInput = { input, isDev };
 						return input;

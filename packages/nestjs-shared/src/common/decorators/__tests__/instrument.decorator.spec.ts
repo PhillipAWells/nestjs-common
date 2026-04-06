@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Instrument, InstrumentOptions, InstrumentationRegistryHolder } from '../instrument.decorator.js';
+import { Instrument, IInstrumentOptions, InstrumentationRegistryHolder } from '../instrument.decorator.js';
 import type { InstrumentationRegistry } from '../../registry/instrumentation-registry.js';
 
 /**
@@ -11,17 +11,17 @@ describe('Instrument Decorator', () => {
 	beforeEach(() => {
 		// Create a mock registry
 		mockRegistry = {
-			registerDescriptor: vi.fn(),
-			recordMetric: vi.fn(),
+			RegisterDescriptor: vi.fn(),
+			RecordMetric: vi.fn(),
 		};
 
 		// Set the mock registry in the holder
-		InstrumentationRegistryHolder.setInstance(mockRegistry as InstrumentationRegistry);
+		InstrumentationRegistryHolder.SetInstance(mockRegistry as InstrumentationRegistry);
 	});
 
 	afterEach(() => {
 		// Clear the registry after each test
-		InstrumentationRegistryHolder.setInstance(null as any);
+		InstrumentationRegistryHolder.SetInstance(null as any);
 	});
 
 	describe('basic functionality', () => {
@@ -37,14 +37,14 @@ describe('Instrument Decorator', () => {
 			const result = service.testMethod();
 
 			expect(result).toBe('result');
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_method_duration_seconds',
 					type: 'histogram',
 					unit: 'seconds',
 				}),
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith(
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith(
 				'test_method_duration_seconds',
 				expect.any(Number),
 				{},
@@ -64,14 +64,14 @@ describe('Instrument Decorator', () => {
 			const result = await service.testAsyncMethod();
 
 			expect(result).toBe('result');
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_async_method_duration_seconds',
 					type: 'histogram',
 					unit: 'seconds',
 				}),
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith(
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith(
 				'test_async_method_duration_seconds',
 				expect.any(Number),
 				{},
@@ -89,13 +89,13 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_method_success',
 					type: 'counter',
 				}),
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_method_success', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_method_success', 1, {});
 		});
 
 		it('should record error counters on exception', () => {
@@ -109,13 +109,13 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 
 			expect(() => service.testMethod()).toThrow('Test error');
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_method_errors',
 					type: 'counter',
 				}),
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_method_errors', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_method_errors', 1, {});
 		});
 
 		it('should record error counters on promise rejection', async () => {
@@ -136,13 +136,13 @@ describe('Instrument Decorator', () => {
 				expect((error as Error).message).toBe('Test error');
 			}
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_async_method_errors',
 					type: 'counter',
 				}),
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_async_method_errors', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_async_method_errors', 1, {});
 		});
 	});
 
@@ -151,7 +151,7 @@ describe('Instrument Decorator', () => {
 			class TestService {
 				@Instrument({
 					timing: 'test_method_duration_seconds',
-					labels: { service: 'test', version: '1' },
+					Labels: { service: 'test', version: '1' },
 				})
 				testMethod(): string {
 					return 'result';
@@ -161,7 +161,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith(
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith(
 				'test_method_duration_seconds',
 				expect.any(Number),
 				{ service: 'test', version: '1' },
@@ -172,7 +172,7 @@ describe('Instrument Decorator', () => {
 			class TestService {
 				@Instrument({
 					timing: 'test_method_duration_seconds',
-					labels: (...args: unknown[]) => ({ userId: String(args[0]) }),
+					Labels: (...args: unknown[]) => ({ userId: String(args[0]) }),
 				})
 				testMethod(id: string): string {
 					return id;
@@ -182,7 +182,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod('user-123');
 
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith(
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith(
 				'test_method_duration_seconds',
 				expect.any(Number),
 				{ userId: 'user-123' },
@@ -193,7 +193,7 @@ describe('Instrument Decorator', () => {
 			class TestService {
 				@Instrument({
 					timing: 'test_method_duration_seconds',
-					labels: { service: 'test', version: '1' },
+					Labels: { service: 'test', version: '1' },
 				})
 				testMethod(): string {
 					return 'result';
@@ -203,7 +203,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_method_duration_seconds',
 					labelNames: expect.arrayContaining(['service', 'version']),
@@ -224,13 +224,13 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('counter1', 1, {});
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('counter2', 1, {});
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('counter3', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('counter1', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('counter2', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('counter3', 1, {});
 		});
 
 		it('should record timing and success counters together', () => {
-			const options: InstrumentOptions = {
+			const options: IInstrumentOptions = {
 				timing: 'test_duration_seconds',
 				counters: ['test_success'],
 			};
@@ -245,16 +245,16 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith(
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith(
 				'test_duration_seconds',
 				expect.any(Number),
 				{},
 			);
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_success', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_success', 1, {});
 		});
 
 		it('should handle success and error counters separately', () => {
-			const options: InstrumentOptions = {
+			const options: IInstrumentOptions = {
 				counters: ['test_success'],
 				errorCounters: ['test_error'],
 			};
@@ -274,20 +274,20 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 
 			service.testMethodSuccess();
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_success', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_success', 1, {});
 
 			try {
 				service.testMethodError();
 			} catch {
 				// Expected
 			}
-			expect(mockRegistry.recordMetric).toHaveBeenCalledWith('test_error', 1, {});
+			expect(mockRegistry.RecordMetric).toHaveBeenCalledWith('test_error', 1, {});
 		});
 	});
 
 	describe('registry availability', () => {
 		it('should gracefully handle when registry is not set', () => {
-			InstrumentationRegistryHolder.setInstance(null as any);
+			InstrumentationRegistryHolder.SetInstance(null as any);
 
 			class TestService {
 				@Instrument({ timing: 'test_method_duration_seconds' })
@@ -303,7 +303,7 @@ describe('Instrument Decorator', () => {
 		});
 
 		it('should use registry when it becomes available', () => {
-			InstrumentationRegistryHolder.setInstance(null as any);
+			InstrumentationRegistryHolder.SetInstance(null as any);
 
 			class TestService {
 				@Instrument({ timing: 'test_method_duration_seconds' })
@@ -318,12 +318,12 @@ describe('Instrument Decorator', () => {
 			service.testMethod();
 
 			// Now set the registry
-			InstrumentationRegistryHolder.setInstance(mockRegistry as InstrumentationRegistry);
+			InstrumentationRegistryHolder.SetInstance(mockRegistry as InstrumentationRegistry);
 
 			// Second call with registry
 			service.testMethod();
 
-			expect(mockRegistry.recordMetric).toHaveBeenCalled();
+			expect(mockRegistry.RecordMetric).toHaveBeenCalled();
 		});
 	});
 
@@ -376,7 +376,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			const [[, recordedDuration]] = (mockRegistry.recordMetric as any).mock.calls;
+			const [[, recordedDuration]] = (mockRegistry.RecordMetric as any).mock.calls;
 
 			// Should be a small positive number in seconds
 			expect(typeof recordedDuration).toBe('number');
@@ -397,7 +397,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_duration_seconds',
 					type: 'histogram',
@@ -418,7 +418,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_counter',
 					type: 'counter',
@@ -443,7 +443,7 @@ describe('Instrument Decorator', () => {
 				// Expected
 			}
 
-			expect(mockRegistry.registerDescriptor).toHaveBeenCalledWith(
+			expect(mockRegistry.RegisterDescriptor).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: 'test_error_counter',
 					type: 'counter',
@@ -456,7 +456,7 @@ describe('Instrument Decorator', () => {
 			class TestService {
 				@Instrument({
 					timing: 'test_duration_seconds',
-					labels: { service: 'test', method: 'get' },
+					Labels: { service: 'test', method: 'get' },
 				})
 				testMethod(): string {
 					return 'result';
@@ -466,7 +466,7 @@ describe('Instrument Decorator', () => {
 			const service = new TestService();
 			service.testMethod();
 
-			const { calls } = (mockRegistry.registerDescriptor as any).mock;
+			const { calls } = (mockRegistry.RegisterDescriptor as any).mock;
 			const histogramCall = calls.find((call: any) => call[0].name === 'test_duration_seconds');
 
 			expect(histogramCall[0].labelNames).toEqual(expect.arrayContaining(['service', 'method']));

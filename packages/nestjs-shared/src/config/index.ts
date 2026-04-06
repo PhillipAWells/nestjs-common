@@ -5,13 +5,13 @@ export { ConfigModule } from './config.module.js';
 
 // Types
 export type {
-	AppConfig,
-	DatabaseConfig,
-	CacheConfig,
-	AuthConfig,
-	ValidationResult,
-	ConfigSchema,
-	EnvironmentOptions,
+	IAppConfig,
+	IDatabaseConfig,
+	ICacheConfig,
+	IAuthConfig,
+	IValidationResult,
+	IConfigSchema,
+	IEnvironmentOptions,
 } from './config.types.js';
 
 // Validation utilities

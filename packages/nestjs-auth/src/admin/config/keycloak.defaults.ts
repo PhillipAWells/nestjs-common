@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import type { KeycloakAdminConfig } from './keycloak.config.js';
+import type { IKeycloakAdminConfig } from './keycloak.config.js';
 import { KEYCLOAK_ALL_SCOPES } from '../permissions/keycloak-admin.permissions.js';
 
 // Keycloak timeout constants (in milliseconds)
@@ -14,7 +14,7 @@ const KEYCLOAK_TIMEOUT_30_SECONDS_MULTIPLIER = 30;
  * Do not commit credentials to source code.
  */
 
-export const KeycloakAdminDefaults: KeycloakAdminConfig = {
+export const KeycloakAdminDefaults: IKeycloakAdminConfig = {
 	enabled: false,
 	baseUrl: 'http://localhost:8080',
 	realmName: 'master',
@@ -30,8 +30,8 @@ export const KeycloakAdminDefaults: KeycloakAdminConfig = {
 	},
 };
 
-export function validateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
-	const schema = Joi.object({
+export function ValidateKeycloakAdminConfig(config: IKeycloakAdminConfig): void {
+	const Schema = Joi.object({
 		enabled: Joi.boolean().required(),
 		baseUrl: Joi.string()
 			.uri({ scheme: ['http', 'https'] })
@@ -61,7 +61,7 @@ export function validateKeycloakAdminConfig(config: KeycloakAdminConfig): void {
 			.optional(),
 	});
 
-	const { error } = schema.validate(config);
+	const { error } = Schema.validate(config);
 	if (error) {
 		throw new Error(`Keycloak configuration validation failed: ${error.details.map((d) => d.message).join(', ')}`);
 	}

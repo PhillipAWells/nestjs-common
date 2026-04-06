@@ -4,7 +4,7 @@ import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
 import { ConfigService } from '../../config/config.service.js';
 import { AuditLoggerService } from '../services/audit-logger.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Optional API key guard for the /metrics endpoint
@@ -30,7 +30,7 @@ import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
  *   or X-API-Key header. Format: "Bearer <api-key>" or header "X-API-Key: <api-key>"
  */
 @Injectable()
-export class MetricsGuard implements CanActivate, LazyModuleRefService {
+export class MetricsGuard implements CanActivate, ILazyModuleRefService {
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -49,8 +49,8 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 		}
 	}
 
-	private get metricsApiKey(): string | undefined {
-		return this.Config.get('METRICS_API_KEY');
+	private get MetricsApiKey(): string | undefined {
+		return this.Config.Get('METRICS_API_KEY');
 	}
 
 	/**
@@ -59,20 +59,20 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 	 * @param b Second string to compare
 	 * @returns true if strings are equal, false otherwise
 	 */
-	private timingSafeCompare(a: string, b: string | undefined): boolean {
+	private TimingSafeCompare(a: string, b: string | undefined): boolean {
 		if (!b) {
 			return false;
 		}
 
 		try {
-			const bufferA = Buffer.from(a);
-			const bufferB = Buffer.from(b);
+			const BufferA = Buffer.from(a);
+			const BufferB = Buffer.from(b);
 
-			if (bufferA.length !== bufferB.length) {
+			if (BufferA.length !== BufferB.length) {
 				return false;
 			}
 
-			return timingSafeEqual(bufferA, bufferB);
+			return timingSafeEqual(BufferA, BufferB);
 		} catch {
 			return false;
 		}
@@ -80,24 +80,24 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 
 	public canActivate(context: ExecutionContext): boolean {
 		// If no API key is configured, allow all requests
-		if (!this.metricsApiKey) {
+		if (!this.MetricsApiKey) {
 			return true;
 		}
 
-		const request = context.switchToHttp().getRequest<Request>();
+		const Request = context.switchToHttp().getRequest<Request>();
 
 		// Check Authorization header (Bearer token)
-		const authHeader = request.headers.authorization;
-		if (authHeader) {
-			const [scheme, token] = authHeader.split(' ');
-			if (scheme?.toLowerCase() === 'bearer' && token && this.timingSafeCompare(token, this.metricsApiKey)) {
-				this.AuditLogger?.logSecurityEvent({
+		const AuthHeader = Request.headers.authorization;
+		if (AuthHeader) {
+			const [Scheme, Token] = AuthHeader.split(' ');
+			if (Scheme?.toLowerCase() === 'bearer' && Token && this.TimingSafeCompare(Token, this.MetricsApiKey)) {
+				this.AuditLogger?.LogSecurityEvent({
 					timestamp: new Date(),
 					action: 'metrics_access',
 					resource: '/metrics',
 					result: 'success',
-					ipAddress: request.ip,
-					userAgent: request.get('User-Agent'),
+					ipAddress: Request.ip,
+					userAgent: Request.get('IUser-Agent'),
 					details: { authMethod: 'bearer' },
 				});
 				return true;
@@ -105,15 +105,15 @@ export class MetricsGuard implements CanActivate, LazyModuleRefService {
 		}
 
 		// Check X-API-Key header
-		const apiKeyHeader = request.headers['x-api-key'] as string | undefined;
-		if (apiKeyHeader && this.timingSafeCompare(apiKeyHeader, this.metricsApiKey)) {
-			this.AuditLogger?.logSecurityEvent({
+		const ApiKeyHeader = Request.headers['x-api-key'] as string | undefined;
+		if (ApiKeyHeader && this.TimingSafeCompare(ApiKeyHeader, this.MetricsApiKey)) {
+			this.AuditLogger?.LogSecurityEvent({
 				timestamp: new Date(),
 				action: 'metrics_access',
 				resource: '/metrics',
 				result: 'success',
-				ipAddress: request.ip,
-				userAgent: request.get('User-Agent'),
+				ipAddress: Request.ip,
+				userAgent: Request.get('IUser-Agent'),
 				details: { authMethod: 'x-api-key' },
 			});
 			return true;

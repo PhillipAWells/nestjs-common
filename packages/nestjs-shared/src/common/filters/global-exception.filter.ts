@@ -9,13 +9,13 @@ import { Response, Request } from 'express';
 import { BaseApplicationError } from '../errors/base-application-error.js';
 import { AppLogger } from '../services/logger.service.js';
 import { ErrorSanitizerService } from '../services/error-sanitizer.service.js';
-import { ErrorCategorizerService, type ErrorCategory } from '../services/error-categorizer.service.js';
-import { LazyModuleRefService } from '../utils/lazy-getter.types.js';
+import { ErrorCategorizerService, type IErrorCategory } from '../services/error-categorizer.service.js';
+import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
  * Standard error response structure for all exceptions.
  */
-export interface ErrorResponseBody {
+export interface IErrorResponseBody {
 	success: false;
 	error: {
 		code: string;
@@ -63,7 +63,7 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  *   success: false,
  *   error: {
  *     code: 'USER_NOT_FOUND',
- *     message: 'User with ID 123 not found',
+ *     message: 'IUser with ID 123 not found',
  *     timestamp: '2024-01-01T12:00:00.000Z',
  *     context: { userId: '123' },
  *     stack: '...'
@@ -75,17 +75,17 @@ const DEV_ENVIRONMENTS = new Set(['development', 'dev', 'local', 'test']);
  *   success: false,
  *   error: {
  *     code: 'USER_NOT_FOUND',
- *     message: 'User with ID 123 not found',
+ *     message: 'IUser with ID 123 not found',
  *     timestamp: '2024-01-01T12:00:00.000Z'
  *   }
  * }
  * ```
  */
 @Catch(BaseApplicationError, Error)
-export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefService {
-	private _logger: AppLogger | undefined;
-	private _errorSanitizer: ErrorSanitizerService | undefined;
-	private _errorCategorizer: ErrorCategorizerService | undefined;
+export class GlobalExceptionFilter implements ExceptionFilter, ILazyModuleRefService {
+	private _Logger: AppLogger | undefined;
+	private _ErrorSanitizer: ErrorSanitizerService | undefined;
+	private _ErrorCategorizer: ErrorCategorizerService | undefined;
 	public readonly Module: ModuleRef;
 
 	constructor(module: ModuleRef) {
@@ -93,78 +93,78 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 	}
 
 	private get Logger(): AppLogger {
-		this._logger ??= this.Module.get<AppLogger>(AppLogger);
-		return this._logger;
+		this._Logger ??= this.Module.get<AppLogger>(AppLogger);
+		return this._Logger;
 	}
 
 	private get ErrorSanitizer(): ErrorSanitizerService {
-		this._errorSanitizer ??= this.Module.get<ErrorSanitizerService>(ErrorSanitizerService);
-		return this._errorSanitizer;
+		this._ErrorSanitizer ??= this.Module.get<ErrorSanitizerService>(ErrorSanitizerService);
+		return this._ErrorSanitizer;
 	}
 
 	private get ErrorCategorizer(): ErrorCategorizerService {
-		this._errorCategorizer ??= this.Module.get<ErrorCategorizerService>(ErrorCategorizerService);
-		return this._errorCategorizer;
+		this._ErrorCategorizer ??= this.Module.get<ErrorCategorizerService>(ErrorCategorizerService);
+		return this._ErrorCategorizer;
 	}
 
 	public catch(exception: unknown, host: ArgumentsHost): void {
 		// Handle regular HTTP requests
-		const ctx = host.switchToHttp();
-		const response = ctx.getResponse<Response>();
-		const request = ctx.getRequest<Request>();
+		const Ctx = host.switchToHttp();
+		const Response = Ctx.getResponse<Response>();
+		const Request = Ctx.getRequest<Request>();
 
-		const isProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
-		const isDevelopment = !isProduction;
+		const IsProduction = !DEV_ENVIRONMENTS.has(process.env['NODE_ENV'] ?? '');
+		const IsDevelopment = !IsProduction;
 
-		let status: number;
-		let errorResponse: ErrorResponseBody;
-		let errorCategory: ErrorCategory;
-		let errorTrace: string | undefined;
+		let Status: number;
+		let ErrorResponse: IErrorResponseBody;
+		let ErrorCategory: IErrorCategory;
+		let ErrorTrace: string | undefined;
 
 		// Standardize error response structure for all exception types
 		if (exception instanceof BaseApplicationError) {
 			// Standardized application error
-			status = exception.statusCode;
-			errorResponse = {
+			Status = exception.StatusCode;
+			ErrorResponse = {
 				success: false,
 				error: {
-					code: exception.code,
+					code: exception.Code,
 					message: exception.message,
-					timestamp: exception.timestamp.toISOString(),
-					...(isDevelopment ? {
-						context: exception.context,
+					timestamp: exception.Timestamp.toISOString(),
+					...(IsDevelopment ? {
+						context: exception.Context,
 						stack: exception.stack,
 					} : {}),
 				},
 			};
-			errorCategory = this.ErrorCategorizer.categorizeError(exception);
-			errorTrace = isDevelopment ? exception.stack : undefined;
+			ErrorCategory = this.ErrorCategorizer.CategorizeError(exception);
+			ErrorTrace = IsDevelopment ? exception.stack : undefined;
 		} else if (exception instanceof Error) {
 			// Generic Error
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
-			errorResponse = {
+			Status = HttpStatus.INTERNAL_SERVER_ERROR;
+			ErrorResponse = {
 				success: false,
 				error: {
 					code: 'INTERNAL_SERVER_ERROR',
-					message: isDevelopment ? exception.message : 'An unexpected error occurred',
+					message: IsDevelopment ? exception.message : 'An unexpected error occurred',
 					timestamp: new Date().toISOString(),
-					...(isDevelopment ? { stack: exception.stack } : {}),
+					...(IsDevelopment ? { stack: exception.stack } : {}),
 				},
 			};
-			errorCategory = this.ErrorCategorizer.categorizeError(exception);
-			errorTrace = isDevelopment ? exception.stack : undefined;
+			ErrorCategory = this.ErrorCategorizer.CategorizeError(exception);
+			ErrorTrace = IsDevelopment ? exception.stack : undefined;
 		} else {
 			// Unknown exception type
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
-			errorResponse = {
+			Status = HttpStatus.INTERNAL_SERVER_ERROR;
+			ErrorResponse = {
 				success: false,
 				error: {
 					code: 'UNKNOWN_ERROR',
-					message: isDevelopment ? String(exception) : 'An unexpected error occurred',
+					message: IsDevelopment ? String(exception) : 'An unexpected error occurred',
 					timestamp: new Date().toISOString(),
 				},
 			};
-			errorCategory = {
+			ErrorCategory = {
 				type: 'permanent',
 				retryable: false,
 				strategy: 'fail',
@@ -172,42 +172,42 @@ export class GlobalExceptionFilter implements ExceptionFilter, LazyModuleRefServ
 		}
 
 		// Log the error with categorization
-		this.Logger.error('Global exception caught', errorTrace, undefined, {
-			message: errorResponse.error.message,
-			status,
-			errorType: errorCategory.type,
-			retryable: errorCategory.retryable,
-			strategy: errorCategory.strategy,
-			backoffMs: errorCategory.backoffMs,
-			url: request.url,
-			method: request.method,
-			userAgent: request.get('User-Agent'),
-			ip: request.ip,
+		this.Logger.error('Global exception caught', ErrorTrace, undefined, {
+			message: ErrorResponse.error.message,
+			status: Status,
+			errorType: ErrorCategory.type,
+			retryable: ErrorCategory.retryable,
+			strategy: ErrorCategory.strategy,
+			backoffMs: ErrorCategory.backoffMs,
+			url: Request.url,
+			method: Request.method,
+			userAgent: Request.get('User-Agent'),
+			ip: Request.ip,
 		});
 
 		// Sanitize error response for production
 		// Pass the nested error object (which has .message, .stack, .context) to the sanitizer,
 		// then reconstruct the full response envelope with the sanitized inner object.
-		const sanitizedInner = this.ErrorSanitizer.sanitizeErrorResponse(
+		const SanitizedInner = this.ErrorSanitizer.SanitizeErrorResponse(
 			{
-				message: errorResponse.error.message,
-				statusCode: status,
-				stack: errorResponse.error.stack,
-				context: errorResponse.error.context,
+				message: ErrorResponse.error.message,
+				statusCode: Status,
+				stack: ErrorResponse.error.stack,
+				context: ErrorResponse.error.context,
 			},
-			isDevelopment,
+			IsDevelopment,
 		);
-		const sanitizedError: ErrorResponseBody = {
+		const SanitizedError: IErrorResponseBody = {
 			success: false,
 			error: {
-				code: errorResponse.error.code,
-				message: sanitizedInner.message as string,
-				timestamp: errorResponse.error.timestamp,
-				...(isDevelopment && sanitizedInner.context ? { context: sanitizedInner.context as Record<string, any> } : {}),
-				...(isDevelopment && sanitizedInner.stack ? { stack: sanitizedInner.stack as string } : {}),
+				code: ErrorResponse.error.code,
+				message: SanitizedInner.message as string,
+				timestamp: ErrorResponse.error.timestamp,
+				...(IsDevelopment && SanitizedInner.context ? { context: SanitizedInner.context as Record<string, any> } : {}),
+				...(IsDevelopment && SanitizedInner.stack ? { stack: SanitizedInner.stack as string } : {}),
 			},
 		};
 
-		response.status(status).json(sanitizedError);
+		Response.status(Status).json(SanitizedError);
 	}
 }
