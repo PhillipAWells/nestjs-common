@@ -2340,13 +2340,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keycloak/keycloak-admin-client@npm:^26.5.6":
-  version: 26.5.6
-  resolution: "@keycloak/keycloak-admin-client@npm:26.5.6"
+"@keycloak/keycloak-admin-client@npm:^26.5.7":
+  version: 26.5.7
+  resolution: "@keycloak/keycloak-admin-client@npm:26.5.7"
   dependencies:
     camelize-ts: "npm:^3.0.0"
     url-template: "npm:^3.1.1"
-  checksum: 10c0/2db755b5842efa5b39f6f637a8d6c83c539344a287a86887d7b175003489f05777980517c2296d6857f62c4a68184381a315f40db6cdabe0fb3b52e9eeb6e512
+  checksum: 10c0/0f9ccd0e86e336178e315a1d910c86b0040e6bfda2d128fd20811e3b958caedb733242c6d71b3a92de7647612b9c75cae99fc53a365d5aa63c4ca03b1a63a44f
   languageName: node
   linkType: hard
 
@@ -4114,7 +4114,7 @@ __metadata:
   resolution: "@pawells/nestjs-common-workspace@workspace:."
   dependencies:
     "@eslint/js": "npm:^10.0.1"
-    "@keycloak/keycloak-admin-client": "npm:^26.5.6"
+    "@keycloak/keycloak-admin-client": "npm:^26.5.7"
     "@nats-io/jetstream": "npm:^3.3.1"
     "@nats-io/transport-node": "npm:^3.3.1"
     "@nestjs/common": "npm:^11.1.17"
