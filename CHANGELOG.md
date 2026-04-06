@@ -1,3 +1,17 @@
+## 2.0.1 (2026-04-06)
+
+### 🩹 Fixes
+
+- **nestjs-open-telemetry:** add log/error/warn aliases to OpenTelemetryLogger for LoggerService compat ([e29dd63](https://github.com/PhillipAWells/nestjs-common/commit/e29dd63))
+- **nestjs-shared:** add log/error/warn aliases to NestLoggerAdapter for LoggerService compat ([055d916](https://github.com/PhillipAWells/nestjs-common/commit/055d916))
+- **nestjs-shared:** suppress naming-convention lint warnings on LoggerService aliases ([8ce1377](https://github.com/PhillipAWells/nestjs-common/commit/8ce1377))
+- **nx:** add dependsOn ^build to test target to fix CI failure ([cd3921c](https://github.com/PhillipAWells/nestjs-common/commit/cd3921c))
+- **publish:** rewrite workspace:* protocols before publishing ([f44b25c](https://github.com/PhillipAWells/nestjs-common/commit/f44b25c))
+
+### ❤️ Thank You
+
+- Aaron Wells @PhillipAWells
+
 # 2.0.0 (2026-04-06)
 
 ### 🚀 Features
