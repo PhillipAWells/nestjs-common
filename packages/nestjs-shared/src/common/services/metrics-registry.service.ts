@@ -95,6 +95,7 @@ export class MetricsRegistryService implements OnModuleInit, ILazyModuleRefServi
 		}
 	}
 
+	/** NestJS lifecycle hook: logs whether metrics collection is enabled or disabled at startup. */
 	public onModuleInit(): void {
 		if (!this.Enabled) {
 			this.Logger.info('Prometheus metrics disabled');

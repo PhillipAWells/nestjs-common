@@ -147,8 +147,15 @@ export class ErrorSanitizerService implements ILazyModuleRefService {
 	}
 
 	/**
-	 * Sanitize error response for client
-	 * Removes sensitive information like stack traces, file paths, etc.
+	 * Sanitize an error object for sending to a client.
+	 *
+	 * Always present in the result: `message` (redacted), `statusCode`, `timestamp`.
+	 * In development (`isDevelopment = true`): `stack` and sanitized `context` are also included.
+	 * In production: stack traces and context are omitted entirely.
+	 *
+	 * @param error - Raw error object, typically from a caught exception or `BaseApplicationError`.
+	 * @param isDevelopment - When `true`, includes stack trace and context in the response.
+	 * @returns Sanitized response object safe to serialize and send to the client.
 	 */
 	public SanitizeErrorResponse(error: Record<string, any>, isDevelopment: boolean = false): Record<string, any> {
 		const Sanitized: Record<string, any> = {

@@ -13,15 +13,23 @@ import { ErrorCategorizerService, type IErrorCategory } from '../services/error-
 import { ILazyModuleRefService } from '../utils/lazy-getter.types.js';
 
 /**
- * Standard error response structure for all exceptions.
+ * Standard error response envelope returned by {@link GlobalExceptionFilter}.
+ * `success` is always `false`; the nested `error` object carries the details.
+ * In production, `context` and `stack` are omitted for security.
  */
 export interface IErrorResponseBody {
+	/** Always `false` to signal an error response. */
 	success: false;
 	error: {
+		/** Machine-readable error code for programmatic handling (e.g. `"USER_NOT_FOUND"`). */
 		code: string;
+		/** Human-readable error message. Sanitized in production. */
 		message: string;
+		/** ISO 8601 timestamp of the error occurrence. */
 		timestamp: string;
+		/** Additional context data. Included only in non-production environments. */
 		context?: Record<string, any>;
+		/** Stack trace. Included only in non-production environments. */
 		stack?: string;
 	};
 }
