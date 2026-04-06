@@ -91,7 +91,7 @@ export class TagFormatter {
 	 *
 	 * @example
 	 * ```typescript
-	 * TagFormatter.format({ userId: '123', userName: 'john' });
+	 * TagFormatter.Format({ userId: '123', userName: 'john' });
 	 * // Returns { user_id: '123', user_name: 'john' }
 	 * ```
 	 */
@@ -118,7 +118,7 @@ export class TagFormatter {
 	 *
 	 * @example
 	 * ```typescript
-	 * TagFormatter.merge({ env: 'prod' }, { region: 'us-east-1' });
+	 * TagFormatter.Merge({ env: 'prod' }, { region: 'us-east-1' });
 	 * // Returns { env: 'prod', region: 'us-east-1' }
 	 * ```
 	 */
@@ -138,7 +138,7 @@ export class TagFormatter {
 	 *
 	 * @example
 	 * ```typescript
-	 * TagFormatter.sanitize({ userId: '123', empty: '', token: 'verylong...' });
+	 * TagFormatter.Sanitize({ userId: '123', empty: '', token: 'verylong...' });
 	 * // Removes 'empty', truncates 'token' if needed
 	 * ```
 	 */
@@ -170,7 +170,7 @@ export class MetricAggregator {
 	 *
 	 * @example
 	 * ```typescript
-	 * const avgMs = MetricAggregator.averageDuration([
+	 * const avgMs = MetricAggregator.AverageDuration([
 	 *   { duration: 100 },
 	 *   { duration: 200 },
 	 * ]);
@@ -195,7 +195,7 @@ export class MetricAggregator {
 	 *
 	 * @example
 	 * ```typescript
-	 * const p95 = MetricAggregator.percentile(metrics, 95);
+	 * const p95 = MetricAggregator.Percentile(metrics, 95);
 	 * // 95% of requests completed in <= p95 milliseconds
 	 * ```
 	 */
@@ -220,7 +220,7 @@ export class MetricAggregator {
 	 *
 	 * @example
 	 * ```typescript
-	 * const grouped = MetricAggregator.groupByTags(metrics, ['operation']);
+	 * const grouped = MetricAggregator.GroupByTags(metrics, ['operation']);
 	 * // grouped['select'] contains all metrics with operation: 'select'
 	 * ```
 	 */
@@ -261,7 +261,7 @@ export class ProfilingErrorHandler {
 	 *
 	 * @example
 	 * ```typescript
-	 * if (ProfilingErrorHandler.isRecoverableError(error)) {
+	 * if (ProfilingErrorHandler.IsRecoverableError(error)) {
 	 *   // Schedule retry
 	 * }
 	 * ```
@@ -293,7 +293,7 @@ export class ProfilingErrorHandler {
 	 *
 	 * @example
 	 * ```typescript
-	 * const message = ProfilingErrorHandler.formatError(error);
+	 * const message = ProfilingErrorHandler.FormatError(error);
 	 * logger.error(message); // Safe to expose to users
 	 * ```
 	 */
@@ -329,7 +329,7 @@ export class ProfilingErrorHandler {
 	 *
 	 * @example
 	 * ```typescript
-	 * const delay = ProfilingErrorHandler.getRetryDelay(error, 2);
+	 * const delay = ProfilingErrorHandler.GetRetryDelay(error, 2);
 	 * // Returns exponential backoff: min(100 * 2^2, 10000) + random jitter
 	 * ```
 	 */
@@ -405,7 +405,7 @@ export function FormatDuration(ms: number): string {
  * @example
  * ```typescript
  * // Set env: PYROSCOPE_ENABLED=true
- * if (isProfilingEnabled()) {
+ * if (IsProfilingEnabled()) {
  *   // Enable profiling
  * }
  * ```

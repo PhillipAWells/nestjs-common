@@ -34,7 +34,7 @@ export interface IPyroscopeModuleOptions {
  *
  * @example
  * ```typescript
- * PyroscopeModule.forRootAsync({
+ * PyroscopeModule.ForRootAsync({
  *   imports: [ConfigModule],
  *   useFactory: (configService: ConfigService) => ({
  *     enabled: configService.get('PROFILING_ENABLED') === 'true',
