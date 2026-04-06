@@ -22,37 +22,71 @@ export interface IKeycloakModuleOptions {
 	issuer?: string;
 }
 
+/**
+ * Raw claims decoded from a Keycloak-issued JWT.
+ *
+ * These are the standard OpenID Connect and Keycloak-specific claims present in
+ * access tokens. Additional custom claims added via Keycloak mappers are accessible
+ * through the index signature.
+ */
 export interface IKeycloakTokenClaims {
+	/** Subject — the Keycloak user ID (UUID) */
 	sub: string;
+	/** Token issuer URL — must match `authServerUrl` (or `issuer` if overridden) */
 	iss: string;
+	/** Intended audience(s) — must include this service's `clientId` */
 	aud: string | string[];
+	/** Expiration time (Unix seconds) */
 	exp: number;
+	/** Issued-at time (Unix seconds) */
 	iat: number;
+	/** Unique token ID */
 	jti?: string;
+	/** Authorized party — the client that requested the token */
 	azp?: string;
+	/** Keycloak session state identifier */
 	session_state?: string;
+	/** User email address */
 	email?: string;
+	/** Whether the user's email address has been verified */
 	email_verified?: boolean;
+	/** Preferred display username */
 	preferred_username?: string;
+	/** User's full name */
 	name?: string;
+	/** User's given (first) name */
 	given_name?: string;
+	/** User's family (last) name */
 	family_name?: string;
+	/** Realm-level role assignments */
 	realm_access?: { roles: string[] };
+	/** Client-level role assignments, keyed by client ID */
 	resource_access?: Record<string, { roles: string[] }>;
+	/** Space-separated OAuth 2.0 scopes granted to the token */
 	scope?: string;
+	/** Additional custom claims from Keycloak mappers */
 	[key: string]: unknown;
 }
 
+/**
+ * Normalised user identity extracted from a validated Keycloak token.
+ *
+ * Populated by `KeycloakTokenValidationService.ExtractUser` and attached to
+ * `request.user` by `JwtAuthGuard`. Inject via `@CurrentUser()` in controllers
+ * and resolvers.
+ */
 export interface IKeycloakUser {
-	/** The user's unique ID (sub claim) */
+	/** The user's unique Keycloak ID (`sub` claim) */
 	id: string;
+	/** User's email address (`email` claim), if present in the token */
 	email?: string;
-	/** preferred_username claim */
+	/** Preferred display username (`preferred_username` claim) */
 	username?: string;
+	/** User's full name (`name` claim) */
 	name?: string;
-	/** Roles from realm_access.roles */
+	/** Realm-level roles from `realm_access.roles` */
 	realmRoles: string[];
-	/** Roles from resource_access[clientId].roles */
+	/** Client-level roles from `resource_access[clientId].roles` */
 	clientRoles: string[];
 }
 

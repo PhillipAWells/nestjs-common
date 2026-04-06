@@ -5,16 +5,25 @@ import { AppLogger } from './logger.service.js';
 import { EscapeNewlines } from '../utils/sanitization.utils.js';
 
 /**
- * Audit log entry for security events.
+ * Structured audit log entry for security events.
+ * Passed to {@link AuditLoggerService.LogSecurityEvent} for custom event logging.
  */
 export interface IAuditLogEntry {
+	/** Timestamp of the event. Overwritten with the current time if omitted. */
 	timestamp: Date;
+	/** Authenticated user ID associated with the event, if available. */
 	userId?: string;
+	/** Name of the action performed (e.g. `"delete_user"`, `"password_change"`). */
 	action: string;
+	/** Resource the action targeted (e.g. `"users/123"`, `"documents"`). */
 	resource: string;
+	/** Outcome of the action. */
 	result: 'success' | 'failure';
+	/** Additional event-specific details. */
 	details?: Record<string, any>;
+	/** Client IP address from which the action originated. */
 	ipAddress?: string;
+	/** User-Agent header string from the originating request. */
 	userAgent?: string;
 }
 

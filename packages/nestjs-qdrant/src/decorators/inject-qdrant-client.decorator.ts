@@ -11,7 +11,7 @@ import { GetQdrantClientToken } from '../qdrant.constants.js';
  * Use this decorator on constructor parameters to receive the QdrantClient via dependency injection.
  *
  * Supports both default and named client instances for multi-tenant scenarios.
- * The client is resolved using getQdrantClientToken() which maps the name to the appropriate token.
+ * The client is resolved using `GetQdrantClientToken()` which maps the name to the appropriate token.
  *
  * @param name - Optional client name for named client instances. If not provided, uses the default client.
  * @returns NestJS Inject decorator configured with the appropriate client token

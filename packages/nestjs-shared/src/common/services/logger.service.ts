@@ -10,11 +10,14 @@ import { MAX_SANITIZE_DEPTH } from '../utils/sanitization.utils.js';
 
 /**
  * Options object for logging methods.
- * Provides a cleaner alternative to positional parameters.
+ * Provides a named-parameter alternative to positional `(message, context?, metadata?)` signatures.
  */
 export interface ILogOptions {
+	/** Logger context string, e.g. `"AuthService"`. Overrides the instance-level context. */
 	context?: string;
+	/** Stack trace string, used by `error()` and `fatal()` to attach trace information. */
 	trace?: string;
+	/** Arbitrary structured metadata to attach to the log entry. Sensitive keys are redacted. */
 	metadata?: ILogMetadata;
 }
 

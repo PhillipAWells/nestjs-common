@@ -19,7 +19,7 @@ import { PYROSCOPE_CONFIG_TOKEN } from './constants.js';
  *
  * @example
  * ```typescript
- * PyroscopeModule.forRoot({
+ * PyroscopeModule.ForRoot({
  *   isGlobal: true,
  *   config: {
  *     enabled: true,

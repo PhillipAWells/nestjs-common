@@ -35,7 +35,7 @@ import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
  *   @Get()
  *   check() {
  *     return this.health.check([
- *       () => this.profiling.check('profiling'),
+ *       () => this.profiling.Check('profiling'),
  *     ]);
  *   }
  * }
@@ -72,7 +72,7 @@ export class ProfilingHealthIndicator extends HealthIndicator {
 	 *
 	 * @example
 	 * ```typescript
-	 * const health = this.profiling.check('profiling');
+	 * const health = this.profiling.Check('profiling');
 	 * // Returns { profiling: { status: 'up', initialized: true, activeProfiles: 42 } }
 	 * ```
 	 */

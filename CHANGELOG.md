@@ -1,3 +1,22 @@
+## 2.0.2 (2026-04-06)
+
+### 📖 Documentation
+
+- **nestjs-shared:** fix README accuracy — correct method/type names, peer dep versions, add NestLoggerAdapter section ([a3eae50](https://github.com/PhillipAWells/nestjs-common/commit/a3eae50))
+- **nestjs-shared:** add JSDoc to ILogEntry, ILogMetadata, LogLevel, ILogOptions, IAuditLogEntry, IErrorResponseBody, and service lifecycle hooks ([a3eae50](https://github.com/PhillipAWells/nestjs-common/commit/a3eae50))
+- **nestjs-auth:** fix README accuracy — correct method/type/option names, peer dep versions, federated identity and event polling signatures ([e13602e](https://github.com/PhillipAWells/nestjs-common/commit/e13602e))
+- **nestjs-auth:** add JSDoc to IKeycloakTokenClaims, IKeycloakUser, IKeycloakAdminConfig, KeycloakAdminService, KeycloakHealthIndicator, WithRetry, and related types ([e13602e](https://github.com/PhillipAWells/nestjs-common/commit/e13602e))
+- **nestjs-open-telemetry:** fix README method casing; document LoggerService lowercase aliases alongside PascalCase primary methods ([f279253](https://github.com/PhillipAWells/nestjs-common/commit/f279253))
+- **nestjs-prometheus:** fix README method casing; expand path normalisation note as a security measure against unbounded metric cardinality ([ecf77cf](https://github.com/PhillipAWells/nestjs-common/commit/ecf77cf))
+- **nestjs-pyroscope:** fix README — remove stale standalone description, correct method casing, fix decorator examples; add JSDoc to IPyroscopeConfig, IProfileMetrics, IProfileContext, IHealthResponse ([0b847a4](https://github.com/PhillipAWells/nestjs-common/commit/0b847a4))
+- **nestjs-qdrant:** fix README — remove stale standalone description, correct method/type names; correct JSDoc examples ([a70c769](https://github.com/PhillipAWells/nestjs-common/commit/a70c769))
+- **nestjs-nats:** fix README — correct method/type names, fix isGlobal default; correct JSDoc examples ([e348867](https://github.com/PhillipAWells/nestjs-common/commit/e348867))
+- fix root README — remove stale standalone labels from nestjs-pyroscope and nestjs-qdrant ([bccd169](https://github.com/PhillipAWells/nestjs-common/commit/bccd169))
+
+### ❤️ Thank You
+
+- Aaron Wells @PhillipAWells
+
 ## 2.0.1 (2026-04-06)
 
 ### 🩹 Fixes

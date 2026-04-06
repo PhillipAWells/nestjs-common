@@ -94,7 +94,25 @@ function CalculateDelay(
 }
 
 /**
- * Execute a function with retry logic
+ * Execute an async function with configurable exponential backoff retry logic.
+ *
+ * Retries on transient errors (timeouts, rate limits, network failures, and 5xx responses)
+ * up to `maxRetries` times, with exponential backoff plus ±20% jitter between attempts.
+ * Non-retryable errors are re-thrown immediately without consuming any retry budget.
+ *
+ * @param fn - Async function to execute
+ * @param config - Optional retry configuration. Defaults from `DEFAULT_RETRY_CONFIG` are merged.
+ * @returns The resolved value of `fn` on success
+ * @throws The last error thrown by `fn` if all retry attempts are exhausted
+ * @throws Any non-retryable error from `fn` immediately, without retrying
+ *
+ * @example
+ * ```typescript
+ * const result = await withRetry(() => fetch('https://api.example.com/data'), {
+ *   maxRetries: 5,
+ *   initialDelay: 500,
+ * });
+ * ```
  */
 export async function WithRetry<T>(
 	fn: () => Promise<T>,

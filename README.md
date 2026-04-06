@@ -92,14 +92,17 @@ yarn add @pawells/nestjs-prometheus
 #### [@pawells/nestjs-pyroscope](packages/nestjs-pyroscope)
 Pyroscope profiling decorators and interceptors for continuous profiling.
 
-**Standalone** (no cross-package dependencies)
+**Depends on:** `nestjs-shared`
 
 ```bash
-yarn add @pawells/nestjs-pyroscope
+yarn add @pawells/nestjs-pyroscope @pyroscope/nodejs
 ```
 
-**Key Feature:**
-- Application profiling decorators and interceptors
+**Key Features:**
+- `@Profile`, `@ProfileMethod`, `@ProfileAsync` decorators for method-level profiling
+- `ProfilingInterceptor` for automatic HTTP request profiling
+- Built-in health endpoints at `/profiling/*`
+- `ProfilingHealthIndicator` for `@nestjs/terminus` integration
 
 ---
 
@@ -108,15 +111,17 @@ yarn add @pawells/nestjs-pyroscope
 #### [@pawells/nestjs-qdrant](packages/nestjs-qdrant)
 Qdrant vector database module for vector storage and similarity search.
 
-**Standalone** (no cross-package dependencies)
+**Depends on:** `nestjs-shared`
 
 ```bash
-yarn add @pawells/nestjs-qdrant
+yarn add @pawells/nestjs-qdrant @qdrant/js-client-rest
 ```
 
-**Key Feature:**
-- Qdrant client integration and configuration
-- Secure API key handling
+**Key Features:**
+- `QdrantModule.forRoot` / `forRootAsync` dynamic module setup
+- `QdrantService` and `QdrantCollectionService` for type-safe vector operations
+- `@InjectQdrantClient()` decorator for direct client injection
+- API key stripped from the public options token for security
 
 ---
 

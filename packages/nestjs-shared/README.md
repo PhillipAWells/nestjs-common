@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-shared
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 
 ## Peer Dependencies
@@ -32,10 +32,10 @@ yarn add @pawells/nestjs-shared
   "class-transformer": ">=0.5.0",
   "class-validator": ">=0.14.0",
   "compression": ">=1.0.0",
-  "csrf-csrf": ">=3.0.0",
-  "express": ">=4.0.0",
+  "csrf-csrf": ">=4.0.0",
+  "express": ">=5.0.0",
   "helmet": ">=7.0.0",
-  "joi": ">=17.0.0",
+  "joi": ">=18.0.0",
   "prom-client": ">=15.0.0",
   "rxjs": ">=7.0.0",
   "xss": ">=1.0.0"
@@ -152,7 +152,7 @@ import { MetricsRegistryService } from '@pawells/nestjs-shared';
 constructor(private metrics: MetricsRegistryService) {}
 
 // Record custom metrics
-const orderCounter = this.metrics.createCounter(
+const orderCounter = this.metrics.CreateCounter(
   'orders_total',
   'Total orders processed'
 );
@@ -160,7 +160,8 @@ orderCounter.inc({ status: 'completed' });
 
 // HTTP metrics are automatic (duration, count, size)
 // Access at GET /metrics in Prometheus format
-const prometheusMetrics = await this.metrics.getMetrics();
+const registry = this.metrics.GetRegistry();
+const prometheusMetrics = await registry.metrics();
 ```
 
 **Features**:
@@ -187,7 +188,7 @@ export class ApiController {
   @Post('/form')
   async submitForm(@Req() req: Request, @Res() res: Response) {
     // Generate token
-    const token = await this.csrf.generateToken(req, res);
+    const token = await this.csrf.GenerateToken(req, res);
     res.render('form', { csrfToken: token });
   }
 
@@ -248,12 +249,12 @@ constructor(private health: HealthCheckService) {}
 
 @Get('/health')
 getHealth() {
-  return this.health.getHealth('my-service', '1.0.0');
+  return this.health.GetHealth('my-service', '1.0.0');
 }
 
 @Get('/ready')
 getReadiness() {
-  return this.health.getReadiness({
+  return this.health.GetReadiness({
     database: HealthStatus.OK,
     cache: HealthStatus.OK,
   });
@@ -261,7 +262,7 @@ getReadiness() {
 
 @Get('/live')
 getLiveness() {
-  return this.health.getLiveness();
+  return this.health.GetLiveness();
 }
 ```
 
@@ -275,12 +276,12 @@ import { ConfigService } from '@pawells/nestjs-shared';
 constructor(private config: ConfigService) {}
 
 // Type-safe getters
-const port = this.config.getNumber('PORT') ?? 3000;
-const nodeEnv = this.config.getString('NODE_ENV') ?? 'development';
-const dbUrl = this.config.getOrThrow('DATABASE_URL');
+const port = this.config.GetNumber('PORT') ?? 3000;
+const nodeEnv = this.config.GetString('NODE_ENV') ?? 'development';
+const dbUrl = this.config.GetOrThrow('DATABASE_URL');
 
 // Validation
-this.config.validate({
+this.config.Validate({
   PORT: { required: true },
   DATABASE_URL: { required: true },
   LOG_LEVEL: { required: false },
@@ -297,16 +298,16 @@ import { AuditLoggerService } from '@pawells/nestjs-shared';
 constructor(private audit: AuditLoggerService) {}
 
 // Log authentication
-this.audit.logAuthenticationAttempt('user@example.com', true, '192.168.1.1');
+this.audit.LogAuthenticationAttempt('user@example.com', true, '192.168.1.1');
 
 // Log authorization failure
-this.audit.logAuthorizationFailure('user-123', 'documents', 'delete', '192.168.1.1');
+this.audit.LogAuthorizationFailure('user-123', 'documents', 'delete', '192.168.1.1');
 
 // Log CSRF violations
-this.audit.logCsrfViolation('192.168.1.1', '/api/users');
+this.audit.LogCsrfViolation('192.168.1.1', '/api/users');
 
 // Log custom security events
-this.audit.logSecurityEvent({
+this.audit.LogSecurityEvent({
   userId: 'user-123',
   action: 'password_change',
   resource: 'users/123',
@@ -321,15 +322,16 @@ Defer dependency resolution to avoid circular dependencies.
 
 ```typescript
 import {
-  LazyGetter,
-  LazyModuleRefService,
+  TLazyGetter,
+  ILazyModuleRefService,
   createMemoizedLazyGetter,
 } from '@pawells/nestjs-shared';
+import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
-export class MyService implements LazyModuleRefService {
-  private readonly userService: LazyGetter<UserService> = createMemoizedLazyGetter(
-    () => this.moduleRef.get(UserService, { strict: false }),
+export class MyService implements ILazyModuleRefService {
+  private readonly userService: TLazyGetter<UserService> = createMemoizedLazyGetter(
+    () => this.Module.get(UserService, { strict: false }),
   );
 
   constructor(public readonly Module: ModuleRef) {}
@@ -341,12 +343,26 @@ export class MyService implements LazyModuleRefService {
 }
 ```
 
+Alternatively, extend `LazyModuleRefBase` to eliminate constructor boilerplate:
+
+```typescript
+import { LazyModuleRefBase } from '@pawells/nestjs-shared';
+
+@Injectable()
+export class MyService extends LazyModuleRefBase {
+  protected get UserService(): UserService {
+    return this.Module.get(UserService);
+  }
+}
+```
+
 **Features**:
-- LazyGetter<T>: Required dependency getter
-- OptionalLazyGetter<T>: Optional dependency getter
-- CreateMemoizedLazyGetter: Caching factory
-- CreateOptionalLazyGetter: Safe optional resolution
-- IsLazyModuleRefService: Type guard for pattern detection
+- `TLazyGetter<T>`: Type alias for a required dependency getter function
+- `TOptionalLazyGetter<T>`: Type alias for an optional dependency getter function
+- `createMemoizedLazyGetter`: Factory that caches the resolved dependency after first call
+- `createOptionalLazyGetter`: Safe resolution that returns `undefined` instead of throwing
+- `isLazyModuleRefService`: Type guard for pattern detection
+- `LazyModuleRefBase`: Abstract base class to avoid constructor boilerplate
 
 ### HTTP Client
 
@@ -358,10 +374,10 @@ import { HttpClientService } from '@pawells/nestjs-shared';
 constructor(private http: HttpClientService) {}
 
 // GET request
-const response = await this.http.get<User>('https://api.example.com/users/123');
+const response = await this.http.Get<User>('https://api.example.com/users/123');
 
 // POST request with custom timeout
-const response = await this.http.post<User>(
+const response = await this.http.Post<User>(
   'https://api.example.com/users',
   { name: 'John', email: 'john@example.com' },
   { timeout: 5000, correlationId: 'req-123' }
@@ -369,7 +385,7 @@ const response = await this.http.post<User>(
 
 // HTTPS with custom CA certificate
 const cert = fs.readFileSync('/path/to/ca.pem');
-const response = await this.http.get(
+const response = await this.http.Get(
   'https://internal-api.local/data',
   { ca: cert }
 );
@@ -468,10 +484,17 @@ export class AppModule {}
 
 ### MetricsModule
 
-Prometheus metrics endpoint and collection.
+Optional module that exposes a Prometheus `/metrics` endpoint.
 
 ```typescript
-// Automatically imported by CommonModule
+@Module({
+  imports: [
+    ConfigModule,
+    CommonModule,
+    MetricsModule.ForRoot(),   // Opt-in: adds GET /metrics endpoint
+  ],
+})
+export class AppModule {}
 // Provides:
 // - MetricsRegistryService (injectable)
 // - GET /metrics endpoint (Prometheus format)
@@ -485,97 +508,111 @@ Prometheus metrics endpoint and collection.
 Structured logging service with context support, metadata, and automatic sensitive data redaction.
 
 **Methods**:
-- `debug(message, context?, metadata?)`: Debug level
+- `Debug(message, context?, metadata?)`: Debug level (primary PascalCase method)
+- `debug(message, context?, metadata?)`: Lowercase alias for `Debug`
 - `info(message, context?, metadata?)`: Info level
 - `warn(message, context?, metadata?)`: Warning level
 - `error(message, trace?, context?, metadata?)`: Error level with optional stack trace
 - `fatal(message, trace?, context?, metadata?)`: Fatal level with optional stack trace
-- `createContextualLogger(context)`: Create child logger with context
+- `CreateContextualLogger(context)`: Create a child logger bound to a context string
+- `createContextualLogger(context)`: Lowercase alias, satisfies the `IContextualLogger` interface
+
+All methods accept either positional parameters or a single `ILogOptions` object `{ context?, trace?, metadata? }` as the second argument.
+
+#### NestLoggerAdapter
+Adapts `AppLogger` to the NestJS `LoggerService` interface. Pass an instance to `NestFactory.create()` to route all NestJS framework logs through `AppLogger`.
+
+```typescript
+import { NestLoggerAdapter } from '@pawells/nestjs-shared';
+
+const app = await NestFactory.create(AppModule, {
+  logger: new NestLoggerAdapter(),
+});
+```
+
+The adapter provides both PascalCase methods (`Log`, `Error`, `Warn`, `Debug`, `Verbose`, `Fatal`) and the lowercase aliases (`log`, `error`, `warn`) required by the NestJS `LoggerService` interface.
 
 #### ErrorCategorizerService
 Classifies errors as transient/permanent and recommends recovery strategy.
 
 **Methods**:
-- `categorizeError(error)`: Returns ErrorCategory with type, retryable, strategy, backoffMs
-- `isRetryable(error)`: Boolean check
-- `logRecoveryAttempt(error, attempt, maxAttempts)`: Log retry attempt
-- `logRecoverySuccess(error, attempts)`: Log successful recovery
-- `logRecoveryFailed(error, attempts)`: Log failed recovery
+- `CategorizeError(error)`: Returns `IErrorCategory` with `type`, `retryable`, `strategy`, `backoffMs`
+- `IsRetryable(error)`: Boolean check
+- `LogRecoveryAttempt(error, attempt, maxAttempts)`: Log retry attempt
+- `LogRecoverySuccess(error, attempts)`: Log successful recovery
+- `LogRecoveryFailed(error, attempts)`: Log failed recovery
 
 #### ErrorSanitizerService
-Removes sensitive information from error responses and logs.
+Removes sensitive information from error responses before they are sent to clients.
 
 **Methods**:
-- `sanitizeErrorResponse(error, isDevelopment)`: Sanitize error for response
-- `sanitizeMessage(message)`: Sanitize error message string
+- `SanitizeErrorResponse(error, isDevelopment?)`: Sanitize error object for client response; strips stack traces in production and redacts sensitive field values
 
-Redactions: File paths, database URIs, API keys, Bearer tokens, email addresses, IP addresses, sensitive field values.
+Redactions applied to messages: file paths, database URIs, API keys, Bearer tokens, email addresses, IP addresses. Redactions applied to context objects: field names matching sensitive patterns (password, token, secret, key, etc.).
 
 #### CSRFService
 CSRF token generation and validation with rate limiting.
 
 **Methods**:
-- `generateToken(req, res)`: Generate and set CSRF token (rate limited)
-- `validateToken(req)`: Validate CSRF token
-- `refreshToken(req, res)`: Generate new token after sensitive operation
-- `getMiddleware()`: Get CSRF protection middleware
+- `GenerateToken(req, res)`: Generate and set CSRF token; rate-limited to 10 per IP per 60 seconds
+- `ValidateToken(req)`: Validate CSRF token; returns `true` if valid
+- `RefreshToken(req, res)`: Generate a fresh token after sensitive operations (login, password change)
+- `GetMiddleware()`: Return the underlying `doubleCsrf` middleware function
 
 #### MetricsRegistryService
 Prometheus metrics management.
 
 **Methods**:
-- `recordHttpRequest(method, route, statusCode, duration, size?)`: Record HTTP metrics
-- `createCounter(name, help, labelNames?)`: Create counter metric
-- `createGauge(name, help, labelNames?)`: Create gauge metric
-- `createHistogram(name, help, labelNames?, buckets?)`: Create histogram metric
-- `recordCounter(name, value?, labels?)`: Record counter value
-- `recordGauge(name, value, labels?)`: Record gauge value
-- `recordHistogram(name, value, labels?)`: Record histogram value
-- `getMetrics()`: Get metrics in Prometheus format
-- `getMetricsAsJSON()`: Get metrics as JSON
-- `clear()`: Clear all metrics (testing)
+- `RecordHttpRequest(method, route, statusCode, duration, size?)`: Record HTTP request metrics
+- `CreateCounter(name, help, labelNames?)`: Create and register a counter metric
+- `CreateGauge(name, help, labelNames?)`: Create and register a gauge metric
+- `CreateHistogram(name, help, labelNames?, buckets?)`: Create and register a histogram metric
+- `RecordCounter(name, value?, labels?)`: Increment a registered counter by name
+- `RecordGauge(name, value, labels?)`: Set a registered gauge value by name
+- `RecordHistogram(name, value, labels?)`: Observe a registered histogram value by name
+- `GetRegistry()`: Return the underlying Prometheus `Registry` instance
 
 #### HealthCheckService
 Kubernetes health probes.
 
 **Methods**:
-- `getHealth(serviceName?, version?)`: General health check
-- `getReadiness(checks?)`: Readiness probe (can receive traffic)
-- `getLiveness()`: Liveness probe (is alive)
+- `GetHealth(serviceName?, version?)`: General health check
+- `GetReadiness(checks?)`: Readiness probe (can the service receive traffic)
+- `GetLiveness()`: Liveness probe (is the service alive)
 
 #### HttpClientService
 HTTP client with timeout and SSL/TLS support.
 
 **Methods**:
-- `request<T>(options)`: Make HTTP request
-- `get<T>(url, options?)`: GET request
-- `post<T>(url, data?, options?)`: POST request
-- `put<T>(url, data?, options?)`: PUT request
-- `delete<T>(url, options?)`: DELETE request
+- `Request<T>(options)`: Make an HTTP request with full options control
+- `Get<T>(url, options?)`: GET request
+- `Post<T>(url, data?, options?)`: POST request
+- `Put<T>(url, data?, options?)`: PUT request
+- `Delete<T>(url, options?)`: DELETE request
 
 #### ConfigService
 Type-safe environment variable access.
 
 **Methods**:
-- `get<T>(propertyPath, defaultValue?)`: Get config value
-- `getOrThrow<T>(propertyPath)`: Get or throw
-- `getString(propertyPath, defaultValue?)`: Get as string
-- `getNumber(propertyPath, defaultValue?)`: Get as number
-- `validate(schema)`: Validate configuration
+- `Get<T>(propertyPath, defaultValue?)`: Return config value or default
+- `GetOrThrow<T>(propertyPath)`: Return config value or throw if not set
+- `GetString(propertyPath, defaultValue?)`: Return value coerced to string
+- `GetNumber(propertyPath, defaultValue?)`: Return value coerced to number
+- `Validate(schema)`: Validate required fields against schema; throws on missing required keys
 
 #### AuditLoggerService
 Security event logging.
 
 **Methods**:
-- `logAuthenticationAttempt(email, success, ipAddress?, reason?)`
-- `logAuthorizationFailure(userId, resource, action, ipAddress?)`
-- `logTokenGeneration(userId, tokenType)`
-- `logTokenRevocation(userId, reason)`
-- `logRateLimitViolation(endpoint, ipAddress, limit)`
-- `logCsrfViolation(ipAddress, endpoint)`
-- `logConfigurationChange(userId, config, oldValue, newValue)`
-- `logDataAccess(userId, resource, action)`
-- `logSecurityEvent(entry)`
+- `LogAuthenticationAttempt(email, success, ipAddress?, reason?)`
+- `LogAuthorizationFailure(userId, resource, action, ipAddress?)`
+- `LogTokenGeneration(userId, tokenType)`
+- `LogTokenRevocation(userId, reason)`
+- `LogRateLimitViolation(endpoint, ipAddress, limit)`
+- `LogCsrfViolation(ipAddress, endpoint)`
+- `LogConfigurationChange(userId, config, oldValue, newValue)`
+- `LogDataAccess(userId, resource, action)`
+- `LogSecurityEvent(entry)`
 
 ### Filters
 
@@ -638,34 +675,34 @@ Basic logging interface without contextual logger creation.
 ### IContextualLogger
 Extended logging with contextual logger creation.
 
-### LazyModuleRefService
-Interface for services using lazy ModuleRef pattern.
+### ILazyModuleRefService
+Interface for services using the lazy ModuleRef pattern.
 
 ```typescript
-interface LazyModuleRefService {
+interface ILazyModuleRefService {
   Module: ModuleRef;
 }
 ```
 
-### LazyGetter<T>
-Function that returns a dependency.
+### TLazyGetter<T>
+Function type for a getter that returns a required dependency.
 
 ```typescript
-type LazyGetter<T> = () => T;
+type TLazyGetter<T> = () => T;
 ```
 
-### OptionalLazyGetter<T>
-Function that returns a dependency or undefined.
+### TOptionalLazyGetter<T>
+Function type for a getter that returns a dependency or `undefined`.
 
 ```typescript
-type OptionalLazyGetter<T> = () => T | undefined;
+type TOptionalLazyGetter<T> = () => T | undefined;
 ```
 
-### ErrorCategory
-Error classification for recovery strategy.
+### IErrorCategory
+Error classification result from `ErrorCategorizerService.CategorizeError`.
 
 ```typescript
-interface ErrorCategory {
+interface IErrorCategory {
   type: 'transient' | 'permanent';
   retryable: boolean;
   strategy: 'retry' | 'fail' | 'backoff';
@@ -695,8 +732,11 @@ import { AppLogger, CSRFService } from '@pawells/nestjs-shared';
 // Common-only exports (lower-level utilities)
 import { CSRFService } from '@pawells/nestjs-shared/common';
 
-// Lazy loader types
-import { LazyGetter } from '@pawells/nestjs-shared/common/utils/lazy-getter.types';
+// Lazy loader types only
+import { TLazyGetter } from '@pawells/nestjs-shared/common/utils/lazy-getter.types';
+
+// Testing helpers (AppLoggerMock, SharedTestingModule, etc.)
+import { AppLoggerMock } from '@pawells/nestjs-shared/testing';
 ```
 
 ## Configuration
@@ -740,7 +780,7 @@ import { ConfigModule, CommonModule, MetricsModule } from '@pawells/nestjs-share
   imports: [
     ConfigModule,                  // MUST be first
     CommonModule,                  // Depends on ConfigModule
-    MetricsModule.forRoot(),       // Optional: Prometheus metrics
+    MetricsModule.ForRoot(),       // Optional: Prometheus metrics
     // ... feature modules
   ],
 })

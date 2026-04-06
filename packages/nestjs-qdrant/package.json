@@ -1,7 +1,7 @@
 {
   "name": "@pawells/nestjs-qdrant",
   "displayName": "@pawells/nestjs-qdrant",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "NestJS Qdrant vector database module",
   "type": "module",
   "main": "./build/index.js",

@@ -50,7 +50,7 @@ function GetErrorStack(err: unknown): string {
  * core pub/sub, request-reply, and JetStream operations.
  *
  * Connects to NATS on module initialization and drains the connection on application shutdown.
- * Subscriptions created via subscribe() are automatically re-established after reconnection
+ * Subscriptions created via `Subscribe()` are automatically re-established after reconnection
  * by the nats client library — no manual re-subscription is required.
  *
  * @example
@@ -60,7 +60,7 @@ function GetErrorStack(err: unknown): string {
  *   constructor(private readonly NatsService: NatsService) {}
  *
  *   publishOrder(order: IOrder): void {
- *     this.NatsService.publishJson('orders.created', order);
+ *     this.NatsService.PublishJson('orders.created', order);
  *   }
  * }
  * ```

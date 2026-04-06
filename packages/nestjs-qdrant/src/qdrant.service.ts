@@ -34,11 +34,10 @@ class InternalServerError extends Error {
  * Provides unified access to Qdrant vector search functionality and collection management.
  *
  * This service acts as a facade over the Qdrant client, providing:
- * - Direct access to the underlying QdrantClient instance via getClient()
- * - Collection-scoped services via the collection() method
+ * - Direct access to the underlying QdrantClient instance via `GetClient()`
+ * - Collection-scoped services via the `Collection()` method
  * - Lifecycle management and module integration
  *
- * @Injectable()
  * @example
  * ```typescript
  * @Injectable()
@@ -46,8 +45,8 @@ class InternalServerError extends Error {
  *   constructor(private qdrantService: QdrantService) {}
  *
  *   async searchCollection(name: string, embedding: number[]) {
- *     const collection = this.qdrantService.collection(name);
- *     return collection.search({ vector: embedding, limit: 10 });
+ *     const collection = this.qdrantService.Collection(name);
+ *     return collection.Search({ vector: embedding, limit: 10 });
  *   }
  * }
  * ```
@@ -82,7 +81,7 @@ export class QdrantService implements OnModuleDestroy {
 	 *
 	 * @example
 	 * ```typescript
-	 * const client = this.qdrantService.getClient();
+	 * const client = this.qdrantService.GetClient();
 	 * await client.recreateCollection('my-collection', {
 	 *   vectors: { size: 384, distance: 'Cosine' }
 	 * });
@@ -107,8 +106,8 @@ export class QdrantService implements OnModuleDestroy {
 	 *
 	 * @example
 	 * ```typescript
-	 * const collection = this.qdrantService.collection('documents');
-	 * const results = await collection.search({
+	 * const collection = this.qdrantService.Collection('documents');
+	 * const results = await collection.Search({
 	 *   vector: embedding,
 	 *   limit: 10
 	 * });

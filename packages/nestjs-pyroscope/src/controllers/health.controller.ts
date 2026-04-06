@@ -8,21 +8,33 @@ import { PROFILING_DEGRADED_ACTIVE_PROFILES_THRESHOLD } from '../constants/profi
 import type { IPyroscopeConfig } from '../interfaces/profiling.interface.js';
 
 /**
- * Health response interface
+ * Response shape for the `GET /profiling/health` and `GET /profiling/status` endpoints.
  */
 export interface IHealthResponse {
+	/** Overall health status of the profiling service. */
 	status: 'healthy' | 'unhealthy' | 'degraded';
+	/** Unix timestamp (milliseconds) of this response. */
 	timestamp: number;
+	/** Process uptime in seconds at the time of this response. */
 	uptime: number;
+	/** Pyroscope server connection details. */
 	pyroscope: {
+		/** Whether the Pyroscope client is currently connected. */
 		connected: boolean;
+		/** Configured Pyroscope server URL. */
 		serverAddress: string;
+		/** Application identifier registered with Pyroscope. */
 		applicationName: string;
+		/** Unix timestamp (milliseconds) of the last successful update. */
 		lastUpdate: number;
 	};
+	/** Current profiling session statistics. */
 	profiling: {
+		/** Whether profiling is enabled in configuration. */
 		enabled: boolean;
+		/** Number of currently active (in-progress) profiling sessions. */
 		activeProfiles: number;
+		/** Total number of profiling sessions completed since startup. */
 		totalProfiles: number;
 	};
 }

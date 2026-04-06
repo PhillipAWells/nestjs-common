@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-qdrant.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-qdrant)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-qdrant @qdrant/js-client-rest
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 - **@qdrant/js-client-rest**: >= 1.0.0
 
@@ -32,6 +32,8 @@ yarn add @pawells/nestjs-qdrant @qdrant/js-client-rest
 
 ## Quick Start
 
+**Note**: `@pawells/nestjs-qdrant` depends on `@pawells/nestjs-shared`. Ensure `@pawells/nestjs-shared` is installed alongside this package.
+
 ### Module Setup
 
 ```typescript
@@ -40,7 +42,7 @@ import { QdrantModule } from '@pawells/nestjs-qdrant';
 
 @Module({
   imports: [
-    QdrantModule.forRoot({
+    QdrantModule.ForRoot({
       url: 'http://localhost:6333',
       apiKey: process.env.QDRANT_API_KEY,
     }),
@@ -88,7 +90,7 @@ export class EmbeddingService {
 
 ### Using QdrantCollectionService
 
-The `QdrantCollectionService` is not directly injectable. Instead, obtain instances via `QdrantService.collection(name)`:
+The `QdrantCollectionService` is not directly injectable. Instead, obtain instances via `QdrantService.Collection(name)`:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -99,18 +101,18 @@ export class VectorStoreService {
   constructor(private qdrantService: QdrantService) {}
 
   async getCollectionInfo(name: string) {
-    const collection = this.qdrantService.collection(name);
-    return collection.getInfo();
+    const collection = this.qdrantService.Collection(name);
+    return collection.GetInfo();
   }
 
   async upsertVectors(collectionName: string, points: any[]) {
-    const collection = this.qdrantService.collection(collectionName);
-    return collection.upsert({ points });
+    const collection = this.qdrantService.Collection(collectionName);
+    return collection.Upsert({ points });
   }
 
   async deleteVectors(collectionName: string, pointIds: number[]) {
-    const collection = this.qdrantService.collection(collectionName);
-    return collection.delete({
+    const collection = this.qdrantService.Collection(collectionName);
+    return collection.Delete({
       points_selector: {
         points: {
           ids: pointIds
@@ -125,30 +127,29 @@ export class VectorStoreService {
 
 ### Overview
 
-The `nestjs-qdrant` module uses **plain typed interfaces** (no Joi validation). All configuration comes from the `QdrantModuleOptions` type, which extends the Qdrant JS client's `QdrantClientParams`.
+The `nestjs-qdrant` module uses **plain typed interfaces** (no Joi validation). All configuration comes from the `TQdrantModuleOptions` type, which extends the Qdrant JS client's `QdrantClientParams`.
 
 ### API Key Security
 
-**Important security note**: In `forRootAsync()`, the `apiKey` is automatically sanitized and **stripped from the publicly injectable options token**. This prevents accidental exposure of credentials through dependency injection. The apiKey is only available to the internal client factory.
+**Important security note**: In `ForRootAsync()`, the `apiKey` is automatically sanitized and **stripped from the publicly injectable options token**. This prevents accidental exposure of credentials through dependency injection. The `apiKey` is only available to the internal client factory.
 
-### QdrantModule.forRoot()
+### QdrantModule.ForRoot()
 
 Synchronous module registration with inline configuration:
 
 ```typescript
-interface QdrantModuleOptions extends QdrantClientParams {
-  url: string;              // Qdrant server URL (e.g., 'http://localhost:6333')
-  apiKey?: string;          // API key for authentication (optional)
-  timeout?: number;         // Request timeout in milliseconds (optional)
-  retryAttempts?: number;   // Number of retry attempts (optional)
-  retryDelay?: number;      // Delay between retries in milliseconds (optional)
-  name?: string;            // Optional name for multi-client scenarios
-}
+// TQdrantModuleOptions extends QdrantClientParams (from @qdrant/js-client-rest) with:
+//   name?: string  — optional name for multi-client scenarios
+//
+// Key options from QdrantClientParams:
+//   url: string              — Qdrant server URL (e.g., 'http://localhost:6333')
+//   apiKey?: string          — API key for authentication
+//   timeout?: number         — Request timeout in milliseconds
 ```
 
-**Note**: In `forRoot()`, the apiKey is also sanitized from the public options token, but stored separately for client initialization.
+**Note**: In `ForRoot()`, the `apiKey` is sanitized from the public options token but retained for client initialization.
 
-### forRootAsync() - Factory Function
+### ForRootAsync() - Factory Function
 
 Asynchronous registration using a factory function:
 
@@ -160,7 +161,7 @@ import { QdrantModule } from '@pawells/nestjs-qdrant';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    QdrantModule.forRootAsync({
+    QdrantModule.ForRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
@@ -174,20 +175,20 @@ import { QdrantModule } from '@pawells/nestjs-qdrant';
 export class AppModule {}
 ```
 
-### forRootAsync() - Class-Based Factory
+### ForRootAsync() - Class-Based Factory
 
-Using a custom class that implements `QdrantOptionsFactory`:
+Using a custom class that implements `IQdrantOptionsFactory`:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { QdrantOptionsFactory, QdrantModuleOptions } from '@pawells/nestjs-qdrant';
+import { IQdrantOptionsFactory, TQdrantModuleOptions } from '@pawells/nestjs-qdrant';
 
 @Injectable()
-export class QdrantConfigService implements QdrantOptionsFactory {
+export class QdrantConfigService implements IQdrantOptionsFactory {
   constructor(private configService: ConfigService) {}
 
-  async createQdrantOptions(): Promise<QdrantModuleOptions> {
+  async createQdrantOptions(): Promise<TQdrantModuleOptions> {
     return {
       url: await this.configService.get('QDRANT_URL'),
       apiKey: this.configService.get('QDRANT_API_KEY'),
@@ -199,7 +200,7 @@ export class QdrantConfigService implements QdrantOptionsFactory {
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    QdrantModule.forRootAsync({
+    QdrantModule.ForRootAsync({
       useClass: QdrantConfigService,
     }),
   ],
@@ -207,7 +208,7 @@ export class QdrantConfigService implements QdrantOptionsFactory {
 export class AppModule {}
 ```
 
-### forRootAsync() - Reuse Existing Factory
+### ForRootAsync() - Reuse Existing Factory
 
 Reuse an existing options factory from another module:
 
@@ -215,7 +216,7 @@ Reuse an existing options factory from another module:
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    QdrantModule.forRootAsync({
+    QdrantModule.ForRootAsync({
       useExisting: QdrantConfigService,
     }),
   ],
@@ -231,7 +232,7 @@ Register multiple Qdrant client instances with different names:
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    QdrantModule.forRoot(
+    QdrantModule.ForRoot(
       {
         name: 'primary',
         url: 'http://primary-qdrant:6333',
@@ -239,7 +240,7 @@ Register multiple Qdrant client instances with different names:
       },
       false // Not global
     ),
-    QdrantModule.forRoot(
+    QdrantModule.ForRoot(
       {
         name: 'backup',
         url: 'http://backup-qdrant:6333',
@@ -284,29 +285,29 @@ export class VectorService {
 
 ## Service Usage
 
-### QdrantService.collection() Validation
+### QdrantService.Collection() Validation
 
-The `collection()` method validates collection names according to Qdrant rules:
+The `Collection()` method validates collection names according to Qdrant rules:
 
 - Must start and end with alphanumeric characters (a-z, A-Z, 0-9)
 - Can contain hyphens (-) and underscores (_) in the middle
-- Maximum length: 255 characters
+- Maximum length: 255 characters (`MAX_COLLECTION_NAME_LENGTH`)
 - Invalid names throw `BadRequestException`
 
 ```typescript
 const service = this.qdrantService;
 
 // Valid names
-service.collection('documents');        // ✓
-service.collection('doc-embeddings');   // ✓
-service.collection('doc_embeddings');   // ✓
-service.collection('doc123');           // ✓
+service.Collection('documents');        // ✓
+service.Collection('doc-embeddings');   // ✓
+service.Collection('doc_embeddings');   // ✓
+service.Collection('doc123');           // ✓
 
 // Invalid names
-service.collection('-documents');       // ✗ Starts with hyphen
-service.collection('documents-');       // ✗ Ends with hyphen
-service.collection('');                 // ✗ Empty string
-service.collection('a'.repeat(256));    // ✗ Too long (> 255 chars)
+service.Collection('-documents');       // ✗ Starts with hyphen
+service.Collection('documents-');       // ✗ Ends with hyphen
+service.Collection('');                 // ✗ Empty string
+service.Collection('a'.repeat(256));    // ✗ Too long (> 255 chars)
 ```
 
 ### Error Handling
@@ -320,8 +321,8 @@ export class VectorService {
 
   async searchWithErrorHandling(embedding: number[]) {
     try {
-      const collection = this.qdrantService.collection('embeddings');
-      return await collection.search({
+      const collection = this.qdrantService.Collection('embeddings');
+      return await collection.Search({
         vector: embedding,
         limit: 10,
       });
@@ -425,7 +426,7 @@ The module exports several constants and utility functions for manual dependency
 
 ### Utility Functions
 
-#### `getQdrantClientToken(name?: string): string`
+#### `GetQdrantClientToken(name?: string): string`
 
 Returns the injection token for a named or default Qdrant client.
 
@@ -434,7 +435,7 @@ Returns the injection token for a named or default Qdrant client.
 
 **Returns:** Injection token string (e.g., `'QDRANT_CLIENT'` or `'QDRANT_CLIENT:archive'`)
 
-#### `getQdrantModuleOptionsToken(name?: string): string`
+#### `GetQdrantModuleOptionsToken(name?: string): string`
 
 Returns the injection token for module options for a named or default client.
 
@@ -445,21 +446,21 @@ Returns the injection token for module options for a named or default client.
 
 ### Manual Token Injection Example
 
-If you need to inject a named client without using the `@InjectQdrantClient()` decorator, use `getQdrantClientToken()`:
+If you need to inject a named client without using the `@InjectQdrantClient()` decorator, use `GetQdrantClientToken()`:
 
 ```typescript
 import { Injectable, Inject } from '@nestjs/common';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { getQdrantClientToken } from '@pawells/nestjs-qdrant';
+import { GetQdrantClientToken } from '@pawells/nestjs-qdrant';
 
 @Injectable()
 export class MultiArchiveService {
   constructor(
     // Manual injection using token getter
-    @Inject(getQdrantClientToken('primary'))
+    @Inject(GetQdrantClientToken('primary'))
     private primaryClient: QdrantClient,
 
-    @Inject(getQdrantClientToken('backup'))
+    @Inject(GetQdrantClientToken('backup'))
     private backupClient: QdrantClient,
   ) {}
 
@@ -477,14 +478,14 @@ Similarly, you can inject module options:
 
 ```typescript
 import { Injectable, Inject } from '@nestjs/common';
-import { getQdrantModuleOptionsToken } from '@pawells/nestjs-qdrant';
-import type { QdrantModuleOptions } from '@pawells/nestjs-qdrant';
+import { GetQdrantModuleOptionsToken } from '@pawells/nestjs-qdrant';
+import type { TQdrantModuleOptions } from '@pawells/nestjs-qdrant';
 
 @Injectable()
 export class ConfigInspector {
   constructor(
-    @Inject(getQdrantModuleOptionsToken('primary'))
-    private primaryOptions: QdrantModuleOptions,
+    @Inject(GetQdrantModuleOptionsToken('primary'))
+    private primaryOptions: TQdrantModuleOptions,
   ) {}
 
   getUrl(): string {
@@ -557,7 +558,7 @@ docker run -p 6333:6333 qdrant/qdrant:latest
 ```
 
 ```typescript
-QdrantModule.forRoot({
+QdrantModule.ForRoot({
   url: 'http://localhost:6333',
 })
 ```
@@ -565,7 +566,7 @@ QdrantModule.forRoot({
 ### Production (with API Key)
 
 ```typescript
-QdrantModule.forRoot({
+QdrantModule.ForRoot({
   url: 'https://qdrant.example.com:6333',
   apiKey: process.env.QDRANT_API_KEY,
   timeout: 10000,
@@ -575,7 +576,7 @@ QdrantModule.forRoot({
 ### Qdrant Cloud
 
 ```typescript
-QdrantModule.forRoot({
+QdrantModule.ForRoot({
   url: 'https://your-cluster-url.qdrant.io:6333',
   apiKey: process.env.QDRANT_API_KEY,
 })

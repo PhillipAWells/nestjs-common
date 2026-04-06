@@ -41,8 +41,8 @@ class InternalServerError extends Error {
  *   constructor(private qdrantService: QdrantService) {}
  *
  *   async searchDocuments(embedding: number[]) {
- *     const collection = this.qdrantService.collection('documents');
- *     return collection.search({
+ *     const collection = this.qdrantService.Collection('documents');
+ *     return collection.Search({
  *       vector: embedding,
  *       limit: 10,
  *       with_payload: true
@@ -54,6 +54,7 @@ class InternalServerError extends Error {
 export class QdrantCollectionService {
 	private readonly Client: QdrantClient;
 
+	/** Name of the Qdrant collection this service is scoped to. */
 	public readonly CollectionName: string;
 
 	private readonly Logger: AppLogger;

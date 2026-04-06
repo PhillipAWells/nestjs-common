@@ -20,7 +20,7 @@
  * // Synchronous setup
  * @Module({
  *   imports: [
- *     QdrantModule.forRoot({
+ *     QdrantModule.ForRoot({
  *       url: 'http://localhost:6333',
  *       apiKey: process.env.QDRANT_API_KEY
  *     })
@@ -32,7 +32,7 @@
  * @Module({
  *   imports: [
  *     ConfigModule.forRoot(),
- *     QdrantModule.forRootAsync({
+ *     QdrantModule.ForRootAsync({
  *       imports: [ConfigModule],
  *       inject: [ConfigService],
  *       useFactory: (config: ConfigService) => ({

@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-pyroscope.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-pyroscope)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-pyroscope @pyroscope/nodejs
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 - **@pyroscope/nodejs**: ^0.4.10
 
@@ -33,7 +33,7 @@ yarn add @pawells/nestjs-pyroscope @pyroscope/nodejs
 
 ## Overview
 
-`nestjs-pyroscope` is a standalone NestJS module that integrates Pyroscope continuous profiling. It provides:
+`nestjs-pyroscope` integrates Pyroscope continuous profiling into NestJS. It depends on `@pawells/nestjs-shared` and provides:
 
 - **PyroscopeService**: Core service for profiling lifecycle management
 - **Profiling Decorators**: `@Profile`, `@ProfileMethod`, `@ProfileAsync` for selective method profiling
@@ -53,7 +53,7 @@ import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 
 @Module({
   imports: [
-    PyroscopeModule.forRoot({
+    PyroscopeModule.ForRoot({
       isGlobal: true,
       config: {
         enabled: process.env.NODE_ENV === 'production',
@@ -72,7 +72,7 @@ export class AppModule {}
 
 ### 2. Module Setup (Asynchronous)
 
-Use `forRootAsync` when your configuration depends on other providers:
+Use `ForRootAsync` when your configuration depends on other providers:
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -82,7 +82,7 @@ import { PyroscopeModule } from '@pawells/nestjs-pyroscope';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    PyroscopeModule.forRootAsync({
+    PyroscopeModule.ForRootAsync({
       isGlobal: true,
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -116,6 +116,8 @@ Profiles **all methods** in a class automatically.
 - You want profiling on all methods without per-method decoration
 - Minimal setup required
 
+**Important**: The injected `PyroscopeService` property must be named `pyroscopeService` on the class instance. The decorator looks for `this.pyroscopeService` at runtime.
+
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { Profile, PyroscopeService } from '@pawells/nestjs-pyroscope';
@@ -123,7 +125,7 @@ import { Profile, PyroscopeService } from '@pawells/nestjs-pyroscope';
 @Profile({ tags: { service: 'user' } })
 @Injectable()
 export class UserService {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private pyroscopeService: PyroscopeService) {}
 
   async findById(id: string) {
     // Automatically profiled as 'UserService.findById'
@@ -150,13 +152,15 @@ Profiles **specific methods** with optional custom names and tags.
 - You want selective profiling of specific methods
 - You need custom profile names or method-level tags
 
+**Important**: The injected `PyroscopeService` property must be named `pyroscopeService` on the class instance.
+
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { ProfileMethod, PyroscopeService } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class OrderService {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private pyroscopeService: PyroscopeService) {}
 
   @ProfileMethod({ name: 'order.create.expensive' })
   async createOrder(orderData: any) {
@@ -187,13 +191,15 @@ Specifically designed for **async/Promise-based** methods.
 - You prefer explicit async decoration
 - You want accurate timing for Promise-based operations
 
+**Important**: The injected `PyroscopeService` property must be named `pyroscopeService` on the class instance.
+
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { ProfileAsync, PyroscopeService } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class ApiService {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private pyroscopeService: PyroscopeService) {}
 
   @ProfileAsync({ name: 'api.fetch.user-profile' })
   async fetchUserProfile(userId: string) {
@@ -256,7 +262,7 @@ import { PyroscopeService, IProfileContext } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class DataProcessingService {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private readonly pyroscope: PyroscopeService) {}
 
   async processLargeDataset(data: any[]) {
     // Manual profiling with fine-grained control
@@ -266,7 +272,7 @@ export class DataProcessingService {
       startTime: Date.now(),
     };
 
-    this.pyroscope.startProfiling(context);
+    this.pyroscope.StartProfiling(context);
 
     try {
       // Your processing logic
@@ -274,14 +280,14 @@ export class DataProcessingService {
       return result;
     } finally {
       // Always stop profiling, even on error
-      const metrics = this.pyroscope.stopProfiling(context);
+      const metrics = this.pyroscope.StopProfiling(context);
       console.log(`Processing took ${metrics.duration}ms`);
     }
   }
 
   // Or use the convenience method
   async processWithTracking(data: any[]) {
-    return await this.pyroscope.trackFunction(
+    return await this.pyroscope.TrackFunction(
       'processWithTracking',
       async () => {
         // Your logic here
@@ -386,7 +392,7 @@ export class HealthController {
   @HealthCheck()
   check() {
     return this.health.check([
-      () => this.profiling.check('profiling'),
+      () => this.profiling.Check('profiling'),
     ]);
   }
 }
@@ -475,7 +481,7 @@ import { PyroscopeService, IProfileMetrics } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class PerformanceAnalyzer {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private readonly pyroscope: PyroscopeService) {}
 
   async trackAndLog(operation: string) {
     const context = {
@@ -484,13 +490,13 @@ export class PerformanceAnalyzer {
       tags: { operation },
     };
 
-    this.pyroscope.startProfiling(context);
+    this.pyroscope.StartProfiling(context);
 
     try {
       // Your logic here
       await this.expensiveOperation();
     } finally {
-      const metrics = this.pyroscope.stopProfiling(context);
+      const metrics = this.pyroscope.StopProfiling(context);
       console.log(`Operation: ${operation}`);
       console.log(`Duration: ${metrics.duration}ms`);
       console.log(`CPU: ${metrics.cpuTime}ms`);
@@ -519,7 +525,7 @@ interface IProfileContext {
 ```
 
 **When to use:**
-- You're implementing manual profiling with `PyroscopeService.startProfiling()` and `.stopProfiling()`
+- You're implementing manual profiling with `PyroscopeService.StartProfiling()` and `.StopProfiling()`
 - You need to track profiling metadata for complex operations
 - You're building custom decorators or profiling utilities
 
@@ -531,7 +537,7 @@ import { PyroscopeService, IProfileContext } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class DataProcessingService {
-  constructor(private pyroscope: PyroscopeService) {}
+  constructor(private readonly pyroscope: PyroscopeService) {}
 
   async processWithContext(data: any[]) {
     const context: IProfileContext = {
@@ -545,7 +551,7 @@ export class DataProcessingService {
       },
     };
 
-    this.pyroscope.startProfiling(context);
+    this.pyroscope.StartProfiling(context);
 
     try {
       const result = data.map(item => this.transform(item));
@@ -556,7 +562,7 @@ export class DataProcessingService {
       context.duration = Date.now() - (context.startTime || 0);
       throw error;
     } finally {
-      this.pyroscope.stopProfiling(context);
+      this.pyroscope.StopProfiling(context);
     }
   }
 }
@@ -572,22 +578,22 @@ import { MetricsService } from '@pawells/nestjs-pyroscope';
 
 @Injectable()
 export class MetricsController {
-  constructor(private metrics: MetricsService) {}
+  constructor(private readonly metrics: MetricsService) {}
 
   getMetrics() {
     // Get aggregated metrics snapshot
-    const snapshot = this.metrics.getMetrics();
+    const snapshot = this.metrics.GetMetrics();
 
     // Record individual metrics
-    this.metrics.recordCPUSample(125);  // CPU time in ms
-    this.metrics.recordMemorySample(1024000);  // Memory in bytes
-    this.metrics.recordRequest(200, 45);  // Status code and duration
+    this.metrics.RecordCPUSample(125);  // CPU time in ms
+    this.metrics.RecordMemorySample(1024000);  // Memory in bytes
+    this.metrics.RecordRequest(200, 45);  // Status code and duration
 
     // Export Prometheus format
-    const prometheus = this.metrics.getPrometheusMetrics();
+    const prometheus = this.metrics.GetPrometheusMetrics();
 
     // Reset all metrics
-    this.metrics.reset();
+    this.metrics.Reset();
   }
 }
 ```
@@ -599,7 +605,7 @@ export class MetricsController {
 ```typescript
 import { ProfilingConfigValidator } from '@pawells/nestjs-pyroscope';
 
-const result = ProfilingConfigValidator.validate(config);
+const result = ProfilingConfigValidator.Validate(config);
 if (!result.isValid) {
   console.error('Config errors:', result.errors);
 }
@@ -611,15 +617,15 @@ if (!result.isValid) {
 import { TagFormatter } from '@pawells/nestjs-pyroscope';
 
 // Convert camelCase to snake_case
-TagFormatter.format({ userId: '123', userName: 'john' });
+TagFormatter.Format({ userId: '123', userName: 'john' });
 // Returns: { user_id: '123', user_name: 'john' }
 
 // Merge tags
-TagFormatter.merge({ env: 'prod' }, { region: 'us-east-1' });
+TagFormatter.Merge({ env: 'prod' }, { region: 'us-east-1' });
 // Returns: { env: 'prod', region: 'us-east-1' }
 
 // Sanitize tags
-TagFormatter.sanitize({ valid: 'value', empty: '', token: 'verylongvalue' });
+TagFormatter.Sanitize({ valid: 'value', empty: '', token: 'verylongvalue' });
 // Returns: { valid: 'value', token: 'very' } (long value truncated)
 ```
 
@@ -635,11 +641,11 @@ const metrics = [
 ];
 
 // Calculate statistics
-const avg = MetricAggregator.averageDuration(metrics);  // 150
-const p95 = MetricAggregator.percentile(metrics, 95);   // ~200
+const avg = MetricAggregator.AverageDuration(metrics);  // 150
+const p95 = MetricAggregator.Percentile(metrics, 95);   // ~200
 
 // Group by tags
-const grouped = MetricAggregator.groupByTags(
+const grouped = MetricAggregator.GroupByTags(
   metricsWithTags,
   ['operation']
 );
@@ -653,14 +659,14 @@ import { ProfilingErrorHandler } from '@pawells/nestjs-pyroscope';
 try {
   // Operation
 } catch (error) {
-  if (ProfilingErrorHandler.isRecoverableError(error)) {
+  if (ProfilingErrorHandler.IsRecoverableError(error)) {
     // Schedule retry
-    const delay = ProfilingErrorHandler.getRetryDelay(error, attempt);
+    const delay = ProfilingErrorHandler.GetRetryDelay(error, attempt);
     setTimeout(() => retry(), delay);
   }
 
   // Format error safely for logging
-  const message = ProfilingErrorHandler.formatError(error);
+  const message = ProfilingErrorHandler.FormatError(error);
   logger.error(message);
 }
 ```
@@ -669,21 +675,21 @@ try {
 
 ```typescript
 import {
-  generateProfileId,
-  formatDuration,
-  isProfilingEnabled,
+  GenerateProfileId,
+  FormatDuration,
+  IsProfilingEnabled,
 } from '@pawells/nestjs-pyroscope';
 
 // Generate unique profile ID
-const id = generateProfileId('operation');
+const id = GenerateProfileId('operation');
 // Returns: 'operation_1710429254123_abc123def'
 
 // Format duration
-formatDuration(450);   // '450.00ms'
-formatDuration(1500);  // '1.50s'
+FormatDuration(450);   // '450.00ms'
+FormatDuration(1500);  // '1.50s'
 
 // Check if enabled via env
-if (isProfilingEnabled()) {
+if (IsProfilingEnabled()) {
   // PYROSCOPE_ENABLED=true or PYROSCOPE_ENABLED=1
 }
 ```
@@ -736,7 +742,7 @@ async executeComplexQuery() {
 Configure differently per environment:
 
 ```typescript
-PyroscopeModule.forRootAsync({
+PyroscopeModule.ForRootAsync({
   useFactory: (configService: ConfigService) => ({
     enabled: configService.get('NODE_ENV') !== 'test',
     serverAddress: configService.get('PYROSCOPE_SERVER'),
@@ -757,7 +763,7 @@ PyroscopeModule.forRootAsync({
 If you want to disable the built-in health endpoints:
 
 ```typescript
-PyroscopeModule.forRoot({
+PyroscopeModule.ForRoot({
   config: { /* ... */ },
   enableHealthChecks: false,
 })
@@ -783,9 +789,9 @@ export class AppModule implements NestModule {
 
 ## Integration with Other Packages
 
-The `nestjs-pyroscope` package works seamlessly with other `@pawells/nestjs-*` packages:
+`nestjs-pyroscope` depends on `@pawells/nestjs-shared` and works with the rest of the `@pawells/nestjs-*` suite:
 
-- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Foundation library with filters, guards, error handling
+- **[@pawells/nestjs-shared](https://www.npmjs.com/package/@pawells/nestjs-shared)** - Required dependency; provides `AppLogger` and shared utilities
 - **[@pawells/nestjs-auth](https://www.npmjs.com/package/@pawells/nestjs-auth)** - Keycloak integration: token validation, guards, decorators, Admin API client
 - **[@pawells/nestjs-open-telemetry](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)** - Distributed tracing
 - **[@pawells/nestjs-prometheus](https://www.npmjs.com/package/@pawells/nestjs-prometheus)** - Prometheus metrics export

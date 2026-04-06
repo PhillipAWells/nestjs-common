@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-open-telemetry.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-open-telemetry)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-open-telemetry
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 - **@opentelemetry/api**: >= 1.0.0
 - **@pawells/nestjs-shared**: peer dependency (provides `InstrumentationRegistry`)
@@ -35,8 +35,8 @@ import { OpenTelemetryModule } from '@pawells/nestjs-open-telemetry';
 
 @Module({
   imports: [
-    CommonModule,            // Provides InstrumentationRegistry
-    OpenTelemetryModule.forRoot(),  // Registers OpenTelemetry exporter
+    CommonModule,                    // Provides InstrumentationRegistry
+    OpenTelemetryModule.ForRoot(),   // Registers OpenTelemetry exporter
   ],
 })
 export class AppModule {}
@@ -142,28 +142,28 @@ Exported from `@pawells/nestjs-open-telemetry`:
 
 ### Manual Span Creation
 
-For more control, use the tracing helpers from `lib/tracing.ts`:
+For more control, use the tracing helpers exported from the package:
 
-#### getTracer(name, version?)
+#### GetTracer(name, version?)
 
 Get or create a tracer instance with namespace conventions.
 
 ```typescript
-import { getTracer } from '@pawells/nestjs-open-telemetry';
+import { GetTracer } from '@pawells/nestjs-open-telemetry';
 
-const tracer = getTracer('user-service', '1.2.0');
+const tracer = GetTracer('user-service', '1.2.0');
 // Actual tracer name: 'pawells.user-service'
 ```
 
-#### createSpan(tracer, name, options?, makeActive?)
+#### CreateSpan(tracer, name, options?, makeActive?)
 
 Create a span and optionally set it as active in context.
 
 ```typescript
-import { getTracer, createSpan } from '@pawells/nestjs-open-telemetry';
+import { GetTracer, CreateSpan } from '@pawells/nestjs-open-telemetry';
 
-const tracer = getTracer('user-service');
-const { span, ctx } = createSpan(tracer, 'getUserById', {
+const tracer = GetTracer('user-service');
+const { span, ctx } = CreateSpan(tracer, 'getUserById', {
   attributes: { 'user.id': '123' },
 });
 
@@ -181,31 +181,31 @@ try {
 }
 ```
 
-#### withSpan(tracer, name, fn, options?)
+#### WithSpan(tracer, name, fn, options?)
 
 Execute a function within a span, automatically handling success/error status and cleanup.
 
 ```typescript
-import { getTracer, withSpan } from '@pawells/nestjs-open-telemetry';
+import { GetTracer, WithSpan } from '@pawells/nestjs-open-telemetry';
 
-const tracer = getTracer('user-service');
+const tracer = GetTracer('user-service');
 
 // Works with async or sync functions
-const user = await withSpan(tracer, 'getUserById', async () => {
+const user = await WithSpan(tracer, 'getUserById', async () => {
   return await db.findUser(userId);
 }, {
   attributes: { 'user.id': userId },
 });
 ```
 
-#### addAttributes(attributes, ctx?)
+#### AddAttributes(attributes, ctx?)
 
 Add attributes to the currently active span. Silently no-ops if no span is active.
 
 ```typescript
-import { addAttributes } from '@pawells/nestjs-open-telemetry';
+import { AddAttributes } from '@pawells/nestjs-open-telemetry';
 
-addAttributes({
+AddAttributes({
   'user.id': userId,
   'user.role': 'admin',
   'request.method': 'POST',
@@ -261,6 +261,8 @@ Metric recorded:
 
 Use `OpenTelemetryLogger` as your NestJS logger to automatically inject trace context (trace_id, span_id) into all logs.
 
+The class implements the NestJS `LoggerService` interface. Following the project's PascalCase convention, the primary methods are `Log`, `Error`, `Warn`, `Debug`, `Verbose`, and `Fatal`. Lowercase aliases `log`, `error`, and `warn` are provided for direct `LoggerService` interface compatibility.
+
 ```typescript
 import { NestFactory } from '@nestjs/core';
 import { OpenTelemetryLogger } from '@pawells/nestjs-open-telemetry';
@@ -301,10 +303,15 @@ It converts metrics recorded through the `InstrumentationRegistry` to OpenTeleme
 
 - **counter** → OpenTelemetry `Counter`
 - **histogram** → OpenTelemetry `Histogram`
-- **gauge** → OpenTelemetry `UpDownCounter` (push-based gauge semantics)
+- **gauge** → OpenTelemetry `UpDownCounter` (push-based gauge semantics — OTel's `ObservableGauge` requires a pull-based callback incompatible with the push model, so `UpDownCounter` is used instead with delta computation)
 - **updown_counter** → OpenTelemetry `UpDownCounter`
 
 Typically you don't interact with the exporter directly; the module handles registration automatically.
+
+**Public methods** (follows PascalCase convention):
+- `OnDescriptorRegistered(descriptor)` — Pre-creates the OTel instrument for a registered metric
+- `OnMetricRecorded(value)` — Pushes a recorded metric value to the appropriate instrument
+- `Shutdown()` — Clears the instrument cache on application shutdown
 
 ## Architecture
 
@@ -319,14 +326,14 @@ The module integrates with NestJS and OpenTelemetry as follows:
 
 ## Configuration Reference
 
-### OpenTelemetryModule.forRoot()
+### OpenTelemetryModule.ForRoot()
 
 The module is initialized with no required configuration:
 
 ```typescript
 @Module({
   imports: [
-    OpenTelemetryModule.forRoot(),
+    OpenTelemetryModule.ForRoot(),
   ],
 })
 export class AppModule {}
@@ -334,17 +341,27 @@ export class AppModule {}
 
 ## Testing Utilities
 
-The package exports two internal helper functions for test isolation and cleanup:
+The package exports helper functions for test isolation and cleanup:
 
-### resetTracerNamespace()
+### SetTracerNamespace(namespace)
+
+Overrides the tracer namespace prefix used for all `GetTracer` calls. Useful in tests where a custom namespace is required.
+
+```typescript
+import { SetTracerNamespace } from '@pawells/nestjs-open-telemetry';
+
+SetTracerNamespace('my-custom-namespace');
+```
+
+### ResetTracerNamespace()
 
 Resets the tracer namespace to its default value (`'pawells'`). Used in test teardown to ensure namespace isolation between tests.
 
 ```typescript
-import { resetTracerNamespace } from '@pawells/nestjs-open-telemetry';
+import { ResetTracerNamespace } from '@pawells/nestjs-open-telemetry';
 
 afterEach(() => {
-  resetTracerNamespace();  // Clean up for next test
+  ResetTracerNamespace();  // Clean up for next test
 });
 ```
 
@@ -420,7 +437,7 @@ Return values are only captured if explicitly enabled with `captureReturn: true`
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { Traced, SpanKind, getTracer, withSpan, addAttributes } from '@pawells/nestjs-open-telemetry';
+import { Traced, SpanKind, GetTracer, WithSpan, AddAttributes } from '@pawells/nestjs-open-telemetry';
 
 @Injectable()
 export class OrderService {
@@ -437,10 +454,10 @@ export class OrderService {
 
   // Manual span management with helpers
   async processOrder(orderId: string) {
-    const tracer = getTracer('order-service');
+    const tracer = GetTracer('order-service');
 
-    return withSpan(tracer, 'processOrder', async () => {
-      addAttributes({
+    return WithSpan(tracer, 'processOrder', async () => {
+      AddAttributes({
         'order.id': orderId,
         'operation': 'process',
       });
@@ -470,13 +487,13 @@ export class OrderService {
 
   @Traced()
   private async validateOrder(order: Order) {
-    addAttributes({ 'validation.status': 'passed' });
+    AddAttributes({ 'validation.status': 'passed' });
     return true;
   }
 
   @Traced()
   private async shipOrder(order: Order) {
-    addAttributes({ 'shipping.method': 'standard' });
+    AddAttributes({ 'shipping.method': 'standard' });
   }
 }
 ```

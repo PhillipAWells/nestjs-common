@@ -30,12 +30,12 @@ export interface IConfigSchemaDefinition {
  * @example
  * ```typescript
  * // Get configuration values
- * const port = configService.getNumber('PORT') ?? 3000;
- * const nodeEnv = configService.getString('NODE_ENV') ?? 'development';
- * const dbUrl = configService.getOrThrow('DATABASE_URL');
+ * const port = configService.GetNumber('PORT') ?? 3000;
+ * const nodeEnv = configService.GetString('NODE_ENV') ?? 'development';
+ * const dbUrl = configService.GetOrThrow('DATABASE_URL');
  *
- * // Validate configuration
- * configService.validate({
+ * // Validate required keys at startup
+ * configService.Validate({
  *   PORT: { required: true },
  *   DATABASE_URL: { required: true },
  *   LOG_LEVEL: { required: false }
@@ -52,6 +52,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 		this.Module = module;
 	}
 
+	/** NestJS lifecycle hook: logs a confirmation message after the module is initialized. */
 	public onModuleInit(): void {
 		this.Logger.info('Configuration service initialized');
 	}
@@ -145,9 +146,7 @@ export class ConfigService implements ILazyModuleRefService, OnModuleInit, OnMod
 		return isNaN(Num) ? undefined : Num;
 	}
 
-	/**
-	 * Cleanup resources on module destruction
-	 */
+	/** NestJS lifecycle hook: releases the contextual logger reference on module destroy. */
 	public onModuleDestroy(): void {
 		this._ContextualLogger = undefined;
 	}

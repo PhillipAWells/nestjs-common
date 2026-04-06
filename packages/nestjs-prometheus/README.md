@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-prometheus.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-prometheus)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-prometheus prom-client
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 - **prom-client**: >= 15.0.0
 - **@pawells/nestjs-shared**: same version
@@ -42,7 +42,7 @@ import { Module } from '@nestjs/common';
 import { PrometheusModule } from '@pawells/nestjs-prometheus';
 
 @Module({
-  imports: [PrometheusModule.forRoot()],
+  imports: [PrometheusModule.ForRoot()],
 })
 export class AppModule {}
 ```
@@ -153,7 +153,7 @@ import { PrometheusModule } from '@pawells/nestjs-prometheus';
 import { HTTPMetricsInterceptor } from '@pawells/nestjs-shared';
 
 @Module({
-  imports: [PrometheusModule.forRoot()],
+  imports: [PrometheusModule.ForRoot()],
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -168,17 +168,17 @@ This automatically tracks:
 - **Request count** by method and route
 - **Request duration** (histogram with default buckets)
 - **Response status codes**
-- **Path normalization** (dynamic segments like UUIDs are normalized to `:id`)
+- **Path normalization** (dynamic segments like UUIDs, MongoDB ObjectIDs, and numeric IDs are normalized to `:id` — this is a security measure that prevents unbounded metric cardinality, which could exhaust Prometheus memory if high-entropy path segments were used as label values)
 
 ## Module API
 
-### PrometheusModule.forRoot()
+### PrometheusModule.ForRoot()
 
 Returns a DynamicModule configured as global, enabling single import at the top level:
 
 ```typescript
 @Module({
-  imports: [PrometheusModule.forRoot()],
+  imports: [PrometheusModule.ForRoot()],
 })
 export class AppModule {}
 ```
@@ -190,11 +190,11 @@ export class AppModule {}
 The main NestJS module. Implements `OnModuleInit` and `OnApplicationShutdown`.
 
 **Static Methods:**
-- `forRoot()` - Create global module with automatic registration
+- `ForRoot()` - Create global module with automatic registration
 
 **Lifecycle Methods:**
 - `onModuleInit()` - Registers the exporter with InstrumentationRegistry
-- `onApplicationShutdown()` - Calls exporter.shutdown() to clean up resources
+- `onApplicationShutdown()` - Calls `Exporter.Shutdown()` to clean up resources
 
 ### PrometheusExporter
 
@@ -205,10 +205,10 @@ Implements `IMetricsExporter` from `@pawells/nestjs-shared`.
 - `SupportsPull` - `true` (supports pull-based retrieval)
 
 **Methods:**
-- `onDescriptorRegistered(descriptor: MetricDescriptor)` - Called when a metric is registered; creates the appropriate prom-client instrument
-- `onMetricRecorded(value: MetricValue)` - Buffers a metric value to be flushed on next pull
-- `getMetrics(): Promise<string>` - Flushes pending values and returns metrics in Prometheus text format
-- `shutdown(): Promise<void>` - Clears registry and releases resources
+- `OnDescriptorRegistered(descriptor: IMetricDescriptor)` - Called when a metric is registered; creates the appropriate prom-client instrument
+- `OnMetricRecorded(value: IMetricValue)` - Buffers a metric value to be flushed on next pull
+- `GetMetrics(): Promise<string>` - Flushes pending values and returns metrics in Prometheus text format
+- `Shutdown(): Promise<void>` - Clears registry and releases resources
 
 **Internals:**
 - Maintains a prom-client `Registry` for instrument management
@@ -220,7 +220,7 @@ Implements `IMetricsExporter` from `@pawells/nestjs-shared`.
 HTTP controller with single endpoint.
 
 **Methods:**
-- `getMetrics(response: Response): Promise<void>` - GET /metrics, protected by MetricsGuard
+- `GetMetrics(response: Response): Promise<void>` - GET /metrics, protected by MetricsGuard
 
 ## Advanced Patterns
 
