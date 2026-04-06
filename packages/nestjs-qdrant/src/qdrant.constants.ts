@@ -37,10 +37,10 @@ export const DEFAULT_QDRANT_CLIENT_NAME = 'default';
  * @example
  * ```typescript
  * // Default client
- * const token = getQdrantClientToken();        // 'QDRANT_CLIENT'
+ * const token = GetQdrantClientToken();        // 'QDRANT_CLIENT'
  *
  * // Named client
- * const namedToken = getQdrantClientToken('archive'); // 'QDRANT_CLIENT:archive'
+ * const namedToken = GetQdrantClientToken('archive'); // 'QDRANT_CLIENT:archive'
  * ```
  */
 export function GetQdrantClientToken(name?: string): string {
@@ -64,10 +64,10 @@ export function GetQdrantClientToken(name?: string): string {
  * @example
  * ```typescript
  * // Default options
- * const token = getQdrantModuleOptionsToken();        // 'QDRANT_MODULE_OPTIONS'
+ * const token = GetQdrantModuleOptionsToken();        // 'QDRANT_MODULE_OPTIONS'
  *
  * // Named options
- * const namedToken = getQdrantModuleOptionsToken('archive'); // 'QDRANT_MODULE_OPTIONS:archive'
+ * const namedToken = GetQdrantModuleOptionsToken('archive'); // 'QDRANT_MODULE_OPTIONS:archive'
  * ```
  */
 export function GetQdrantModuleOptionsToken(name?: string): string {
