@@ -37,6 +37,7 @@ export class NestLoggerAdapter implements LoggerService {
 	 * Lowercase alias for {@link Log}. Required by LoggerService interface.
 	 * Maps NestJS `log()` (INFO level) to {@link AppLogger.info}.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public log(message: any, ...optionalParams: any[]): void {
 		return this.Log(message, ...optionalParams);
 	}
@@ -61,6 +62,7 @@ export class NestLoggerAdapter implements LoggerService {
 	 * Lowercase alias for {@link Error}. Required by LoggerService interface.
 	 * Maps NestJS `error()` to {@link AppLogger.error}.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public error(message: any, ...optionalParams: any[]): void {
 		return this.Error(message, ...optionalParams);
 	}
@@ -75,6 +77,7 @@ export class NestLoggerAdapter implements LoggerService {
 	 * Lowercase alias for {@link Warn}. Required by LoggerService interface.
 	 * Maps NestJS `warn()` to {@link AppLogger.warn}.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public warn(message: any, ...optionalParams: any[]): void {
 		return this.Warn(message, ...optionalParams);
 	}
