@@ -4070,7 +4070,7 @@ __metadata:
     "@nestjs/terminus": "npm:^11.1.1"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4149,9 +4149,6 @@ __metadata:
     "@types/jwk-to-pem": "npm:^2.0.3"
     "@types/node": "npm:^25.5.0"
     "@types/passport": "npm:^1.0.17"
-    "@types/passport-jwt": "npm:^4.0.1"
-    "@types/passport-oauth2": "npm:^1.8.0"
-    "@types/passport-openidconnect": "npm:^0.1.3"
     "@types/supertest": "npm:^7.2.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.58.0"
     "@typescript-eslint/parser": "npm:^8.58.0"
@@ -4175,13 +4172,10 @@ __metadata:
     jwk-to-pem: "npm:^2.0.7"
     mongoose: "npm:^9.3.3"
     nx: "npm:~22.6.3"
-    passport-oauth2: "npm:^1.8.0"
-    passport-openidconnect: "npm:^0.1.2"
     prom-client: "npm:^15.1.3"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.2"
     supertest: "npm:^7.2.2"
-    swc-loader: "npm:^0.2.6"
     typescript: "npm:^6.0.2"
     vite: "npm:^8.0.3"
     vitest: "npm:^4.1.2"
@@ -4200,7 +4194,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4243,7 +4237,7 @@ __metadata:
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
     "@pawells/logger": "npm:^1.2.2"
-    "@pawells/nestjs-shared": "npm:^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4283,7 +4277,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/throttler": "npm:^6.5.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@pawells/nestjs-shared": "npm:^1.1.0"
+    "@pawells/nestjs-shared": "workspace:*"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     compression: "npm:^1.8.1"
@@ -4319,17 +4313,41 @@ __metadata:
   resolution: "@pawells/nestjs-pyroscope@workspace:packages/nestjs-pyroscope"
   dependencies:
     "@nestjs/common": "npm:^11.1.17"
+    "@nestjs/config": "npm:^4.0.3"
     "@nestjs/core": "npm:^11.1.17"
     "@nestjs/terminus": "npm:^11.1.1"
+    "@nestjs/throttler": "npm:^6.5.0"
+    "@opentelemetry/api": "npm:^1.9.1"
     "@pawells/nestjs-shared": "workspace:*"
     "@pyroscope/nodejs": "npm:^0.4.11"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:^0.15.1"
+    compression: "npm:^1.8.1"
+    csrf-csrf: "npm:^4.0.3"
+    express: "npm:^5.2.1"
+    helmet: "npm:^8.1.0"
+    joi: "npm:^18.1.2"
+    prom-client: "npm:^15.1.3"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.2"
+    xss: "npm:^1.0.15"
   peerDependencies:
     "@nestjs/common": ">=10.0.0"
+    "@nestjs/config": ">=3.0.0"
     "@nestjs/core": ">=10.0.0"
     "@nestjs/terminus": ">=10.0.0"
+    "@nestjs/throttler": ">=5.0.0"
+    "@opentelemetry/api": ">=1.0.0"
+    class-transformer: ">=0.5.0"
+    class-validator: ">=0.14.0"
+    compression: ">=1.0.0"
+    csrf-csrf: ">=4.0.0"
+    express: ">=5.0.0"
+    helmet: ">=7.0.0"
+    joi: ">=18.0.0"
+    prom-client: ">=15.0.0"
     rxjs: ">=7.0.0"
+    xss: ">=1.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4376,7 +4394,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pawells/nestjs-shared@npm:^1.1.0, @pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
+"@pawells/nestjs-shared@workspace:*, @pawells/nestjs-shared@workspace:packages/nestjs-shared":
   version: 0.0.0-use.local
   resolution: "@pawells/nestjs-shared@workspace:packages/nestjs-shared"
   dependencies:
@@ -5880,7 +5898,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:*, @types/jsonwebtoken@npm:9.0.10":
+"@types/jsonwebtoken@npm:9.0.10":
   version: 9.0.10
   resolution: "@types/jsonwebtoken@npm:9.0.10"
   dependencies:
@@ -5936,15 +5954,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/oauth@npm:*":
-  version: 0.9.6
-  resolution: "@types/oauth@npm:0.9.6"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/2f3e4ee1059fd28fc2cb6dd9d0973365a0630ea1fa305ac5455ea9666220b73d8ac42e5bee42367a0f12a1041ef103a16c55bf7803d0a82898319c3e32095b4a
-  languageName: node
-  linkType: hard
-
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
@@ -5952,50 +5961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport-jwt@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "@types/passport-jwt@npm:4.0.1"
-  dependencies:
-    "@types/jsonwebtoken": "npm:*"
-    "@types/passport-strategy": "npm:*"
-  checksum: 10c0/0ced0eaa7bb379d674821108d9bc6758223f1a5f2b9790ec78d3eaaccce6a58a424cf8ed22b53d813740ec53d929e21d92cf794ef0fb30c732866750763c0d7a
-  languageName: node
-  linkType: hard
-
-"@types/passport-oauth2@npm:^1.8.0":
-  version: 1.8.0
-  resolution: "@types/passport-oauth2@npm:1.8.0"
-  dependencies:
-    "@types/express": "npm:*"
-    "@types/oauth": "npm:*"
-    "@types/passport": "npm:*"
-  checksum: 10c0/1635679ed70044858570488fb46a14868099286f4fe785d47874c1a02706cf5b5cee07e5be0e75a5103a5c260ea9e903e0243d8b7992281680233e69f60e72fa
-  languageName: node
-  linkType: hard
-
-"@types/passport-openidconnect@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "@types/passport-openidconnect@npm:0.1.3"
-  dependencies:
-    "@types/express": "npm:*"
-    "@types/oauth": "npm:*"
-    "@types/passport": "npm:*"
-    "@types/passport-strategy": "npm:*"
-  checksum: 10c0/f0621840656a400f67f4fb1ef205b1388811d734a3c1c00ca165912c9cf0f6e3c26fe09878ed45dba529137cfd6dd7d922e7582d842e22b1937ea5e46c07934f
-  languageName: node
-  linkType: hard
-
-"@types/passport-strategy@npm:*":
-  version: 0.2.38
-  resolution: "@types/passport-strategy@npm:0.2.38"
-  dependencies:
-    "@types/express": "npm:*"
-    "@types/passport": "npm:*"
-  checksum: 10c0/d7d2b1782a0845bd8914250aa9213a23c8d9c2225db46d854b77f2bf0129a789f46d4a5e9ad336eca277fc7e0a051c0a2942da5c864e7c6710763f102d9d4295
-  languageName: node
-  linkType: hard
-
-"@types/passport@npm:*, @types/passport@npm:^1.0.17":
+"@types/passport@npm:^1.0.17":
   version: 1.0.17
   resolution: "@types/passport@npm:1.0.17"
   dependencies:
@@ -7477,13 +7443,6 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
-  languageName: node
-  linkType: hard
-
-"base64url@npm:3.x.x":
-  version: 3.0.1
-  resolution: "base64url@npm:3.0.1"
-  checksum: 10c0/5ca9d6064e9440a2a45749558dddd2549ca439a305793d4f14a900b7256b5f4438ef1b7a494e1addc66ced5d20f5c010716d353ed267e4b769e6c78074991241
   languageName: node
   linkType: hard
 
@@ -13525,13 +13484,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth@npm:0.10.x":
-  version: 0.10.2
-  resolution: "oauth@npm:0.10.2"
-  checksum: 10c0/5660d652b31eb2a90509989955a75b02311591d2e3cfb04a3fb91deae0d22c259aa5c31a9e8845f760d749af901032e3cfd06d151bbda9a5ebb9b76268d3aef9
-  languageName: node
-  linkType: hard
-
 "object-assign@npm:^4":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
@@ -13950,36 +13902,6 @@ __metadata:
   version: 1.3.3
   resolution: "parseurl@npm:1.3.3"
   checksum: 10c0/90dd4760d6f6174adb9f20cf0965ae12e23879b5f5464f38e92fce8073354341e4b3b76fa3d878351efe7d01e617121955284cfd002ab087fba1a0726ec0b4f5
-  languageName: node
-  linkType: hard
-
-"passport-oauth2@npm:^1.8.0":
-  version: 1.8.0
-  resolution: "passport-oauth2@npm:1.8.0"
-  dependencies:
-    base64url: "npm:3.x.x"
-    oauth: "npm:0.10.x"
-    passport-strategy: "npm:1.x.x"
-    uid2: "npm:0.0.x"
-    utils-merge: "npm:1.x.x"
-  checksum: 10c0/16b431bd856b84dfe0c9c913dcbea6ff54875befac1035171b0dce1c77f79072dc5e26d785b13c2e62c034c8174a1a47571751d1066bdbcdb9108de217c0b19b
-  languageName: node
-  linkType: hard
-
-"passport-openidconnect@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "passport-openidconnect@npm:0.1.2"
-  dependencies:
-    oauth: "npm:0.10.x"
-    passport-strategy: "npm:1.x.x"
-  checksum: 10c0/4d4662b91e2580baa7cf2f341904c352de9ec776a3897f8bf51a90f248ee7dab26b94e2e3c590d14821b04b0fa95cb8d7cfad6edc095e3966b7666e8779b0b68
-  languageName: node
-  linkType: hard
-
-"passport-strategy@npm:1.x.x":
-  version: 1.0.0
-  resolution: "passport-strategy@npm:1.0.0"
-  checksum: 10c0/cf4cd32e1bf2538a239651581292fbb91ccc83973cde47089f00d2014c24bed63d3e65af21da8ddef649a8896e089eb9c3ac9ca639f36c797654ae9ee4ed65e1
   languageName: node
   linkType: hard
 
@@ -16447,18 +16369,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swc-loader@npm:^0.2.6":
-  version: 0.2.7
-  resolution: "swc-loader@npm:0.2.7"
-  dependencies:
-    "@swc/counter": "npm:^0.1.3"
-  peerDependencies:
-    "@swc/core": ^1.2.147
-    webpack: ">=2"
-  checksum: 10c0/9c1b275adf9b83d7245e0e30a1dd41b0f6dbb0164267f772f855adc325a615c30a9d343e7362b585834350e2d9632ecd2239e03fa8f15a2d2e699a99e438d363
-  languageName: node
-  linkType: hard
-
 "symbol-observable@npm:^1.0.4":
   version: 1.2.0
   resolution: "symbol-observable@npm:1.2.0"
@@ -16994,13 +16904,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uid2@npm:0.0.x":
-  version: 0.0.4
-  resolution: "uid2@npm:0.0.4"
-  checksum: 10c0/c3ed69da75d117214891f4743a1d8521db823d7a2f57644c1a9ae8b3bf25f0ba666d893264bf7e22be3dbbaa292d35a23d71d06ce7283458a65e8dd137c5c362
-  languageName: node
-  linkType: hard
-
 "uid@npm:2.0.2":
   version: 2.0.2
   resolution: "uid@npm:2.0.2"
@@ -17233,7 +17136,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x":
+"utils-merge@npm:1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
