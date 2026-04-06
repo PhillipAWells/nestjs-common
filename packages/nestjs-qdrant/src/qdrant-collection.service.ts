@@ -4,7 +4,7 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { AppLogger, getErrorMessage } from '@pawells/nestjs-shared/common';
+import { AppLogger, getErrorMessage, escapeNewlines } from '@pawells/nestjs-shared/common';
 
 /**
  * HTTP status code for internal server error.
@@ -90,10 +90,10 @@ export class QdrantCollectionService {
 	 */
 	public async Search(params: Parameters<QdrantClient['search']>[1]): ReturnType<QdrantClient['search']> {
 		try {
-			this.Logger.debug(`Searching collection "${this.CollectionName}"`);
+			this.Logger.debug(`Searching collection "${escapeNewlines(this.CollectionName)}"`);
 			return await this.Client.search(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant search failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant search failed on collection "${escapeNewlines(this.CollectionName)}": ${getErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -126,10 +126,10 @@ export class QdrantCollectionService {
 	 */
 	public async Upsert(params: Parameters<QdrantClient['upsert']>[1]): ReturnType<QdrantClient['upsert']> {
 		try {
-			this.Logger.debug(`Upserting points to collection "${this.CollectionName}"`);
+			this.Logger.debug(`Upserting points to collection "${escapeNewlines(this.CollectionName)}"`);
 			return await this.Client.upsert(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant upsert failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant upsert failed on collection "${escapeNewlines(this.CollectionName)}": ${getErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -160,10 +160,10 @@ export class QdrantCollectionService {
 	 */
 	public async Delete(params: Parameters<QdrantClient['delete']>[1]): ReturnType<QdrantClient['delete']> {
 		try {
-			this.Logger.debug(`Deleting points from collection "${this.CollectionName}"`);
+			this.Logger.debug(`Deleting points from collection "${escapeNewlines(this.CollectionName)}"`);
 			return await this.Client.delete(this.CollectionName, params);
 		} catch (error) {
-			const ErrorMessage = `Qdrant delete failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant delete failed on collection "${escapeNewlines(this.CollectionName)}": ${getErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
@@ -185,10 +185,10 @@ export class QdrantCollectionService {
 	 */
 	public async GetInfo(): ReturnType<QdrantClient['getCollection']> {
 		try {
-			this.Logger.debug(`Retrieving info for collection "${this.CollectionName}"`);
+			this.Logger.debug(`Retrieving info for collection "${escapeNewlines(this.CollectionName)}"`);
 			return await this.Client.getCollection(this.CollectionName);
 		} catch (error) {
-			const ErrorMessage = `Qdrant getCollection failed on collection "${this.CollectionName}": ${getErrorMessage(error)}`;
+			const ErrorMessage = `Qdrant getCollection failed on collection "${escapeNewlines(this.CollectionName)}": ${getErrorMessage(error)}`;
 			this.Logger.error(ErrorMessage);
 			throw new InternalServerError(ErrorMessage);
 		}
