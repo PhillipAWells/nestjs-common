@@ -87,10 +87,10 @@ function CreateAsyncProviders<T, F>(
  * @example
  * ```typescript
  * // Synchronous
- * NatsModule.forRoot({ servers: 'nats://localhost:4222' })
+ * NatsModule.ForRoot({ servers: 'nats://localhost:4222' })
  *
  * // Asynchronous
- * NatsModule.forRootAsync({
+ * NatsModule.ForRootAsync({
  *   imports: [ConfigModule],
  *   inject: [ConfigService],
  *   useFactory: (config: ConfigService) => ({

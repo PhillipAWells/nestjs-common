@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-nats.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-nats)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -17,7 +17,7 @@ yarn add @pawells/nestjs-nats @nats-io/transport-node @nats-io/jetstream
 
 ## Requirements
 
-- **Node.js**: >= 24.0.0
+- **Node.js**: >= 22.0.0
 - **NestJS**: >= 10.0.0
 - **@nats-io/transport-node**: >= 3.0.0
 - **@nats-io/jetstream**: >= 3.0.0
@@ -43,9 +43,9 @@ import { NatsModule } from '@pawells/nestjs-nats';
 
 @Module({
   imports: [
-    NatsModule.forRoot({
+    NatsModule.ForRoot({
       servers: 'nats://localhost:4222',
-    }, true), // isGlobal = true
+    }, true), // isGlobal defaults to false; pass true to register globally
   ],
 })
 export class AppModule {}
@@ -62,18 +62,18 @@ export class OrderService {
   constructor(private readonly natsService: NatsService) {}
 
   publishOrder(order: Order): void {
-    this.natsService.publishJson('orders.created', order);
+    this.natsService.PublishJson('orders.created', order);
   }
 
   async getUser(userId: string): Promise<User> {
-    return this.natsService.requestJson<{ id: string }, User>(
+    return this.natsService.RequestJson<{ id: string }, User>(
       'users.get',
       { id: userId },
     );
   }
 
   subscribeToOrders(): void {
-    this.natsService.subscribe('orders.*', (msg) => {
+    this.natsService.Subscribe('orders.*', (msg) => {
       console.log('Order received:', msg.json());
     });
   }
@@ -125,7 +125,7 @@ import { NatsModule } from '@pawells/nestjs-nats';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    NatsModule.forRootAsync(
+    NatsModule.ForRootAsync(
       {
         imports: [ConfigModule],
         inject: [ConfigService],
@@ -147,13 +147,13 @@ export class AppModule {}
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NatsOptionsFactory, NatsModuleOptions } from '@pawells/nestjs-nats';
+import { INatsOptionsFactory, TNatsModuleOptions } from '@pawells/nestjs-nats';
 
 @Injectable()
-export class NatsConfigService implements NatsOptionsFactory {
+export class NatsConfigService implements INatsOptionsFactory {
   constructor(private configService: ConfigService) {}
 
-  async createNatsOptions(): Promise<NatsModuleOptions> {
+  async createNatsOptions(): Promise<TNatsModuleOptions> {
     return {
       servers: this.configService.get('NATS_SERVERS') || 'nats://localhost:4222',
       user: this.configService.get('NATS_USER'),
@@ -165,7 +165,7 @@ export class NatsConfigService implements NatsOptionsFactory {
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    NatsModule.forRootAsync(
+    NatsModule.ForRootAsync(
       {
         useClass: NatsConfigService,
       },
@@ -182,7 +182,7 @@ export class AppModule {}
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    NatsModule.forRootAsync(
+    NatsModule.ForRootAsync(
       {
         useExisting: NatsConfigService,
       },
@@ -195,7 +195,7 @@ export class AppModule {}
 
 ## Configuration Options
 
-The `NatsModuleOptions` type extends NATS client's `NodeConnectionOptions` with the following key options:
+The `TNatsModuleOptions` type is an alias for the NATS client's `NodeConnectionOptions`. Key options include:
 
 | Option | Type | Description | Default |
 |--------|------|-------------|---------|
@@ -216,17 +216,17 @@ The `NatsModuleOptions` type extends NATS client's `NodeConnectionOptions` with 
 
 ```typescript
 // Publish raw string/binary message
-natsService.publish('orders.created', 'raw message');
+natsService.Publish('orders.created', 'raw message');
 
 // Publish JSON-serialized data
-natsService.publishJson('orders.updated', { id: 1, status: 'completed' });
+natsService.PublishJson('orders.updated', { id: 1, status: 'completed' });
 ```
 
 ### Subscription with Message Handler
 
 ```typescript
 // Subscribe with automatic handler invocation
-const sub = natsService.subscribe('orders.*', (msg) => {
+const sub = natsService.Subscribe('orders.*', (msg) => {
   const order = msg.json();
   console.log('Order:', order);
 });
@@ -239,11 +239,11 @@ sub.unsubscribe();
 
 ```typescript
 // Send request and wait for reply
-const reply = await natsService.request('users.get', JSON.stringify({ id: 123 }));
+const reply = await natsService.Request('users.get', JSON.stringify({ id: 123 }));
 const user = reply.json<User>();
 
 // JSON request and response
-const user = await natsService.requestJson<{ id: number }, User>(
+const user = await natsService.RequestJson<{ id: number }, User>(
   'users.get',
   { id: 123 },
 );
@@ -253,11 +253,11 @@ const user = await natsService.requestJson<{ id: number }, User>(
 
 ```typescript
 // Get JetStream client for persistent messaging
-const js = natsService.jetstream();
+const js = natsService.Jetstream();
 await js.publish('orders', 'message');
 
 // Get JetStream manager for administration
-const jsm = await natsService.jetstreamManager();
+const jsm = await natsService.JetstreamManager();
 const streams = await jsm.streams.list();
 ```
 
@@ -265,12 +265,12 @@ const streams = await jsm.streams.list();
 
 ```typescript
 // Check connection status
-if (natsService.isConnected()) {
+if (natsService.IsConnected()) {
   console.log('NATS is connected');
 }
 
 // Get raw connection for advanced usage
-const conn = natsService.getConnection();
+const conn = natsService.GetConnection();
 ```
 
 ## Automatic Subscriber Discovery
@@ -279,7 +279,7 @@ The `NatsSubscriberRegistry` service automatically:
 
 1. Scans all NestJS providers and controllers after module initialization
 2. Finds methods decorated with `@Subscribe(subject, [queue])`
-3. Registers them as subscription handlers via `NatsService.subscribe()`
+3. Registers them as subscription handlers via `NatsService.Subscribe()`
 4. Logs registration with subject and optional queue group
 
 **Note**: Due to NestJS dependency ordering, the `NatsService` connects during module init before `NatsSubscriberRegistry` registers handlers. This ordering is guaranteed and requires no manual configuration.
@@ -378,9 +378,9 @@ export class EventHandler {
 
   onModuleInit(): void {
     // Subscribe to multiple subjects manually
-    this.natsService.subscribe('orders.*', msg => this.handleOrderEvent(msg));
-    this.natsService.subscribe('users.*', msg => this.handleUserEvent(msg));
-    this.natsService.subscribe('notifications.>', msg => this.handleNotification(msg));
+    this.natsService.Subscribe('orders.*', msg => this.handleOrderEvent(msg));
+    this.natsService.Subscribe('users.*', msg => this.handleUserEvent(msg));
+    this.natsService.Subscribe('notifications.>', msg => this.handleNotification(msg));
   }
 
   private handleOrderEvent(msg: Msg): void { /* ... */ }
