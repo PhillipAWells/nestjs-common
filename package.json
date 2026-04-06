@@ -62,7 +62,7 @@
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.6",
     "@types/jwk-to-pem": "^2.0.3",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "@types/passport": "^1.0.17",
     "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
