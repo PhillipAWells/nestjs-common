@@ -34,6 +34,14 @@ export class NestLoggerAdapter implements LoggerService {
 	}
 
 	/**
+	 * Lowercase alias for {@link Log}. Required by LoggerService interface.
+	 * Maps NestJS `log()` (INFO level) to {@link AppLogger.info}.
+	 */
+	public log(message: any, ...optionalParams: any[]): void {
+		return this.Log(message, ...optionalParams);
+	}
+
+	/**
 	 * Maps NestJS `error()` to {@link AppLogger.error}.
 	 *
 	 * NestJS calls this as `error(message, stack?, context?)`.
@@ -49,10 +57,26 @@ export class NestLoggerAdapter implements LoggerService {
 		}
 	}
 
+	/**
+	 * Lowercase alias for {@link Error}. Required by LoggerService interface.
+	 * Maps NestJS `error()` to {@link AppLogger.error}.
+	 */
+	public error(message: any, ...optionalParams: any[]): void {
+		return this.Error(message, ...optionalParams);
+	}
+
 	/** Maps NestJS `warn()` to {@link AppLogger.warn}. */
 	public Warn(message: any, ...optionalParams: any[]): void {
 		const Context = this.ExtractContext(optionalParams);
 		this.Logger.warn(this.FormatMessage(message), Context);
+	}
+
+	/**
+	 * Lowercase alias for {@link Warn}. Required by LoggerService interface.
+	 * Maps NestJS `warn()` to {@link AppLogger.warn}.
+	 */
+	public warn(message: any, ...optionalParams: any[]): void {
+		return this.Warn(message, ...optionalParams);
 	}
 
 	/** Maps NestJS `debug()` to {@link AppLogger.debug}. */
