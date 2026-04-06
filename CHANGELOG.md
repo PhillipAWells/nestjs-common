@@ -1,3 +1,34 @@
+# 2.0.0 (2026-04-06)
+
+### 🚀 Features
+
+- ⚠️  enforce STYLE_GUIDE.md naming conventions (v2.0.0 breaking changes) ([5a33030](https://github.com/PhillipAWells/nestjs-common/commit/5a33030))
+- ⚠️  enforce STYLE_GUIDE.md naming conventions (v2.0.0 breaking changes) ([b3912b9](https://github.com/PhillipAWells/nestjs-common/commit/b3912b9))
+- **nestjs-example-service:** add GraphQL resolver with PascalCase operation names ([ed339af](https://github.com/PhillipAWells/nestjs-common/commit/ed339af))
+- **nestjs-example-service:** migrate build from tsc to webpack ([7a11390](https://github.com/PhillipAWells/nestjs-common/commit/7a11390))
+- **nestjs-shared:** add LazyModuleRefBase abstract base class ([d24e053](https://github.com/PhillipAWells/nestjs-common/commit/d24e053))
+
+### 🩹 Fixes
+
+- **nestjs-example-service:** add missing type annotations and type casts ([a223c03](https://github.com/PhillipAWells/nestjs-common/commit/a223c03))
+- **nestjs-open-telemetry:** remove constructor shorthand in test error classes ([5691589](https://github.com/PhillipAWells/nestjs-common/commit/5691589))
+- **nestjs-open-telemetry:** use getErrorMessage() helper instead of inline error handling ([b6a70d2](https://github.com/PhillipAWells/nestjs-common/commit/b6a70d2))
+- **nestjs-pyroscope:** remove illegal nestjs-shared dependency ([3fe10ad](https://github.com/PhillipAWells/nestjs-common/commit/3fe10ad))
+- **nestjs-qdrant:** remove nestjs-shared imports to enforce standalone package requirement ([6b936ee](https://github.com/PhillipAWells/nestjs-common/commit/6b936ee))
+- **qdrant-collection:** escape newlines in collection name for logging messages ([17be6d2](https://github.com/PhillipAWells/nestjs-common/commit/17be6d2))
+
+### ⚠️  Breaking Changes
+
+- enforce STYLE_GUIDE.md naming conventions (v2.0.0 breaking changes)  ([b3912b9](https://github.com/PhillipAWells/nestjs-common/commit/b3912b9))
+  All public APIs now use PascalCase for method names, requiring consumer code updates.
+- enforce STYLE_GUIDE.md naming conventions (v2.0.0 breaking changes)  ([5a33030](https://github.com/PhillipAWells/nestjs-common/commit/5a33030))
+  All interface names now require I prefix, all type alias
+  names require T prefix, all class property names are now PascalCase.
+
+### ❤️ Thank You
+
+- Aaron Wells @PhillipAWells
+
 ## 1.1.2 (2026-03-30)
 
 ### 🩹 Fixes
