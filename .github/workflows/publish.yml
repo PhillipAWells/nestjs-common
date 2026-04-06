@@ -87,6 +87,34 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: npx nx release version prerelease --preid ${{ inputs.preid }} --yes --git-commit --git-tag
 
+      - name: Rewrite workspace protocols
+        run: |
+          node -e "
+            const fs = require('fs');
+            const sharedPkg = JSON.parse(fs.readFileSync('packages/nestjs-shared/package.json'));
+            const version = sharedPkg.version;
+            console.log('Rewriting workspace:* to ' + version);
+            for (const d of fs.readdirSync('packages')) {
+              const p = 'packages/' + d + '/package.json';
+              if (!fs.existsSync(p)) continue;
+              const pkg = JSON.parse(fs.readFileSync(p));
+              let changed = false;
+              for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+                if (!pkg[field]) continue;
+                for (const [dep, ver] of Object.entries(pkg[field])) {
+                  if (ver === 'workspace:*') {
+                    pkg[field][dep] = version;
+                    changed = true;
+                  }
+                }
+              }
+              if (changed) {
+                fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+                console.log('Updated ' + d);
+              }
+            }
+          "
+
       - name: Build all packages
         run: yarn build
 
