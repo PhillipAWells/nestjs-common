@@ -40,6 +40,12 @@ export class OpenTelemetryLogger implements LoggerService {
 		this.Logger.info(this.FormatMessage(message), Metadata);
 	}
 
+	/** Lowercase alias for {@link Log}. Required by LoggerService interface. */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public log(message: unknown, context?: string): void {
+		return this.Log(message, context);
+	}
+
 	/**
 	 * Log an error message.
 	 */
@@ -51,12 +57,24 @@ export class OpenTelemetryLogger implements LoggerService {
 		this.Logger.error(this.FormatMessage(message), Metadata);
 	}
 
+	/** Lowercase alias for {@link Error}. Required by LoggerService interface. */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public error(message: unknown, stackTrace?: string, context?: string): void {
+		return this.Error(message, stackTrace, context);
+	}
+
 	/**
 	 * Log a warning message.
 	 */
 	public Warn(message: unknown, context?: string): void {
 		const Metadata = this.BuildMetadata(context);
 		this.Logger.warn(this.FormatMessage(message), Metadata);
+	}
+
+	/** Lowercase alias for {@link Warn}. Required by LoggerService interface. */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public warn(message: unknown, context?: string): void {
+		return this.Warn(message, context);
 	}
 
 	/**
