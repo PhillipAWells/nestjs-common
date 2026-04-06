@@ -2,11 +2,16 @@ import { ConflictError } from '../errors/index.js';
 import { BaseService } from './base-service.js';
 
 /**
- * Federated identity link representation
+ * Represents a link between a Keycloak user account and an external identity provider.
+ *
+ * Returned by `FederatedIdentityService.List` and used as input to `FederatedIdentityService.Link`.
  */
 export interface IFederatedIdentityLink {
+	/** The identity provider alias as configured in Keycloak (e.g. `'google'`, `'github'`) */
 	identityProvider: string;
+	/** The user's ID at the external identity provider */
 	userId: string;
+	/** The user's name or username at the external identity provider */
 	userName: string;
 }
 

@@ -19,7 +19,14 @@ import {
 const CLIENT_ID_SHORT_LENGTH = 12;
 
 /**
- * Keycloak Admin API client
+ * Low-level Keycloak Admin REST API client.
+ *
+ * Wraps `@keycloak/keycloak-admin-client` with structured sub-services, retry logic,
+ * and scope-based access control. Instantiated and owned by `KeycloakAdminService` —
+ * consumers should interact with it through `KeycloakAdminService` rather than directly.
+ *
+ * Call `Authenticate()` before making any API requests. If authentication fails, all
+ * sub-service calls will throw.
  */
 export class KeycloakClient {
 	/**

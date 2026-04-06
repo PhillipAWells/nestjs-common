@@ -17,6 +17,30 @@ import type { AuthenticationService } from '../client/services/authentication.se
 import type { FederatedIdentityService } from '../client/services/federated-identity.service.js';
 import type { EventService } from '../client/services/event.service.js';
 
+/**
+ * NestJS service providing access to the Keycloak Admin REST API.
+ *
+ * Registered as a global singleton by `KeycloakAdminModule`. Inject it wherever
+ * Keycloak user management, role/group administration, federated identity linking,
+ * or event querying is required.
+ *
+ * Uses lazy loading via `ModuleRef` to avoid circular dependency issues at startup.
+ * Call `isEnabled()` before using sub-services if the module may be disabled in the
+ * current environment.
+ *
+ * @example
+ * ```typescript
+ * @Injectable()
+ * export class UserManagementService {
+ *   constructor(private readonly keycloak: KeycloakAdminService) {}
+ *
+ *   async createUser(realm: string, email: string): Promise<void> {
+ *     if (!this.keycloak.IsEnabled()) return;
+ *     await this.keycloak.Users.Create(realm, { email, enabled: true });
+ *   }
+ * }
+ * ```
+ */
 @Injectable()
 export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService {
 	private readonly Logger: AppLogger;
@@ -25,12 +49,15 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 
 	private GrantedScopes: ReadonlySet<TKeycloakAdminScope> = new Set(KEYCLOAK_DEFAULT_SCOPES) as ReadonlySet<TKeycloakAdminScope>;
 
+	/** NestJS module reference used for lazy dependency resolution */
 	public readonly Module: ModuleRef;
 
+	/** Resolved admin configuration from the DI container */
 	public get Config(): IKeycloakAdminConfig {
 		return this.Module.get(KEYCLOAK_ADMIN_CONFIG_TOKEN, { strict: false });
 	}
 
+	/** Resolved application logger from the DI container */
 	public get AppLogger(): AppLogger {
 		return this.Module.get(AppLogger);
 	}
@@ -85,49 +112,69 @@ export class KeycloakAdminService implements OnModuleInit, ILazyModuleRefService
 		}
 	}
 
+	/**
+	 * Returns the underlying `KeycloakClient` instance, or `null` if the module is
+	 * disabled or initialization failed.
+	 */
 	public GetClient(): KeycloakClient | null {
 		return this.Client;
 	}
 
+	/**
+	 * Returns `true` when `enabled` is `true` in the module configuration.
+	 * Check this before calling sub-services in environments where the admin client
+	 * may be intentionally disabled (e.g. tests or services that do not manage users).
+	 */
 	public IsEnabled(): boolean {
 		return this.Config.enabled;
 	}
 
+	/**
+	 * Returns `true` when the admin client has successfully authenticated with Keycloak.
+	 * A `false` result means API calls will fail — the client is either disabled or
+	 * authentication failed during module initialization.
+	 */
 	public IsAuthenticated(): boolean {
 		return this.Client?.IsAuthenticated() ?? false;
 	}
 
-	// Proxy methods to client services
+	/** User management service — create, read, update, delete users and manage role assignments */
 	public get Users(): UserService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Users;
 	}
 
+	/** Realm management service — query and update realm-level configuration */
 	public get Realms(): RealmService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Realms;
 	}
 
+	/** OAuth/OIDC client management service — manage clients and client scopes */
 	public get Clients(): ClientService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Clients;
 	}
 
+	/** Role management service — manage realm-level and client-level roles */
 	public get Roles(): RoleService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Roles;
 	}
 
+	/** Group management service — create and manage groups and group membership */
 	public get Groups(): GroupService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Groups;
 	}
 
+	/** Identity provider management service — configure external identity providers */
 	public get IdentityProviders(): IdentityProviderService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.IdentityProviders;
 	}
 
+	/** Authentication flow management service — manage authentication flows and executions */
 	public get Authentication(): AuthenticationService {
 		if (!this.Client) throw new Error('Keycloak client not initialized');
 		return this.Client.Authentication;

@@ -5,9 +5,19 @@ import { KEYCLOAK_MODULE_OPTIONS } from '../keycloak.constants.js';
 import type { IKeycloakModuleOptions, IKeycloakTokenClaims, IKeycloakUser } from '../keycloak.types.js';
 import { JwksCacheService } from './jwks-cache.service.js';
 
+/**
+ * Result returned by `KeycloakTokenValidationService.ValidateToken`.
+ *
+ * On success, `valid` is `true` and `claims` contains the decoded token payload.
+ * On failure, `valid` is `false` and `error` contains a short error code string
+ * (e.g. `'token_expired'`, `'invalid_audience'`, `'token_inactive'`).
+ */
 export interface ITokenValidationResult {
+	/** Whether the token passed all validation checks */
 	valid: boolean;
+	/** Decoded token claims — present only when `valid` is `true` */
 	claims?: IKeycloakTokenClaims;
+	/** Short error code describing why validation failed — present only when `valid` is `false` */
 	error?: string;
 }
 

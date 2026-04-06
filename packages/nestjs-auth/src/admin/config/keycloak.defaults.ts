@@ -7,13 +7,14 @@ const KEYCLOAK_TIMEOUT = 1000;
 const KEYCLOAK_TIMEOUT_30_SECONDS_MULTIPLIER = 30;
 
 /**
- * SECURITY: Default Keycloak configuration
- * Credentials are intentionally left empty and MUST be provided via environment variables:
- * - For password auth: KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD
- * - For client credentials: KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET
- * Do not commit credentials to source code.
+ * Default values for `IKeycloakAdminConfig`.
+ *
+ * Used as the base configuration merged with consumer-provided options in
+ * `KeycloakAdminModule`. The module is disabled by default (`enabled: false`).
+ *
+ * SECURITY: Credential fields are intentionally left empty and MUST be provided via
+ * environment variables. Do not commit credentials to source code.
  */
-
 export const KeycloakAdminDefaults: IKeycloakAdminConfig = {
 	enabled: false,
 	baseUrl: 'http://localhost:8080',
@@ -30,6 +31,15 @@ export const KeycloakAdminDefaults: IKeycloakAdminConfig = {
 	},
 };
 
+/**
+ * Validate a `IKeycloakAdminConfig` object using Joi.
+ *
+ * Throws an `Error` with a descriptive message if validation fails.
+ * Called automatically by `KeycloakAdminModule` during initialization.
+ *
+ * @param config - The configuration object to validate
+ * @throws {Error} If any required field is missing or invalid
+ */
 export function ValidateKeycloakAdminConfig(config: IKeycloakAdminConfig): void {
 	const Schema = Joi.object({
 		enabled: Joi.boolean().required(),

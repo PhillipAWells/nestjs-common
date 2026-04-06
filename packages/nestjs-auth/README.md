@@ -3,7 +3,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/PhillipAWells/nestjs-common)](https://github.com/PhillipAWells/nestjs-common/releases)
 [![CI](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml/badge.svg)](https://github.com/PhillipAWells/nestjs-common/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@pawells/nestjs-auth.svg?style=flat)](https://www.npmjs.com/package/@pawells/nestjs-auth)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/PhillipAWells?style=social)](https://github.com/sponsors/PhillipAWells)
 
@@ -36,11 +36,13 @@ yarn add @pawells/nestjs-auth
 | Package | Version | Required |
 |---|---|---|
 | `@nestjs/common` | `>=10.0.0` | Yes |
+| `@nestjs/config` | `>=3.0.0` | Yes |
 | `@nestjs/core` | `>=10.0.0` | Yes |
-| `@nestjs/jwt` | `>=10.0.0` | Yes |
+| `@nestjs/jwt` | `>=11.0.0` | Yes |
 | `@nestjs/terminus` | `>=10.0.0` | Yes |
-| `joi` | `>=17.0.0` | Yes |
-| `@nestjs/graphql` | `>=12.0.0` | Yes — required to use GraphQL decorators |
+| `joi` | `>=18.0.0` | Yes |
+| `rxjs` | `>=7.0.0` | Yes |
+| `@nestjs/graphql` | `>=13.0.0` | Yes — required to use GraphQL decorators |
 | `jwks-rsa` | `>=3.0.0` | No — required only for offline (JWKS) validation mode |
 
 ## Quick Start
@@ -170,7 +172,7 @@ Use offline mode only when request throughput makes per-request introspection im
 
 ### JwtAuthGuard
 
-Validates the Keycloak access token on every incoming request. Extracts the `Bearer` token from the `Authorization` header, calls `KeycloakTokenValidationService.validateToken`, and attaches the resolved `KeycloakUser` to `request.user`.
+Validates the Keycloak access token on every incoming request. Extracts the `Bearer` token from the `Authorization` header, calls `KeycloakTokenValidationService.ValidateToken`, and attaches the resolved `IKeycloakUser` to `request.user`.
 
 Routes decorated with `@Public()` bypass the guard entirely.
 
@@ -246,13 +248,13 @@ export class DocumentsController {
 | `@Public()` | Method | Marks the route as public — `JwtAuthGuard` skips validation |
 | `@Roles(...roles)` | Method | Specifies role requirements for `RoleGuard` |
 | `@Permissions(...permissions)` | Method | Specifies permission requirements for `PermissionGuard` |
-| `@CurrentUser(property?)` | Parameter | Injects the `KeycloakUser` from `request.user`, or a specific property if `property` is given |
+| `@CurrentUser(property?)` | Parameter | Injects the `IKeycloakUser` from `request.user`, or a specific property if `property` is given |
 | `@AuthToken()` | Parameter | Injects the raw Bearer token string from the `Authorization` header |
 
 ```typescript
 import { Controller, Get } from '@nestjs/common';
 import { Auth, Public, Roles, CurrentUser, AuthToken } from '@pawells/nestjs-auth';
-import type { KeycloakUser } from '@pawells/nestjs-auth';
+import type { IKeycloakUser } from '@pawells/nestjs-auth';
 
 @Controller('me')
 export class ProfileController {
@@ -264,7 +266,7 @@ export class ProfileController {
 
   @Auth()
   @Get()
-  getProfile(@CurrentUser() user: KeycloakUser) {
+  getProfile(@CurrentUser() user: IKeycloakUser) {
     return user;
   }
 
@@ -283,7 +285,7 @@ export class ProfileController {
 
 ### GraphQL Decorators
 
-The GraphQL variants are aliases of the HTTP decorators, pre-configured for the GraphQL execution context.
+The GraphQL variants are aliases of the HTTP decorators. The parameter decorators (`@GraphQLCurrentUser`, `@GraphQLAuthToken`, `@GraphQLContextParam`) are GraphQL-context aware and extract data from the GraphQL execution context rather than the HTTP request. The method decorators (`@GraphQLAuth`, `@GraphQLPublic`, `@GraphQLRoles`) are direct aliases with no additional configuration.
 
 | Decorator | Equivalent to | Notes |
 |---|---|---|
@@ -304,7 +306,7 @@ import {
   GraphQLCurrentUser,
   GraphQLAuthToken,
 } from '@pawells/nestjs-auth';
-import type { KeycloakUser } from '@pawells/nestjs-auth';
+import type { IKeycloakUser } from '@pawells/nestjs-auth';
 
 @Resolver()
 export class UserResolver {
@@ -316,7 +318,7 @@ export class UserResolver {
 
   @GraphQLAuth()
   @Query(() => String, { name: 'Me' })
-  async me(@GraphQLCurrentUser() user: KeycloakUser): Promise<string> {
+  async me(@GraphQLCurrentUser() user: IKeycloakUser): Promise<string> {
     return user.id;
   }
 
@@ -341,17 +343,18 @@ export class UserResolver {
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | `boolean` | `false` | When `false` the client is not initialized — useful for disabling in test environments |
+| `enabled` | `boolean` | — | When `false` the client is not initialized — useful for disabling in test environments |
 | `baseUrl` | `string` | `'http://localhost:8080'` | Keycloak server base URL (not realm-specific) |
 | `realmName` | `string` | `'master'` | Target realm for all Admin API calls |
-| `credentials.type` | `'password' \| 'clientCredentials'` | `'password'` | Authentication method |
+| `credentials.type` | `'password' \| 'clientCredentials'` | — | Authentication method. Use `clientCredentials` for production service accounts |
 | `credentials.username` | `string` | — | Admin username (password auth only) |
 | `credentials.password` | `string` | — | Admin password (password auth only) |
 | `credentials.clientId` | `string` | — | Service account client ID (clientCredentials auth only) |
 | `credentials.clientSecret` | `string` | — | Service account client secret (clientCredentials auth only) |
 | `timeout` | `number` | `30000` | Request timeout in milliseconds |
 | `retry.maxRetries` | `number` | `3` | Maximum retry attempts on transient failures |
-| `retry.retryDelay` | `number` | `1000` | Delay between retries in milliseconds |
+| `retry.initialDelay` | `number` | `1000` | Initial delay between retries in milliseconds (exponential backoff with jitter) |
+| `permissions` | `TKeycloakAdminScope[]` | all read-only scopes | Explicit list of permitted operation scopes. Write scopes must be declared here — omitting this field defaults to read-only access. See `KEYCLOAK_DEFAULT_SCOPES` and `KEYCLOAK_ALL_SCOPES` |
 
 ### forRoot
 
@@ -389,19 +392,19 @@ KeycloakAdminModule.forRootAsync({
 
 ### KeycloakAdminService
 
-Inject `KeycloakAdminService` and access the sub-services via its properties.
+Inject `KeycloakAdminService` and access the sub-services via its properties. All property and method names use PascalCase.
 
 | Property | Service | Responsibility |
 |---|---|---|
-| `.users` | `UserService` | Create, read, update, delete users; assign roles and groups |
-| `.roles` | `RoleService` | Manage realm and client roles |
-| `.realms` | `RealmService` | Realm-level configuration and queries |
-| `.clients` | `ClientService` | Manage clients and client scopes |
-| `.groups` | `GroupService` | Create and manage groups; add/remove members |
-| `.identityProviders` | `IdentityProviderService` | Manage identity provider configurations |
-| `.authentication` | `AuthenticationService` | Manage authentication flows |
-| `.federatedIdentity` | `FederatedIdentityService` | Link and unlink external provider identities — see [Federated Identity](#federated-identity) |
-| `.events` | `EventService` | Query admin and access events — see [Event Polling](#event-polling) |
+| `.Users` | `UserService` | Create, read, update, delete users; assign roles and groups |
+| `.Roles` | `RoleService` | Manage realm and client roles |
+| `.Realms` | `RealmService` | Realm-level configuration and queries |
+| `.Clients` | `ClientService` | Manage clients and client scopes |
+| `.Groups` | `GroupService` | Create and manage groups; add/remove members |
+| `.IdentityProviders` | `IdentityProviderService` | Manage identity provider configurations |
+| `.Authentication` | `AuthenticationService` | Manage authentication flows |
+| `.FederatedIdentity` | `FederatedIdentityService` | Link and unlink external provider identities — see [Federated Identity](#federated-identity) |
+| `.Events` | `EventService` | Query admin and access events — see [Event Polling](#event-polling) |
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -411,33 +414,29 @@ import { KeycloakAdminService } from '@pawells/nestjs-auth';
 export class UserManagementService {
   constructor(private readonly keycloak: KeycloakAdminService) {}
 
-  async createUser(email: string, firstName: string): Promise<void> {
-    await this.keycloak.users.create({
-      email,
-      firstName,
-      enabled: true,
-    });
+  async createUser(realm: string, email: string): Promise<void> {
+    await this.keycloak.Users.Create(realm, { email, enabled: true });
   }
 
-  async assignRole(userId: string, roleName: string): Promise<void> {
-    await this.keycloak.users.assignRole(userId, roleName);
+  async addRealmRole(realm: string, userId: string, roleId: string, roleName: string): Promise<void> {
+    await this.keycloak.Users.AddRealmRoles(realm, userId, [{ id: roleId, name: roleName }]);
   }
 }
 ```
 
-Call `keycloakAdminService.isEnabled()` before calling sub-services if the module may be disabled in the current environment.
+Call `keycloakAdminService.IsEnabled()` before calling sub-services if the module may be disabled in the current environment.
 
 ## Federated Identity
 
-`KeycloakAdminService.federatedIdentity` manages links between Keycloak user accounts and external identity providers.
+`KeycloakAdminService.FederatedIdentity` manages links between Keycloak user accounts and external identity providers.
 
 | Method | Signature | Description |
 |---|---|---|
-| `list` | `(userId: string) => Promise<FederatedIdentityLink[]>` | Returns all provider links for a user |
-| `link` | `(userId: string, provider: string, link: { userId: string; userName: string }) => Promise<void>` | Links an external provider identity to a Keycloak user |
-| `unlink` | `(userId: string, provider: string) => Promise<void>` | Removes a provider link from a Keycloak user |
+| `List` | `(userId: string) => Promise<IFederatedIdentityLink[]>` | Returns all provider links for a user |
+| `Link` | `(userId: string, provider: string, link: { userId: string; userName: string }) => Promise<void>` | Links an external provider identity to a Keycloak user |
+| `Unlink` | `(userId: string, provider: string) => Promise<void>` | Removes a provider link from a Keycloak user |
 
-`link` performs a pre-flight `list` check and throws `ConflictError` if a link for the same provider and external user ID already exists. This is a workaround for [Keycloak issue #34608](https://github.com/keycloak/keycloak/issues/34608), which can create duplicate federated identity records.
+`Link` performs a pre-flight `List` check and throws `ConflictError` if a link for the same provider and external user ID already exists. This is a workaround for [Keycloak issue #34608](https://github.com/keycloak/keycloak/issues/34608), which can create duplicate federated identity records.
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -453,7 +452,7 @@ export class IdentityLinkingService {
     googleEmail: string,
   ): Promise<void> {
     try {
-      await this.keycloak.federatedIdentity.link(keycloakUserId, 'google', {
+      await this.keycloak.FederatedIdentity.Link(keycloakUserId, 'google', {
         userId: googleUserId,
         userName: googleEmail,
       });
@@ -467,21 +466,21 @@ export class IdentityLinkingService {
   }
 
   async listLinks(keycloakUserId: string) {
-    return this.keycloak.federatedIdentity.list(keycloakUserId);
+    return this.keycloak.FederatedIdentity.List(keycloakUserId);
   }
 }
 ```
 
 ## Event Polling
 
-`KeycloakAdminService.events` queries Keycloak's event log for both admin (resource mutation) and access (login, logout, token) events.
+`KeycloakAdminService.Events` queries Keycloak's event log for both admin (resource mutation) and access (login, logout, token) events.
 
 ### Methods
 
 | Method | Signature | Description |
 |---|---|---|
-| `getAdminEvents` | `(query?: AdminEventQuery) => Promise<KeycloakAdminEvent[]>` | Returns admin events matching the query |
-| `getAccessEvents` | `(query?: AccessEventQuery) => Promise<KeycloakAccessEvent[]>` | Returns access events matching the query |
+| `GetAdminEvents` | `(realm: string, query?: IAdminEventQuery) => Promise<IKeycloakAdminEvent[]>` | Returns admin events matching the query |
+| `GetAccessEvents` | `(realm: string, query?: IAccessEventQuery) => Promise<IKeycloakAccessEvent[]>` | Returns access events matching the query |
 
 ### AdminEventQuery Fields
 
@@ -506,7 +505,7 @@ export class IdentityLinkingService {
 | `operationType` | `'CREATE' \| 'UPDATE' \| 'DELETE' \| 'ACTION'` | Type of operation |
 | `resourceType` | `string` | Resource category, e.g. `USER`, `GROUP` |
 | `resourcePath` | `string` | Path to the affected resource |
-| `representation` | `string \| undefined` | JSON-encoded resource snapshot. Present on CREATE and UPDATE only. Must be parsed with `JSON.parse()` before use |
+| `representation` | `string \| undefined` | Double-encoded JSON string of the resource snapshot. Present on CREATE and UPDATE only. Must be decoded twice: `JSON.parse(JSON.parse(event.representation))` |
 | `authDetails` | `object \| undefined` | Actor details: `realmId`, `clientId`, `userId`, `ipAddress` |
 
 ### Checkpoint Cursor Pattern
@@ -517,6 +516,7 @@ Keycloak does not provide a persistent event cursor. To avoid re-processing even
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { KeycloakAdminService } from '@pawells/nestjs-auth';
+import type { IKeycloakAdminEvent } from '@pawells/nestjs-auth';
 
 @Injectable()
 export class EventSyncService {
@@ -526,7 +526,7 @@ export class EventSyncService {
 
   @Cron('*/30 * * * * *') // every 30 seconds
   async pollAdminEvents(): Promise<void> {
-    const events = await this.keycloak.events.getAdminEvents({
+    const events = await this.keycloak.Events.GetAdminEvents('myrealm', {
       dateFrom: this.lastProcessedTime,
       operationTypes: ['CREATE', 'UPDATE', 'DELETE'],
       resourceTypes: ['USER'],
@@ -542,7 +542,7 @@ export class EventSyncService {
     }
   }
 
-  private async processEvent(event: any): Promise<void> {
+  private async processEvent(event: IKeycloakAdminEvent): Promise<void> {
     // Handle the event
   }
 }
